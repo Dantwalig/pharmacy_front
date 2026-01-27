@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,8 @@ import toast from 'react-hot-toast';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { authApi } from '@/lib/api';
 
-export default function VerifyEmailPage() {
+// Separate component that uses useSearchParams
+function VerifyEmailForm() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -204,5 +205,18 @@ export default function VerifyEmailPage() {
         © 2025 E-Vuze Healthcare Platform. All rights reserved.
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-linear-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    }>
+      <VerifyEmailForm />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -20,7 +20,8 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 
-export default function SuperAdminPharmaciesPage() {
+// Separate component that uses useSearchParams
+function PharmaciesContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -112,7 +113,7 @@ export default function SuperAdminPharmaciesPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                  {t('superAdmin.pharmacyManagement')} 🏥
+                  {t('superAdmin.pharmacyManagement')} 🥼
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
                   {pharmacies.length} {pharmacies.length === 1 ? t('pharmacies.pharmacy') : t('pharmacies.pharmacies')}
@@ -167,7 +168,7 @@ export default function SuperAdminPharmaciesPage() {
             {/* Pharmacy Cards */}
             {pharmacies.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-                <p className="text-6xl mb-4">🏥</p>
+                <p className="text-6xl mb-4">🥼</p>
                 <p className="text-gray-500 dark:text-gray-400 text-lg">{t('superAdmin.noPharmacies')}</p>
               </div>
             ) : (
@@ -315,5 +316,18 @@ export default function SuperAdminPharmaciesPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function SuperAdminPharmaciesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <LoadingSpinner />
+      </div>
+    }>
+      <PharmaciesContent />
+    </Suspense>
   );
 }

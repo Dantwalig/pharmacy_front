@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 mb-4">
-            <span className="text-4xl">🔑</span>
+            <span className="text-4xl">🔒</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {t('forgotPassword.title')}
