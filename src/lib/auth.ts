@@ -7,6 +7,7 @@ export interface User {
   id: string;
   email: string;
   role: 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT';
+  pharmacyStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   profile?: any;
 }
 
@@ -36,6 +37,7 @@ export const getUserFromToken = (): User | null => {
       id: decoded.sub,
       email: decoded.email,
       role: decoded.role,
+      pharmacyStatus: decoded.pharmacyStatus,
     };
   } catch {
     return null;
