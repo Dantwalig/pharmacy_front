@@ -45,11 +45,19 @@ export default function PharmacyInventoryPage() {
 
   const handleSubmit = async () => {
     try {
+      // Convert string values to numbers for the API
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+        quantity: parseInt(formData.quantity) || 0,
+        lowStockThreshold: parseInt(formData.lowStockThreshold) || 10,
+      };
+
       if (editingMed) {
-        await api.patch(`/medications/${editingMed.id}`, formData);
+        await api.patch(`/medications/${editingMed.id}`, payload);
         toast.success(t('pharmacy.medicationUpdated'));
       } else {
-        await api.post('/medications', formData);
+        await api.post('/medications', payload);
         toast.success(t('pharmacy.medicationAdded'));
       }
 
@@ -177,7 +185,7 @@ export default function PharmacyInventoryPage() {
                           <p className="text-sm opacity-90">{med.category}</p>
                         </div>
                         {med.requiresPrescription && (
-                          <span className="bg-white/20 backdrop-blur-sm text-xs px-3 py-1 rounded-full font-bold">
+                          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
                             Rx
                           </span>
                         )}
