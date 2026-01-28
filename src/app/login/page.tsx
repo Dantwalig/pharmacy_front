@@ -1,4 +1,5 @@
 // frontend/src/app/login/page.tsx
+// FIXED VERSION - Unified Login (No Role Selection)
 
 'use client';
 
@@ -14,7 +15,6 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const router = useRouter();
-  const [selectedTab, setSelectedTab] = useState<'PATIENT' | 'PHARMACY'>('PATIENT');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,12 +32,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-
-  const tabs = [
-    { id: 'PATIENT' as const, label: t('login.patient'), icon: '🙋‍♂️', color: 'from-blue-500 to-blue-600' },
-    { id: 'PHARMACY' as const, label: t('login.pharmacy'), icon: '💊', color: 'from-green-500 to-green-600' },
-    // { id: 'HOSPITAL' as const, label: t('login.hospital'), icon: '🏥', color: 'from-purple-500 to-purple-600' },
-  ];
 
   return (
     <div className="min-h-screen bg-linear-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -61,26 +55,6 @@ export default function LoginPage() {
             {t('login.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">{t('login.subtitle')}</p>
-        </div>
-
-        {/* Role Tabs */}
-        <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedTab(tab.id)}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all transform ${
-                selectedTab === tab.id
-                  ? `bg-linear-to-r ${tab.color} text-white shadow-lg scale-105`
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-2xl">{tab.icon}</span>
-                <span className="text-xs sm:text-sm">{tab.label}</span>
-              </div>
-            </button>
-          ))}
         </div>
 
         {/* Login Form */}
