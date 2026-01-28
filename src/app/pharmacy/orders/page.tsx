@@ -23,7 +23,11 @@ export default function PharmacyOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const url = filter === 'ALL' ? '/orders' : `/orders?status=${filter}`;
+      setLoading(true);
+      // Use the correct endpoint for pharmacy orders
+      const url = filter === 'ALL' 
+        ? '/orders/pharmacy-orders' 
+        : `/orders/pharmacy-orders?status=${filter}`;
       const res = await api.get(url);
       setOrders(res.data);
     } catch (error) {
@@ -140,13 +144,13 @@ export default function PharmacyOrdersPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                           <span>📦</span>
-                          <span>{order.medications.length} {t('pharmacy.items')}</span>
+                          <span>{order.orderItems.length} {t('pharmacy.items')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <span>{order.deliveryMethod === 'DELIVERY' ? '🚚' : '🏪'}</span>
-                          <span>{order.deliveryMethod === 'DELIVERY' ? t('pharmacy.delivery') : t('pharmacy.pickup')}</span>
+                          <span>{order.type === 'DELIVERY' ? '🚚' : '🏪'}</span>
+                          <span>{order.type === 'DELIVERY' ? t('pharmacy.delivery') : t('pharmacy.pickup')}</span>
                         </div>
-                        {order.prescriptionUrl && (
+                        {order.prescriptionId && (
                           <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
                             <span>📋</span>
                             <span className="font-medium">{t('pharmacy.prescriptionAttached')}</span>
