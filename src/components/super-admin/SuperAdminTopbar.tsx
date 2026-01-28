@@ -1,4 +1,5 @@
 // frontend/src/components/super-admin/SuperAdminTopbar.tsx
+// FIXED VERSION - Corrected CSS gradient classes
 
 'use client';
 

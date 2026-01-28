@@ -1,4 +1,5 @@
 // frontend/src/app/super-admin/pharmacies/page.tsx
+// FIXED VERSION - Corrected API methods and CSS classes
 
 'use client';
 
@@ -35,6 +36,8 @@ function PharmaciesContent() {
     pharmacyId: null,
   });
   const [rejectionReason, setRejectionReason] = useState('');
+  const [approving, setApproving] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState(false);
 
   useEffect(() => {
     fetchPharmacies();
@@ -49,9 +52,9 @@ function PharmaciesContent() {
           : `/super-admin/pharmacies?status=${filter}`;
       const res = await api.get(url);
       setPharmacies(res.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch pharmacies:', error);
-      toast.error('Failed to load pharmacies');
+      toast.error(error.response?.data?.message || 'Failed to load pharmacies');
     } finally {
       setLoading(false);
     }
@@ -60,12 +63,17 @@ function PharmaciesContent() {
   const handleApprove = async (id: string, pharmacyName: string) => {
     if (!confirm(`${t('superAdmin.approve')} ${pharmacyName}?`)) return;
 
+    setApproving(id);
     try {
-      await api.patch(`/super-admin/pharmacies/${id}/approve`);
+      // Changed from .patch to .put to match backend
+      await api.put(`/super-admin/pharmacies/${id}/approve`, {});
       toast.success(`${pharmacyName} approved successfully!`);
       fetchPharmacies();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to approve');
+      console.error('Approval error:', error);
+      toast.error(error.response?.data?.message || 'Failed to approve pharmacy');
+    } finally {
+      setApproving(null);
     }
   };
 
@@ -75,8 +83,10 @@ function PharmaciesContent() {
       return;
     }
 
+    setRejecting(true);
     try {
-      await api.patch(`/super-admin/pharmacies/${rejectionModal.pharmacyId}/reject`, {
+      // Changed from .patch to .put to match backend
+      await api.put(`/super-admin/pharmacies/${rejectionModal.pharmacyId}/reject`, {
         reason: rejectionReason,
       });
       toast.success('Pharmacy rejected');
@@ -84,13 +94,16 @@ function PharmaciesContent() {
       setRejectionReason('');
       fetchPharmacies();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to reject');
+      console.error('Rejection error:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject pharmacy');
+    } finally {
+      setRejecting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner />
       </div>
     );
@@ -113,7 +126,7 @@ function PharmaciesContent() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                  {t('superAdmin.pharmacyManagement')} 🥼
+                  {t('superAdmin.pharmacyManagement')} 🏥
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
                   {pharmacies.length} {pharmacies.length === 1 ? t('pharmacies.pharmacy') : t('pharmacies.pharmacies')}
@@ -168,7 +181,7 @@ function PharmaciesContent() {
             {/* Pharmacy Cards */}
             {pharmacies.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-                <p className="text-6xl mb-4">🥼</p>
+                <p className="text-6xl mb-4">🏥</p>
                 <p className="text-gray-500 dark:text-gray-400 text-lg">{t('superAdmin.noPharmacies')}</p>
               </div>
             ) : (
@@ -178,8 +191,8 @@ function PharmaciesContent() {
                     key={pharmacy.id}
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden"
                   >
-                    {/* Card Header */}
-                    <div className="bg-linear-to-r from-purple-600 to-indigo-600 p-6 text-white">
+                    {/* Card Header - FIXED: bg-gradient-to-r instead of bg-linear-to-r */}
+                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <BuildingStorefrontIcon className="w-8 h-8" />
@@ -228,14 +241,14 @@ function PharmaciesContent() {
                         )}
                       </div>
 
-                      {pharmacy.licenseUrl && (
+                      {pharmacy.pharmacyLicense && (
                         <a
-                          href={pharmacy.licenseUrl}
+                          href={pharmacy.pharmacyLicense}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block w-full text-center py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-medium text-sm"
                         >
-                          📄 {t('common.viewDetails')}
+                          📄 View License
                         </a>
                       )}
 
@@ -244,14 +257,22 @@ function PharmaciesContent() {
                         <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => handleApprove(pharmacy.id, pharmacy.name)}
-                            className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                            disabled={approving === pharmacy.id}
+                            className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <CheckCircleIcon className="w-5 h-5" />
-                            {t('superAdmin.approve')}
+                            {approving === pharmacy.id ? (
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <>
+                                <CheckCircleIcon className="w-5 h-5" />
+                                {t('superAdmin.approve')}
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={() => setRejectionModal({ show: true, pharmacyId: pharmacy.id })}
-                            className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                            disabled={approving === pharmacy.id}
+                            className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <XCircleIcon className="w-5 h-5" />
                             {t('superAdmin.reject')}
@@ -298,15 +319,21 @@ function PharmaciesContent() {
                         setRejectionModal({ show: false, pharmacyId: null });
                         setRejectionReason('');
                       }}
-                      className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors"
+                      disabled={rejecting}
+                      className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors disabled:opacity-50"
                     >
                       {t('common.cancel')}
                     </button>
                     <button
                       onClick={handleReject}
-                      className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+                      disabled={rejecting}
+                      className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {t('superAdmin.reject')}
+                      {rejecting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        t('superAdmin.reject')
+                      )}
                     </button>
                   </div>
                 </div>
