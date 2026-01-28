@@ -14,7 +14,7 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const router = useRouter();
-  const [selectedTab, setSelectedTab] = useState<'PATIENT' | 'PHARMACY' | 'HOSPITAL'>('PATIENT');
+  const [selectedTab, setSelectedTab] = useState<'PATIENT' | 'PHARMACY'>('PATIENT');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      // Routing is handled in AuthContext based on user role
     } catch (error) {
       // Error handled in AuthContext
     } finally {
@@ -35,7 +36,7 @@ export default function LoginPage() {
   const tabs = [
     { id: 'PATIENT' as const, label: t('login.patient'), icon: '🙋‍♂️', color: 'from-blue-500 to-blue-600' },
     { id: 'PHARMACY' as const, label: t('login.pharmacy'), icon: '💊', color: 'from-green-500 to-green-600' },
-    { id: 'HOSPITAL' as const, label: t('login.hospital'), icon: '🏥', color: 'from-purple-500 to-purple-600' },
+    // { id: 'HOSPITAL' as const, label: t('login.hospital'), icon: '🏥', color: 'from-purple-500 to-purple-600' },
   ];
 
   return (
@@ -120,6 +121,16 @@ export default function LoginPage() {
             />
           </div>
 
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium"
+            >
+              {t('auth.forgotPassword')}
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -154,16 +165,6 @@ export default function LoginPage() {
               {t('login.signUp')}
             </Link>
           </p>
-        </div>
-
-        {/* Super Admin Link */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/super-admin/login"
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-          >
-            🔐 Super Admin Login
-          </Link>
         </div>
       </div>
 

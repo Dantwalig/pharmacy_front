@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
-import { authApi } from '@/lib/api';
+import api from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -21,8 +21,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await authApi.forgotPassword({ email });
-      toast.success(response.message || t('forgotPassword.success'));
+      const response = await api.post('/auth/forgot-password', { email });
+      toast.success(response.data.message || t('forgotPassword.success'));
       
       // Redirect to reset password page with email
       setTimeout(() => {
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 mb-4">
-            <span className="text-4xl">🔒</span>
+            <span className="text-4xl">🔑</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {t('forgotPassword.title')}

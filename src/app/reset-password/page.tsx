@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
-import { authApi } from '@/lib/api';
+import api from '@/lib/api';
 
 // Separate component that uses useSearchParams
 function ResetPasswordForm() {
@@ -85,14 +85,14 @@ function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      const response = await authApi.resetPassword({
+      const response = await api.post('/auth/reset-password', {
         email: email!,
         resetCode,
         newPassword,
         confirmPassword,
       });
 
-      toast.success(response.message || t('resetPassword.success'));
+      toast.success(response.data.message || t('resetPassword.success'));
       
       // Redirect to login
       setTimeout(() => {
@@ -127,7 +127,7 @@ function ResetPasswordForm() {
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 mb-4">
-            <span className="text-4xl">🔑</span>
+            <span className="text-4xl">🔓</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {t('resetPassword.title')}
