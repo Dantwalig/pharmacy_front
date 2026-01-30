@@ -37,7 +37,7 @@ export default function PatientProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await api.get('/patients/me');
+      const res = await api.get('/patients/profile');
       const data = res.data;
       
       // Format date if it exists
@@ -58,9 +58,15 @@ export default function PatientProfilePage() {
         insurancePolicy: data.insurancePolicy || '',
         insuranceMemberId: data.insuranceMemberId || '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch profile:', error);
-      toast.error(t('profile.fetchFailed'));
+      
+      // If 404, it means patient record doesn't exist yet
+      if (error.response?.status === 404) {
+        toast.error(t('profile.noProfileFound') || 'No profile found. Please fill in your information.');
+      } else {
+        toast.error(t('profile.fetchFailed') || 'Failed to load profile');
+      }
     } finally {
       setLoading(false);
     }
@@ -70,13 +76,20 @@ export default function PatientProfilePage() {
     setSaving(true);
 
     try {
-      await api.patch('/patients/me', profile);
-      toast.success(t('profile.updateSuccess'));
+      const res = await api.put('/patients/profile', profile);
+      
+      // Check if response has a message property
+      if (res.data?.message) {
+        toast.success(res.data.message);
+      } else {
+        toast.success(t('profile.updateSuccess') || 'Profile updated successfully!');
+      }
       
       // Refresh profile data
-      fetchProfile();
+      await fetchProfile();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t('profile.updateFailed'));
+      console.error('Failed to update profile:', error);
+      toast.error(error.response?.data?.message || t('profile.updateFailed') || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
