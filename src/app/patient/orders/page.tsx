@@ -59,7 +59,7 @@ export default function OrdersPage() {
       case 'PREPARING': return '👨‍⚕️';
       case 'OUT_FOR_DELIVERY': return '🚚';
       case 'READY_FOR_PICKUP': return '🏪';
-      case 'DELIVERED': return '✓';
+      case 'DELIVERED': return '✔';
       case 'CANCELLED': return '❌';
       default: return '📦';
     }
@@ -166,20 +166,20 @@ export default function OrdersPage() {
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('orders.items')}: {order.medications.length}
+                    {t('orders.items')}: {order.orderItems?.length || 0}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {order.medications.slice(0, 3).map((med: any) => (
+                    {order.orderItems?.slice(0, 3).map((item: any) => (
                       <span
-                        key={med.id}
+                        key={item.id}
                         className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full font-medium"
                       >
-                        {med.medication.name} × {med.quantity}
+                        {item.medication.name} × {item.quantity}
                       </span>
                     ))}
-                    {order.medications.length > 3 && (
+                    {(order.orderItems?.length || 0) > 3 && (
                       <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full font-medium">
-                        +{order.medications.length - 3} more
+                        +{order.orderItems.length - 3} more
                       </span>
                     )}
                   </div>
