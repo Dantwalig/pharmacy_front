@@ -100,7 +100,6 @@ export default function PatientProfilePage() {
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         <PatientSidebar />
         <div className="flex-1 flex flex-col">
-          <PatientTopbar />
           <div className="flex-1 flex items-center justify-center">
             <LoadingSpinner />
           </div>
@@ -114,7 +113,6 @@ export default function PatientProfilePage() {
       <PatientSidebar />
       
       <div className="flex-1 flex flex-col">
-        <PatientTopbar />
         
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto space-y-6">

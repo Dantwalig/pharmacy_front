@@ -156,13 +156,6 @@ export default function PatientTopbar() {
                 >
                   <span>👤</span> {t('common.profile')}
                 </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setShowDropdown(false)}
-                  className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                >
-                  <span>⚙️</span> {t('common.settings')}
-                </Link>
                 <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
                 <button
                   onClick={() => {
