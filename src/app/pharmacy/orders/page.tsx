@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
+import toast from 'react-hot-toast';
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ export default function PharmacyOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'PENDING' | 'ACCEPTED' | 'ALL'>('PENDING');
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -32,8 +34,46 @@ export default function PharmacyOrdersPage() {
       setOrders(res.data);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      toast.error(t('pharmacy.fetchOrdersFailed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickApprove = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to detail page
+    setUpdatingOrderId(orderId);
+    
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status: 'ACCEPTED' });
+      toast.success(t('pharmacy.orderAccepted'));
+      fetchOrders(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('pharmacy.operationFailed'));
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleQuickReject = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to detail page
+    
+    const reason = prompt(t('pharmacy.rejectReason'));
+    if (!reason) return;
+
+    setUpdatingOrderId(orderId);
+    
+    try {
+      await api.patch(`/orders/${orderId}/status`, { 
+        status: 'CANCELLED',
+        cancellationReason: reason 
+      });
+      toast.success(t('pharmacy.orderRejected'));
+      fetchOrders(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('pharmacy.operationFailed'));
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -110,17 +150,19 @@ export default function PharmacyOrdersPage() {
                 {orders.map((order: any) => (
                   <div
                     key={order.id}
-                    onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer overflow-hidden"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
                   >
-                    {/* Card Header */}
-                    <div className={`p-6 text-white ${
-                      order.status === 'PENDING'
-                        ? 'bg-linear-to-r from-yellow-500 to-orange-500'
-                        : order.status === 'ACCEPTED'
-                        ? 'bg-linear-to-r from-blue-500 to-cyan-500'
-                        : 'bg-linear-to-r from-green-500 to-emerald-500'
-                    }`}>
+                    {/* Card Header - Clickable area for navigation */}
+                    <div 
+                      onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
+                      className={`p-6 text-white cursor-pointer hover:opacity-90 transition-opacity ${
+                        order.status === 'PENDING'
+                          ? 'bg-linear-to-r from-yellow-500 to-orange-500'
+                          : order.status === 'ACCEPTED'
+                          ? 'bg-linear-to-r from-blue-500 to-cyan-500'
+                          : 'bg-linear-to-r from-green-500 to-emerald-500'
+                      }`}
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <p className="text-sm opacity-90 mb-1">
@@ -144,10 +186,10 @@ export default function PharmacyOrdersPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                           <span>📦</span>
-                          <span>{order.orderItems.length} {t('pharmacy.items')}</span>
+                          <span>{order.orderItems?.length || 0} {t('pharmacy.items')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <span>{order.type === 'DELIVERY' ? '🚚' : '🏪'}</span>
+                          <span>{order.type === 'DELIVERY' ? '🚚' : '🪧'}</span>
                           <span>{order.type === 'DELIVERY' ? t('pharmacy.delivery') : t('pharmacy.pickup')}</span>
                         </div>
                         {order.prescriptionId && (
@@ -165,14 +207,47 @@ export default function PharmacyOrdersPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">{t('pharmacy.total')}</p>
                           <p className="text-2xl font-bold bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                            {order.total.toLocaleString()} RWF
+                            {order.total?.toLocaleString() || 0} RWF
                           </p>
                         </div>
 
-                        <button className="bg-linear-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg text-sm">
+                        <button 
+                          onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
+                          className="bg-linear-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg text-sm"
+                        >
                           {t('common.viewDetails')} →
                         </button>
                       </div>
+
+                      {/* Quick Action Buttons - Only show for PENDING orders */}
+                      {order.status === 'PENDING' && (
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={(e) => handleQuickApprove(order.id, e)}
+                            disabled={updatingOrderId === order.id}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          >
+                            {updatingOrderId === order.id ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                </svg>
+                                {t('pharmacy.approving')}
+                              </span>
+                            ) : (
+                              `✓ ${t('pharmacy.approve')}`
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => handleQuickReject(order.id, e)}
+                            disabled={updatingOrderId === order.id}
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          >
+                            ✕ {t('pharmacy.reject')}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
