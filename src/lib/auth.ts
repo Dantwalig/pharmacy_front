@@ -17,6 +17,9 @@ export interface User {
 export const setAuthTokens = (accessToken: string, refreshToken: string) => {
   Cookies.set('accessToken', accessToken, { expires: 1/48 }); // 30 min
   Cookies.set('refreshToken', refreshToken, { expires: 7 }); // 7 days
+
+  const decoded: any = jwtDecode(accessToken);
+  Cookies.set('userRole', decoded.role, { expires: 7, sameSite: 'lax' });
 };
 
 export const removeAuthTokens = () => {
@@ -39,7 +42,7 @@ export const cacheUserData = (user: User): void => {
 export const getCachedUser = (): User | null => {
   const userData = Cookies.get('user');
   if (!userData) return null;
-  
+
   try {
     return JSON.parse(userData);
   } catch {
