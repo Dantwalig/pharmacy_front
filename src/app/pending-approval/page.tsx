@@ -124,12 +124,12 @@ export default function PendingApprovalPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
+          {/* <button
             onClick={() => window.location.reload()}
             className="px-8 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             {t('pending.checkStatus')}
-          </button>
+          </button> */}
           
           <button
             onClick={handleLogout}
