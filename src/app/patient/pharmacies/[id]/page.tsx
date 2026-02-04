@@ -7,8 +7,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PatientTopbar from '@/components/patient/PatientTopbar';
-import PatientSidebar from '@/components/patient/PatientSidebar';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 
@@ -128,30 +126,20 @@ export default function PharmacyDetailsPage() {
   const categories = ['ALL', ...new Set(pharmacy.medications.map((med) => med.category))];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
-      <PatientSidebar />
+    <div className="flex-1 p-6 overflow-auto">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+          {t('common.back')}
+        </button>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <PatientTopbar />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Back Button */}
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-              {t('common.back')}
-            </button>
-
-            {/* Pharmacy Header */}
-            <div className="bg-linear-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
-              <h1 className="text-3xl sm:text-4xl font-bold mb-4">{pharmacy.name}</h1>
+        {/* Pharmacy Header */}
+        <div className="bg-linear-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">{pharmacy.name}</h1>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start gap-3">
@@ -301,8 +289,6 @@ export default function PharmacyDetailsPage() {
               </div>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
   );
 }
