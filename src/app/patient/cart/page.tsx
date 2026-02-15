@@ -16,18 +16,24 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 text-white">
+        <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {t('cart.title')} 🛒
+            Shopping Cart
           </h1>
+          <p className="text-blue-100 text-lg">Review and checkout your items</p>
         </div>
         
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
           <p className="text-6xl mb-4">🛒</p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg mb-6">{t('cart.empty')}</p>
-          <Link href="/patient/medications">
-            <button className="bg-linear-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-              {t('cart.startShopping')}
+          <p className="text-gray-500 dark:text-gray-400 text-lg mb-2 font-semibold">
+            Your cart is empty
+          </p>
+          <p className="text-gray-400 dark:text-gray-500 mb-6">
+            Start by searching for medications
+          </p>
+          <Link href="/patient/search">
+            <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+              Browse Medications
             </button>
           </Link>
         </div>
@@ -43,13 +49,11 @@ export default function CartPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 text-white flex-1">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {t('cart.title')} 🛒
-          </h1>
-          <p className="text-purple-100">🏥 {pharmacyName}</p>
-        </div>
+      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+          Shopping Cart 🛒
+        </h1>
+        <p className="text-blue-100">🏥 {pharmacyName}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -58,14 +62,14 @@ export default function CartPage() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                {t('cart.title')} ({items.length})
+                Shopping Cart ({items.length})
               </h2>
               <button
                 onClick={clearCart}
                 className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2"
               >
                 <TrashIcon className="w-4 h-4" />
-                {t('cart.clearCart')}
+                Clear Cart
               </button>
             </div>
             
@@ -80,7 +84,7 @@ export default function CartPage() {
                       </p>
                       {item.requiresPrescription && (
                         <span className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded-full font-medium">
-                          📋 {t('medications.prescriptionRequired')}
+                          📋 Prescription Required
                         </span>
                       )}
                     </div>
@@ -114,8 +118,8 @@ export default function CartPage() {
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('cart.subtotal')}</span>
-                    <span className="font-bold text-lg text-purple-600 dark:text-purple-400">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Subtotal</span>
+                    <span className="font-bold text-lg text-blue-600 dark:text-blue-400">
                       {(item.price * item.quantity).toLocaleString()} RWF
                     </span>
                   </div>
@@ -129,21 +133,21 @@ export default function CartPage() {
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-6">
             <h2 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-6">
-              {t('checkout.orderType')}
+              Order Summary
             </h2>
             
             <div className="space-y-4 mb-6">
               <div className="flex justify-between text-gray-700 dark:text-gray-300">
-                <span>{t('cart.subtotal')}</span>
+                <span>Subtotal</span>
                 <span className="font-semibold">{subtotal.toLocaleString()} RWF</span>
               </div>
               <div className="flex justify-between text-gray-700 dark:text-gray-300">
-                <span>{t('cart.deliveryFee')}</span>
+                <span>Delivery Fee</span>
                 <span className="font-semibold">{deliveryFee.toLocaleString()} RWF</span>
               </div>
               <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-4 flex justify-between">
-                <span className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('cart.total')}</span>
-                <span className="font-bold text-2xl text-purple-600 dark:text-purple-400">
+                <span className="font-bold text-lg text-gray-800 dark:text-gray-100">Total</span>
+                <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
                   {total.toLocaleString()} RWF
                 </span>
               </div>
@@ -152,15 +156,15 @@ export default function CartPage() {
             <div className="space-y-3">
               <button
                 onClick={() => router.push('/patient/checkout')}
-                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="w-full bg-linear-to-r from-blue-600 to-blue-800 text-white py-4 rounded-xl font-bold hover:from-blue-700 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                {t('cart.proceedToCheckout')}
+                Proceed to Checkout
               </button>
 
-              <Link href="/patient/medications">
+              <Link href="/patient/search">
                 <button className="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2">
                   <ShoppingBagIcon className="w-5 h-5" />
-                  {t('cart.continueShopping')}
+                  Continue Shopping
                 </button>
               </Link>
             </div>

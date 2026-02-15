@@ -4,18 +4,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import {
-  ShoppingBagIcon,
   MagnifyingGlassIcon,
   ClipboardDocumentListIcon,
-  CheckCircleIcon,
+  ShoppingCartIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function PatientDashboard() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalOrders: 0,
     completedOrders: 0,
@@ -23,7 +24,6 @@ export default function PatientDashboard() {
   });
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [patientName, setPatientName] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -36,17 +36,20 @@ export default function PatientDashboard() {
 
       setStats({
         totalOrders: orders.length,
-        completedOrders: orders.filter((o: any) => o.status === 'COMPLETED').length,
+        completedOrders: orders.filter((o: any) => o.status === 'COMPLETED' || o.status === 'DELIVERED').length,
         pendingOrders: orders.filter((o: any) => ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)).length,
       });
 
       setRecentOrders(orders.slice(0, 5));
-      
-      // Get patient name from user profile
-      const profileRes = await api.get('/patients/profile');
-      setPatientName(`${profileRes.data.firstName} ${profileRes.data.lastName}`);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      // Set default empty state
+      setStats({
+        totalOrders: 0,
+        completedOrders: 0,
+        pendingOrders: 0,
+      });
+      setRecentOrders([]);
     } finally {
       setLoading(false);
     }
@@ -54,28 +57,28 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: t('patient.browsePharmacies'),
-      description: t('pharmacies.subtitle'),
-      icon: ShoppingBagIcon,
-      href: '/patient/pharmacies',
-      color: 'bg-gradient-to-br from-blue-400 to-blue-600',
-      hoverColor: 'hover:from-blue-500 hover:to-blue-700',
-    },
-    {
-      title: t('patient.searchMedications'),
-      description: t('medications.subtitle'),
+      title: 'Find Pharmacy & Medicine',
+      description: 'Browse pharmacies and search medications',
       icon: MagnifyingGlassIcon,
-      href: '/patient/medications',
-      color: 'bg-gradient-to-br from-green-400 to-green-600',
-      hoverColor: 'hover:from-green-500 hover:to-green-700',
+      href: '/patient/search',
+      color: 'bg-gradient-to-br from-blue-500 to-blue-700',
+      hoverColor: 'hover:from-blue-600 hover:to-blue-800',
     },
     {
-      title: t('patient.myOrders'),
-      description: t('orders.title'),
+      title: 'View Orders',
+      description: 'Track your current and past orders',
       icon: ClipboardDocumentListIcon,
       href: '/patient/orders',
-      color: 'bg-gradient-to-br from-purple-400 to-purple-600',
-      hoverColor: 'hover:from-purple-500 hover:to-purple-700',
+      color: 'bg-gradient-to-br from-teal-500 to-teal-700',
+      hoverColor: 'hover:from-teal-600 hover:to-teal-800',
+    },
+    {
+      title: 'Shopping Cart',
+      description: 'Review items in your cart',
+      icon: ShoppingCartIcon,
+      href: '/patient/cart',
+      color: 'bg-gradient-to-br from-blue-600 to-blue-800',
+      hoverColor: 'hover:from-blue-700 hover:to-blue-900',
     },
   ];
 
@@ -90,39 +93,50 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-linear-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
+      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-          {t('patientDashboard.welcomeBack', { name: patientName || 'Patient' })} 👋
+          Welcome Back
         </h1>
-        <p className="text-purple-100 text-lg">{t('patientDashboard.todayHealth')}</p>
+        <p className="text-blue-100 text-lg">Manage your healthcare needs all in one place</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">
-            {t('patientDashboard.totalAppointments')}
-          </h3>
-          <p className="text-4xl font-bold text-purple-600 dark:text-purple-400">{stats.totalOrders}</p>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+              Total Orders
+            </h3>
+            <span className="text-3xl">📋</span>
+          </div>
+          <p className="text-4xl font-bold text-blue-700 dark:text-blue-400">{stats.totalOrders}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">
-            {t('patientDashboard.completed')}
-          </h3>
-          <p className="text-4xl font-bold text-green-600 dark:text-green-400">{stats.completedOrders}</p>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+              Completed
+            </h3>
+            <span className="text-3xl">✅</span>
+          </div>
+          <p className="text-4xl font-bold text-teal-700 dark:text-teal-400">{stats.completedOrders}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">
-            {t('patientDashboard.upcoming')}
-          </h3>
-          <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{stats.pendingOrders}</p>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+              Pending
+            </h3>
+            <span className="text-3xl">⏰</span>
+          </div>
+          <p className="text-4xl font-bold text-blue-700 dark:text-blue-400">{stats.pendingOrders}</p>
         </div>
       </div>
 
       {/* Quick Actions */}
       <div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-          {t('patientDashboard.quickActions')}
+          Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, idx) => (
@@ -140,25 +154,25 @@ export default function PatientDashboard() {
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            {t('orders.title')}
+            Recent Orders
           </h2>
-          <Link href="/patient/orders" className="text-purple-600 dark:text-purple-400 hover:underline text-sm font-medium">
-            {t('common.viewAll')} →
+          <Link href="/patient/orders" className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
+            View All →
           </Link>
         </div>
 
         {recentOrders.length > 0 ? (
-          <div className="space-y-4">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {recentOrders.map((order: any) => (
               <Link key={order.id} href={`/patient/orders/${order.id}`}>
-                <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all hover:shadow-md cursor-pointer">
+                <div className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="font-bold text-gray-800 dark:text-gray-100">
-                        {t('orders.orderNumber')} #{order.id.slice(0, 8)}
+                        Order #{order.id.slice(0, 8)}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         🏥 {order.pharmacy.name}
@@ -166,15 +180,14 @@ export default function PatientDashboard() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`px-4 py-2 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                          order.status === 'COMPLETED'
+                        className={`px-4 py-2 rounded-full text-xs font-medium ${
+                          order.status === 'COMPLETED' || order.status === 'DELIVERED'
                             ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                             : order.status === 'CANCELLED'
                             ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                             : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                         }`}
                       >
-                        {order.status === 'COMPLETED' && <CheckCircleIcon className="w-4 h-4" />}
                         {order.status}
                       </span>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 font-medium">
@@ -188,8 +201,11 @@ export default function PatientDashboard() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-6xl mb-4">🛒</p>
-            <p className="text-gray-500 dark:text-gray-400">{t('orders.noOrders')}</p>
+            <p className="text-6xl mb-4">📋</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">No orders yet</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              Start by searching for medications
+            </p>
           </div>
         )}
       </div>

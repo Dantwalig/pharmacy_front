@@ -15,7 +15,7 @@ export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [filter, setFilter] = useState<'pending' | 'completed' | 'all'>('pending');
 
   useEffect(() => {
     fetchOrders();
@@ -27,6 +27,7 @@ export default function OrdersPage() {
       setOrders(res.data);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function OrdersPage() {
   };
 
   const filteredOrders = orders.filter((order: any) => {
-    if (filter === 'active') {
+    if (filter === 'pending') {
       return !['DELIVERED', 'CANCELLED'].includes(order.status);
     }
     if (filter === 'completed') {
@@ -86,51 +87,56 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-linear-to-r from-blue-600 to-cyan-600 rounded-2xl shadow-xl p-8 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-          {t('orders.title')} 📦
+          My Orders 📦
         </h1>
-        <p className="text-blue-100 text-lg">{t('orders.subtitle')}</p>
+        <p className="text-blue-100 text-lg">Track and manage your medication orders</p>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-3">
         <button
-          onClick={() => setFilter('all')}
+          onClick={() => setFilter('pending')}
           className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
-            filter === 'all'
-              ? 'bg-linear-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+            filter === 'pending'
+              ? 'bg-teal-600 text-white shadow-lg'
               : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
           }`}
         >
-          {t('orders.all')}
-        </button>
-        <button
-          onClick={() => setFilter('active')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
-            filter === 'active'
-              ? 'bg-linear-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
-          }`}
-        >
-          {t('orders.active')}
+          Pending
         </button>
         <button
           onClick={() => setFilter('completed')}
           className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
             filter === 'completed'
-              ? 'bg-linear-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+              ? 'bg-teal-600 text-white shadow-lg'
               : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
           }`}
         >
-          {t('orders.completed')}
+          Completed
+        </button>
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+            filter === 'all'
+              ? 'bg-teal-600 text-white shadow-lg'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
+          }`}
+        >
+          All
         </button>
       </div>
 
       {filteredOrders.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-          <p className="text-6xl mb-4">📦</p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">{t('orders.noOrders')}</p>
+          <p className="text-6xl mb-4">📋</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg font-semibold mb-2">
+            No orders found
+          </p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
+            Your orders will appear here
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -141,11 +147,11 @@ export default function OrdersPage() {
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer overflow-hidden"
             >
               {/* Card Header */}
-              <div className="bg-linear-to-r from-blue-500 to-cyan-500 p-6 text-white">
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="text-sm opacity-90 mb-1">
-                      {t('orders.orderNumber')}: #{order.id.slice(0, 8)}
+                      Order Number: #{order.id.slice(0, 8)}
                     </p>
                     <p className="text-xl font-bold">
                       🏥 {order.pharmacy.name}
@@ -166,7 +172,7 @@ export default function OrdersPage() {
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('orders.items')}: {order.orderItems?.length || 0}
+                    Items: {order.orderItems?.length || 0}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {order.orderItems?.slice(0, 3).map((item: any) => (
@@ -187,14 +193,14 @@ export default function OrdersPage() {
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('orders.total')}</p>
-                    <p className="text-2xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                       {order.total.toLocaleString()} RWF
                     </p>
                   </div>
 
-                  <button className="bg-linear-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-                    {t('orders.viewDetails')} →
+                  <button className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                    View Details →
                   </button>
                 </div>
               </div>
