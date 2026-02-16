@@ -9,6 +9,8 @@ import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
+import SupportBot from '@/components/pharmacy/SupportBot';
+import toast from 'react-hot-toast';
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
@@ -16,6 +18,7 @@ export default function PharmacyOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'PENDING' | 'ACCEPTED' | 'ALL'>('PENDING');
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -24,7 +27,6 @@ export default function PharmacyOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      // Use the correct endpoint for pharmacy orders
       const url = filter === 'ALL' 
         ? '/orders/pharmacy-orders' 
         : `/orders/pharmacy-orders?status=${filter}`;
@@ -37,6 +39,43 @@ export default function PharmacyOrdersPage() {
     }
   };
 
+  const handleQuickApprove = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUpdatingOrderId(orderId);
+    
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status: 'ACCEPTED' });
+      toast.success('Order accepted successfully');
+      fetchOrders();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to accept order');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleQuickReject = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const reason = prompt('Please enter rejection reason:');
+    if (!reason) return;
+
+    setUpdatingOrderId(orderId);
+    
+    try {
+      await api.patch(`/orders/${orderId}/status`, { 
+        status: 'CANCELLED',
+        cancellationReason: reason 
+      });
+      toast.success('Order rejected');
+      fetchOrders();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to reject order');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -46,133 +85,151 @@ export default function PharmacyOrdersPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-gray-50">
       <PharmacySidebar />
+      <SupportBot />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar */}
+      <div className="flex-1 flex flex-col lg:ml-72">
         <PharmacyTopbar />
 
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="space-y-6">
+        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+          <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
-            <div className="bg-linear-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-                {t('pharmacy.ordersManagement')} 📦
+            <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+                Orders Management
               </h1>
-              <p className="text-purple-100 text-lg">{t('pharmacy.manageAllOrders')}</p>
+              <p className="text-blue-100 text-sm lg:text-base">
+                Manage and process all orders
+              </p>
             </div>
 
             {/* Filter Tabs */}
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setFilter('PENDING')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
                   filter === 'PENDING'
-                    ? 'bg-linear-to-r from-yellow-600 to-orange-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
+                    ? 'bg-teal-500 text-white shadow-md'
+                    : 'bg-white text-gray-700 hover:shadow-md'
                 }`}
               >
-                {t('pharmacy.pending')}
+                Pending
               </button>
               <button
                 onClick={() => setFilter('ACCEPTED')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
                   filter === 'ACCEPTED'
-                    ? 'bg-linear-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
+                    ? 'bg-teal-500 text-white shadow-md'
+                    : 'bg-white text-gray-700 hover:shadow-md'
                 }`}
               >
-                {t('pharmacy.accepted')}
+                Accepted
               </button>
               <button
                 onClick={() => setFilter('ALL')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
                   filter === 'ALL'
-                    ? 'bg-linear-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-lg'
+                    ? 'bg-teal-500 text-white shadow-md'
+                    : 'bg-white text-gray-700 hover:shadow-md'
                 }`}
               >
-                {t('common.all')}
+                All
               </button>
             </div>
 
             {orders.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-                <p className="text-6xl mb-4">🔭</p>
-                <p className="text-gray-500 dark:text-gray-400 text-lg">{t('pharmacy.noOrders')}</p>
+              <div className="bg-white rounded-xl shadow-md p-12 text-center">
+                <p className="text-gray-500 text-lg">No orders found</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {orders.map((order: any) => (
                   <div
                     key={order.id}
-                    onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer overflow-hidden"
+                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden"
                   >
                     {/* Card Header */}
-                    <div className={`p-6 text-white ${
-                      order.status === 'PENDING'
-                        ? 'bg-linear-to-r from-yellow-500 to-orange-500'
-                        : order.status === 'ACCEPTED'
-                        ? 'bg-linear-to-r from-blue-500 to-cyan-500'
-                        : 'bg-linear-to-r from-green-500 to-emerald-500'
-                    }`}>
-                      <div className="flex justify-between items-start mb-3">
+                    <div 
+                      onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
+                      className="p-6 bg-[#2D5F8D] text-white cursor-pointer hover:opacity-90 transition-opacity"
+                    >
+                      <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="text-sm opacity-90 mb-1">
-                            {t('pharmacy.orderNumber')}
-                          </p>
+                          <p className="text-sm opacity-90 mb-1">Order</p>
                           <p className="text-xl font-bold">
                             #{order.id.slice(0, 8)}
                           </p>
                         </div>
-                        <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold">
-                          {order.status}
+                        <span className="bg-teal-500 px-3 py-1 rounded-full text-xs font-bold uppercase">
+                          {order.status || 'PENDING'}
                         </span>
                       </div>
                       <p className="text-sm opacity-90">
-                        {order.patient.firstName} {order.patient.lastName}
+                        {order.patient?.firstName || 'Unknown'} {order.patient?.lastName || 'Patient'}
                       </p>
                     </div>
 
                     {/* Card Body */}
-                    <div className="p-6 space-y-4">
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <div className="p-6 space-y-4 bg-white">
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <div className="flex items-center gap-2">
                           <span>📦</span>
-                          <span>{order.orderItems.length} {t('pharmacy.items')}</span>
+                          <span>{order.orderItems?.length || 0} item(s)</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-2">
                           <span>{order.type === 'DELIVERY' ? '🚚' : '🏪'}</span>
-                          <span>{order.type === 'DELIVERY' ? t('pharmacy.delivery') : t('pharmacy.pickup')}</span>
+                          <span>{order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'}</span>
                         </div>
-                        {order.prescriptionId && (
-                          <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
-                            <span>📋</span>
-                            <span className="font-medium">{t('pharmacy.prescriptionAttached')}</span>
-                          </div>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
+                        <p className="text-xs text-gray-500 pt-2">
                           {new Date(order.createdAt).toLocaleString()}
                         </p>
                       </div>
 
-                      <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{t('pharmacy.total')}</p>
-                          <p className="text-2xl font-bold bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                            {order.total.toLocaleString()} RWF
+                          <p className="text-sm text-gray-600">Total</p>
+                          <p className="text-2xl font-bold text-teal-600">
+                            {order.total?.toLocaleString() || 0} RWF
                           </p>
                         </div>
 
-                        <button className="bg-linear-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg text-sm">
-                          {t('common.viewDetails')} →
+                        <button 
+                          onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
+                          className="bg-white border-2 border-teal-600 text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-50 transition-all text-sm"
+                        >
+                          View Details →
                         </button>
                       </div>
+
+                      {/* Quick Action Buttons - Only show for PENDING orders */}
+                      {order.status === 'PENDING' && (
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={(e) => handleQuickApprove(order.id, e)}
+                            disabled={updatingOrderId === order.id}
+                            className="flex-1 bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          >
+                            {updatingOrderId === order.id ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                </svg>
+                              </span>
+                            ) : (
+                              '✓ Approve'
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => handleQuickReject(order.id, e)}
+                            disabled={updatingOrderId === order.id}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          >
+                            ✕ Reject
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

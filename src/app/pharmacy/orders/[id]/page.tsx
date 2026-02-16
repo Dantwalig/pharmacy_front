@@ -177,51 +177,61 @@ export default function PharmacyOrderDetailPage() {
                     <UserCircleIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800 dark:text-gray-100">
-                      {order.patient.firstName} {order.patient.lastName}
+                    <p className="font-semibold text-gray-800 dark:text-gray-100">
+                      {order.patient?.firstName} {order.patient?.lastName}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{order.patient.user.email}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{order.patient?.user?.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                  <PhoneIcon className="w-5 h-5" />
-                  <span>{order.patient.phone}</span>
-                </div>
+                {order.patient?.phone && (
+                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <PhoneIcon className="w-5 h-5" />
+                    <span>{order.patient.phone}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Medications */}
+            {/* Order Items */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
               <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-                {t('orders.medications')} 💊
+                {t('pharmacy.orderItems')} 📦
               </h2>
-              <div className="space-y-4">
-                {order.medications.map((med: any) => (
-                  <div
-                    key={med.id}
-                    className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0"
-                  >
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-800 dark:text-gray-100">{med.medication.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t('orders.quantity')}: {med.quantity}
-                      </p>
-                      {med.medication.requiresPrescription && (
-                        <span className="inline-block mt-2 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-3 py-1 rounded-full font-medium">
-                          📋 {t('medications.prescriptionRequired')}
-                        </span>
-                      )}
+              <div className="space-y-3">
+                {order.orderItems && order.orderItems.length > 0 ? (
+                  order.orderItems.map((item: any) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl"
+                    >
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800 dark:text-gray-100">
+                          {item.medication?.name || 'Unknown Medication'}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {t('pharmacy.quantity')}: {item.quantity}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-purple-600 dark:text-purple-400">
+                          {(item.price * item.quantity).toLocaleString()} RWF
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {item.price.toLocaleString()} RWF × {item.quantity}
+                        </p>
+                      </div>
                     </div>
-                    <p className="font-bold text-xl bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                      {(med.price * med.quantity).toLocaleString()} RWF
-                    </p>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                    {t('pharmacy.noItems')}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Prescription Section */}
-            {order.prescriptionUrl && (
+            {/* Prescription */}
+            {order.prescription && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
                 <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
                   {t('pharmacy.prescription')} 📋
@@ -232,7 +242,7 @@ export default function PharmacyOrderDetailPage() {
                       {t('pharmacy.prescriptionUploaded')}
                     </p>
                     <a
-                      href={order.prescriptionUrl}
+                      href={order.prescription.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline font-medium"
@@ -264,7 +274,7 @@ export default function PharmacyOrderDetailPage() {
             )}
 
             {/* Delivery Info */}
-            {order.deliveryMethod === 'DELIVERY' && (
+            {order.type === 'DELIVERY' && order.deliveryAddress && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
                 <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2">
                   <MapPinIcon className="w-6 h-6" />
@@ -272,8 +282,10 @@ export default function PharmacyOrderDetailPage() {
                 </h2>
                 <div className="space-y-2 text-gray-700 dark:text-gray-300">
                   <p><strong>{t('orders.address')}:</strong> {order.deliveryAddress}</p>
-                  <p><strong>{t('orders.zone')}:</strong> {order.deliveryZone}</p>
-                  <p><strong>{t('orders.fee')}:</strong> {order.deliveryFee.toLocaleString()} RWF</p>
+                  {order.deliveryZone && (
+                    <p><strong>{t('orders.zone')}:</strong> {order.deliveryZone}</p>
+                  )}
+                  <p><strong>{t('orders.fee')}:</strong> {order.deliveryFee?.toLocaleString() || 0} RWF</p>
                 </div>
               </div>
             )}
@@ -286,7 +298,7 @@ export default function PharmacyOrderDetailPage() {
               <div className="space-y-3">
                 <div className="flex justify-between text-gray-700 dark:text-gray-300">
                   <span>{t('orders.subtotal')}</span>
-                  <span className="font-semibold">{order.subtotal.toLocaleString()} RWF</span>
+                  <span className="font-semibold">{order.subtotal?.toLocaleString() || 0} RWF</span>
                 </div>
                 {order.deliveryFee > 0 && (
                   <div className="flex justify-between text-gray-700 dark:text-gray-300">
@@ -297,14 +309,14 @@ export default function PharmacyOrderDetailPage() {
                 <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-2xl">
                   <span className="text-gray-800 dark:text-gray-100">{t('orders.total')}</span>
                   <span className="bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                    {order.total.toLocaleString()} RWF
+                    {order.total?.toLocaleString() || 0} RWF
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Status Update Actions */}
-            {order.status === 'PENDING' && !order.prescriptionUrl && (
+            {order.status === 'PENDING' && !order.prescription && (
               <button
                 onClick={handleAcceptOrder}
                 disabled={updating}
@@ -326,7 +338,7 @@ export default function PharmacyOrderDetailPage() {
 
             {order.status === 'PREPARING' && (
               <div className="flex gap-3">
-                {order.deliveryMethod === 'DELIVERY' ? (
+                {order.type === 'DELIVERY' ? (
                   <button
                     onClick={() => handleUpdateStatus('OUT_FOR_DELIVERY')}
                     disabled={updating}
