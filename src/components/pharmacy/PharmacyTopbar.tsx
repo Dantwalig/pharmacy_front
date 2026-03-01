@@ -37,22 +37,23 @@ export default function PharmacyTopbar() {
   }, []);
 
   return (
-    <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-40">
+    <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-30">
       <div className="flex items-center justify-between">
         {/* Left: Title */}
         <div>
-          <h2 className="text-xl font-medium text-teal-600">
-            {t('pharmacy.topbar.title')}
-          </h2>
-          <p className="text-sm text-gray-600">
-            {t('pharmacy.topbar.subtitle')}
-          </p>
+          <h2 className="text-xl font-medium text-teal-600">E-Vuze Pharmacy</h2>
+          <p className="text-sm text-gray-600">Manage Your Pharmacy</p>
         </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-6">
           {/* Language Switcher */}
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1 text-sm font-medium bg-[#2D5F8D] text-white rounded-lg">
+              Pharmacy Owner
+            </button>
+            <LanguageSwitcher />
+          </div>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
@@ -70,9 +71,7 @@ export default function PharmacyTopbar() {
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                 <div className="px-4 py-3 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-900">
-                    {t('common.notifications')}
-                  </h3>
+                  <h3 className="font-semibold text-gray-900">Notifications</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   {notifications.length > 0 ? (
@@ -91,9 +90,7 @@ export default function PharmacyTopbar() {
                     ))
                   ) : (
                     <div className="px-4 py-8 text-center">
-                      <p className="text-gray-500">
-                        {t('common.noNotifications')}
-                      </p>
+                      <p className="text-gray-500">No notifications</p>
                     </div>
                   )}
                 </div>
@@ -107,9 +104,7 @@ export default function PharmacyTopbar() {
               <p className="text-sm font-semibold text-gray-900">
                 {(user as any)?.pharmacy?.name || 'Pharmacy'}
               </p>
-              <p className="text-xs text-gray-500">
-                {t('pharmacy.role')}
-              </p>
+              <p className="text-xs text-gray-500">Pharmacy Owner</p>
             </div>
             <button className="p-1">
               <UserCircleIcon className="w-9 h-9 text-gray-600" />

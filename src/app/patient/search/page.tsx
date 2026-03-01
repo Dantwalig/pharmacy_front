@@ -42,22 +42,15 @@ export default function SearchPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!searchQuery.trim()) {
-      return;
-    }
+    if (!searchQuery.trim()) return;
 
     if (activeTab === 'medications') {
       setLoading(true);
       setSearched(true);
-
       try {
         const res = await api.get(`/medications/search?query=${searchQuery}`);
         setMedications(res.data);
-
-        if (res.data.length === 0) {
-          toast.error('No medications found');
-        }
+        if (res.data.length === 0) toast.error('No medications found');
       } catch (error) {
         console.error('Search failed:', error);
         toast.error('Search failed');
@@ -104,10 +97,7 @@ export default function SearchPage() {
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
             />
           </div>
-          <button
-            type="submit"
-            className="px-8 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-          >
+          <button type="submit" className="px-8 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap">
             Search
           </button>
         </div>
@@ -117,63 +107,38 @@ export default function SearchPage() {
       <div className="flex gap-3">
         <button
           onClick={() => setActiveTab('pharmacies')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-            activeTab === 'pharmacies'
-              ? 'bg-blue-700 text-white shadow-lg'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'pharmacies' ? 'bg-blue-700 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
         >
           Pharmacies
         </button>
         <button
           onClick={() => setActiveTab('medications')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-            activeTab === 'medications'
-              ? 'bg-blue-700 text-white shadow-lg'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'medications' ? 'bg-blue-700 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
         >
           Medications
         </button>
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner />
-        </div>
-      )}
+      {loading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
 
-      {/* Pharmacies Tab Content */}
+      {/* Pharmacies Tab */}
       {!loading && activeTab === 'pharmacies' && (
         <div className="space-y-4">
           {pharmacies.map((pharmacy: any) => (
-            <div
-              key={pharmacy.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all"
-            >
+            <div key={pharmacy.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center shrink-0">
                     <span className="text-3xl">🏪</span>
                   </div>
-
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-                      {pharmacy.name}
-                    </h3>
-
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{pharmacy.name}</h3>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                         <MapPinIcon className="w-4 h-4" />
                         <span>{pharmacy.address}</span>
-                        {pharmacy.distance && (
-                          <span className="text-blue-600 dark:text-blue-400 font-medium">
-                            • {pharmacy.distance} km
-                          </span>
-                        )}
+                        {pharmacy.distance && <span className="text-blue-600 dark:text-blue-400 font-medium">• {pharmacy.distance} km</span>}
                       </div>
-
                       <div className="flex items-center gap-4 text-sm">
                         {pharmacy.rating && (
                           <div className="flex items-center gap-1 text-yellow-600">
@@ -181,14 +146,12 @@ export default function SearchPage() {
                             <span className="font-medium">{pharmacy.rating}</span>
                           </div>
                         )}
-
                         {pharmacy.hours && (
                           <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                             <ClockIcon className="w-4 h-4" />
                             <span>{pharmacy.hours}</span>
                           </div>
                         )}
-
                         <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <PhoneIcon className="w-4 h-4" />
                           <span>{pharmacy.phone}</span>
@@ -197,29 +160,17 @@ export default function SearchPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex flex-col items-end gap-3">
-                  <span
-                    className={`px-4 py-2 rounded-full text-xs font-semibold ${
-                      pharmacy.status === 'Open' || !pharmacy.status
-                        ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                    }`}
-                  >
+                  <span className={`px-4 py-2 rounded-full text-xs font-semibold ${pharmacy.status === 'Open' || !pharmacy.status ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
                     {pharmacy.status || 'Open'}
                   </span>
-
-                  <button
-                    onClick={() => router.push(`/patient/pharmacies/${pharmacy.id}`)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-semibold transition-all shadow-lg"
-                  >
+                  <button onClick={() => router.push(`/patient/pharmacies/${pharmacy.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-semibold transition-all shadow-lg">
                     View Details
                   </button>
                 </div>
               </div>
             </div>
           ))}
-
           {pharmacies.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
               <p className="text-6xl mb-4">🏥</p>
@@ -229,46 +180,26 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Medications Tab Content */}
+      {/* Medications Tab */}
       {!loading && activeTab === 'medications' && (
         <div className="space-y-6">
           {searched && medications.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {medications.map((med: any) => (
-                <div
-                  key={med.id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden"
-                >
+                <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
                   <div className="p-6 space-y-4">
                     <div>
-                      <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">
-                        {med.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Available at: {med.pharmacy.name}
-                      </p>
+                      <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">{med.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Available at: {med.pharmacy.name}</p>
                     </div>
-
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        RWF {med.price.toLocaleString()}
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          med.quantity > 0
-                            ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400'
-                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                        }`}
-                      >
+                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">RWF {med.price.toLocaleString()}</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
                         {med.quantity > 0 ? `In Stock (${med.quantity})` : 'Out of Stock'}
                       </span>
                     </div>
-
-                    <button
-                      onClick={() => handleAddToCart(med)}
-                      disabled={med.quantity === 0}
-                      className="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition-all shadow-lg"
-                    >
+                    <button onClick={() => handleAddToCart(med)} disabled={med.quantity === 0}
+                      className="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition-all shadow-lg">
                       Add to Cart
                     </button>
                   </div>
@@ -276,20 +207,16 @@ export default function SearchPage() {
               ))}
             </div>
           )}
-
           {searched && medications.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
               <p className="text-6xl mb-4">💊</p>
               <p className="text-gray-500 dark:text-gray-400 text-lg">No medications found</p>
             </div>
           )}
-
           {!searched && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
               <p className="text-6xl mb-4">🔍</p>
-              <p className="text-gray-500 dark:text-gray-400 text-lg">
-                Enter a medication name to search
-              </p>
+              <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
             </div>
           )}
         </div>

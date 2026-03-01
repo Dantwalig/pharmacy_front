@@ -10,12 +10,10 @@ import { useAuth } from '@/context/AuthContext';
 import {
   HomeIcon,
   ClipboardDocumentListIcon,
-  CubeIcon,
-  ChartBarIcon,
-  BellIcon,
-  UserCircleIcon,
+  BuildingStorefrontIcon,
   UserGroupIcon,
-  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
+  ArrowRightStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -29,37 +27,27 @@ export default function PharmacySidebar() {
 
   const navigation = [
     {
-      name: t('pharmacy.dashboard'),
+      name: 'Dashboard',
       href: '/pharmacy/dashboard',
       icon: HomeIcon,
     },
     {
-      name: t('pharmacy.ordersManagement'),
+      name: 'Order Overview',
       href: '/pharmacy/orders',
       icon: ClipboardDocumentListIcon,
     },
     {
-      name: t('pharmacy.inventoryManagement'),
-      href: '/pharmacy/inventory',
-      icon: CubeIcon,
+      name: 'Branch Management',
+      href: '/pharmacy/branches',
+      icon: BuildingStorefrontIcon,
     },
     {
-      name: 'Patients',
-      href: '/pharmacy/patients',
+      name: 'Employees',
+      href: '/pharmacy/employees',
       icon: UserGroupIcon,
     },
     {
-      name: t('pharmacy.analytics'),
-      href: '/pharmacy/analytics',
-      icon: ChartBarIcon,
-    },
-    {
-      name: t('common.notifications'),
-      href: '/pharmacy/notifications',
-      icon: BellIcon,
-    },
-    {
-      name: t('common.profile'),
+      name: 'Profile',
       href: '/pharmacy/profile',
       icon: UserCircleIcon,
     },
@@ -96,11 +84,11 @@ export default function PharmacySidebar() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed Height, No Scroll */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-40
-          w-72 bg-linear-to-b from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] text-white
+          fixed inset-y-0 left-0 z-40 w-72
+          bg-linear-to-b from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] text-white
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           flex flex-col h-screen
@@ -111,7 +99,7 @@ export default function PharmacySidebar() {
           {/* Logo */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold">E-Vuze</h1>
-            <p className="text-sm text-blue-200">{t('pharmacy.portal')}</p>
+            <p className="text-sm text-blue-200">Pharmacy Portal</p>
           </div>
 
           {/* Navigation */}
@@ -138,14 +126,17 @@ export default function PharmacySidebar() {
           </nav>
         </div>
 
+        {/* Spacer to push logout to bottom */}
+        <div className="flex-1"></div>
+
         {/* Bottom Section - Logout */}
-        <div className="mt-auto p-6 border-t border-white/10">
+        <div className="p-6 border-t border-white/10">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all"
           >
-            <ArrowRightOnRectangleIcon className="w-5 h-5 shrink-0" />
-            <span className="text-sm">{t('common.logout')}</span>
+            <ArrowRightStartOnRectangleIcon className="w-5 h-5 shrink-0" />
+            <span className="text-sm">Logout</span>
           </button>
         </div>
       </div>

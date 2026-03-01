@@ -1,202 +1,233 @@
 // frontend/src/app/pharmacy/inventory/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
 import toast from 'react-hot-toast';
-import { MagnifyingGlassIcon, PlusIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PlusIcon, PencilIcon, ArrowUpTrayIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+
+const FDA_CATEGORIES = [
+  'All Categories',
+  'Analgesics & Antipyretics',
+  'Antibiotics & Antimicrobials',
+  'Antifungals',
+  'Antivirals & Antiretrovirals',
+  'Antimalaria',
+  'Antituberculosis',
+  'Antiparasitics & Anthelmintics',
+  'Cardiovascular & Antihypertensives',
+  'Antidiabetics',
+  'Gastrointestinal',
+  'Respiratory & Bronchodilators',
+  'Central Nervous System',
+  'Vitamins, Minerals & Supplements',
+  'Dermatologicals',
+  'Ophthalmologicals',
+  'ENT (Ear, Nose & Throat)',
+  'Hormones & Endocrine',
+  'Vaccines & Biologicals',
+  'Oncologicals',
+  'Immunosuppressants',
+  'Contraceptives',
+  'Haematologicals',
+  'Musculoskeletal & Anti-inflammatories',
+  'Urological',
+  'Psychiatric & Psychotropic',
+  'Anesthetics',
+  'Diagnostics & Contrast Media',
+  'Traditional & Herbal Medicines',
+  'Other',
+];
 
 export default function PharmacyInventoryPage() {
-  const { t } = useTranslation();
   const router = useRouter();
-  const [medications, setMedications] = useState([]);
+  const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
+  const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchMedications();
-  }, [filter]);
+  useEffect(() => { fetchMedications(); }, [stockFilter]);
 
   const fetchMedications = async () => {
     try {
       setLoading(true);
       let url = '/medications/pharmacy/my-medications';
-      
-      if (filter === 'LOW_STOCK') {
-        url = '/medications/pharmacy/low-stock';
-      } else if (filter === 'OUT_OF_STOCK') {
-        url = '/medications/pharmacy/out-of-stock';
-      }
-      
+      if (stockFilter === 'LOW_STOCK') url = '/medications/pharmacy/low-stock';
+      else if (stockFilter === 'OUT_OF_STOCK') url = '/medications/pharmacy/out-of-stock';
       const res = await api.get(url);
       setMedications(res.data);
-    } catch (error) {
-      console.error('Failed to fetch medications:', error);
+    } catch {
       toast.error('Failed to load medications');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  const filteredMedications = medications.filter((med: any) =>
-    med.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    med.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = medications.filter(m => {
+    const matchSearch = m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCat = categoryFilter === 'All Categories' || m.category === categoryFilter;
+    return matchSearch && matchCat;
+  });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const stockBadge = (med: any) => {
+    const qty = med.quantity ?? med.quantityInStock ?? 0;
+    const threshold = med.lowStockThreshold ?? 10;
+    if (qty === 0) return <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Out of Stock</span>;
+    if (qty <= threshold) return <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full"><ExclamationTriangleIcon className="w-3 h-3"/>Low</span>;
+    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">In Stock</span>;
+  };
+
+  const summaryStats = {
+    total: medications.length,
+    outOfStock: medications.filter(m => (m.quantity ?? m.quantityInStock ?? 0) === 0).length,
+    lowStock: medications.filter(m => {
+      const q = m.quantity ?? m.quantityInStock ?? 0;
+      return q > 0 && q <= (m.lowStockThreshold ?? 10);
+    }).length,
+    categories: new Set(medications.map(m => m.category)).size,
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar />
-      <SupportBot />
-
-      <div className="flex-1 flex flex-col lg:ml-72">
-        <PharmacyTopbar />
-
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Inventory Management
-              </h1>
-              <p className="text-blue-100 text-sm lg:text-base">
-                Manage your pharmacy's medication inventory
-              </p>
-            </div>
-
-            {/* Search and Add */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full sm:w-96">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search medications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                />
-              </div>
-              <button
-                onClick={() => router.push('/pharmacy/inventory/add')}
-                className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md flex items-center justify-center gap-2"
-              >
-                <PlusIcon className="w-5 h-5" />
-                Add Medication
-              </button>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setFilter('ALL')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'ALL'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                All Items
-              </button>
-              <button
-                onClick={() => setFilter('LOW_STOCK')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'LOW_STOCK'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                Low Stock
-              </button>
-              <button
-                onClick={() => setFilter('OUT_OF_STOCK')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'OUT_OF_STOCK'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                Out of Stock
-              </button>
-            </div>
-
-            {filteredMedications.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-16 text-center">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                  <CubeIcon className="w-12 h-12 text-gray-400" />
-                </div>
-                <p className="text-gray-500 text-lg mb-2">No medications found</p>
-                <p className="text-gray-400 text-sm">
-                  {searchTerm ? 'Try a different search term' : 'Add medications to your inventory'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredMedications.map((med: any) => (
-                  <div
-                    key={med.id}
-                    onClick={() => router.push(`/pharmacy/inventory/${med.id}`)}
-                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-6 cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-bold text-lg text-gray-900">{med.name}</h3>
-                      {med.quantity === 0 ? (
-                        <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold">
-                          OUT
-                        </span>
-                      ) : med.quantity <= (med.lowStockThreshold || 10) ? (
-                        <span className="bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full font-bold">
-                          LOW
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <p className="text-sm text-gray-600 mb-4">{med.category}</p>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Stock:</span>
-                        <span className={`font-semibold ${
-                          med.quantity === 0 ? 'text-red-600' :
-                          med.quantity <= (med.lowStockThreshold || 10) ? 'text-yellow-600' :
-                          'text-gray-900'
-                        }`}>
-                          {med.quantity} units
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Price:</span>
-                        <span className="font-semibold text-teal-600">{med.price} RWF</span>
-                      </div>
-                      {med.requiresPrescription && (
-                        <div className="pt-2 border-t border-gray-200">
-                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                            Requires Prescription
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
+        <h1 className="text-2xl font-bold mb-1">Inventory Management</h1>
+        <p className="text-blue-100 text-sm">Manage your pharmacy's medication stock — categories follow Rwanda FDA Medicine Register</p>
       </div>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Items', value: summaryStats.total, color: 'text-blue-600' },
+          { label: 'Categories', value: summaryStats.categories, color: 'text-teal-600' },
+          { label: 'Low Stock', value: summaryStats.lowStock, color: 'text-yellow-600' },
+          { label: 'Out of Stock', value: summaryStats.outOfStock, color: 'text-red-600' },
+        ].map(s => (
+          <div key={s.label} className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Controls bar */}
+      <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between border border-gray-100">
+        {/* Search */}
+        <div className="relative w-full sm:w-72">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input type="text" placeholder="Search by name, category, manufacturer..."
+            value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+        </div>
+
+        {/* Category filter */}
+        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+          className="w-full sm:w-56 px-3 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+          {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        {/* Stock filter */}
+        <div className="flex gap-2 shrink-0">
+          {(['ALL','LOW_STOCK','OUT_OF_STOCK'] as const).map(f => (
+            <button key={f} onClick={() => setStockFilter(f)}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${stockFilter === f ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              {f === 'ALL' ? 'All' : f === 'LOW_STOCK' ? 'Low Stock' : 'Out of Stock'}
+            </button>
+          ))}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 shrink-0">
+          <button onClick={() => router.push('/pharmacy/inventory/add?mode=upload')}
+            className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-teal-500 text-teal-600 rounded-lg text-sm font-medium hover:bg-teal-50 transition-all">
+            <ArrowUpTrayIcon className="w-4 h-4" /> Upload
+          </button>
+          <button onClick={() => router.push('/pharmacy/inventory/add')}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all">
+            <PlusIcon className="w-4 h-4" /> Add Medication
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex justify-center py-16"><LoadingSpinner /></div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-16 text-center border border-gray-100">
+          <div className="text-5xl mb-3">💊</div>
+          <p className="text-gray-500 font-medium mb-1">No medications found</p>
+          <p className="text-gray-400 text-sm">
+            {searchTerm || categoryFilter !== 'All Categories' ? 'Try adjusting your search or filters' : 'Add your first medication to get started'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {['Medication Name','Category','Dosage','Manufacturer','Unit Price','Qty in Stock','Threshold','Prescription','Expiry','Status','Actions'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtered.map((med: any) => {
+                  const price = med.unitPrice ?? med.price ?? 0;
+                  const qty = med.quantity ?? med.quantityInStock ?? 0;
+                  return (
+                    <tr key={med.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-gray-900">{med.name}</p>
+                        {med.description && <p className="text-xs text-gray-400 truncate max-w-[140px]">{med.description}</p>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.dosage || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.manufacturer || '—'}</td>
+                      <td className="px-4 py-3 font-semibold text-teal-600 whitespace-nowrap">{Number(price).toLocaleString()} RWF</td>
+                      <td className="px-4 py-3">
+                        <span className={`font-bold ${qty === 0 ? 'text-red-600' : qty <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-gray-800'}`}>
+                          {qty}
+                        </span>
+                        <span className="text-gray-400 text-xs ml-1">units</span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
+                      <td className="px-4 py-3">
+                        {med.requiresPrescription
+                          ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">Required</span>
+                          : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                        {med.expiryDate ? new Date(med.expiryDate).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-4 py-3">{stockBadge(med)}</td>
+                      <td className="px-4 py-3">
+                        <button onClick={() => router.push(`/pharmacy/inventory/${med.id}`)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-xs font-medium transition-all">
+                          <PencilIcon className="w-3.5 h-3.5" /> Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table footer */}
+          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+            <p className="text-xs text-gray-500">
+              Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
+            </p>
+            <p className="text-xs text-gray-400">Categories based on Rwanda FDA Medicine Register</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
