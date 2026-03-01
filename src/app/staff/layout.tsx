@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import StaffSidebar from '@/components/staff/StaffSidebar';
-import StaffTopbar from '@/components/staff/StaffTopbar';
+import StaffTopbar from '@/components/staff/Stafftopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 const STAFF_ROLES = ['PHARMACIST', 'CASHIER', 'NURSE'];
