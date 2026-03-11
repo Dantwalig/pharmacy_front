@@ -1,256 +1,179 @@
-// frontend/src/app/pharmacy/profile/page.tsx
-
 'use client';
-
-import { useEffect, useState } from 'react';
+// src/app/(pharmacy)/profile/page.tsx
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
-import { 
-  BuildingStorefrontIcon, 
-  BellIcon,
-  ShieldCheckIcon,
-  CreditCardIcon,
-} from '@heroicons/react/24/outline';
+import { Camera, FileText, CheckCircle } from 'lucide-react';
+import { api } from '@/lib/api';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
 
 export default function PharmacyProfilePage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+  const [ownerName, setOwnerName] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'INFO' | 'NOTIFICATIONS' | 'SECURITY' | 'BILLING'>('INFO');
-
-  const [profile, setProfile] = useState({
-    name: '',
-    licenseNumber: '',
-    phone: '',
-    email: '',
-    address: '',
-  });
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProfile();
+    api.get('/auth/me')
+      .then(r => {
+        const d = r.data?.data ?? r.data;
+        setProfile(d);
+        setOwnerName(d?.ownerName ?? d?.name ?? '');
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await api.get('/pharmacies/me');
-      const data = res.data;
-      
-      setProfile({
-        name: data.name || '',
-        licenseNumber: data.licenseNumber || '',
-        phone: data.phone || '',
-        email: user?.email || '',
-        address: data.address || '',
-      });
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdate = async () => {
+  const handleSave = async () => {
     setSaving(true);
-
     try {
-      await api.patch('/pharmacies/me', profile);
-      toast.success('Profile updated successfully');
-      fetchProfile();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
+      await api.put('/auth/pharmacy/profile', { ownerName });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {}
+    setSaving(false);
   };
+
+  const docs = [
+    { label: t('pharmacyOwner.pharmacyLicense'), file: 'pharmacy_license_2025.pdf', date: 'Jan 10, 2025' },
+    { label: t('pharmacyOwner.nationalId'),       file: 'national_id_scan.pdf',      date: 'Jan 10, 2025' },
+    { label: t('pharmacyOwner.taxRegistration'),  file: 'tax_cert_2025.pdf',         date: 'Jan 10, 2025' },
+  ];
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <PharmacySidebar />
-        <div className="flex-1 flex flex-col lg:ml-72">
-          <PharmacyTopbar />
-          <div className="flex-1 flex items-center justify-center">
-            <LoadingSpinner />
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-64 text-gray-400">
+        {t('common.loading')}
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar />
-      <SupportBot />
-      
-      <div className="flex-1 flex flex-col lg:ml-72">
-        <PharmacyTopbar />
-        
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Settings
-              </h1>
-              <p className="text-blue-100 text-sm lg:text-base">
-                Manage your pharmacy settings and preferences
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
+        <h1 className="text-3xl font-bold">{t('pharmacyOwner.profileTitle')}</h1>
+        <p className="mt-1 text-white/70">{t('pharmacyOwner.profileSubtitle')}</p>
+      </div>
 
-            {/* Tab Navigation */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setActiveTab('INFO')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'INFO'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Personal Information */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <h3 className="font-semibold text-gray-800 mb-5">{t('pharmacyOwner.personalInformation')}</h3>
+
+          {/* Avatar */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative">
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white"
+                style={{ backgroundColor: '#E5E7EB' }}
               >
-                <BuildingStorefrontIcon className="w-5 h-5" />
-                Pharmacy Info
-              </button>
+                <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                </svg>
+              </div>
               <button
-                onClick={() => setActiveTab('NOTIFICATIONS')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'NOTIFICATIONS'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white"
+                style={{ backgroundColor: TEAL }}
               >
-                <BellIcon className="w-5 h-5" />
-                Notifications
-              </button>
-              <button
-                onClick={() => setActiveTab('SECURITY')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'SECURITY'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                <ShieldCheckIcon className="w-5 h-5" />
-                Security
-              </button>
-              <button
-                onClick={() => setActiveTab('BILLING')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'BILLING'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                <CreditCardIcon className="w-5 h-5" />
-                Billing
+                <Camera size={14} />
               </button>
             </div>
+            <p className="text-xs text-gray-400 mt-2">{t('pharmacyOwner.clickToUpdatePhoto')}</p>
+          </div>
 
-            {/* Pharmacy Information Tab */}
-            {activeTab === 'INFO' && (
-              <div className="bg-white rounded-xl shadow-md p-6 lg:p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Pharmacy Information</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      Pharmacy Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter pharmacy name"
-                      value={profile.name}
-                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('pharmacyOwner.ownerName')}
+              </label>
+              <input
+                value={ownerName}
+                onChange={e => setOwnerName(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full mt-5 py-3 rounded-xl text-white font-medium text-sm disabled:opacity-60"
+            style={{ backgroundColor: TEAL }}
+          >
+            {saving ? t('common.saving') : t('common.saveChanges')}
+          </button>
+          {saved && (
+            <p className="text-center text-sm mt-2" style={{ color: TEAL }}>
+              ✓ Saved successfully
+            </p>
+          )}
+        </div>
+
+        {/* Registration Details */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-gray-800">{t('pharmacyOwner.registrationDetails')}</h3>
+            <span
+              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border"
+              style={{ borderColor: TEAL, color: TEAL }}
+            >
+              <CheckCircle size={12} />
+              {t('pharmacyOwner.approved')}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            {[
+              { label: t('pharmacyOwner.pharmacyName'),       value: profile?.pharmacyName ?? '—' },
+              { label: t('pharmacyOwner.registrationNumber'), value: profile?.registrationNumber ?? '—' },
+              { label: t('pharmacyOwner.approvalDate'),        value: profile?.approvalDate ? new Date(profile.approvalDate).toLocaleDateString() : '—' },
+              { label: t('pharmacyOwner.licenseExpiry'),       value: profile?.licenseExpiry ? new Date(profile.licenseExpiry).toLocaleDateString() : '—' },
+              { label: t('common.address'),                    value: profile?.address ?? '—' },
+              { label: t('common.phone'),                      value: profile?.phone ?? '—' },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-xs text-gray-500 mb-0.5">{label}</p>
+                <p className="text-sm font-semibold text-gray-800">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Documents */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+              {t('pharmacyOwner.submittedDocuments')}
+            </h4>
+            <div className="space-y-2">
+              {docs.map(doc => (
+                <div
+                  key={doc.label}
+                  className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText size={16} className="text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{doc.label}</p>
+                      <p className="text-xs text-gray-400">
+                        {doc.file} · {t('pharmacyOwner.uploaded')} {doc.date}
+                      </p>
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      License Number
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter license number"
-                      value={profile.licenseNumber}
-                      onChange={(e) => setProfile({ ...profile, licenseNumber: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="+250 XXX XXX XXX"
-                      value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="pharmacy@example.com"
-                      value={profile.email}
-                      disabled
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      Address
-                    </label>
-                    <textarea
-                      placeholder="Enter pharmacy address"
-                      value={profile.address}
-                      onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                      rows={3}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-8 flex justify-end">
                   <button
-                    onClick={handleUpdate}
-                    disabled={saving}
-                    className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-sm font-medium hover:underline"
+                    style={{ color: NAVY }}
                   >
-                    {saving ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Saving...</span>
-                      </div>
-                    ) : (
-                      'Save Changes'
-                    )}
+                    {t('common.view')}
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* Other Tabs - Placeholder */}
-            {activeTab !== 'INFO' && (
-              <div className="bg-white rounded-xl shadow-md p-12 text-center">
-                <p className="text-gray-500 text-lg">Coming soon...</p>
-              </div>
-            )}
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-3">{t('pharmacyOwner.documentsNotice')}</p>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

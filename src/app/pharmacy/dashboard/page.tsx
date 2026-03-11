@@ -1,193 +1,262 @@
-// frontend/src/app/pharmacy/dashboard/page.tsx
-
 'use client';
+// src/app/(pharmacy)/dashboard/page.tsx
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  GitBranch, Users, DollarSign, TrendingUp,
+  Activity, AlertTriangle, User
+} from 'lucide-react';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { 
-  BuildingStorefrontIcon, 
-  UserGroupIcon, 
-  CurrencyDollarIcon, 
-  BanknotesIcon,
-} from '@heroicons/react/24/outline';
+const TEAL  = '#2D9B8A';
+const NAVY  = '#1E4D8C';
+const COLORS = [NAVY, TEAL, '#3B82F6', '#10B981', '#6366F1'];
 
-export default function PharmacyOwnerDashboard() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalBranches: 0,
-    totalEmployees: 0,
-    monthlyRevenue: 0,
-    totalRevenue: 0,
-  });
+const lineData = [
+  { month: 'Sep', revenue: 8100000 },
+  { month: 'Oct', revenue: 8700000 },
+  { month: 'Nov', revenue: 8300000 },
+  { month: 'Dec', revenue: 11500000 },
+  { month: 'Jan', revenue: 13200000 },
+  { month: 'Feb', revenue: 14800000 },
+];
 
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [branchAlerts, setBranchAlerts] = useState<any[]>([]);
+const barData = [
+  { name: 'Main',   revenue: 4200000 },
+  { name: 'Nyami.', revenue: 3800000 },
+  { name: 'Huye',   revenue: 2000000 },
+  { name: 'Musanze',revenue: 3000000 },
+  { name: 'Remera', revenue: 1800000 },
+];
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+const pieData = [
+  { name: 'Main Branch',   value: 420 },
+  { name: 'Nyamirambo',    value: 310 },
+  { name: 'Huye',          value: 280 },
+  { name: 'Musanze',       value: 195 },
+  { name: 'Remera',        value: 150 },
+];
 
-  const fetchDashboardData = async () => {
-    try {
-      // Correct endpoint: GET /pharmacies/dashboard/stats
-      const res = await api.get('/pharmacies/dashboard/stats');
-      setStats(res.data.stats || res.data || stats);
-      setRecentActivity(res.data.recentActivity || []);
-      setBranchAlerts(res.data.branchAlerts || []);
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+function fmt(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+export default function PharmacyDashboard() {
+  const { t } = useTranslation();
+
+  const stats = [
+    {
+      icon: GitBranch,
+      label: t('pharmacyOwner.totalBranches'),
+      value: '5',
+      bg: 'bg-gray-50',
+      iconColor: 'text-gray-500',
+    },
+    {
+      icon: Users,
+      label: t('pharmacyOwner.totalEmployees'),
+      value: '24',
+      bg: 'bg-gray-50',
+      iconColor: 'text-gray-500',
+    },
+    {
+      icon: DollarSign,
+      label: t('pharmacyOwner.monthlyRevenue'),
+      value: '14.8M RWF',
+      bg: 'bg-gray-50',
+      iconColor: 'text-gray-500',
+    },
+    {
+      icon: TrendingUp,
+      label: t('pharmacyOwner.totalRevenue'),
+      value: '62.5M RWF',
+      bg: 'bg-gray-50',
+      iconColor: 'text-gray-500',
+      darkCard: true,
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">Owner Overview</h1>
-        <p className="text-blue-100 text-base">Enterprise-level insights across all branches</p>
+      {/* Hero banner */}
+      <div
+        className="rounded-2xl p-8 text-white"
+        style={{ backgroundColor: NAVY }}
+      >
+        <h1 className="text-3xl font-bold">{t('pharmacyOwner.ownerOverview')}</h1>
+        <p className="mt-1 text-white/70">{t('pharmacyOwner.ownerOverviewSubtitle')}</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Branches */}
-        <div className="bg-[#2D5F8D] text-white p-6 rounded-xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <BuildingStorefrontIcon className="w-10 h-10" />
-            <span className="text-5xl font-bold">{stats.totalBranches}</span>
-          </div>
-          <p className="text-sm font-medium">Total Branches</p>
-        </div>
-
-        {/* Total Employees */}
-        <div className="bg-teal-500 text-white p-6 rounded-xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <UserGroupIcon className="w-10 h-10" />
-            <span className="text-5xl font-bold">{stats.totalEmployees}</span>
-          </div>
-          <p className="text-sm font-medium">Total Employees</p>
-        </div>
-
-        {/* Monthly Revenue */}
-        <div className="bg-teal-500 text-white p-6 rounded-xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <CurrencyDollarIcon className="w-10 h-10" />
-            <div className="text-right">
-              <span className="text-4xl font-bold">
-                {stats.monthlyRevenue >= 1000000
-                  ? `${(stats.monthlyRevenue / 1000000).toFixed(1)}M`
-                  : stats.monthlyRevenue.toLocaleString()}
-              </span>
-              <p className="text-sm opacity-90">RWF</p>
+      {/* Stats grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s, i) => {
+          const Icon = s.icon;
+          const dark = i === 3;
+          return (
+            <div
+              key={i}
+              className="rounded-2xl p-5 flex items-center justify-between"
+              style={{ backgroundColor: dark ? NAVY : TEAL }}
+            >
+              <div>
+                <p className="text-white/80 text-sm">{s.label}</p>
+                <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
+                <Icon size={22} className="text-white" />
+              </div>
             </div>
-          </div>
-          <p className="text-sm font-medium">Monthly Revenue</p>
+          );
+        })}
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Line chart */}
+        <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <h3 className="font-semibold text-gray-800 mb-4">
+            {t('pharmacyOwner.monthlyBranchRevenue')}
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={lineData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis tickFormatter={fmt} tick={{ fontSize: 12 }} />
+              <Tooltip formatter={(v: number) => [`${fmt(v)} RWF`, 'Revenue']} />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke={TEAL}
+                strokeWidth={2.5}
+                dot={{ fill: TEAL, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Total Revenue */}
-        <div className="bg-[#2D5F8D] text-white p-6 rounded-xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <BanknotesIcon className="w-10 h-10" />
-            <div className="text-right">
-              <span className="text-4xl font-bold">
-                {stats.totalRevenue >= 1000000
-                  ? `${(stats.totalRevenue / 1000000).toFixed(1)}M`
-                  : stats.totalRevenue.toLocaleString()}
-              </span>
-              <p className="text-sm opacity-90">RWF</p>
-            </div>
-          </div>
-          <p className="text-sm font-medium">Total Revenue</p>
+        {/* Bar chart */}
+        <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <h3 className="font-semibold text-gray-800 mb-4">
+            {t('pharmacyOwner.revenueByBranch')}
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tickFormatter={fmt} tick={{ fontSize: 12 }} />
+              <Tooltip formatter={(v: number) => [`${fmt(v)} RWF`, 'Revenue']} />
+              <Bar dataKey="revenue" fill={NAVY} radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Branch Revenue Growth */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Monthly Branch Revenue Growth</h2>
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-400 text-sm">Chart: Line graph showing revenue trends</p>
-          </div>
-        </div>
-
-        {/* Revenue by Branch */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Revenue by Branch</h2>
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-400 text-sm">Chart: Bar chart comparing branches</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Inventory Distribution */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Inventory Distribution by Branch</h2>
-          <div className="h-48 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-400 text-sm">Chart: Donut chart</p>
-          </div>
-        </div>
-
-        {/* Recent Manager Activity */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Manager Activity</h2>
-          {recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {recentActivity.map((activity: any) => (
-                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
-                    {activity.manager?.split(' ').map((n: string) => n[0]).join('')}
+      {/* Pie + activity/alerts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pie chart */}
+        <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <h3 className="font-semibold text-gray-800 mb-4">
+            {t('pharmacyOwner.inventoryDistribution')}
+          </h3>
+          <div className="flex items-center gap-6">
+            <PieChart width={180} height={180}>
+              <Pie
+                data={pieData}
+                cx={85}
+                cy={85}
+                innerRadius={55}
+                outerRadius={85}
+                dataKey="value"
+              >
+                {pieData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+            <div className="flex-1 space-y-2">
+              {pieData.map((entry, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                    />
+                    <span className="text-sm text-gray-600">{entry.name}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {activity.manager} <span className="font-normal text-gray-600">— {activity.action}</span>
-                    </p>
-                    <p className="text-xs text-gray-500">{activity.branch} · {activity.time}</p>
-                  </div>
+                  <span className="text-sm font-medium text-gray-800">
+                    {entry.value} {t('pharmacyOwner.items')}
+                  </span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
-              No recent activity
-            </div>
-          )}
+          </div>
         </div>
 
-        {/* Branch Alerts */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Branch Alerts</h2>
-          {branchAlerts.length > 0 ? (
-            <div className="space-y-3">
-              {branchAlerts.map((alert: any) => (
-                <div key={alert.id} className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <span className="px-2 py-0.5 bg-yellow-500 text-white text-xs font-bold rounded">Warning</span>
-                  </div>
-                  <p className="font-semibold text-gray-900 mt-2 text-sm">{alert.branch}</p>
-                  <p className="text-sm text-gray-600 mt-1">{alert.message}</p>
+        {/* Activity & Alerts */}
+        <div className="space-y-4">
+          {/* Recent Manager Activity */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800">
+                {t('pharmacyOwner.recentManagerActivity')}
+              </h3>
+              <Activity size={18} className="text-gray-400" />
+            </div>
+            {[
+              { name: 'John Doe', action: 'Approved order #1042', branch: 'Main Branch', time: '12 min ago' },
+              { name: 'Jane Smith', action: 'Added staff member', branch: 'Nyamirambo Branch', time: '1 hr ago' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 mt-0.5"
+                  style={{ backgroundColor: NAVY }}
+                >
+                  <User size={14} />
                 </div>
-              ))}
+                <div>
+                  <p className="text-sm text-gray-800">
+                    <span className="font-medium">{item.name}</span> — {item.action}
+                  </p>
+                  <p className="text-xs text-gray-400">{item.branch} · {item.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Branch Alerts */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800">
+                {t('pharmacyOwner.branchAlerts')}
+              </h3>
+              <AlertTriangle size={18} className="text-gray-400" />
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
-              No alerts
-            </div>
-          )}
+            {[
+              { branch: 'Remera Branch', msg: 'Low stock: 4 medications below threshold', level: 'warning' },
+              { branch: 'Musanze Branch', msg: 'Manager contract expiring soon', level: 'info' },
+            ].map((alert, i) => (
+              <div key={i} className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-medium shrink-0 mt-0.5"
+                  style={{
+                    backgroundColor: alert.level === 'warning' ? '#FEF3C7' : '#DBEAFE',
+                    color: alert.level === 'warning' ? '#92400E' : '#1E40AF',
+                  }}
+                >
+                  {t('pharmacyOwner.warning')}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{alert.branch}</p>
+                  <p className="text-xs text-gray-500">{alert.msg}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

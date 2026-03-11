@@ -1,36 +1,61 @@
-// frontend/src/components/branch/BranchTopbar.tsx
-
 'use client';
+// src/app/(branch)/BranchTopbar.tsx
+import { useTranslation } from 'react-i18next';
+import { Bell, User } from 'lucide-react';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
-import { useAuth } from '@/context/AuthContext';
-import { UserCircleIcon } from '@heroicons/react/24/outline';
-import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+interface Props { branchName?: string; pharmacyName?: string; }
 
-export default function BranchTopbar() {
-  const { user } = useAuth();
+export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-Vuze Pharmacy' }: Props) {
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('i18nextLng', code);
+  };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-emerald-700">Branch Management</h2>
-          <p className="text-xs text-gray-500">E-Vuze Branch Portal</p>
+    <header className="fixed top-0 left-72 right-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+      <div>
+        <p className="text-base font-semibold" style={{ color: '#2D9B8A' }}>{pharmacyName}</p>
+        <p className="text-xs text-gray-500">{t('branch.portal')}</p>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <span className="px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: '#2D9B8A' }}>
+          {t('branch.portal')}
+        </span>
+
+        <div className="flex items-center gap-1">
+          {SUPPORTED_LANGUAGES.map((lang, i) => (
+            <span key={lang.code} className="flex items-center">
+              <button
+                onClick={() => changeLanguage(lang.code)}
+                className={`text-sm font-medium px-0.5 ${i18n.language === lang.code ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'}`}
+              >
+                {lang.label}
+              </button>
+              {i < SUPPORTED_LANGUAGES.length - 1 && (
+                <span className="text-gray-300 mx-1">|</span>
+              )}
+            </span>
+          ))}
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
-            Branch Manager
-          </span>
-          <LanguageSwitcher />
-          <div className="flex items-center gap-2">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-gray-900">{user?.email || 'Manager'}</p>
-              <p className="text-xs text-gray-500">Branch Manager</p>
-            </div>
-            <UserCircleIcon className="w-9 h-9 text-gray-500" />
+        <button className="relative p-2 rounded-full hover:bg-gray-100">
+          <Bell size={18} className="text-gray-600" />
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: '#1E4D8C' }}>
+            <User size={16} />
+          </div>
+          <div className="hidden md:block">
+            <p className="text-sm font-semibold text-gray-800">{branchName}</p>
+            <p className="text-xs text-gray-500">Branch Manager</p>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
