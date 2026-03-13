@@ -55,7 +55,7 @@ function ResetPasswordForm() {
     if (newPassword.length < 8) { toast.error(t('resetPassword.passwordTooShort')); return; }
     setLoading(true);
     try {
-      await authApi.resetPassword({ email, code: codeStr, newPassword, confirmPassword });
+      await authApi.resetPassword({ email, resetCode: codeStr, newPassword, confirmPassword });
       toast.success(t('resetPassword.success'));
       setTimeout(() => router.push('/login'), 1500);
     } catch (err: any) {

@@ -127,7 +127,7 @@ export default function PharmacyDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={fmt} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v: number) => [`${fmt(v)} RWF`, 'Revenue']} />
+              <Tooltip formatter={(v: any) => [`${fmt(v as number)} RWF`, 'Revenue']} />
               <Line
                 type="monotone"
                 dataKey="revenue"
@@ -149,7 +149,7 @@ export default function PharmacyDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={fmt} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v: number) => [`${fmt(v)} RWF`, 'Revenue']} />
+              <Tooltip formatter={(v: any) => [`${fmt(v as number)} RWF`, 'Revenue']} />
               <Bar dataKey="revenue" fill={NAVY} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

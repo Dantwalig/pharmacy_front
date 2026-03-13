@@ -32,10 +32,11 @@ export default function SignupPage() {
 
   const [pharmacyForm, setPharmacyForm] = useState({
     email: '', password: '', confirmPassword: '',
-    name: '', representativeName: '', phone: '',
+    pharmacyName: '', representativeName: '', phone: '',
     address: '', dateOfIncorporation: '',
-    rdbCertificate: null as File | null,
-    pharmacyLicense: null as File | null,
+    rdbCertificate: '',
+    pharmacyLicense: '',
+    businessRegistration: '',
   });
 
   const handlePatientSubmit = async (e: React.FormEvent) => {
@@ -62,18 +63,12 @@ export default function SignupPage() {
     if (pharmacyForm.password !== pharmacyForm.confirmPassword) {
       toast.error('Passwords do not match'); return;
     }
-    if (!pharmacyForm.rdbCertificate || !pharmacyForm.pharmacyLicense) {
-      toast.error('Please upload all required documents'); return;
+    if (!pharmacyForm.rdbCertificate || !pharmacyForm.pharmacyLicense || !pharmacyForm.businessRegistration) {
+      toast.error('Please fill in all required document numbers'); return;
     }
     setLoading(true);
     try {
-      const formData = new FormData();
-      Object.entries(pharmacyForm).forEach(([key, val]) => {
-        if (val !== null) formData.append(key, val as any);
-      });
-      const res = await api.post('/auth/register/pharmacy', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await api.post('/auth/register/pharmacy', pharmacyForm);
       toast.success(res.data.message || 'Application submitted! Please verify your email.');
       router.push(`/verify-email?email=${encodeURIComponent(pharmacyForm.email)}`);
     } catch (err: any) {
@@ -261,8 +256,8 @@ export default function SignupPage() {
                 <label className={labelCls}>Pharmacy Name</label>
                 <div className="relative">
                   <BuildingStorefrontIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="text" required value={pharmacyForm.name}
-                    onChange={e => setPharmacyForm({...pharmacyForm, name: e.target.value})}
+                  <input type="text" required value={pharmacyForm.pharmacyName}
+                    onChange={e => setPharmacyForm({...pharmacyForm, pharmacyName: e.target.value})}
                     className={inputCls} placeholder="e.g. HealthCare Pharmacy" />
                 </div>
               </div>
@@ -314,26 +309,41 @@ export default function SignupPage() {
               </div>
               {/* Documents */}
               <div className="space-y-3">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    RDB Certificate <span className="text-red-500">*</span>
+               <div className="space-y-4">
+                 <div>
+                  <label className={labelCls}>
+                    RDB Certificate Number <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">Supported: PDF, JPG, PNG (max 5MB)</p>
-                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" required
-                    onChange={e => setPharmacyForm({...pharmacyForm, rdbCertificate: e.target.files?.[0] || null})}
-                    className="w-full text-xs" />
-                  {pharmacyForm.rdbCertificate && <p className="text-xs text-green-600 mt-1">✓ {pharmacyForm.rdbCertificate.name}</p>}
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.rdbCertificate}
+                      onChange={e => setPharmacyForm({...pharmacyForm, rdbCertificate: e.target.value})}
+                      className={inputCls} placeholder="RDB Certificate Number" />
+                  </div>
                 </div>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Pharmacy License <span className="text-red-500">*</span>
+                <div>
+                  <label className={labelCls}>
+                    Pharmacy License Number <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">Supported: PDF, JPG, PNG (max 5MB)</p>
-                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" required
-                    onChange={e => setPharmacyForm({...pharmacyForm, pharmacyLicense: e.target.files?.[0] || null})}
-                    className="w-full text-xs" />
-                  {pharmacyForm.pharmacyLicense && <p className="text-xs text-green-600 mt-1">✓ {pharmacyForm.pharmacyLicense.name}</p>}
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.pharmacyLicense}
+                      onChange={e => setPharmacyForm({...pharmacyForm, pharmacyLicense: e.target.value})}
+                      className={inputCls} placeholder="License Number" />
+                  </div>
                 </div>
+                <div>
+                  <label className={labelCls}>
+                    Business Registration Number <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <BuildingStorefrontIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.businessRegistration}
+                      onChange={e => setPharmacyForm({...pharmacyForm, businessRegistration: e.target.value})}
+                      className={inputCls} placeholder="Business Registration Number" />
+                  </div>
+                </div>
+              </div>
               </div>
               <div>
                 <label className={labelCls}>Password</label>
