@@ -16,9 +16,7 @@ interface Pharmacy {
   phone: string;
   latitude?: number;
   longitude?: number;
-  _count?: {
-    medications: number;
-  };
+  _count?: { medications: number };
 }
 
 export default function BrowsePharmaciesPage() {
@@ -28,9 +26,7 @@ export default function BrowsePharmaciesPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchPharmacies();
-  }, []);
+  useEffect(() => { fetchPharmacies(); }, []);
 
   const fetchPharmacies = async () => {
     try {
@@ -65,9 +61,7 @@ export default function BrowsePharmaciesPage() {
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
             🏪 {t('patient.browsePharmacies')}
           </h1>
-          <p className="text-purple-100 text-lg">
-            {t('patient.findPharmaciesNearYou')}
-          </p>
+          <p className="text-purple-100 text-lg">{t('patient.findPharmaciesNearYou')}</p>
         </div>
 
         {/* Search Bar */}
@@ -80,25 +74,19 @@ export default function BrowsePharmaciesPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors text-lg"
             />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-              🔍
-            </div>
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</div>
           </div>
         </div>
 
-        {/* Pharmacies Count */}
         <div className="text-gray-600 dark:text-gray-400 text-sm">
           {filteredPharmacies.length} {t('patient.pharmaciesFound')}
         </div>
 
-        {/* Pharmacies Grid */}
         {filteredPharmacies.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4">🔭</p>
             <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {searchQuery
-                ? t('patient.noPharmaciesMatch')
-                : t('patient.noPharmaciesAvailable')}
+              {searchQuery ? t('patient.noPharmaciesMatch') : t('patient.noPharmaciesAvailable')}
             </p>
           </div>
         ) : (
@@ -109,7 +97,6 @@ export default function BrowsePharmaciesPage() {
                 onClick={() => router.push(`/patient/pharmacies/${pharmacy.id}`)}
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer overflow-hidden"
               >
-                {/* Card Header */}
                 <div className="bg-linear-to-r from-purple-500 to-indigo-500 p-6 text-white">
                   <h3 className="text-xl font-bold mb-2">{pharmacy.name}</h3>
                   {pharmacy._count && (
@@ -118,8 +105,6 @@ export default function BrowsePharmaciesPage() {
                     </p>
                   )}
                 </div>
-
-                {/* Card Body */}
                 <div className="p-6 space-y-4">
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
@@ -131,7 +116,6 @@ export default function BrowsePharmaciesPage() {
                       <span className="text-sm font-medium">{pharmacy.phone}</span>
                     </div>
                   </div>
-
                   <button className="w-full bg-linear-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg mt-4">
                     {t('patient.viewMedications')} →
                   </button>

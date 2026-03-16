@@ -1,4 +1,4 @@
-// frontend/src/components/LanguageSwitcher.tsx
+// frontend/src/components/shared/LanguageSwitcher.tsx
 
 'use client';
 
@@ -33,16 +33,16 @@ export default function LanguageSwitcher() {
         <div key={lang.code} className="flex items-center">
           <button
             onClick={() => changeLanguage(lang.code)}
-            className={`px-2 py-1 text-sm font-medium transition-colors ${
+            className={`px-2 py-1 text-sm font-semibold transition-colors ${
               i18n.language === lang.code
-                ? 'text-gray-900'
-                : 'text-gray-400 hover:text-gray-600'
+                ? 'text-gray-900 dark:text-gray-100'
+                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
             }`}
           >
             {lang.name}
           </button>
           {index < languages.length - 1 && (
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
           )}
         </div>
       ))}

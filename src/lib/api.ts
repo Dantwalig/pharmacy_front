@@ -41,8 +41,11 @@ api.interceptors.response.use(
             headers: { Authorization: `Bearer ${refreshToken}` },
           });
 
-          const { accessToken } = response.data;
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
           Cookies.set('accessToken', accessToken, { expires: 1/48 }); // 30 minutes
+          if (newRefreshToken) {
+            Cookies.set('refreshToken', newRefreshToken, { expires: 7 }); // 7 days
+          }
 
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);

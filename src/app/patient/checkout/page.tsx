@@ -1,398 +1,311 @@
 // frontend/src/app/patient/checkout/page.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
 import { useCart } from '@/context/CartContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-
-declare global {
-  interface Window {
-    FlutterwaveCheckout: any;
-  }
-}
+import Link from 'next/link';
+import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function CheckoutPage() {
-  const { t } = useTranslation();
   const router = useRouter();
   const { items, getTotal, clearCart, pharmacyId } = useCart();
-  
   const [loading, setLoading] = useState(false);
-  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
+  const [uploadingPrescription, setUploadingPrescription] = useState(false);
+
+  // Order type (DELIVERY | PICKUP) - matches backend DTO field name
+  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+
+  // Payment method - matches backend enum exactly
   const [paymentMethod, setPaymentMethod] = useState<'MTN_MOMO' | 'AIRTEL_MONEY' | 'CARD' | 'INSURANCE'>('MTN_MOMO');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  
-  const [insuranceProvider, setInsuranceProvider] = useState('');
-  const [insurancePolicyNumber, setInsurancePolicyNumber] = useState('');
-  const [insuranceMemberId, setInsuranceMemberId] = useState('');
-  const [insuranceMemberName, setInsuranceMemberName] = useState('');
-  const [insuranceVerified, setInsuranceVerified] = useState(false);
-  const [insuranceCoverage, setInsuranceCoverage] = useState(0);
-  
-  const [user, setUser] = useState<any>(null);
 
+  // Prescription state - separate upload flow via /upload/prescription + /prescriptions
+  const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
+  const [prescriptionId, setPrescriptionId] = useState<string | null>(null);
+  const [prescriptionUploaded, setPrescriptionUploaded] = useState(false);
+
+  // branchId — required by the backend. Currently the API does not expose a
+  // patient-accessible endpoint to list pharmacy branches, so we use pharmacyId
+  // as a placeholder. Once a GET /pharmacies/:id/branches endpoint is available,
+  // update this to let patients select a branch.
+  const [branchId, setBranchId] = useState<string>('');
+
+  const hasPrescription = items.some(i => i.requiresPrescription);
+  const subtotal = getTotal();
+  const deliveryFee = orderType === 'DELIVERY' ? 1000 : 0;
+  const total = subtotal + deliveryFee;
+
+  // Set branchId from pharmacyId once available (temporary workaround)
   useEffect(() => {
-    if (items.length === 0) {
-      router.push('/patient/cart');
+    if (pharmacyId) {
+      setBranchId(pharmacyId);
+    }
+  }, [pharmacyId]);
+
+  // Step 1: Upload prescription file to /upload/prescription
+  // Step 2: Create prescription record via /prescriptions
+  // Step 3: Use returned prescriptionId in the order
+  const handleUploadPrescription = async () => {
+    if (!prescriptionFile) {
+      toast.error('Please select a prescription file first');
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    fetchUserProfile();
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [items, router]);
-
-  const fetchUserProfile = async () => {
+    setUploadingPrescription(true);
     try {
-      const res = await api.get('/patients/profile');
-      setUser(res.data);
-      setDeliveryAddress(res.data.address || '');
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    }
-  };
-
-  const verifyInsurance = async () => {
-    if (!insuranceProvider || !insurancePolicyNumber || !insuranceMemberId || !insuranceMemberName) {
-      toast.error('Please fill in all insurance fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await api.post('/insurance/verify', {
-        provider: insuranceProvider,
-        policyNumber: insurancePolicyNumber,
-        memberId: insuranceMemberId,
-        memberName: insuranceMemberName,
+      // Step 1: Upload the file
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', prescriptionFile);
+      const uploadRes = await api.post('/upload/prescription', uploadFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      setInsuranceVerified(true);
-      setInsuranceCoverage(res.data.coveragePercentage);
-      toast.success(`Insurance verified! ${res.data.coveragePercentage}% coverage`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Insurance verification failed');
+      const { url, fileName, fileType } = uploadRes.data;
+
+      // Step 2: Create the prescription record
+      const prescriptionRes = await api.post('/prescriptions', {
+        fileUrl: url,
+        fileName,
+        fileType,
+      });
+
+      setPrescriptionId(prescriptionRes.data.id);
+      setPrescriptionUploaded(true);
+      toast.success('Prescription uploaded successfully!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to upload prescription');
     } finally {
-      setLoading(false);
+      setUploadingPrescription(false);
     }
-  };
-
-  const calculateTotals = () => {
-    const subtotal = getTotal();
-    const deliveryFee = orderType === 'DELIVERY' ? 1000 : 0;
-    
-    let insuranceCoverageAmount = 0;
-    let patientPayment = subtotal + deliveryFee;
-
-    if (paymentMethod === 'INSURANCE' && insuranceVerified) {
-      insuranceCoverageAmount = (subtotal * insuranceCoverage) / 100;
-      patientPayment = subtotal - insuranceCoverageAmount + deliveryFee;
-    }
-
-    return { subtotal, deliveryFee, insuranceCoverageAmount, patientPayment };
   };
 
   const handlePlaceOrder = async () => {
-    if (orderType === 'DELIVERY' && !deliveryAddress) {
-      toast.error('Please enter delivery address');
+    if (orderType === 'DELIVERY' && !deliveryAddress.trim()) {
+      toast.error('Please enter a delivery address');
       return;
     }
-
-    if (paymentMethod === 'INSURANCE' && !insuranceVerified) {
-      toast.error('Please verify your insurance first');
+    if (hasPrescription && !prescriptionId) {
+      toast.error('Please upload and confirm your prescription first');
       return;
     }
-
-    if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(paymentMethod) && !phoneNumber) {
-      toast.error('Please enter phone number');
+    if (!branchId) {
+      toast.error('Unable to determine pharmacy branch. Please try again.');
       return;
     }
 
     setLoading(true);
-
     try {
-      const orderData = {
+      // POST /orders — JSON body matching CreateOrderDto exactly
+      const orderPayload: any = {
         pharmacyId,
-        type: orderType,
-        items: items.map(item => ({
-          medicationId: item.medicationId,
-          quantity: item.quantity,
-        })),
-        deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress : undefined,
+        branchId,
+        type: orderType,                // matches DTO field name: 'type'
         paymentMethod,
-        insuranceProvider: paymentMethod === 'INSURANCE' ? insuranceProvider : undefined,
-        insurancePolicyNumber: paymentMethod === 'INSURANCE' ? insurancePolicyNumber : undefined,
+        items: items.map(i => ({
+          medicationId: i.medicationId,
+          quantity: i.quantity,
+        })),
       };
 
-      const orderRes = await api.post('/orders', orderData);
-      const order = orderRes.data;
-
-      const paymentData = {
-        orderId: order.id,
-        phoneNumber: paymentMethod !== 'CARD' ? phoneNumber : undefined,
-        insuranceProvider: paymentMethod === 'INSURANCE' ? insuranceProvider : undefined,
-        insurancePolicyNumber: paymentMethod === 'INSURANCE' ? insurancePolicyNumber : undefined,
-        insuranceVerified: paymentMethod === 'INSURANCE' ? insuranceVerified : undefined,
-      };
-
-      const paymentRes = await api.post('/payments/initiate', paymentData);
-
-      if (paymentMethod === 'CARD') {
-        window.FlutterwaveCheckout({
-          public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-          tx_ref: paymentRes.data.data?.tx_ref,
-          amount: calculateTotals().patientPayment,
-          currency: 'RWF',
-          customer: {
-            email: user?.email || 'patient@example.com',
-            name: `${user?.firstName} ${user?.lastName}`,
-          },
-          callback: async (response: any) => {
-            if (response.status === 'successful') {
-              await api.post('/payments/verify', {
-                paymentId: paymentRes.data.paymentId,
-                transactionId: response.transaction_id,
-              });
-
-              toast.success('Payment successful!');
-              clearCart();
-              router.push(`/patient/orders/${order.id}`);
-            }
-          },
-          onclose: () => {
-            toast.error('Payment cancelled');
-          },
-        });
-      } else {
-        toast.success('Order placed! Check your phone for payment prompt.');
-        clearCart();
-        router.push(`/patient/orders/${order.id}`);
+      if (orderType === 'DELIVERY') {
+        orderPayload.deliveryAddress = deliveryAddress;
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Order failed');
+
+      if (prescriptionId) {
+        orderPayload.prescriptionId = prescriptionId;
+      }
+
+      const res = await api.post('/orders', orderPayload);
+      clearCart();
+      toast.success('Order placed successfully!');
+      router.push(`/patient/orders/${res.data.id}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
   };
 
-  const totals = calculateTotals();
-
   if (items.length === 0) {
-    return null;
+    return (
+      <div className="space-y-6">
+        <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+          <h1 className="text-3xl font-bold">Checkout</h1>
+        </div>
+        <div className="bg-white rounded-2xl shadow p-12 text-center">
+          <p className="text-5xl mb-4">🛒</p>
+          <p className="text-gray-500 mb-4">Your cart is empty</p>
+          <Link href="/patient/search">
+            <button className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold">Browse Medications</button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="bg-linear-to-r from-green-600 to-emerald-600 rounded-2xl shadow-xl p-8 text-white">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('checkout.title')} 💳</h1>
-        <p className="text-green-100 text-lg">{t('checkout.subtitle')}</p>
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
+        <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
+      </button>
+
+      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <h1 className="text-3xl font-bold mb-1">Checkout</h1>
+        <p className="text-blue-100">Complete your order</p>
       </div>
 
-      {/* Order Type */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('checkout.orderType')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            onClick={() => setOrderType('DELIVERY')}
-            className={`p-6 border-2 rounded-xl transition-all transform hover:scale-105 ${
-              orderType === 'DELIVERY'
-                ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-lg'
-                : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
-            }`}
-          >
-            <p className="text-3xl mb-2">🚚</p>
-            <p className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('checkout.delivery')}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{t('checkout.deliveryDesc')}</p>
-          </button>
-          <button
-            onClick={() => setOrderType('PICKUP')}
-            className={`p-6 border-2 rounded-xl transition-all transform hover:scale-105 ${
-              orderType === 'PICKUP'
-                ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-lg'
-                : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
-            }`}
-          >
-            <p className="text-3xl mb-2">🏪</p>
-            <p className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('checkout.pickup')}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{t('checkout.pickupDesc')}</p>
-          </button>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT: Options */}
+        <div className="lg:col-span-2 space-y-5">
 
-        {orderType === 'DELIVERY' && (
-          <div className="mt-6">
-            <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-              {t('checkout.deliveryAddress')}
-            </label>
-            <input
-              type="text"
-              value={deliveryAddress}
-              onChange={(e) => setDeliveryAddress(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              placeholder={t('checkout.addressPlaceholder')}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Payment Method */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('checkout.paymentMethod')}</h2>
-        <div className="space-y-3">
-          {['MTN_MOMO', 'AIRTEL_MONEY', 'CARD', 'INSURANCE'].map((method) => (
-            <label key={method} className="flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-green-500 transition-all">
-              <input
-                type="radio"
-                name="payment"
-                checked={paymentMethod === method}
-                onChange={() => setPaymentMethod(method as any)}
-                className="w-5 h-5 text-green-600"
-              />
-              <span className="text-gray-800 dark:text-gray-100 font-medium">
-                {method === 'MTN_MOMO' && '📱 MTN Mobile Money'}
-                {method === 'AIRTEL_MONEY' && '📱 Airtel Money'}
-                {method === 'CARD' && '💳 Credit/Debit Card'}
-                {method === 'INSURANCE' && '🏥 Health Insurance'}
-              </span>
-            </label>
-          ))}
-        </div>
-
-        {['MTN_MOMO', 'AIRTEL_MONEY'].includes(paymentMethod) && (
-          <div className="mt-4">
-            <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-              {t('checkout.phoneNumber')}
-            </label>
-            <input
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              placeholder="+250788123456"
-            />
-          </div>
-        )}
-
-        {paymentMethod === 'INSURANCE' && (
-          <div className="mt-4 space-y-4">
+          {/* Order Type (maps to DTO field: type) */}
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h2 className="font-bold text-lg text-gray-800 mb-4">Fulfillment Method</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-                  {t('checkout.insuranceProvider')}
-                </label>
-                <select
-                  value={insuranceProvider}
-                  onChange={(e) => setInsuranceProvider(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                >
-                  <option value="">{t('checkout.selectProvider')}</option>
-                  <option value="MMI">MMI</option>
-                  <option value="RSSB">RSSB</option>
-                  <option value="Sanlam">Sanlam</option>
-                  <option value="RAMA">RAMA</option>
-                  <option value="Britam">Britam</option>
-                  <option value="Radiant">Radiant</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-                  {t('checkout.policyNumber')}
-                </label>
-                <input
-                  type="text"
-                  value={insurancePolicyNumber}
-                  onChange={(e) => setInsurancePolicyNumber(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-                  {t('checkout.memberId')}
-                </label>
-                <input
-                  type="text"
-                  value={insuranceMemberId}
-                  onChange={(e) => setInsuranceMemberId(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-100">
-                  {t('checkout.memberName')}
-                </label>
-                <input
-                  type="text"
-                  value={insuranceMemberName}
-                  onChange={(e) => setInsuranceMemberName(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                />
-              </div>
+              {(['PICKUP', 'DELIVERY'] as const).map(type => (
+                <button key={type} onClick={() => setOrderType(type)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
+                  <span className="text-3xl">{type === 'PICKUP' ? '🏪' : '🚚'}</span>
+                  <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? 'Pickup' : 'Delivery'}</span>
+                  <span className="text-xs text-gray-500">{type === 'PICKUP' ? 'Free' : '+1,000 RWF'}</span>
+                </button>
+              ))}
             </div>
-            
-            <button
-              onClick={verifyInsurance}
-              disabled={loading || insuranceVerified}
-              className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl font-bold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg disabled:opacity-50"
-            >
-              {insuranceVerified ? '✓ Verified' : t('checkout.verifyInsurance')}
-            </button>
-
-            {insuranceVerified && (
-              <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
-                <p className="text-green-700 dark:text-green-400 font-bold">
-                  ✓ {t('checkout.insuranceVerified')} - {insuranceCoverage}% {t('checkout.coverage')}
-                </p>
+            {orderType === 'DELIVERY' && (
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Delivery Address</label>
+                <div className="relative">
+                  <MapPinIcon className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <textarea value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm resize-none" rows={2}
+                    placeholder="Enter your full delivery address..." />
+                </div>
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* Order Summary */}
-      <div className="bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('checkout.orderSummary')}</h2>
-        <div className="space-y-3">
-          <div className="flex justify-between text-gray-700 dark:text-gray-300">
-            <span>{t('orders.subtotal')}</span>
-            <span className="font-semibold">{totals.subtotal.toLocaleString()} RWF</span>
-          </div>
-          <div className="flex justify-between text-gray-700 dark:text-gray-300">
-            <span>{t('orders.deliveryFee')}</span>
-            <span className="font-semibold">{totals.deliveryFee.toLocaleString()} RWF</span>
-          </div>
-          {insuranceVerified && (
-            <div className="flex justify-between text-green-600 dark:text-green-400">
-              <span>{t('orders.insuranceCoverage')} ({insuranceCoverage}%)</span>
-              <span className="font-semibold">-{totals.insuranceCoverageAmount.toLocaleString()} RWF</span>
+          {/* Prescription Upload (if required) */}
+          {hasPrescription && (
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-6">
+              <h2 className="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                <DocumentTextIcon className="w-5 h-5 text-yellow-600" />
+                Prescription Required
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                One or more items require a valid prescription. Please upload it before placing your order.
+              </p>
+
+              {!prescriptionUploaded ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Select Prescription File</label>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={e => setPrescriptionFile(e.target.files?.[0] || null)}
+                      className="w-full text-sm border border-gray-300 rounded-lg p-2"
+                    />
+                    {prescriptionFile && (
+                      <p className="text-xs text-gray-500 mt-1">{prescriptionFile.name}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleUploadPrescription}
+                    disabled={!prescriptionFile || uploadingPrescription}
+                    className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {uploadingPrescription
+                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                      : '📤 Upload Prescription'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <span className="text-green-600 text-xl">✅</span>
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Prescription uploaded</p>
+                    <p className="text-xs text-green-600">{prescriptionFile?.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setPrescriptionUploaded(false); setPrescriptionId(null); setPrescriptionFile(null); }}
+                    className="ml-auto text-xs text-gray-500 hover:text-red-500 underline"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
             </div>
           )}
-          <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-2xl">
-            <span className="text-gray-800 dark:text-gray-100">{t('orders.total')}</span>
-            <span className="bg-linear-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              {totals.patientPayment.toLocaleString()} RWF
-            </span>
+
+          {/* Payment Method */}
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h2 className="font-bold text-lg text-gray-800 mb-4">Payment Method</h2>
+            <div className="space-y-3">
+              {[
+                { value: 'MTN_MOMO', label: 'MTN Mobile Money', emoji: '📱' },
+                { value: 'AIRTEL_MONEY', label: 'Airtel Money', emoji: '📲' },
+                { value: 'CARD', label: 'Debit / Credit Card', emoji: '💳' },
+                { value: 'INSURANCE', label: 'Insurance', emoji: '🏥' },
+              ].map(opt => (
+                <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={opt.value}
+                    checked={paymentMethod === (opt.value as any)}
+                    onChange={() => setPaymentMethod(opt.value as any)}
+                    className="text-teal-500"
+                  />
+                  <span className="text-xl">{opt.emoji}</span>
+                  <span className="text-sm font-medium text-gray-800">{opt.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
-        <button
-          onClick={handlePlaceOrder}
-          disabled={loading}
-          className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl mt-6 disabled:opacity-50"
-        >
-          {loading ? <LoadingSpinner size="sm" /> : t('checkout.placeOrder')}
-        </button>
+        {/* RIGHT: Summary */}
+        <div>
+          <div className="bg-white rounded-2xl shadow p-6 sticky top-6">
+            <h2 className="font-bold text-lg text-gray-800 mb-4">Order Summary</h2>
+            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+              {items.map(item => (
+                <div key={item.medicationId} className="flex justify-between text-sm">
+                  <span className="text-gray-700">{item.name} × {item.quantity}</span>
+                  <span className="font-semibold text-gray-900">{(item.price * item.quantity).toLocaleString()} RWF</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal</span><span>{subtotal.toLocaleString()} RWF</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Delivery</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : 'Free'}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg border-t pt-2">
+                <span>Total</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
+              </div>
+            </div>
+            <button
+              onClick={handlePlaceOrder}
+              disabled={loading || (hasPrescription && !prescriptionId)}
+              className="w-full mt-4 bg-linear-to-r from-blue-600 to-blue-800 text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-700 hover:to-blue-900 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>
+                : '🛒 Place Order'}
+            </button>
+            {hasPrescription && !prescriptionId && (
+              <p className="text-xs text-yellow-600 mt-2 text-center">⚠️ Upload prescription to continue</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 // frontend/src/context/AuthContext.tsx
-// UPDATED VERSION - Added pharmacy status-based routing
+// UPDATED VERSION - Added routing for BRANCH_MANAGER, PHARMACIST, CASHIER, NURSE
 
 'use client';
 
@@ -31,7 +31,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       setLoading(false);
     };
-
     initAuth();
   }, []);
 
@@ -41,10 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { accessToken, refreshToken, user: userData } = response.data;
 
       setAuthTokens(accessToken, refreshToken);
-      cacheUserData(userData); // Cache user data including pharmacyStatus
+      cacheUserData(userData);
       setUser(userData);
 
-      // CRITICAL: Route based on role AND pharmacy status
+      // Route based on role
       switch (userData.role) {
         case 'PATIENT':
           toast.success('Welcome back!');
@@ -52,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         case 'PHARMACY':
-          // Check pharmacy approval status
           if (userData.pharmacyStatus === 'PENDING') {
             toast.success('Your application is being reviewed');
             router.push('/pending-approval');
@@ -75,6 +73,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           router.push('/super-admin/dashboard');
           break;
 
+        case 'BRANCH_MANAGER':
+          toast.success('Welcome, Branch Manager!');
+          // If first login (temp password), redirect to change password
+          if (response.data.requiresPasswordChange) {
+            router.push('/branch/change-password');
+          } else {
+            router.push('/branch/dashboard');
+          }
+          break;
+
+        case 'PHARMACIST':
+        case 'CASHIER':
+        case 'NURSE':
+          toast.success('Welcome back!');
+          // If first login (temp password), redirect to change password
+          if (response.data.requiresPasswordChange) {
+            router.push('/staff/change-password');
+          } else {
+            router.push('/staff/dashboard');
+          }
+          break;
+
         default:
           toast.error('Invalid user role');
           removeAuthTokens();
@@ -95,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Logout error:', error);
     } finally {
       removeAuthTokens();
-      clearUserCache(); // Clear cached user data
+      clearUserCache();
       setUser(null);
       router.push('/login');
       toast.success('Logged out successfully');
@@ -106,16 +126,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser((prev) => ({ ...prev, ...userData } as User));
   };
 
-  // NEW: Refresh user data from server
   const refreshUser = async () => {
     try {
       const response = await api.get('/auth/me');
       const userData = response.data;
-      cacheUserData(userData); // Cache updated user data
+      cacheUserData(userData);
       setUser(userData);
     } catch (error) {
       console.error('Failed to refresh user:', error);
-      // If refresh fails, user might need to re-login
       removeAuthTokens();
       clearUserCache();
       setUser(null);

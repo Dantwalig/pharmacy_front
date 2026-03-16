@@ -1,5 +1,4 @@
 // frontend/src/app/forgot-password/page.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -7,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { authApi } from '@/lib/api';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
-import api from '@/lib/api';
+import { EnvelopeIcon, ShieldCheckIcon, ClockIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -18,112 +18,95 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) { toast.error('Please enter your email address'); return; }
     setLoading(true);
-
     try {
-      const response = await api.post('/auth/forgot-password', { email });
-      toast.success(response.data.message || t('forgotPassword.success'));
-      
-      // Redirect to reset password page with email
-      setTimeout(() => {
-        router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-      }, 1500);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('forgotPassword.error'));
-    } finally {
-      setLoading(false);
-    }
+      await authApi.forgotPassword({ email });
+      toast.success(t('forgotPassword.success'));
+      router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || t('forgotPassword.error'));
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen flex relative">
+      <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
 
-      {/* Language Switcher - Top Right */}
-      <div className="absolute top-6 right-6 z-20">
-        <LanguageSwitcher />
-      </div>
-
-      {/* Main Card */}
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 relative z-10">
-        {/* Icon */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 mb-4">
-            <span className="text-4xl">🔑</span>
+      {/* LEFT PANEL */}
+      <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-10 flex-col justify-between text-white">
+        <div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+            <p className="text-blue-200 text-sm">Healthcare Platform</p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {t('forgotPassword.title')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('forgotPassword.subtitle')}
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-            >
-              {t('auth.email')}
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              placeholder="you@example.com"
-            />
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-3">Password Recovery</h2>
+            <p className="text-blue-100 text-sm leading-relaxed">
+              We'll send a secure reset code to your registered email address.
+            </p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-linear-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{t('common.loading')}</span>
+          <div className="space-y-4">
+            {[
+              { icon: MapPinIcon, title: 'Find Nearby Pharmacies', desc: 'Locate pharmacies with real-time availability.' },
+              { icon: ClockIcon, title: 'Save Time', desc: 'Check availability before visiting.' },
+              { icon: UserGroupIcon, title: 'Connect with Healthcare', desc: 'Bridge patients and pharmacies.' },
+              { icon: ShieldCheckIcon, title: 'Secure & Private', desc: 'Enterprise-grade security.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-3">
+                <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
+                <div>
+                  <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
+                  <p className="text-blue-200 text-xs">{desc}</p>
+                </div>
               </div>
-            ) : (
-              t('forgotPassword.sendCode')
-            )}
-          </button>
-        </form>
+            ))}
+          </div>
+        </div>
+        <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+      </div>
 
-        {/* Info Box */}
-        <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <div className="text-xl">ℹ️</div>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              {t('forgotPassword.infoText')}
+      {/* RIGHT PANEL */}
+      <div className="w-full lg:w-7/12 flex items-center justify-center bg-gray-50 p-8">
+        <div className="w-full max-w-md">
+          <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+            <EnvelopeIcon className="w-7 h-7 text-blue-600" />
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('forgotPassword.title')}</h2>
+          <p className="text-gray-500 text-sm mb-8">{t('forgotPassword.infoText')}</p>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('auth.email')}</label>
+              <div className="relative">
+                <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm transition-all" />
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
+              {loading
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending...</>
+                : t('forgotPassword.sendCode')}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link href="/login" className="text-sm text-teal-600 font-semibold hover:underline">
+              ← {t('forgotPassword.backToLogin')}
+            </Link>
+          </div>
+
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-700">
+              💡 Check your spam folder if you don't see the email within a few minutes.
             </p>
           </div>
         </div>
-
-        {/* Back to Login */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium inline-flex items-center gap-1"
-          >
-            <span>←</span>
-            <span>{t('forgotPassword.backToLogin')}</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-75">
-        © 2025 E-Vuze Healthcare Platform. All rights reserved.
       </div>
     </div>
   );

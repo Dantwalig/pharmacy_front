@@ -19,9 +19,7 @@ export default function OrderDetailsPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
 
-  useEffect(() => {
-    fetchOrderDetails();
-  }, [params.id]);
+  useEffect(() => { fetchOrderDetails(); }, [params.id]);
 
   const fetchOrderDetails = async () => {
     try {
@@ -36,56 +34,30 @@ export default function OrderDetailsPage() {
   };
 
   const handleCancelOrder = async () => {
-    if (!cancellationReason.trim()) {
-      toast.error('Please provide a cancellation reason');
-      return;
-    }
-
+    if (!cancellationReason.trim()) { toast.error('Please provide a cancellation reason'); return; }
     if (!confirm(t('orders.confirmCancel'))) return;
-
     setCancelling(true);
     try {
-      await api.patch(`/orders/${params.id}/cancel`, {
-        cancellationReason: cancellationReason.trim(),
-      });
+      await api.patch(`/orders/${params.id}/cancel`, { cancellationReason: cancellationReason.trim() });
       toast.success('Order cancelled successfully');
       fetchOrderDetails();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel order');
-    } finally {
-      setCancelling(false);
-    }
+    } finally { setCancelling(false); }
   };
 
   const canCancel = order && !['PREPARING', 'OUT_FOR_DELIVERY', 'READY_FOR_PICKUP', 'DELIVERED', 'COMPLETED', 'CANCELLED'].includes(order.status);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>;
 
-  if (!order) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">{t('orders.notFound')}</p>
-      </div>
-    );
-  }
+  if (!order) return <div className="text-center py-12"><p className="text-gray-500">{t('orders.notFound')}</p></div>;
 
   const statusSteps = ['PENDING', 'ACCEPTED', 'PREPARING', order.type === 'DELIVERY' ? 'OUT_FOR_DELIVERY' : 'READY_FOR_PICKUP', 'DELIVERED'];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Back Button */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-      >
-        <ArrowLeftIcon className="w-5 h-5" />
-        {t('common.back')}
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+        <ArrowLeftIcon className="w-5 h-5" /> {t('common.back')}
       </button>
 
       {/* Order Header */}
@@ -95,41 +67,25 @@ export default function OrderDetailsPage() {
             <h1 className="text-3xl font-bold mb-2">
               {t('orders.orderNumber')}: #{order.orderNumber || order.id.slice(0, 8)}
             </h1>
-            <p className="text-blue-100">
-              {new Date(order.createdAt).toLocaleString()}
-            </p>
+            <p className="text-blue-100">{new Date(order.createdAt).toLocaleString()}</p>
           </div>
-
-          <span
-            className={`inline-block px-6 py-3 rounded-xl text-sm font-bold shadow-lg ${
-              order.status === 'DELIVERED' || order.status === 'COMPLETED'
-                ? 'bg-green-500 text-white'
-                : order.status === 'CANCELLED'
-                ? 'bg-red-500 text-white'
-                : 'bg-yellow-500 text-white'
-            }`}
-          >
+          <span className={`inline-block px-6 py-3 rounded-xl text-sm font-bold shadow-lg ${
+            order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
+            order.status === 'CANCELLED' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'
+          }`}>
             {order.status}
           </span>
         </div>
 
-        {/* Status Timeline */}
         {order.status !== 'CANCELLED' && (
           <div className="mt-8">
             <div className="flex justify-between items-center">
               {statusSteps.map((status, index) => {
                 const isComplete = statusSteps.indexOf(order.status) >= index;
                 const isCurrent = order.status === status;
-
                 return (
                   <div key={status} className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
-                        isComplete
-                          ? 'bg-white text-blue-600 shadow-lg'
-                          : 'bg-white/30 text-white/70'
-                      } ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}
-                    >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-blue-600 shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
                       {isComplete ? '✓' : index + 1}
                     </div>
                     <p className="text-xs mt-2 text-center text-white/90 font-medium">{status}</p>
@@ -140,7 +96,6 @@ export default function OrderDetailsPage() {
           </div>
         )}
 
-        {/* Cancellation Reason */}
         {order.status === 'CANCELLED' && order.cancellationReason && (
           <div className="mt-6 bg-red-500/20 backdrop-blur-sm rounded-xl p-4 border border-red-300/30">
             <p className="text-sm font-semibold mb-1">Cancellation Reason:</p>
@@ -151,14 +106,10 @@ export default function OrderDetailsPage() {
 
       {/* Pharmacy Info */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-          {t('orders.pharmacyInfo')}
-        </h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.pharmacyInfo')}</h2>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-              🏥
-            </div>
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">🏥</div>
             <p className="font-semibold text-gray-800 dark:text-gray-100">{order.pharmacy.name}</p>
           </div>
           <div className="flex items-start gap-3 text-gray-600 dark:text-gray-400">
@@ -174,9 +125,7 @@ export default function OrderDetailsPage() {
 
       {/* Medications */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-          {t('orders.medications')}
-        </h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.medications')}</h2>
         <div className="space-y-4">
           {order.orderItems?.map((item: any) => (
             <div key={item.id} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
@@ -197,9 +146,7 @@ export default function OrderDetailsPage() {
       {/* Delivery Info */}
       {order.type === 'DELIVERY' && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-          <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-            {t('orders.deliveryInfo')} 🚚
-          </h2>
+          <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.deliveryInfo')} 🚚</h2>
           <div className="space-y-2 text-gray-700 dark:text-gray-300">
             <p><strong>{t('orders.address')}:</strong> {order.deliveryAddress}</p>
             {order.deliveryZone && <p><strong>{t('orders.zone')}:</strong> {order.deliveryZone}</p>}
@@ -210,24 +157,19 @@ export default function OrderDetailsPage() {
 
       {/* Payment Summary */}
       <div className="bg-linear-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-          {t('orders.paymentSummary')}
-        </h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.paymentSummary')}</h2>
         <div className="space-y-3">
           <div className="flex justify-between text-gray-700 dark:text-gray-300">
-            <span>{t('orders.subtotal')}</span>
-            <span>{order.subtotal.toLocaleString()} RWF</span>
+            <span>{t('orders.subtotal')}</span><span>{order.subtotal.toLocaleString()} RWF</span>
           </div>
           {order.deliveryFee > 0 && (
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-              <span>{t('orders.deliveryFee')}</span>
-              <span>{order.deliveryFee.toLocaleString()} RWF</span>
+              <span>{t('orders.deliveryFee')}</span><span>{order.deliveryFee.toLocaleString()} RWF</span>
             </div>
           )}
           {order.insuranceCoverage > 0 && (
             <div className="flex justify-between text-green-600 dark:text-green-400">
-              <span>{t('orders.insuranceCoverage')}</span>
-              <span>-{order.insuranceCoverage.toLocaleString()} RWF</span>
+              <span>{t('orders.insuranceCoverage')}</span><span>-{order.insuranceCoverage.toLocaleString()} RWF</span>
             </div>
           )}
           <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-xl">
@@ -248,18 +190,11 @@ export default function OrderDetailsPage() {
       {/* Prescription Info */}
       {order.prescription && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-          <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">
-            📋 Prescription Information
-          </h2>
+          <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">📋 Prescription Information</h2>
           <div className="space-y-2 text-gray-700 dark:text-gray-300">
             <p><strong>Status:</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
             {order.prescription.fileUrl && (
-              <a 
-                href={order.prescription.fileUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block mt-2 text-blue-600 hover:text-blue-700 underline"
-              >
+              <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:text-blue-700 underline">
                 View Prescription
               </a>
             )}
@@ -267,7 +202,7 @@ export default function OrderDetailsPage() {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Cancel Order */}
       {canCancel && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
           <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">Cancel Order</h3>
