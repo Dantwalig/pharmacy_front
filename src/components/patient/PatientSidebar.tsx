@@ -3,43 +3,53 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/context/AuthContext';
 import {
   HomeIcon,
-  ShoppingBagIcon,
   MagnifyingGlassIcon,
   ShoppingCartIcon,
   ClipboardDocumentListIcon,
+  BellIcon,
   UserCircleIcon,
+  ArrowRightOnRectangleIcon,
+  BuildingStorefrontIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
   { id: 'dashboard', nameKey: 'patient.dashboard', href: '/patient/dashboard', icon: HomeIcon },
-  { id: 'pharmacies', nameKey: 'patient.browsePharmacies', href: '/patient/pharmacies', icon: ShoppingBagIcon },
-  { id: 'medications', nameKey: 'patient.searchMedications', href: '/patient/medications', icon: MagnifyingGlassIcon },
+  { id: 'search', nameKey: 'Find Pharmacy & Medicine', href: '/patient/search', icon: MagnifyingGlassIcon },
   { id: 'cart', nameKey: 'cart.title', href: '/patient/cart', icon: ShoppingCartIcon },
   { id: 'orders', nameKey: 'patient.myOrders', href: '/patient/orders', icon: ClipboardDocumentListIcon },
+  { id: 'notifications', nameKey: 'common.notifications', href: '/patient/notifications', icon: BellIcon },
   { id: 'profile', nameKey: 'patient.myProfile', href: '/patient/profile', icon: UserCircleIcon },
 ];
 
 export default function PatientSidebar() {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
-    <aside className="w-64 bg-linear-to-b from-purple-700 via-purple-800 to-indigo-900 text-white min-h-screen fixed left-0 top-0 shadow-2xl z-30">
-      <div className="p-6 border-b border-purple-600/50">
+    <aside className="w-64 bg-linear-to-b from-blue-700 via-blue-800 to-blue-900 text-white min-h-screen fixed left-0 top-0 shadow-2xl z-30 flex flex-col">
+      <div className="p-6 border-b border-blue-600/50">
         <div className="flex items-center gap-3">
-          <div className="text-4xl">🏥</div>
+          <BuildingStorefrontIcon className="w-10 h-10 text-white" />
           <div>
-            <h1 className="text-2xl font-bold">E-Vuze</h1>
-            <p className="text-xs text-purple-200">Healthcare Platform</p>
+            <h1 className="text-2xl font-bold text-white">Evuze</h1>
+            <p className="text-xs text-blue-200">Healthcare Platform</p>
           </div>
         </div>
       </div>
 
-      <nav className="p-4 space-y-2">
+      <nav className="p-4 space-y-2 flex-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -50,8 +60,8 @@ export default function PatientSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'bg-white text-purple-700 font-semibold shadow-lg transform scale-105'
-                  : 'hover:bg-purple-600/50 hover:translate-x-1'
+                  ? 'bg-teal-500 text-white font-semibold shadow-lg'
+                  : 'hover:bg-blue-600/50 hover:translate-x-1'
               }`}
             >
               <Icon className="w-5 h-5 shrink-0" />
@@ -61,10 +71,21 @@ export default function PatientSidebar() {
         })}
       </nav>
 
+      {/* Logout Button */}
+      <div className="p-4 border-t border-blue-600/50">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-blue-600/50 w-full text-left"
+        >
+          <ArrowRightOnRectangleIcon className="w-5 h-5 shrink-0" />
+          <span className="text-sm">{t('common.logout')}</span>
+        </button>
+      </div>
+
       {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-purple-600/50">
-        <p className="text-xs text-purple-200 text-center">
-          © 2025 E-Vuze Platform
+      <div className="p-4 border-t border-blue-600/50">
+        <p className="text-xs text-blue-200 text-center">
+          © 2026 Evuze Platform
         </p>
       </div>
     </aside>

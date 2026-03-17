@@ -20,28 +20,16 @@ export default function SearchMedications() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!searchQuery.trim()) {
-      toast.error(t('medications.searchPlaceholder'));
-      return;
-    }
-
-    setLoading(true);
-    setSearched(true);
-
+    if (!searchQuery.trim()) { toast.error(t('medications.searchPlaceholder')); return; }
+    setLoading(true); setSearched(true);
     try {
       const res = await api.get(`/medications/search?query=${searchQuery}`);
       setMedications(res.data);
-      
-      if (res.data.length === 0) {
-        toast.error(t('medications.noMedications'));
-      }
+      if (res.data.length === 0) toast.error(t('medications.noMedications'));
     } catch (error) {
       console.error('Search failed:', error);
       toast.error('Search failed');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleAddToCart = (medication: any) => {
@@ -59,15 +47,11 @@ export default function SearchMedications() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-linear-to-r from-green-600 to-emerald-600 rounded-2xl shadow-xl p-8 text-white">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-          {t('medications.title')} 💊
-        </h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('medications.title')} 💊</h1>
         <p className="text-green-100 text-lg">{t('medications.subtitle')}</p>
       </div>
 
-      {/* Search Form */}
       <form onSubmit={handleSearch} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
         <div className="flex gap-3">
           <div className="flex-1 relative">
@@ -80,78 +64,50 @@ export default function SearchMedications() {
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-8 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 whitespace-nowrap"
-          >
+          <button type="submit" disabled={loading}
+            className="px-8 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 whitespace-nowrap">
             {loading ? t('medications.searching') : t('common.search')}
           </button>
         </div>
       </form>
 
-      {/* Results */}
-      {loading && (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner />
-        </div>
-      )}
+      {loading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
 
       {!loading && searched && (
         <>
           <div className="text-gray-600 dark:text-gray-400">
             {t('medications.found')} {medications.length} {medications.length === 1 ? t('medications.medication') : t('medications.medications')}
           </div>
-
           {medications.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {medications.map((med: any) => (
                 <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden">
-                  {/* Card Header */}
                   <div className="bg-linear-to-r from-green-500 to-emerald-500 p-6 text-white">
                     <h3 className="font-bold text-xl mb-1">{med.name}</h3>
                     <p className="text-sm opacity-90">{med.category}</p>
                   </div>
-
-                  {/* Card Body */}
                   <div className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          🏥 {med.pharmacy.name}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {t('medications.stock')}: <span className="font-semibold text-gray-800 dark:text-gray-100">{med.quantity}</span>
-                        </p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">🏥 {med.pharmacy.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('medications.stock')}: <span className="font-semibold text-gray-800 dark:text-gray-100">{med.quantity}</span>
+                      </p>
                     </div>
-
                     {med.requiresPrescription && (
                       <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2">
                         📋 {t('medications.prescriptionRequired')}
                       </div>
                     )}
-
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                          {med.price.toLocaleString()} RWF
-                        </span>
+                        <span className="text-3xl font-bold text-green-600 dark:text-green-400">{med.price.toLocaleString()} RWF</span>
                       </div>
-
                       <button
                         onClick={() => handleAddToCart(med)}
                         disabled={med.quantity === 0}
                         className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        {med.quantity > 0 ? (
-                          <>
-                            <ShoppingCartIcon className="w-5 h-5" />
-                            {t('medications.addToCart')}
-                          </>
-                        ) : (
-                          t('medications.outOfStock')
-                        )}
+                        {med.quantity > 0 ? (<><ShoppingCartIcon className="w-5 h-5" />{t('medications.addToCart')}</>) : t('medications.outOfStock')}
                       </button>
                     </div>
                   </div>
@@ -170,9 +126,7 @@ export default function SearchMedications() {
       {!searched && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
           <p className="text-6xl mb-4">🔍</p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">
-            Enter a medication name to search
-          </p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
         </div>
       )}
     </div>

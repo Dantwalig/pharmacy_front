@@ -1,242 +1,207 @@
-// frontend/src/app/pharmacy/orders/page.tsx
-
 'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+// src/app/(pharmacy)/orders/page.tsx
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
-import toast from 'react-hot-toast';
+import { Search, Filter, Eye } from 'lucide-react';
+import { api } from '@/lib/api';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
+
+type TabKey = 'PENDING' | 'ACCEPTED' | 'READY_FOR_CHECKOUT' | 'COMPLETED' | 'REJECTED';
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  PENDING:            { bg: '#FEF3C7', text: '#92400E' },
+  ACCEPTED:           { bg: '#D1FAE5', text: '#065F46' },
+  READY_FOR_CHECKOUT: { bg: '#DBEAFE', text: '#1E40AF' },
+  COMPLETED:          { bg: '#E0E7FF', text: '#3730A3' },
+  REJECTED:           { bg: '#FEE2E2', text: '#991B1B' },
+};
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
-  const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'PENDING' | 'ACCEPTED' | 'ALL'>('PENDING');
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [orders, setOrders]     = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
+  const [tab, setTab]           = useState<TabKey>('PENDING');
+  const [search, setSearch]     = useState('');
+  const [branch, setBranch]     = useState('');
+  const [branches, setBranches] = useState<any[]>([]);
+  const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
-    fetchOrders();
-  }, [filter]);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const url = filter === 'ALL' 
-        ? '/orders/pharmacy-orders' 
-        : `/orders/pharmacy-orders?status=${filter}`;
-      const res = await api.get(url);
-      setOrders(res.data);
-    } catch (error) {
-      console.error('Failed to fetch orders:', error);
-    } finally {
-      setLoading(false);
+    async function load() {
+      try {
+        const [ordRes, brRes] = await Promise.all([
+          api.get('/orders'),
+          api.get('/branches'),
+        ]);
+        setOrders(ordRes.data?.data ?? ordRes.data ?? []);
+        setBranches(brRes.data?.data ?? brRes.data ?? []);
+      } catch {
+        // silently fail, show empty state
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+    load();
+  }, []);
 
-  const handleQuickApprove = async (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setUpdatingOrderId(orderId);
-    
-    try {
-      await api.patch(`/orders/${orderId}/status`, { status: 'ACCEPTED' });
-      toast.success('Order accepted successfully');
-      fetchOrders();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to accept order');
-    } finally {
-      setUpdatingOrderId(null);
+  useEffect(() => {
+    let res = orders.filter(o => o.status === tab);
+    if (branch) res = res.filter(o => o.branchId === branch);
+    if (search) {
+      const q = search.toLowerCase();
+      res = res.filter(o =>
+        o.id?.toLowerCase().includes(q) ||
+        o.patientName?.toLowerCase().includes(q)
+      );
     }
-  };
+    setFiltered(res);
+  }, [orders, tab, branch, search]);
 
-  const handleQuickReject = async (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    const reason = prompt('Please enter rejection reason:');
-    if (!reason) return;
+  const countFor = (s: TabKey) => orders.filter(o => o.status === s).length;
 
-    setUpdatingOrderId(orderId);
-    
-    try {
-      await api.patch(`/orders/${orderId}/status`, { 
-        status: 'CANCELLED',
-        cancellationReason: reason 
-      });
-      toast.success('Order rejected');
-      fetchOrders();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to reject order');
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: 'PENDING',            label: t('pharmacyOwner.pending') },
+    { key: 'ACCEPTED',           label: t('pharmacyOwner.accepted') },
+    { key: 'READY_FOR_CHECKOUT', label: t('pharmacyOwner.readyForCheckout') },
+    { key: 'COMPLETED',          label: t('pharmacyOwner.completedTab') },
+    { key: 'REJECTED',           label: t('pharmacyOwner.rejected') },
+  ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar />
-      <SupportBot />
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
+        <h1 className="text-3xl font-bold">{t('pharmacyOwner.orderOverviewTitle')}</h1>
+        <p className="mt-1 text-white/70">{t('pharmacyOwner.orderOverviewSubtitle')}</p>
+      </div>
 
-      <div className="flex-1 flex flex-col lg:ml-72">
-        <PharmacyTopbar />
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 relative">
+          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('pharmacyOwner.searchOrders')}
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter size={16} className="text-gray-400" />
+          <select
+            value={branch}
+            onChange={e => setBranch(e.target.value)}
+            className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            <option value="">{t('pharmacyOwner.allBranches')}</option>
+            {branches.map((b: any) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Orders Management
-              </h1>
-              <p className="text-blue-100 text-sm lg:text-base">
-                Manage and process all orders
-              </p>
-            </div>
+      {/* Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {tabs.map(({ key, label }) => {
+          const c = countFor(key);
+          const active = tab === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              style={
+                active
+                  ? { backgroundColor: TEAL, color: 'white' }
+                  : { backgroundColor: '#F3F4F6', color: '#374151' }
+              }
+            >
+              {label} ({c})
+            </button>
+          );
+        })}
+      </div>
 
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setFilter('PENDING')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'PENDING'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                Pending
-              </button>
-              <button
-                onClick={() => setFilter('ACCEPTED')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'ACCEPTED'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                Accepted
-              </button>
-              <button
-                onClick={() => setFilter('ALL')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  filter === 'ALL'
-                    ? 'bg-teal-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:shadow-md'
-                }`}
-              >
-                All
-              </button>
-            </div>
-
-            {orders.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-12 text-center">
-                <p className="text-gray-500 text-lg">No orders found</p>
-              </div>
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              {[
+                t('pharmacyOwner.orderId'),
+                t('pharmacyOwner.customer'),
+                t('common.total'),
+                t('common.status'),
+                t('pharmacyOwner.staff'),
+                t('common.date'),
+                t('common.actions'),
+              ].map(h => (
+                <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-gray-400">
+                  {t('common.loading')}
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-gray-400">
+                  {t('common.noData')}
+                </td>
+              </tr>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {orders.map((order: any) => (
-                  <div
-                    key={order.id}
-                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden"
-                  >
-                    {/* Card Header */}
-                    <div 
-                      onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
-                      className="p-6 bg-[#2D5F8D] text-white cursor-pointer hover:opacity-90 transition-opacity"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="text-sm opacity-90 mb-1">Order</p>
-                          <p className="text-xl font-bold">
-                            #{order.id.slice(0, 8)}
-                          </p>
-                        </div>
-                        <span className="bg-teal-500 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                          {order.status || 'PENDING'}
-                        </span>
-                      </div>
-                      <p className="text-sm opacity-90">
-                        {order.patient?.firstName || 'Unknown'} {order.patient?.lastName || 'Patient'}
-                      </p>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-6 space-y-4 bg-white">
-                      <div className="space-y-2 text-sm text-gray-700">
-                        <div className="flex items-center gap-2">
-                          <span>📦</span>
-                          <span>{order.orderItems?.length || 0} item(s)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span>{order.type === 'DELIVERY' ? '🚚' : '🏪'}</span>
-                          <span>{order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 pt-2">
-                          {new Date(order.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-
-                      <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <div>
-                          <p className="text-sm text-gray-600">Total</p>
-                          <p className="text-2xl font-bold text-teal-600">
-                            {order.total?.toLocaleString() || 0} RWF
-                          </p>
-                        </div>
-
-                        <button 
-                          onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
-                          className="bg-white border-2 border-teal-600 text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-50 transition-all text-sm"
-                        >
-                          View Details →
-                        </button>
-                      </div>
-
-                      {/* Quick Action Buttons - Only show for PENDING orders */}
-                      {order.status === 'PENDING' && (
-                        <div className="flex gap-2 pt-2">
-                          <button
-                            onClick={(e) => handleQuickApprove(order.id, e)}
-                            disabled={updatingOrderId === order.id}
-                            className="flex-1 bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                          >
-                            {updatingOrderId === order.id ? (
-                              <span className="flex items-center justify-center gap-2">
-                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                                </svg>
-                              </span>
-                            ) : (
-                              '✓ Approve'
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => handleQuickReject(order.id, e)}
-                            disabled={updatingOrderId === order.id}
-                            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                          >
-                            ✕ Reject
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              filtered.map((order: any) => {
+                const sc = STATUS_COLORS[order.status] ?? { bg: '#F3F4F6', text: '#374151' };
+                return (
+                  <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <td className="px-5 py-4 text-sm font-medium text-gray-800">
+                      #{order.id?.slice(0, 8)}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-700">
+                      {order.patientName ?? '—'}
+                    </td>
+                    <td className="px-5 py-4 text-sm font-semibold" style={{ color: TEAL }}>
+                      {order.total?.toLocaleString()} RWF
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                        style={{ backgroundColor: sc.bg, color: sc.text }}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-500">
+                      {order.staffName ?? '—'}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-500">
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleString()
+                        : '—'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Eye size={14} />
+                        {t('common.view')}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
-          </div>
-        </main>
+          </tbody>
+        </table>
       </div>
     </div>
   );

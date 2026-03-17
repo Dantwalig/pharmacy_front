@@ -1,122 +1,112 @@
-// frontend/src/components/pharmacy/PharmacyTopbar.tsx
-
 'use client';
-
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+// src/app/(pharmacy)/PharmacyTopbar.tsx
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  BellIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
-import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import { Bell, ChevronDown, User } from 'lucide-react';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
-export default function PharmacyTopbar() {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const router = useRouter();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
+interface PharmacyTopbarProps {
+  pharmacyName?: string;
+  subtitle?: string;
+}
 
-  const notifications = [
-    { id: 1, type: 'order', message: 'New order received', time: '5 min ago' },
-    { id: 2, type: 'stock', message: 'Low stock alert: Paracetamol', time: '1 hour ago' },
-    { id: 3, type: 'system', message: 'System update available', time: '2 hours ago' },
-  ];
+export default function PharmacyTopbar({
+  pharmacyName = 'E-Vuze Pharmacy',
+  subtitle,
+}: PharmacyTopbarProps) {
+  const { t, i18n } = useTranslation();
+  const [roleOpen, setRoleOpen] = useState(false);
+  const currentRole = t('pharmacyOwner.role');
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('i18nextLng', code);
+  };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-40">
-      <div className="flex items-center justify-between">
-        {/* Left: Title */}
-        <div>
-          <h2 className="text-xl font-medium text-teal-600">
-            {t('pharmacy.topbar.title')}
-          </h2>
-          <p className="text-sm text-gray-600">
-            {t('pharmacy.topbar.subtitle')}
-          </p>
+    <header className="fixed top-0 left-72 right-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+      {/* Left: pharmacy name */}
+      <div>
+        <p className="text-base font-semibold" style={{ color: '#2D9B8A' }}>
+          {pharmacyName}
+        </p>
+        <p className="text-xs text-gray-500">
+          {subtitle ?? t('pharmacyOwner.managePharmacy')}
+        </p>
+      </div>
+
+      {/* Right: role + lang + bell + user */}
+      <div className="flex items-center gap-4">
+        {/* Role selector */}
+        <div className="relative">
+          <button
+            onClick={() => setRoleOpen(!roleOpen)}
+            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+          >
+            {currentRole}
+            <ChevronDown size={14} />
+          </button>
+          {roleOpen && (
+            <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-40 z-50">
+              <div className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 rounded-t-xl">
+                {currentRole}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-6">
-          {/* Language Switcher */}
-          <LanguageSwitcher />
+        {/* Current role badge */}
+        <span
+          className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+          style={{ backgroundColor: '#2D9B8A' }}
+        >
+          {currentRole}
+        </span>
 
-          {/* Notifications */}
-          <div className="relative" ref={notifRef}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-            >
-              <BellIcon className="w-6 h-6" />
-              {notifications.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+        {/* Language switcher */}
+        <div className="flex items-center gap-1">
+          {SUPPORTED_LANGUAGES.map((lang, i) => (
+            <span key={lang.code} className="flex items-center">
+              <button
+                onClick={() => changeLanguage(lang.code)}
+                className={`text-sm font-medium transition-colors px-0.5 ${
+                  i18n.language === lang.code
+                    ? 'text-gray-900 font-semibold'
+                    : 'text-gray-400 hover:text-gray-700'
+                }`}
+              >
+                {lang.label}
+              </button>
+              {i < SUPPORTED_LANGUAGES.length - 1 && (
+                <span className="text-gray-300 mx-1 select-none">|</span>
               )}
-            </button>
+            </span>
+          ))}
+        </div>
 
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-900">
-                    {t('common.notifications')}
-                  </h3>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                      >
-                        <p className="text-sm text-gray-900 font-medium">
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {notif.time}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-8 text-center">
-                      <p className="text-gray-500">
-                        {t('common.noNotifications')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+        {/* Notifications */}
+        <button className="relative p-2 rounded-full hover:bg-gray-100">
+          <Bell size={18} className="text-gray-600" />
+          <span
+            className="absolute top-1 right-1 w-2 h-2 rounded-full"
+            style={{ backgroundColor: '#EF4444' }}
+          />
+        </button>
+
+        {/* User avatar */}
+        <div className="flex items-center gap-2">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+            style={{ backgroundColor: '#1E4D8C' }}
+          >
+            <User size={16} />
           </div>
-
-          {/* Profile */}
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-gray-900">
-                {(user as any)?.pharmacy?.name || 'Pharmacy'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {t('pharmacy.role')}
-              </p>
-            </div>
-            <button className="p-1">
-              <UserCircleIcon className="w-9 h-9 text-gray-600" />
-            </button>
+          <div className="hidden md:block">
+            <p className="text-sm font-semibold text-gray-800">Pharmacy</p>
+            <p className="text-xs text-gray-500">{currentRole}</p>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

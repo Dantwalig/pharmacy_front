@@ -1,5 +1,5 @@
 // frontend/src/lib/auth.ts - Auth Helpers
-// UPDATED VERSION - Added user data caching with pharmacy status
+// UPDATED VERSION - Added BRANCH_MANAGER, PHARMACIST, CASHIER, NURSE roles
 
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -7,10 +7,13 @@ import { jwtDecode } from 'jwt-decode';
 export interface User {
   id: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT';
+  role: 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE';
   isVerified: boolean;
+  // Pharmacy owner specific
   pharmacyStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
+  // Branch manager / staff specific
+  requiresPasswordChange?: boolean;
   profile?: any;
 }
 
@@ -25,7 +28,8 @@ export const setAuthTokens = (accessToken: string, refreshToken: string) => {
 export const removeAuthTokens = () => {
   Cookies.remove('accessToken');
   Cookies.remove('refreshToken');
-  Cookies.remove('user'); // Remove cached user data
+  Cookies.remove('userRole');
+  Cookies.remove('user');
 };
 
 export const getAccessToken = () => Cookies.get('accessToken');
@@ -33,16 +37,13 @@ export const getRefreshToken = () => Cookies.get('refreshToken');
 
 export const isAuthenticated = () => !!getAccessToken();
 
-// NEW: Cache full user data (including pharmacyStatus)
 export const cacheUserData = (user: User): void => {
-  Cookies.set('user', JSON.stringify(user), { expires: 7 }); // Same as refresh token
+  Cookies.set('user', JSON.stringify(user), { expires: 7 });
 };
 
-// NEW: Get cached user data
 export const getCachedUser = (): User | null => {
   const userData = Cookies.get('user');
   if (!userData) return null;
-
   try {
     return JSON.parse(userData);
   } catch {
@@ -50,20 +51,14 @@ export const getCachedUser = (): User | null => {
   }
 };
 
-// NEW: Clear cached user data
 export const clearUserCache = (): void => {
   Cookies.remove('user');
 };
 
-// UPDATED: Try cached data first, then decode token
 export const getUserFromToken = (): User | null => {
-  // First, try to get cached user data (includes pharmacyStatus)
   const cachedUser = getCachedUser();
-  if (cachedUser) {
-    return cachedUser;
-  }
+  if (cachedUser) return cachedUser;
 
-  // Fallback: decode token (but token might not have pharmacyStatus)
   const token = getAccessToken();
   if (!token) return null;
 

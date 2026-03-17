@@ -14,30 +14,17 @@ export default function PendingApprovalPage() {
   const router = useRouter();
   const [dots, setDots] = useState('');
 
-  // Animated dots for loading effect
   useEffect(() => {
     const interval = setInterval(() => {
       setDots((prev) => (prev.length >= 3 ? '' : prev + '.'));
     }, 500);
-
     return () => clearInterval(interval);
   }, []);
 
-  // Redirect if user is not pharmacy or not pending
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user.role !== 'PHARMACY') {
-      router.push('/dashboard');
-      return;
-    }
-
-    if (user.pharmacyStatus !== 'PENDING') {
-      router.push('/pharmacy/dashboard');
-    }
+    if (!user) { router.push('/login'); return; }
+    if (user.role !== 'PHARMACY') { router.push('/dashboard'); return; }
+    if (user.pharmacyStatus !== 'PENDING') { router.push('/pharmacy/dashboard'); }
   }, [user, router]);
 
   const handleLogout = async () => {
@@ -68,20 +55,14 @@ export default function PendingApprovalPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-6">
             <div className="relative">
-              {/* Outer rotating ring */}
               <div className="w-32 h-32 rounded-full border-8 border-gray-200 dark:border-gray-700"></div>
-              
-              {/* Animated green arc */}
               <div className="absolute inset-0 w-32 h-32 rounded-full border-8 border-transparent border-t-green-500 animate-spin"></div>
-              
-              {/* Center icon */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-5xl">🏥</div>
               </div>
             </div>
           </div>
 
-          {/* Main Message */}
           <h1 className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-500 mb-4">
             {t('pending.title')}
           </h1>
@@ -90,7 +71,6 @@ export default function PendingApprovalPage() {
             {t('pending.subtitle')}
           </p>
 
-          {/* Loading Text with Animated Dots */}
           <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
             {t('pending.processing')}
             <span className="inline-block w-8 text-left">{dots}</span>
@@ -124,13 +104,6 @@ export default function PendingApprovalPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {/* <button
-            onClick={() => window.location.reload()}
-            className="px-8 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            {t('pending.checkStatus')}
-          </button> */}
-          
           <button
             onClick={handleLogout}
             className="px-8 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition-all transform hover:scale-105"

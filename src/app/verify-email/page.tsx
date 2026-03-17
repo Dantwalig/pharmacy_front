@@ -1,5 +1,4 @@
 // frontend/src/app/verify-email/page.tsx
-
 'use client';
 
 import { useState, useRef, Suspense } from 'react';
@@ -7,215 +6,159 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { authApi } from '@/lib/api';
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import { EnvelopeIcon, ShieldCheckIcon, MapPinIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
-// Separate component that uses useSearchParams
 function VerifyEmailForm() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
-  
+
   const [code, setCode] = useState(['', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (!/^\d*$/.test(value)) return;
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-
-    if (value && index < 4) {
-      inputRefs.current[index + 1]?.focus();
-    }
+  const handleChange = (idx: number, val: string) => {
+    if (val.length > 1 || !/^\d*$/.test(val)) return;
+    const next = [...code]; next[idx] = val; setCode(next);
+    if (val && idx < 4) inputRefs.current[idx + 1]?.focus();
   };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const handleKeyDown = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[idx] && idx > 0) inputRefs.current[idx - 1]?.focus();
   };
-
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, 5);
-    if (!/^\d+$/.test(pastedData)) return;
-
-    const newCode = pastedData.split('').concat(Array(5 - pastedData.length).fill(''));
-    setCode(newCode);
-    
-    const lastIndex = Math.min(pastedData.length, 4);
-    inputRefs.current[lastIndex]?.focus();
+    const p = e.clipboardData.getData('text').slice(0, 5);
+    if (!/^\d+$/.test(p)) return;
+    setCode(p.split('').concat(Array(5 - p.length).fill('')));
+    inputRefs.current[Math.min(p.length, 4)]?.focus();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const verificationCode = code.join('');
-    
-    if (verificationCode.length !== 5) {
-      toast.error(t('verify.invalidCode'));
-      return;
-    }
-
+    const codeStr = code.join('');
+    if (codeStr.length !== 5) { toast.error(t('verify.invalidCode')); return; }
     setLoading(true);
-
     try {
-      const response = await authApi.verifyEmail({
-        email: email,
-        code: verificationCode,
-      });
-
-      toast.success(response.message || t('verify.success'));
-      
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('verify.error'));
-    } finally {
-      setLoading(false);
-    }
+      const res = await authApi.verifyEmail({ email, code: codeStr });
+      toast.success(res.message || t('verify.success'));
+      setTimeout(() => router.push('/login'), 1500);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || t('verify.error'));
+    } finally { setLoading(false); }
   };
 
-  const handleResendCode = async () => {
-    if (!email) {
-      toast.error(t('verify.noEmail'));
-      return;
-    }
-    
+  const handleResend = async () => {
+    if (!email) { toast.error(t('verify.noEmail')); return; }
     setResending(true);
     try {
       await authApi.resendVerificationCode({ email });
       toast.success(t('verify.codeSent'));
       setCode(['', '', '', '', '']);
       inputRefs.current[0]?.focus();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('verify.resendError'));
-    } finally {
-      setResending(false);
-    }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || t('verify.resendError'));
+    } finally { setResending(false); }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen flex relative">
+      <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
 
-      {/* Language Switcher - Top Right */}
-      <div className="absolute top-6 right-6 z-20">
-        <LanguageSwitcher />
-      </div>
-
-      {/* Main Card */}
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-5xl mb-4">✉️</div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {t('verify.title')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">{t('verify.subtitle')}</p>
+      {/* LEFT PANEL */}
+      <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-10 flex-col justify-between text-white">
+        <div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+            <p className="text-blue-200 text-sm">Healthcare Platform</p>
+          </div>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-3">Email Verification</h2>
+            <p className="text-blue-100 text-sm leading-relaxed">
+              Almost there! Verify your email to activate your account and start using Evuze.
+            </p>
+          </div>
+          <div className="space-y-4">
+            {[
+              { icon: MapPinIcon, title: 'Find Nearby Pharmacies', desc: 'Locate pharmacies with real-time availability.' },
+              { icon: ClockIcon, title: 'Save Time', desc: 'Check availability before visiting.' },
+              { icon: UserGroupIcon, title: 'Connect with Healthcare', desc: 'Bridge patients and pharmacies.' },
+              { icon: ShieldCheckIcon, title: 'Secure & Private', desc: 'Enterprise-grade security.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-3">
+                <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
+                <div>
+                  <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
+                  <p className="text-blue-200 text-xs">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+        <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+      </div>
 
-        {/* Verification Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">
-              {t('verify.enterCode')}
-            </label>
-            <div className="flex gap-3 justify-center mb-6">
-              {code.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    inputRefs.current[index] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  className="w-14 h-16 text-center text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                  disabled={loading}
-                />
-              ))}
-            </div>
+      {/* RIGHT PANEL */}
+      <div className="w-full lg:w-7/12 flex items-center justify-center bg-gray-50 p-8">
+        <div className="w-full max-w-md">
+          {/* Icon */}
+          <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+            <EnvelopeIcon className="w-7 h-7 text-blue-600" />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || code.join('').length !== 5}
-            className="w-full bg-linear-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{t('common.loading')}</span>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('verify.title')}</h2>
+          <p className="text-gray-500 text-sm mb-1">{t('verify.subtitle')}</p>
+          {email && <p className="text-xs text-teal-600 font-medium mb-6">Sent to: {email}</p>}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-3">{t('verify.enterCode')}</label>
+              <div className="flex gap-2.5 justify-start">
+                {code.map((digit, idx) => (
+                  <input key={idx}
+                    ref={el => { inputRefs.current[idx] = el; }}
+                    type="text" inputMode="numeric" maxLength={1} value={digit}
+                    onChange={e => handleChange(idx, e.target.value)}
+                    onKeyDown={e => handleKeyDown(idx, e)} onPaste={handlePaste}
+                    className="w-13 h-13 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
+                    disabled={loading} />
+                ))}
               </div>
-            ) : (
-              t('verify.verifyButton')
-            )}
-          </button>
-        </form>
+            </div>
 
-        {/* Divider */}
-        <div className="my-6 flex items-center gap-4">
-          <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">OR</span>
-          <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
+            <button type="submit" disabled={loading || code.join('').length !== 5}
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
+              {loading
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Verifying...</>
+                : t('verify.verifyButton')}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-sm text-gray-500">{t('verify.didntReceive')}</p>
+            <button onClick={handleResend} disabled={resending}
+              className="text-teal-600 font-semibold text-sm hover:underline disabled:opacity-50">
+              {resending ? t('verify.resending') : t('verify.resendCode')}
+            </button>
+          </div>
+
+          <div className="mt-6 text-center">
+            <Link href="/login" className="text-sm text-gray-400 hover:text-gray-600">
+              ← Back to Login
+            </Link>
+          </div>
         </div>
-
-        {/* Resend Code */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            {t('verify.didntReceive')}
-          </p>
-          <button
-            onClick={handleResendCode}
-            disabled={resending}
-            className="text-purple-600 dark:text-purple-400 hover:underline font-bold text-sm disabled:opacity-50"
-          >
-            {resending ? t('verify.resending') : t('verify.resendCode')}
-          </button>
-        </div>
-
-        {/* Back to Login */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-          >
-            ← {t('common.back')} to Login
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-75">
-        © 2025 E-Vuze Healthcare Platform. All rights reserved.
       </div>
     </div>
   );
 }
 
-// Main component with Suspense boundary
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-linear-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">Loading...</div></div>}>
       <VerifyEmailForm />
     </Suspense>
   );

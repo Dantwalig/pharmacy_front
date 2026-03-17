@@ -37,7 +37,8 @@ export default function PharmacyAnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await api.get('/pharmacies/analytics');
+      // Correct endpoint: GET /pharmacies/dashboard/analytics
+      const res = await api.get('/pharmacies/dashboard/analytics');
       setStats(res.data);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
