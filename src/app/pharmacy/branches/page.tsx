@@ -16,18 +16,25 @@ export default function BranchManagementPage() {
   const [search, setSearch]     = useState('');
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm]          = useState({ name: '', address: '', managerEmail: '' });
+  const [form, setForm]          = useState({ name: '', address: '', branchManagerEmail: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createSuccess, setCreateSuccess] = useState('');
 
-  const load = async () => {
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
+    setFetchError(false);
     try {
-      const res = await api.get('/branches');
+      const res = await api.get('/branches/my-branches');
       setBranches(res.data?.data ?? res.data ?? []);
-    } catch { }
+    } catch {
+      setFetchError(true);
+    }
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(false); }, []);
 
   const filtered = branches.filter(b =>
     !search ||
@@ -36,23 +43,38 @@ export default function BranchManagementPage() {
   );
 
   const handleAdd = async () => {
+    setCreateError('');
     setSubmitting(true);
     try {
-      await api.post('/branches', form);
+      await api.post('/branches/create', form);
       setShowModal(false);
-      setForm({ name: '', address: '', managerEmail: '' });
-      load();
-    } catch { }
+      setForm({ name: '', address: '', branchManagerEmail: '' });
+      setCreateSuccess('Branch added successfully.');
+      setTimeout(() => setCreateSuccess(''), 4000);
+      load(true);
+    } catch {
+      setCreateError(t('pharmacyOwner.createError'));
+    }
     setSubmitting(false);
   };
 
-  const statusStyle = (s: string) =>
-    s === 'APPROVED' || s === 'ACTIVE'
-      ? { bg: '#D1FAE5', text: '#065F46', label: 'Active' }
-      : { bg: '#FEE2E2', text: '#991B1B', label: 'Inactive' };
+  const statusStyle = (s: string) => {
+    switch (s) {
+      case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active' };
+      case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup' };
+      case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval' };
+      default:         return { bg: '#F3F4F6', text: '#6B7280', label: s ?? '—' };
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {createSuccess && (
+        <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>
+          {createSuccess}
+        </div>
+      )}
+
       {/* Hero */}
       <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
         <h1 className="text-3xl font-bold">{t('pharmacyOwner.branchManagementTitle')}</h1>
@@ -71,7 +93,7 @@ export default function BranchManagementPage() {
           />
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => { setShowModal(true); setCreateError(''); }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium"
           style={{ backgroundColor: TEAL }}
         >
@@ -102,24 +124,24 @@ export default function BranchManagementPage() {
           <tbody>
             {loading ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.loading')}</td></tr>
+            ) : fetchError ? (
+              <tr><td colSpan={6} className="py-12 text-center text-gray-400 text-sm">Could not load branches. Check your connection and try again.</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.noData')}</td></tr>
             ) : (
               filtered.map((b: any) => {
-                const st = statusStyle(b.status);
+                const st = statusStyle(b.branchStatus);
                 return (
                   <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="px-5 py-4 text-sm font-semibold text-gray-800">{b.name}</td>
                     <td className="px-5 py-4 text-sm text-gray-500">{b.address}</td>
                     <td className="px-5 py-4 text-sm">
-                      {b.managerName
-                        ? <span className="font-medium" style={{ color: TEAL }}>{b.managerName}</span>
+                      {b.manager?.email
+                        ? <span className="font-medium" style={{ color: TEAL }}>{b.manager.email}</span>
                         : <span className="text-amber-500 font-medium">{t('common.unassigned')}</span>
                       }
                     </td>
-                    <td className="px-5 py-4 text-sm text-gray-700">
-                      RWF {b.monthlyRevenue?.toLocaleString() ?? '0'}
-                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400">—</td>
                     <td className="px-5 py-4">
                       <span
                         className="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -178,25 +200,28 @@ export default function BranchManagementPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Manager Email
+                  Manager Email *
                 </label>
                 <input
-                  value={form.managerEmail}
-                  onChange={e => setForm(f => ({ ...f, managerEmail: e.target.value }))}
+                  value={form.branchManagerEmail}
+                  onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            {createError && (
+              <p className="mt-4 text-sm" style={{ color: '#92400E' }}>{createError}</p>
+            )}
+            <div className="flex gap-3 mt-4">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => { setShowModal(false); setCreateError(''); }}
                 className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleAdd}
-                disabled={submitting || !form.name || !form.address}
+                disabled={submitting || !form.name || !form.address || !form.branchManagerEmail}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
                 style={{ backgroundColor: TEAL }}
               >

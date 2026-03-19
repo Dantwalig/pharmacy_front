@@ -365,6 +365,13 @@ export const fr = {
     warning: 'Avertissement',
     lowStock: 'Stock faible',
     medicationsBelow: 'médicaments en dessous du seuil',
+    sendCredentials: 'Envoyer les identifiants',
+    resendCredentials: 'Renvoyer les identifiants',
+    credentialsSent: 'Identifiants envoyés avec succès',
+    credentialsResent: 'Identifiants renvoyés avec succès',
+    credentialsFailed: 'Échec de l\'envoi des identifiants',
+    fetchError: 'Échec du chargement des détails de l\'agence',
+    createError: 'Échec de la création de l\'agence',
   },
   pharmacy: {
     dashboard: 'Tableau de bord pharmacie',

@@ -1,7 +1,7 @@
 // frontend/src/app/pharmacy/layout.tsx
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
@@ -11,6 +11,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function PharmacyLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [supportOpen, setSupportOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,8 +33,12 @@ export default function PharmacyLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar />
-      <SupportBot />
+      <PharmacySidebar onOpenSupport={() => setSupportOpen(true)} />
+      <SupportBot
+        open={supportOpen}
+        onOpen={() => setSupportOpen(true)}
+        onClose={() => setSupportOpen(false)}
+      />
       <div className="flex-1 flex flex-col lg:ml-72">
         <PharmacyTopbar />
         <main className="flex-1 p-4 lg:p-8 overflow-auto">

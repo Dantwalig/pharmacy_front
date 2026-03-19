@@ -365,6 +365,13 @@ export const rw = {
     warning: 'Iburira',
     lowStock: 'Ibibiri bike',
     medicationsBelow: 'imiti munsi y\'urwego',
+    sendCredentials: 'Ohereza Amakuru yo Kwinjira',
+    resendCredentials: 'Ongera Ohereza Amakuru',
+    credentialsSent: 'Amakuru yoherejwe neza',
+    credentialsResent: 'Amakuru yongeye koherezwa neza',
+    credentialsFailed: 'Kohereza amakuru ntibyakunze',
+    fetchError: 'Kugeraho amakuru y\'ishami ntibyakunze',
+    createError: 'Gukora ishami ntibyakunze',
   },
   pharmacy: {
     dashboard: 'Ikibaho cya Iduka',

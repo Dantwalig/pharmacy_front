@@ -13,7 +13,11 @@ import {
   LogOut,
 } from 'lucide-react';
 
-export default function PharmacySidebar() {
+interface PharmacySidebarProps {
+  onOpenSupport?: () => void;
+}
+
+export default function PharmacySidebar({ onOpenSupport }: PharmacySidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
@@ -72,6 +76,7 @@ export default function PharmacySidebar() {
           </div>
           <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
           <button
+            onClick={onOpenSupport}
             className="w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#2D9B8A' }}
           >

@@ -366,6 +366,13 @@ export const en = {
     warning: 'Warning',
     lowStock: 'Low stock',
     medicationsBelow: 'medications below threshold',
+    sendCredentials: 'Send Credentials',
+    resendCredentials: 'Resend Credentials',
+    credentialsSent: 'Credentials sent successfully',
+    credentialsResent: 'Credentials resent successfully',
+    credentialsFailed: 'Failed to send credentials',
+    fetchError: 'Failed to load branch details',
+    createError: 'Failed to create branch',
   },
   // LEGACY PHARMACY (single-branch dashboard)
   pharmacy: {

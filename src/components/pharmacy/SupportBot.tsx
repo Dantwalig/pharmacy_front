@@ -3,17 +3,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-export default function SupportBot() {
-  const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    issue: '',
-  });
+interface SupportBotProps {
+  open?: boolean;
+  onOpen?: () => void;
+  onClose?: () => void;
+}
+
+export default function SupportBot({ open: openProp, onOpen, onClose }: SupportBotProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', issue: '' });
+
+  // If props are provided, use them (controlled). Otherwise manage state internally.
+  const isOpen     = openProp  !== undefined ? openProp  : internalOpen;
+  const handleOpen  = onOpen  ?? (() => setInternalOpen(true));
+  const handleClose = onClose ?? (() => setInternalOpen(false));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -25,28 +30,25 @@ export default function SupportBot() {
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitSuccess(true);
-      
+
       // Reset form and close modal after 2 seconds
       setTimeout(() => {
         setFormData({ name: '', email: '', issue: '' });
         setSubmitSuccess(false);
-        setIsOpen(false);
+        handleClose();
       }, 2000);
     }, 1000);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
     <>
       {/* Floating Support Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
         aria-label="Contact Support"
       >
@@ -59,14 +61,14 @@ export default function SupportBot() {
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
+            onClick={handleClose}
           />
 
           {/* Modal Content */}
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fadeIn">
             {/* Close Button */}
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <XMarkIcon className="w-6 h-6" />
@@ -87,81 +89,44 @@ export default function SupportBot() {
             {submitSuccess ? (
               <div className="py-8 text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
                 <p className="text-gray-600">We'll get back to you as soon as possible.</p>
               </div>
             ) : (
-              /* Form */
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
-                  </label>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
+                    type="text" id="name" name="name" value={formData.name}
+                    onChange={handleChange} required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     placeholder="John Doe"
                   />
                 </div>
-
-                {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                   <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
+                    type="email" id="email" name="email" value={formData.email}
+                    onChange={handleChange} required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
-
-                {/* Issue Field */}
                 <div>
-                  <label htmlFor="issue" className="block text-sm font-medium text-gray-700 mb-1">
-                    Describe Your Issue
-                  </label>
+                  <label htmlFor="issue" className="block text-sm font-medium text-gray-700 mb-1">Describe Your Issue</label>
                   <textarea
-                    id="issue"
-                    name="issue"
-                    value={formData.issue}
-                    onChange={handleChange}
-                    required
-                    rows={4}
+                    id="issue" name="issue" value={formData.issue}
+                    onChange={handleChange} required rows={4}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all resize-none"
                     placeholder="Tell us what you need help with..."
                   />
                 </div>
-
-                {/* Submit Button */}
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
+                  type="submit" disabled={isSubmitting}
                   className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white font-medium py-3 rounded-lg transition-colors"
                 >
                   {isSubmitting ? 'Sending...' : 'Send Message'}
