@@ -58,10 +58,14 @@ export default function EditMedicationPage() {
     setSaving(true);
     try {
       await api.put(`/medications/${params.id}`, {
-        ...form,
-        unitPrice: parseFloat(form.unitPrice),
-        quantityInStock: parseInt(form.quantityInStock),
+        name: form.name,
+        category: form.category,
+        chemicalName: form.dosage || undefined,
+        description: form.description || undefined,
+        price: parseFloat(form.unitPrice),       // correct field name
+        quantity: parseInt(form.quantityInStock), // correct field name
         lowStockThreshold: parseInt(form.lowStockThreshold),
+        requiresPrescription: form.requiresPrescription,
       });
       toast.success('Medication updated!');
       setEditing(false);
@@ -88,12 +92,12 @@ export default function EditMedicationPage() {
 
   if (loading) return (
     <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar /><SupportBot />
-      <div className="flex-1 flex flex-col lg:ml-72"><PharmacyTopbar />
-        <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
-      </div>
+    <PharmacySidebar /><SupportBot />
+    <div className="flex-1 flex flex-col lg:ml-72"><PharmacyTopbar />
+      <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
     </div>
-  );
+  </div>
+);
 
   if (!med) return null;
 
@@ -102,134 +106,134 @@ export default function EditMedicationPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar /><SupportBot />
-      <div className="flex-1 flex flex-col lg:ml-72">
-        <PharmacyTopbar />
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          <div className="max-w-3xl mx-auto space-y-6">
+    <PharmacySidebar /><SupportBot />
+    <div className="flex-1 flex flex-col lg:ml-72">
+      <PharmacyTopbar />
+      <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <div className="max-w-3xl mx-auto space-y-6">
 
-            <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-              <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
+            <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
             </button>
 
-            {/* Header card */}
+          {/* Header card */}
             <div className="bg-linear-to-r from-[#1E4D8C] to-[#2563a8] rounded-2xl p-6 text-white flex items-start justify-between">
-              <div>
-                <h1 className="text-2xl font-bold mb-1">{med.name}</h1>
-                <p className="text-blue-200 text-sm">{med.category}</p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+            <div>
+              <h1 className="text-2xl font-bold mb-1">{med.name}</h1>
+              <p className="text-blue-200 text-sm">{med.category}</p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                 stockStatus === 'out' ? 'bg-red-500 text-white' :
                 stockStatus === 'low' ? 'bg-yellow-400 text-yellow-900' :
                 'bg-green-400 text-green-900'
               }`}>
-                {stockStatus === 'out' ? 'Out of Stock' : stockStatus === 'low' ? 'Low Stock' : 'In Stock'}
+              {stockStatus === 'out' ? 'Out of Stock' : stockStatus === 'low' ? 'Low Stock' : 'In Stock'}
               </span>
-            </div>
+          </div>
 
-            {/* Actions bar */}
+          {/* Actions bar */}
             <div className="flex gap-3">
-              {!editing ? (
+            {!editing ? (
                 <>
-                  <button onClick={() => setEditing(true)}
+                <button onClick={() => setEditing(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
-                    <PencilIcon className="w-4 h-4" /> Edit Medication
+                  <PencilIcon className="w-4 h-4" /> Edit Medication
                   </button>
-                  <button onClick={handleDelete} disabled={deleting}
+                <button onClick={handleDelete} disabled={deleting}
                     className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                    <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
+                  <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
                   </button>
-                </>
-              ) : (
+              </>
+            ) : (
                 <>
-                  <button onClick={handleSave} disabled={saving}
+                <button onClick={handleSave} disabled={saving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                    <CheckIcon className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
+                  <CheckIcon className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
                   </button>
-                  <button onClick={() => { setEditing(false); fetchMedication(); }}
+                <button onClick={() => { setEditing(false); fetchMedication(); }}
                     className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-                    <XMarkIcon className="w-4 h-4" /> Cancel
+                  <XMarkIcon className="w-4 h-4" /> Cancel
                   </button>
-                </>
-              )}
+              </>
+            )}
             </div>
 
-            {/* Form / View */}
+          {/* Form / View */}
             <div className="bg-white rounded-xl shadow-md p-6 space-y-5">
-              <h2 className="text-base font-bold text-gray-900 border-b pb-3">Medication Information</h2>
+            <h2 className="text-base font-bold text-gray-900 border-b pb-3">Medication Information</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Name</label>
-                  {editing
-                    ? <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className={inputCls} />
-                    : <div className={viewCls}>{form.name}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-                  {editing
-                    ? <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className={inputCls}>
-                        {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    : <div className={viewCls}>{form.category}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Dosage / Strength</label>
-                  {editing
-                    ? <input type="text" value={form.dosage} onChange={e => setForm({...form, dosage: e.target.value})} className={inputCls} />
-                    : <div className={viewCls}>{form.dosage || '—'}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Manufacturer</label>
-                  {editing
-                    ? <input type="text" value={form.manufacturer} onChange={e => setForm({...form, manufacturer: e.target.value})} className={inputCls} />
-                    : <div className={viewCls}>{form.manufacturer || '—'}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Unit Price (RWF)</label>
-                  {editing
-                    ? <input type="number" min="0" value={form.unitPrice} onChange={e => setForm({...form, unitPrice: e.target.value})} className={inputCls} />
-                    : <div className={`${viewCls} font-semibold text-teal-600`}>{Number(form.unitPrice).toLocaleString()} RWF</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Quantity In Stock</label>
-                  {editing
-                    ? <input type="number" min="0" value={form.quantityInStock} onChange={e => setForm({...form, quantityInStock: e.target.value})} className={inputCls} />
-                    : <div className={`${viewCls} ${stockStatus !== 'ok' ? 'text-red-600 font-semibold' : ''}`}>{form.quantityInStock} units</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Low Stock Threshold</label>
-                  {editing
-                    ? <input type="number" min="1" value={form.lowStockThreshold} onChange={e => setForm({...form, lowStockThreshold: e.target.value})} className={inputCls} />
-                    : <div className={viewCls}>{form.lowStockThreshold} units</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Expiry Date</label>
-                  {editing
-                    ? <input type="date" value={form.expiryDate} onChange={e => setForm({...form, expiryDate: e.target.value})} className={inputCls} />
-                    : <div className={viewCls}>{form.expiryDate || '—'}</div>}
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Name</label>
                 {editing
+                    ? <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className={inputCls} />
+                  : <div className={viewCls}>{form.name}</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+                {editing
+                    ? <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className={inputCls}>
+                      {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                  : <div className={viewCls}>{form.category}</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Dosage / Strength</label>
+                {editing
+                    ? <input type="text" value={form.dosage} onChange={e => setForm({...form, dosage: e.target.value})} className={inputCls} />
+                  : <div className={viewCls}>{form.dosage || '—'}</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Manufacturer</label>
+                {editing
+                    ? <input type="text" value={form.manufacturer} onChange={e => setForm({...form, manufacturer: e.target.value})} className={inputCls} />
+                  : <div className={viewCls}>{form.manufacturer || '—'}</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Unit Price (RWF)</label>
+                {editing
+                    ? <input type="number" min="0" value={form.unitPrice} onChange={e => setForm({...form, unitPrice: e.target.value})} className={inputCls} />
+                  : <div className={`${viewCls} font-semibold text-teal-600`}>{Number(form.unitPrice).toLocaleString()} RWF</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Quantity In Stock</label>
+                {editing
+                    ? <input type="number" min="0" value={form.quantityInStock} onChange={e => setForm({...form, quantityInStock: e.target.value})} className={inputCls} />
+                  : <div className={`${viewCls} ${stockStatus !== 'ok' ? 'text-red-600 font-semibold' : ''}`}>{form.quantityInStock} units</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Low Stock Threshold</label>
+                {editing
+                    ? <input type="number" min="1" value={form.lowStockThreshold} onChange={e => setForm({...form, lowStockThreshold: e.target.value})} className={inputCls} />
+                  : <div className={viewCls}>{form.lowStockThreshold} units</div>}
+                </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Expiry Date</label>
+                {editing
+                    ? <input type="date" value={form.expiryDate} onChange={e => setForm({...form, expiryDate: e.target.value})} className={inputCls} />
+                  : <div className={viewCls}>{form.expiryDate || '—'}</div>}
+                </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+              {editing
                   ? <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className={`${inputCls} resize-none`} rows={3} />
-                  : <div className={`${viewCls} min-h-[60px]`}>{form.description || '—'}</div>}
+                : <div className={`${viewCls} min-h-[60px]`}>{form.description || '—'}</div>}
               </div>
 
-              <div className={`flex items-center gap-3 p-3 rounded-lg ${form.requiresPrescription ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 border border-gray-200'}`}>
-                {editing
+            <div className={`flex items-center gap-3 p-3 rounded-lg ${form.requiresPrescription ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 border border-gray-200'}`}>
+              {editing
                   ? <input type="checkbox" checked={form.requiresPrescription} onChange={e => setForm({...form, requiresPrescription: e.target.checked})} className="w-4 h-4 text-teal-500 rounded" />
-                  : <span>{form.requiresPrescription ? '⚠️' : '✅'}</span>}
+                : <span>{form.requiresPrescription ? '' : ''}</span>}
                 <span className="text-sm font-medium text-gray-700">
-                  {form.requiresPrescription ? 'Requires Prescription' : 'No Prescription Required'}
+                {form.requiresPrescription ? 'Requires Prescription' : 'No Prescription Required'}
                 </span>
-              </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
 }

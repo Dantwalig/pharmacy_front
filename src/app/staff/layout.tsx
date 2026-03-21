@@ -1,8 +1,6 @@
-// frontend/src/app/staff/layout.tsx
-
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import StaffSidebar from '@/components/staff/StaffSidebar';
@@ -16,6 +14,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !STAFF_ROLES.includes(user.role))) {
@@ -33,16 +32,18 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
   if (!user || !STAFF_ROLES.includes(user.role)) return null;
 
-  // Change-password page renders fullscreen without sidebar
   const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
   if (isStandalone) return <>{children}</>;
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <StaffSidebar />
-      <div className="flex-1 lg:ml-64">
-        <StaffTopbar />
-        <main className="p-6">{children}</main>
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+      <StaffSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex-1 lg:ml-64 min-w-0">
+        <StaffTopbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

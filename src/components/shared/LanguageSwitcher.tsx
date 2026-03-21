@@ -29,9 +29,9 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-1">
-      {languages.map((lang, index) => (
+    {languages.map((lang, index) => (
         <div key={lang.code} className="flex items-center">
-          <button
+        <button
             onClick={() => changeLanguage(lang.code)}
             className={`px-2 py-1 text-sm font-semibold transition-colors ${
               i18n.language === lang.code
@@ -39,13 +39,13 @@ export default function LanguageSwitcher() {
                 : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
             }`}
           >
-            {lang.name}
+          {lang.name}
           </button>
-          {index < languages.length - 1 && (
+        {index < languages.length - 1 && (
             <span className="text-gray-300 dark:text-gray-600">|</span>
-          )}
+        )}
         </div>
-      ))}
+    ))}
     </div>
-  );
+);
 }

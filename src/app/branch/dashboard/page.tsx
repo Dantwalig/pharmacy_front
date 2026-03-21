@@ -1,5 +1,3 @@
-// frontend/src/app/branch/dashboard/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -13,6 +11,9 @@ import {
   XCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
 
 interface AttendanceSummary {
   total: number;
@@ -43,17 +44,15 @@ export default function BranchDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
     try {
       const [summaryRes, clockInsRes, clockOutsRes, staffRes] = await Promise.all([
-        api.get('/attendance/summary'),           // GET /attendance/summary
-        api.get('/attendance/pending-clock-ins'), // GET /attendance/pending-clock-ins
-        api.get('/attendance/pending-clock-outs'),// GET /attendance/pending-clock-outs
-        api.get('/staff'),                        // GET /staff
+        api.get('/attendance/summary'),
+        api.get('/attendance/pending-clock-ins'),
+        api.get('/attendance/pending-clock-outs'),
+        api.get('/staff'),
       ]);
       setSummary(summaryRes.data);
       setPendingClockIns(clockInsRes.data);
@@ -69,55 +68,47 @@ export default function BranchDashboardPage() {
   const approveClockIn = async (id: string) => {
     setActionLoading(id);
     try {
-      await api.put(`/attendance/${id}/approve-clock-in`, {}); // PUT /attendance/:id/approve-clock-in
+      await api.put(`/attendance/${id}/approve-clock-in`, {});
       toast.success('Clock-in approved');
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, pending: prev.pending - 1, approved: prev.approved + 1 } : prev);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to approve');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const rejectClockIn = async (id: string) => {
     setActionLoading(id + '-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-in`, { reason: 'Rejected by manager' }); // PUT /attendance/:id/reject-clock-in
+      await api.put(`/attendance/${id}/reject-clock-in`, { reason: 'Rejected by manager' });
       toast.success('Clock-in rejected');
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reject');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const approveClockOut = async (id: string) => {
     setActionLoading(id + '-out');
     try {
-      await api.put(`/attendance/${id}/approve-clock-out`, {}); // PUT /attendance/:id/approve-clock-out
+      await api.put(`/attendance/${id}/approve-clock-out`, {});
       toast.success('Clock-out approved');
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, completed: prev.completed + 1 } : prev);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to approve');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const rejectClockOut = async (id: string) => {
     setActionLoading(id + '-out-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-out`, { reason: 'Rejected by manager' }); // PUT /attendance/:id/reject-clock-out
+      await api.put(`/attendance/${id}/reject-clock-out`, { reason: 'Rejected by manager' });
       toast.success('Clock-out rejected');
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reject');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const formatTime = (dateStr: string) =>
@@ -126,42 +117,49 @@ export default function BranchDashboardPage() {
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   const statCards = [
-    { label: 'Total Staff', value: staffCount, icon: UserGroupIcon, color: 'bg-emerald-50 text-emerald-700' },
-    { label: 'Pending Approvals', value: (pendingClockIns.length + pendingClockOuts.length), icon: ClockIcon, color: 'bg-yellow-50 text-yellow-700' },
-    { label: 'Active Today', value: summary?.approved ?? 0, icon: ClipboardDocumentCheckIcon, color: 'bg-blue-50 text-blue-700' },
-    { label: 'Hours Worked', value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`, icon: CheckCircleIcon, color: 'bg-violet-50 text-violet-700' },
+    { label: 'Total Staff',       value: staffCount,                                          icon: UserGroupIcon,            dark: false },
+    { label: 'Pending Approvals', value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                dark: false },
+    { label: 'Active Today',      value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
+    { label: 'Hours Worked',      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,  icon: CheckCircleIcon,          dark: true  },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Branch Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Today's overview and pending approvals</p>
+      {/* Hero banner — matches pharmacy owner pattern */}
+      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+        <h1 className="text-2xl lg:text-3xl font-bold">Branch Dashboard</h1>
+        <p className="mt-1 text-white/70">Today's overview and pending approvals</p>
       </div>
 
-      {/* Stats */}
+      {/* Stat cards — inline navy/teal, same pattern as pharmacy owner */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat) => {
-          const Icon = stat.icon;
+        {statCards.map((s) => {
+          const Icon = s.icon;
           return (
-            <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
-                <Icon className="w-5 h-5" />
+            <div
+              key={s.label}
+              className="rounded-2xl p-5 flex items-center justify-between"
+              style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+            >
+              <div>
+                <p className="text-white/80 text-sm">{s.label}</p>
+                <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
+                <Icon className="w-5 h-5 text-white" />
+              </div>
             </div>
           );
         })}
       </div>
 
+      {/* Pending clock-ins and clock-outs */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Pending Clock-Ins */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Ins</h2>
-            <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
+            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockIns.length}
             </span>
           </div>
@@ -175,13 +173,16 @@ export default function BranchDashboardPage() {
                     <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                       {record.staff.firstName} {record.staff.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{record.staff.user.role.toLowerCase()} · {formatTime(record.clockInTime)}</p>
+                    <p className="text-xs text-gray-500">
+                      {record.staff.user.role.toLowerCase()} · {formatTime(record.clockInTime)}
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => approveClockIn(record.id)}
                       disabled={!!actionLoading}
-                      className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all disabled:opacity-50"
+                      className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                      style={{ borderColor: TEAL, color: TEAL }}
                       title="Approve"
                     >
                       <CheckCircleIcon className="w-4 h-4" />
@@ -205,7 +206,7 @@ export default function BranchDashboardPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Outs</h2>
-            <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
+            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockOuts.length}
             </span>
           </div>
@@ -227,7 +228,8 @@ export default function BranchDashboardPage() {
                     <button
                       onClick={() => approveClockOut(record.id)}
                       disabled={!!actionLoading}
-                      className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all disabled:opacity-50"
+                      className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                      style={{ borderColor: TEAL, color: TEAL }}
                       title="Approve"
                     >
                       <CheckCircleIcon className="w-4 h-4" />

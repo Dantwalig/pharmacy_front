@@ -128,8 +128,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      const response = await api.get('/auth/me');
-      const userData = response.data;
+      const currentUser = getUserFromToken();
+      if (!currentUser) throw new Error('No user');
+
+      let endpoint = '';
+      switch (currentUser.role) {
+        case 'PHARMACY':
+          endpoint = '/pharmacies/profile/me';
+          break;
+        case 'PATIENT':
+          endpoint = '/patients/profile';
+          break;
+        case 'BRANCH_MANAGER':
+        case 'PHARMACIST':
+        case 'CASHIER':
+        case 'NURSE':
+          endpoint = '/staff/profile/me';
+          break;
+        default:
+          // SUPER_ADMIN — no profile endpoint, just use cached token data
+          return;
+      }
+
+      const response = await api.get(endpoint);
+      const userData = { ...currentUser, ...response.data };
       cacheUserData(userData);
       setUser(userData);
     } catch (error) {
@@ -143,9 +165,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser }}>
-      {children}
+    {children}
     </AuthContext.Provider>
-  );
+);
 };
 
 export const useAuth = () => {

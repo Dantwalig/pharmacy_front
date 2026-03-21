@@ -66,58 +66,58 @@ function VerifyEmailForm() {
 
   return (
     <div className="min-h-screen flex relative">
-      <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
+    <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
 
-      {/* LEFT PANEL */}
+    {/* LEFT PANEL */}
       <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-10 flex-col justify-between text-white">
-        <div>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
-            <p className="text-blue-200 text-sm">Healthcare Platform</p>
-          </div>
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-3">Email Verification</h2>
-            <p className="text-blue-100 text-sm leading-relaxed">
-              Almost there! Verify your email to activate your account and start using Evuze.
+      <div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+          <p className="text-blue-200 text-sm">Healthcare Platform</p>
+        </div>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-3">Email Verification</h2>
+          <p className="text-blue-100 text-sm leading-relaxed">
+            Almost there! Verify your email to activate your account and start using Evuze.
             </p>
-          </div>
-          <div className="space-y-4">
-            {[
+        </div>
+        <div className="space-y-4">
+          {[
               { icon: MapPinIcon, title: 'Find Nearby Pharmacies', desc: 'Locate pharmacies with real-time availability.' },
               { icon: ClockIcon, title: 'Save Time', desc: 'Check availability before visiting.' },
               { icon: UserGroupIcon, title: 'Connect with Healthcare', desc: 'Bridge patients and pharmacies.' },
               { icon: ShieldCheckIcon, title: 'Secure & Private', desc: 'Enterprise-grade security.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-3">
-                <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
-                <div>
-                  <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
-                  <p className="text-blue-200 text-xs">{desc}</p>
-                </div>
+              <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
+              <div>
+                <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
+                <p className="text-blue-200 text-xs">{desc}</p>
               </div>
-            ))}
+            </div>
+          ))}
           </div>
-        </div>
-        <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
       </div>
+      <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+    </div>
 
-      {/* RIGHT PANEL */}
+    {/* RIGHT PANEL */}
       <div className="w-full lg:w-7/12 flex items-center justify-center bg-gray-50 p-8">
-        <div className="w-full max-w-md">
-          {/* Icon */}
+      <div className="w-full max-w-md">
+        {/* Icon */}
           <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-            <EnvelopeIcon className="w-7 h-7 text-blue-600" />
-          </div>
+          <EnvelopeIcon className="w-7 h-7 text-blue-600" />
+        </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('verify.title')}</h2>
-          <p className="text-gray-500 text-sm mb-1">{t('verify.subtitle')}</p>
-          {email && <p className="text-xs text-teal-600 font-medium mb-6">Sent to: {email}</p>}
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('verify.title')}</h2>
+        <p className="text-gray-500 text-sm mb-1">{t('verify.subtitle')}</p>
+        {email && <p className="text-xs text-teal-600 font-medium mb-6">Sent to: {email}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-3">{t('verify.enterCode')}</label>
-              <div className="flex gap-2.5 justify-start">
-                {code.map((digit, idx) => (
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-3">{t('verify.enterCode')}</label>
+            <div className="flex gap-2.5 justify-start">
+              {code.map((digit, idx) => (
                   <input key={idx}
                     ref={el => { inputRefs.current[idx] = el; }}
                     type="text" inputMode="numeric" maxLength={1} value={digit}
@@ -125,41 +125,41 @@ function VerifyEmailForm() {
                     onKeyDown={e => handleKeyDown(idx, e)} onPaste={handlePaste}
                     className="w-13 h-13 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
                     disabled={loading} />
-                ))}
+              ))}
               </div>
-            </div>
+          </div>
 
-            <button type="submit" disabled={loading || code.join('').length !== 5}
+          <button type="submit" disabled={loading || code.join('').length !== 5}
               className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading
+            {loading
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Verifying...</>
-                : t('verify.verifyButton')}
+              : t('verify.verifyButton')}
             </button>
-          </form>
+        </form>
 
-          <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-gray-500">{t('verify.didntReceive')}</p>
-            <button onClick={handleResend} disabled={resending}
+        <div className="mt-6 text-center space-y-3">
+          <p className="text-sm text-gray-500">{t('verify.didntReceive')}</p>
+          <button onClick={handleResend} disabled={resending}
               className="text-teal-600 font-semibold text-sm hover:underline disabled:opacity-50">
-              {resending ? t('verify.resending') : t('verify.resendCode')}
+            {resending ? t('verify.resending') : t('verify.resendCode')}
             </button>
-          </div>
+        </div>
 
-          <div className="mt-6 text-center">
-            <Link href="/login" className="text-sm text-gray-400 hover:text-gray-600">
-              ← Back to Login
+        <div className="mt-6 text-center">
+          <Link href="/login" className="text-sm text-gray-400 hover:text-gray-600">
+            ← Back to Login
             </Link>
-          </div>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">Loading...</div></div>}>
-      <VerifyEmailForm />
-    </Suspense>
-  );
+    <VerifyEmailForm />
+  </Suspense>
+);
 }
