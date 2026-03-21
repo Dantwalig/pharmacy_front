@@ -102,9 +102,10 @@ export default function BranchAttendancePage() {
               onClick={() => setFilter(status)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 filter === status
-                  ? 'bg-emerald-600 text-white'
+                  ? 'text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
               }`}
+              style={filter === status ? { backgroundColor: '#2D9B8A' } : {}}
             >
             {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
             </button>

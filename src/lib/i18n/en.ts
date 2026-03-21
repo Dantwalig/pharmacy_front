@@ -495,6 +495,13 @@ export const en = {
     reject: 'Reject',
     pending: 'Pending',
     approved: 'Approved',
+    analytics: 'Analytics',
+    staffDetail: 'Staff Details',
+    attendanceHistory: 'Attendance History',
+    totalShifts: 'Total Shifts',
+    completedShifts: 'Completed Shifts',
+    totalHours: 'Total Hours',
+    removeFromBranch: 'Remove from Branch',
   },
   staff: {
     portal: 'Staff Portal',

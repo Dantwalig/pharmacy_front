@@ -493,6 +493,13 @@ export const rw = {
     reject: 'Anga',
     pending: 'Bitegereje',
     approved: 'Byemejwe',
+    analytics: 'Isesengura',
+    staffDetail: 'Amakuru y\'Umukozi',
+    attendanceHistory: 'Amazina y\'Akazi',
+    totalShifts: 'Ibikorwa Byose',
+    completedShifts: 'Ibikorwa Byarangiye',
+    totalHours: 'Amasaha Yose',
+    removeFromBranch: 'Kureka Umukozi',
   },
   staff: {
     portal: 'Urubuga rw\'Umukozi',

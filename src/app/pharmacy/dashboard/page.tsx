@@ -292,7 +292,7 @@ export default function PharmacyDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-semibold text-gray-800">Revenue per Branch</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Past 30 days — {revenueView === 'daily' ? 'day by day' : 'grouped by week'}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Past 30 days, {revenueView === 'daily' ? 'day by day' : 'grouped by week'}</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Daily / Weekly toggle */}
@@ -375,7 +375,7 @@ export default function PharmacyDashboard() {
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
         <div className="mb-4">
           <h3 className="font-semibold text-gray-800">Total Revenue Trend</h3>
-          <p className="text-xs text-gray-400 mt-0.5">All branches combined — past 30 days ({revenueView === 'daily' ? 'daily' : 'weekly'})</p>
+          <p className="text-xs text-gray-400 mt-0.5">All branches combined, past 30 days ({revenueView === 'daily' ? 'daily' : 'weekly'})</p>
         </div>
         {totalTimeData.length > 0 ? (
           <ResponsiveContainer width="100%" height={220}>

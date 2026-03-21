@@ -493,6 +493,13 @@ export const fr = {
     reject: 'Rejeter',
     pending: 'En attente',
     approved: 'Approuvé',
+    analytics: 'Analytique',
+    staffDetail: 'Détails du personnel',
+    attendanceHistory: 'Historique des présences',
+    totalShifts: 'Total des quarts',
+    completedShifts: 'Quarts terminés',
+    totalHours: 'Heures totales',
+    removeFromBranch: 'Retirer de l\'agence',
   },
   staff: {
     portal: 'Portail du personnel',

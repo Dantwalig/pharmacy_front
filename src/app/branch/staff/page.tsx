@@ -12,7 +12,11 @@ import {
   PlusIcon,
   ArrowPathIcon,
   TrashIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
 
 interface StaffMember {
   id: string;
@@ -93,7 +97,8 @@ export default function BranchStaffPage() {
       </div>
       <button
           onClick={() => router.push('/branch/staff/new')}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          style={{ backgroundColor: TEAL }}
         >
         <PlusIcon className="w-4 h-4" />
         Add Staff
@@ -108,7 +113,8 @@ export default function BranchStaffPage() {
         <p className="text-gray-400 text-sm mt-1">Add your first staff member to get started</p>
         <button
             onClick={() => router.push('/branch/staff/new')}
-            className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{ backgroundColor: TEAL }}
           >
           Add Staff Member
           </button>
@@ -151,7 +157,7 @@ export default function BranchStaffPage() {
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       member.status === 'ACTIVE'
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-600'
                     }`}>
                     {member.status}
@@ -159,6 +165,14 @@ export default function BranchStaffPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
+                    <button
+                        onClick={() => router.push(`/branch/staff/${member.id}`)}
+                        className="p-1.5 rounded-lg transition-all"
+                        style={{ color: TEAL }}
+                        title="View details"
+                      >
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
                     <button
                         onClick={() => handleResendCredentials(member.id, member.user.email)}
                         disabled={!!actionId}
@@ -171,7 +185,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        title="Delete staff"
+                        title="Remove staff member"
                       >
                       <TrashIcon className="w-4 h-4" />
                     </button>
