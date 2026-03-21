@@ -520,10 +520,5 @@ export const rw = {
     tempPassword: 'Ijambo Ryibanga ry\'Agateganyo',
     newPassword: 'Ijambo Ryibanga Rishya',
     confirmPassword: 'Emeza Ijambo Ryibanga Rishya',
-    orders: 'Amaporosi',
-    ordersSubtitle: 'Reba no gucunga amaporosi y\'ishami',
-    updateStatus: 'Hindura Imimerere',
-    itemsSold: 'Ibicuruzwa',
-    hasPresription: 'Ifite Indangamuntu',
   },
 };
