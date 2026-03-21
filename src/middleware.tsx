@@ -1,9 +1,6 @@
-// middleware.ts
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Decode JWT to read the payload
 function decodeToken(token: string): { role?: string; pharmacyStatus?: string } | null {
   try {
     const payload = token.split('.')[1];
@@ -18,18 +15,16 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('accessToken')?.value;
   const { pathname } = request.nextUrl;
 
-  const isSuperAdminRoute = pathname.startsWith('/super-admin');
+  const isSuperAdminRoute = pathname.startsWith('/super-admin') && pathname !== '/super-admin/login';
   const isPharmacyRoute   = pathname.startsWith('/pharmacy');
   const isPatientRoute    = pathname.startsWith('/patient');
+  const isBranchRoute     = pathname.startsWith('/branch');
+  const isStaffRoute      = pathname.startsWith('/staff');
 
-  // If the route is not one of the three protected prefixes, let it through.
-  // This naturally covers /login, /signup, /pending-approval,
-  // /pharmacy-rejected, and every other public page.
-  if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute) {
+  if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute) {
     return NextResponse.next();
   }
 
- // Protected route from here on a valid token is required.
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
@@ -47,25 +42,18 @@ export function middleware(request: NextRequest) {
   }
 
   if (isPharmacyRoute) {
-    // Wrong role entirely → back to login
     if (payload.role !== 'PHARMACY') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-
-    // Check pharmacy approval status
     if (payload.pharmacyStatus === 'PENDING') {
       return NextResponse.redirect(new URL('/pending-approval', request.url));
     }
-
     if (payload.pharmacyStatus === 'REJECTED') {
       return NextResponse.redirect(new URL('/pharmacy-rejected', request.url));
     }
-
-    // Anything other than APPROVED is blocked.
     if (payload.pharmacyStatus !== 'APPROVED') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-
     return NextResponse.next();
   }
 
@@ -76,12 +64,30 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isBranchRoute) {
+    if (payload.role !== 'BRANCH_MANAGER') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (isStaffRoute) {
+    const staffRoles = ['PHARMACIST', 'CASHIER', 'NURSE'];
+    if (!staffRoles.includes(payload.role || '')) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  // Only run middleware on the three protected route prefixes.
-  // Pages like /login, /signup, /pending-approval, /pharmacy-rejected
-  // are NOT matched here, so they are always publicly accessible.
-  matcher: ['/super-admin/:path*','/pharmacy/:path*','/patient/:path*',],
+  matcher: [
+    '/super-admin/:path*',
+    '/pharmacy/:path*',
+    '/patient/:path*',
+    '/branch/:path*',
+    '/staff/:path*',
+  ],
 };

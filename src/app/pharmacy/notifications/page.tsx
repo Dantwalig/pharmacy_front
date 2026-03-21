@@ -7,9 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
 import {
   ShoppingCartIcon,
   ExclamationTriangleIcon,
@@ -57,7 +54,7 @@ export default function PharmacyNotificationsPage() {
     try {
       await api.put(`/notifications/${id}/read`);
       setNotifications(notifications.map(n => 
-        n.id === id ? { ...n, isRead: true } : n
+      n.id === id ? { ...n, isRead: true } : n
       ));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
@@ -135,73 +132,65 @@ export default function PharmacyNotificationsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+      <LoadingSpinner />
+    </div>
+  );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <PharmacySidebar />
-      <SupportBot />
-
-      <div className="flex-1 flex flex-col lg:ml-72">
-        <PharmacyTopbar />
-
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
+    <div className="space-y-6">
+          {/* Header */}
             <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
-                <p className="text-gray-600">You have {unreadCount} unread notifications</p>
-              </div>
-              <div className="flex gap-3">
-                <button 
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+              <p className="text-gray-600">You have {unreadCount} unread notifications</p>
+            </div>
+            <div className="flex gap-3">
+              <button 
                   onClick={markAllAsRead}
                   className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Mark all as read
+                Mark all as read
                 </button>
-              </div>
             </div>
+          </div>
 
-            {/* Summary Cards */}
+          {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white border-l-4 border-blue-500 rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-4xl font-bold text-gray-900">{orderCount}</p>
-                    <p className="text-sm text-gray-600 mt-1">Order Notifications</p>
-                  </div>
-                  <ShoppingCartIcon className="w-12 h-12 text-blue-500" />
+            <div className="bg-white border-l-4 border-blue-500 rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-gray-900">{orderCount}</p>
+                  <p className="text-sm text-gray-600 mt-1">Order Notifications</p>
                 </div>
-              </div>
-
-              <div className="bg-white border-l-4 border-red-500 rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-4xl font-bold text-gray-900">{inventoryCount}</p>
-                    <p className="text-sm text-gray-600 mt-1">Stock Alerts</p>
-                  </div>
-                  <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
-                </div>
-              </div>
-
-              <div className="bg-white border-l-4 border-teal-500 rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-4xl font-bold text-gray-900">{unreadCount}</p>
-                    <p className="text-sm text-gray-600 mt-1">Unread</p>
-                  </div>
-                  <BellIcon className="w-12 h-12 text-teal-500" />
-                </div>
+                <ShoppingCartIcon className="w-12 h-12 text-blue-500" />
               </div>
             </div>
 
-            {/* Filter Tabs */}
+            <div className="bg-white border-l-4 border-red-500 rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-gray-900">{inventoryCount}</p>
+                  <p className="text-sm text-gray-600 mt-1">Stock Alerts</p>
+                </div>
+                <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
+              </div>
+            </div>
+
+            <div className="bg-white border-l-4 border-teal-500 rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-gray-900">{unreadCount}</p>
+                  <p className="text-sm text-gray-600 mt-1">Unread</p>
+                </div>
+                <BellIcon className="w-12 h-12 text-teal-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Tabs */}
             <div className="flex flex-wrap gap-3 border-b border-gray-200 pb-4">
-              <button
+            <button
                 onClick={() => setFilter('ALL')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   filter === 'ALL'
@@ -209,10 +198,10 @@ export default function PharmacyNotificationsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <BellIcon className="w-4 h-4" />
-                All ({notifications.length})
+              <BellIcon className="w-4 h-4" />
+              All ({notifications.length})
               </button>
-              <button
+            <button
                 onClick={() => setFilter('ORDERS')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   filter === 'ORDERS'
@@ -220,10 +209,10 @@ export default function PharmacyNotificationsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <ShoppingCartIcon className="w-4 h-4" />
-                Orders ({orderCount})
+              <ShoppingCartIcon className="w-4 h-4" />
+              Orders ({orderCount})
               </button>
-              <button
+            <button
                 onClick={() => setFilter('INVENTORY')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   filter === 'INVENTORY'
@@ -231,10 +220,10 @@ export default function PharmacyNotificationsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <CubeIcon className="w-4 h-4" />
-                Inventory ({inventoryCount})
+              <CubeIcon className="w-4 h-4" />
+              Inventory ({inventoryCount})
               </button>
-              <button
+            <button
                 onClick={() => setFilter('OTHER')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   filter === 'OTHER'
@@ -242,21 +231,21 @@ export default function PharmacyNotificationsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <UserGroupIcon className="w-4 h-4" />
-                Other ({otherCount})
+              <UserGroupIcon className="w-4 h-4" />
+              Other ({otherCount})
               </button>
-            </div>
+          </div>
 
-            {/* Notifications List */}
+          {/* Notifications List */}
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-gray-900">All Notifications</h2>
+            <h2 className="text-xl font-bold text-gray-900">All Notifications</h2>
               
-              {filteredNotifications.length === 0 ? (
+            {filteredNotifications.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-md p-16 text-center">
-                  <BellIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No notifications yet</p>
-                </div>
-              ) : (
+                <BellIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">No notifications yet</p>
+              </div>
+            ) : (
                 filteredNotifications.map((notif) => {
                   const Icon = getNotificationIcon(notif.type);
                   const colors = getNotificationColor(notif.type);
@@ -270,36 +259,33 @@ export default function PharmacyNotificationsPage() {
                       }}
                       className={`${colors.bg} ${!notif.isRead ? 'border-l-4 ' + colors.border : 'border border-gray-200'} rounded-lg p-6 hover:shadow-md transition-all cursor-pointer relative`}
                     >
-                      <div className="flex gap-4">
-                        <div className={`w-12 h-12 rounded-lg ${colors.bg} flex items-center justify-center shrink-0`}>
-                          <Icon className={`w-6 h-6 ${colors.icon}`} />
-                        </div>
+                    <div className="flex gap-4">
+                      <div className={`w-12 h-12 rounded-lg ${colors.bg} flex items-center justify-center shrink-0`}>
+                        <Icon className={`w-6 h-6 ${colors.icon}`} />
+                      </div>
                         
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-gray-900">{notif.title}</h3>
-                              {!notif.isRead && (
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900">{notif.title}</h3>
+                            {!notif.isRead && (
                                 <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                  New
+                                New
                                 </span>
-                              )}
+                            )}
                             </div>
-                          </div>
-                          <p className="text-gray-700 mb-3">{notif.message}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(notif.createdAt).toLocaleString()}
-                          </p>
                         </div>
+                        <p className="text-gray-700 mb-3">{notif.message}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(notif.createdAt).toLocaleString()}
+                          </p>
                       </div>
                     </div>
-                  );
+                  </div>
+                );
                 })
               )}
             </div>
           </div>
-        </main>
-      </div>
-    </div>
   );
 }
