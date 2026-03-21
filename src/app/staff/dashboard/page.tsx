@@ -29,7 +29,7 @@ interface StaffProfile {
   status: string;
 }
 
-const STATUS_INFO: Record<string, { label: string; color: string; icon: string }> = {
+const STATUS_INFO: Record<string, { label: string; color: string; icon?: string; dot?: string }> = {
   PENDING:     { label: 'Waiting for approval', color: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-400' },
   APPROVED:    { label: 'Active shift — clocked in', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: '' },
   CLOCKED_OUT: { label: 'Clock-out pending approval', color: 'bg-orange-50 text-orange-700 border-orange-200', icon: '' },
