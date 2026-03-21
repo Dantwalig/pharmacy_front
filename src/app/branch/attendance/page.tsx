@@ -77,10 +77,10 @@ export default function BranchAttendancePage() {
   };
 
   const formatTime = (dateStr?: string) =>
-    dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+  dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
   const filtered = filter === 'all' ? records : records.filter(r => r.status === filter);
 
@@ -88,133 +88,134 @@ export default function BranchAttendancePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+    {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attendance</h1>
-          <p className="text-sm text-gray-500 mt-1">{records.length} records total</p>
-        </div>
-        {/* Filter */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attendance</h1>
+        <p className="text-sm text-gray-500 mt-1">{records.length} records total</p>
+      </div>
+      {/* Filter */}
         <div className="flex flex-wrap gap-2">
-          {['all', 'PENDING', 'APPROVED', 'CLOCKED_OUT', 'COMPLETED', 'REJECTED'].map(status => (
+        {['all', 'PENDING', 'APPROVED', 'CLOCKED_OUT', 'COMPLETED', 'REJECTED'].map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 filter === status
-                  ? 'bg-emerald-600 text-white'
+                  ? 'text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
               }`}
+              style={filter === status ? { backgroundColor: '#2D9B8A' } : {}}
             >
-              {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
+            {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
             </button>
-          ))}
+        ))}
         </div>
-      </div>
+    </div>
 
-      {/* Records */}
+    {/* Records */}
       {filtered.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center border border-gray-100 dark:border-gray-700">
-          <p className="text-gray-400">No attendance records found</p>
-        </div>
-      ) : (
+        <p className="text-gray-400">No attendance records found</p>
+      </div>
+    ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Staff</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock In</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock Out</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Hours</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {filtered.map((record) => (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Staff</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock In</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock Out</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Hours</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {filtered.map((record) => (
                   <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                        {record.staff.firstName} {record.staff.lastName}
+                  <td className="px-5 py-3">
+                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                      {record.staff.firstName} {record.staff.lastName}
                       </p>
-                      <p className="text-xs text-gray-500">{record.staff.user.role}</p>
+                    <p className="text-xs text-gray-500">{record.staff.user.role}</p>
+                  </td>
+                  <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    {formatDate(record.clockInTime)}
                     </td>
-                    <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
-                      {formatDate(record.clockInTime)}
+                  <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    {formatTime(record.clockInTime)}
                     </td>
-                    <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
-                      {formatTime(record.clockInTime)}
+                  <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    {formatTime(record.clockOutTime)}
                     </td>
-                    <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
-                      {formatTime(record.clockOutTime)}
+                  <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">
+                    {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '—'}
                     </td>
-                    <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">
-                      {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '—'}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                        {record.status.replace(/_/g, ' ')}
+                  <td className="px-5 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
+                      {record.status.replace(/_/g, ' ')}
                       </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        {/* Pending clock-in: approve or reject */}
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      {/* Pending clock-in: approve or reject */}
                         {record.status === 'PENDING' && (
                           <>
-                            <button
+                          <button
                               onClick={() => handleAction(record.id, 'approve-clock-in', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
                               title="Approve clock-in"
                             >
-                              <CheckCircleIcon className="w-4 h-4" />
-                            </button>
-                            <button
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </button>
+                          <button
                               onClick={() => handleAction(record.id, 'reject-clock-in', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
                               title="Reject clock-in"
                             >
-                              <XCircleIcon className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
+                            <XCircleIcon className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                         {/* Clocked-out: approve or reject clock-out */}
                         {record.status === 'CLOCKED_OUT' && (
                           <>
-                            <button
+                          <button
                               onClick={() => handleAction(record.id, 'approve-clock-out', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
                               title="Approve clock-out"
                             >
-                              <CheckCircleIcon className="w-4 h-4" />
-                            </button>
-                            <button
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </button>
+                          <button
                               onClick={() => handleAction(record.id, 'reject-clock-out', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
                               title="Reject clock-out"
                             >
-                              <XCircleIcon className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
+                            <XCircleIcon className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                         {/* No actions for APPROVED, COMPLETED, REJECTED */}
                         {['APPROVED', 'COMPLETED', 'REJECTED'].includes(record.status) && (
                           <span className="text-xs text-gray-400">—</span>
-                        )}
+                      )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
+                  </td>
+                </tr>
+              ))}
               </tbody>
-            </table>
-          </div>
+          </table>
         </div>
-      )}
+      </div>
+    )}
     </div>
-  );
+);
 }

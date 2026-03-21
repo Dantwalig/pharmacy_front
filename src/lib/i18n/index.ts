@@ -34,8 +34,8 @@ i18n
 
 export default i18n;
 
-// ──────────────────────────────────────────────
+// 
 // Re-export individual translation objects for
 // cases where direct typing/autocomplete is needed
-// ──────────────────────────────────────────────
+// 
 export type TranslationKeys = typeof en;

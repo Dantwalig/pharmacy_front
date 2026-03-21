@@ -12,7 +12,11 @@ import {
   PlusIcon,
   ArrowPathIcon,
   TrashIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
 
 interface StaffMember {
   id: string;
@@ -85,104 +89,114 @@ export default function BranchStaffPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+    {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Staff</h1>
-          <p className="text-sm text-gray-500 mt-1">{staff.length} member{staff.length !== 1 ? 's' : ''} in your branch</p>
-        </div>
-        <button
-          onClick={() => router.push('/branch/staff/new')}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-        >
-          <PlusIcon className="w-4 h-4" />
-          Add Staff
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Staff</h1>
+        <p className="text-sm text-gray-500 mt-1">{staff.length} member{staff.length !== 1 ? 's' : ''} in your branch</p>
       </div>
+      <button
+          onClick={() => router.push('/branch/staff/new')}
+          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          style={{ backgroundColor: TEAL }}
+        >
+        <PlusIcon className="w-4 h-4" />
+        Add Staff
+        </button>
+    </div>
 
-      {/* Staff List */}
+    {/* Staff List */}
       {staff.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-16 text-center">
-          <UserGroupIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">No staff members yet</p>
-          <p className="text-gray-400 text-sm mt-1">Add your first staff member to get started</p>
-          <button
+        <UserGroupIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500 font-medium">No staff members yet</p>
+        <p className="text-gray-400 text-sm mt-1">Add your first staff member to get started</p>
+        <button
             onClick={() => router.push('/branch/staff/new')}
-            className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{ backgroundColor: TEAL }}
           >
-            Add Staff Member
+          Add Staff Member
           </button>
-        </div>
-      ) : (
+      </div>
+    ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Contact</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Permissions</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {staff.map((member) => (
+        <table className="w-full">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Contact</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Permissions</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            {staff.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                      {member.firstName} {member.lastName}
+                <td className="px-6 py-4">
+                  <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                    {member.firstName} {member.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{member.user.email}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.user.role] || 'bg-gray-100 text-gray-700'}`}>
-                      {member.user.role}
+                  <p className="text-xs text-gray-500">{member.user.email}</p>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.user.role] || 'bg-gray-100 text-gray-700'}`}>
+                    {member.user.role}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{member.phone || '—'}</p>
-                  </td>
-                  <td className="px-6 py-4 hidden lg:table-cell">
-                    <p className="text-xs text-gray-500">
-                      {member.permissions?.permissions?.length ?? 0} permissions
+                </td>
+                <td className="px-6 py-4 hidden md:table-cell">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{member.phone || '—'}</p>
+                </td>
+                <td className="px-6 py-4 hidden lg:table-cell">
+                  <p className="text-xs text-gray-500">
+                    {member.permissions?.permissions?.length ?? 0} permissions
                     </p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       member.status === 'ACTIVE'
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-600'
                     }`}>
-                      {member.status}
+                    {member.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                        onClick={() => router.push(`/branch/staff/${member.id}`)}
+                        className="p-1.5 rounded-lg transition-all"
+                        style={{ color: TEAL }}
+                        title="View details"
+                      >
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+                    <button
                         onClick={() => handleResendCredentials(member.id, member.user.email)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
                         title="Resend credentials"
                       >
-                        <ArrowPathIcon className="w-4 h-4" />
-                      </button>
-                      <button
+                      <ArrowPathIcon className="w-4 h-4" />
+                    </button>
+                    <button
                         onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        title="Delete staff"
+                        title="Remove staff member"
                       >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
             </tbody>
-          </table>
-        </div>
-      )}
+        </table>
+      </div>
+    )}
     </div>
-  );
+);
 }
