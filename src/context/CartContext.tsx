@@ -61,7 +61,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (existingItem) {
       setItems(
         items.map((i) =>
-          i.medicationId === item.medicationId
+        i.medicationId === item.medicationId
             ? { ...i, quantity: i.quantity + item.quantity }
             : i
         )
@@ -93,7 +93,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setItems(
       items.map((i) =>
-        i.medicationId === medicationId ? { ...i, quantity } : i
+      i.medicationId === medicationId ? { ...i, quantity } : i
       )
     );
   };
@@ -125,9 +125,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pharmacyId,
       }}
     >
-      {children}
+    {children}
     </CartContext.Provider>
-  );
+);
 };
 
 export const useCart = () => {

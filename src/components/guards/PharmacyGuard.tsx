@@ -52,9 +52,9 @@ export default function PharmacyGuard({ children }: PharmacyGuardProps) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+      <LoadingSpinner />
+    </div>
+  );
   }
 
   // Only render children if pharmacy is approved

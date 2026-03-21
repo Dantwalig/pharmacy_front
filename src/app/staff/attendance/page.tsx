@@ -49,10 +49,10 @@ export default function StaffAttendancePage() {
   };
 
   const formatTime = (dateStr?: string) =>
-    dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+  dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  new Date(dateStr).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 
   const completedCount = records.filter(r => r.status === 'COMPLETED').length;
 
@@ -67,7 +67,7 @@ export default function StaffAttendancePage() {
         <p className="mt-1 text-white/70">Your shift history</p>
       </div>
 
-      {/* Stats */}
+    {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: 'Total Records',   value: records.length,           dark: false },
@@ -85,7 +85,7 @@ export default function StaffAttendancePage() {
         ))}
       </div>
 
-      {/* Records */}
+    {/* Records */}
       {records.length === 0 ? (
         <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
           <ClockIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
@@ -103,7 +103,7 @@ export default function StaffAttendancePage() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
                       {record.status.replace(/_/g, ' ')}
                     </span>
-                  </div>
+                </div>
 
                   <div className="flex gap-6 text-sm text-gray-600">
                     <div>
@@ -114,16 +114,16 @@ export default function StaffAttendancePage() {
                         </span>
                       )}
                     </div>
-                    {record.clockOutTime && (
+                  {record.clockOutTime && (
                       <div>
-                        <span className="text-xs text-gray-400">Out:</span> {formatTime(record.clockOutTime)}
+                      <span className="text-xs text-gray-400">Out:</span> {formatTime(record.clockOutTime)}
                         {record.clockOutApprover && (
                           <span className="text-xs ml-1" style={{ color: TEAL }}>
                             {record.clockOutApprover.firstName}
                           </span>
                         )}
                       </div>
-                    )}
+                  )}
                     {record.totalHours && (
                       <div className="font-medium" style={{ color: NAVY }}>
                         {record.totalHours.toFixed(1)}h
@@ -131,15 +131,15 @@ export default function StaffAttendancePage() {
                     )}
                   </div>
 
-                  {record.rejectionReason && (
+                {record.rejectionReason && (
                     <p className="text-xs text-red-500 mt-1">Rejection: {record.rejectionReason}</p>
-                  )}
+                )}
                 </div>
-              </div>
             </div>
-          ))}
+          </div>
+        ))}
         </div>
-      )}
+    )}
     </div>
-  );
+);
 }

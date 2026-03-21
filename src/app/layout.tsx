@@ -22,16 +22,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <I18nProvider>
-          <AuthProvider>
-            <CartProvider>
-              {children}
+    <body className={inter.className}>
+      <I18nProvider>
+        <AuthProvider>
+          <CartProvider>
+            {children}
               <Toaster position="top-right" />
-            </CartProvider>
-          </AuthProvider>
-        </I18nProvider>
-      </body>
-    </html>
-  );
+          </CartProvider>
+        </AuthProvider>
+      </I18nProvider>
+    </body>
+  </html>
+);
 }
