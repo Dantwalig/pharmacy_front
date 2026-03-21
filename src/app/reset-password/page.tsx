@@ -67,59 +67,59 @@ function ResetPasswordForm() {
 
   return (
     <div className="min-h-screen flex relative">
-      <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
+    <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
 
-      {/* LEFT PANEL */}
+    {/* LEFT PANEL */}
       <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-10 flex-col justify-between text-white">
-        <div>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
-            <p className="text-blue-200 text-sm">Healthcare Platform</p>
-          </div>
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-3">Reset Password</h2>
-            <p className="text-blue-100 text-sm leading-relaxed">
-              Enter the 6-digit code from your email and create a new secure password.
+      <div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+          <p className="text-blue-200 text-sm">Healthcare Platform</p>
+        </div>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-3">Reset Password</h2>
+          <p className="text-blue-100 text-sm leading-relaxed">
+            Enter the 6-digit code from your email and create a new secure password.
             </p>
-          </div>
-          <div className="space-y-4">
-            {[
+        </div>
+        <div className="space-y-4">
+          {[
               { icon: MapPinIcon, title: 'Find Nearby Pharmacies', desc: 'Locate pharmacies with real-time availability.' },
               { icon: ClockIcon, title: 'Save Time', desc: 'Check availability before visiting.' },
               { icon: UserGroupIcon, title: 'Connect with Healthcare', desc: 'Bridge patients and pharmacies.' },
               { icon: ShieldCheckIcon, title: 'Secure & Private', desc: 'Enterprise-grade security.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-3">
-                <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
-                <div>
-                  <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
-                  <p className="text-blue-200 text-xs">{desc}</p>
-                </div>
+              <Icon className="w-5 h-5 shrink-0 mt-0.5 text-teal-300" />
+              <div>
+                <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
+                <p className="text-blue-200 text-xs">{desc}</p>
               </div>
-            ))}
+            </div>
+          ))}
           </div>
-        </div>
-        <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
       </div>
+      <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+    </div>
 
-      {/* RIGHT PANEL — scrollable */}
+    {/* RIGHT PANEL — scrollable */}
       <div className="w-full lg:w-7/12 flex flex-col bg-gray-50 h-screen overflow-hidden">
-        <div className="px-8 pt-6 pb-3 bg-gray-50 shrink-0">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-            <LockClosedIcon className="w-6 h-6 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">{t('resetPassword.title')}</h2>
-          <p className="text-gray-500 text-sm mt-1">{t('resetPassword.subtitle')}</p>
-          {email && <p className="text-xs text-teal-600 font-medium mt-1">Code sent to: {email}</p>}
+      <div className="px-8 pt-6 pb-3 bg-gray-50 shrink-0">
+        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+          <LockClosedIcon className="w-6 h-6 text-blue-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">{t('resetPassword.title')}</h2>
+        <p className="text-gray-500 text-sm mt-1">{t('resetPassword.subtitle')}</p>
+        {email && <p className="text-xs text-teal-600 font-medium mt-1">Code sent to: {email}</p>}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8">
-          <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
-            {/* Code inputs */}
+      <div className="flex-1 overflow-y-auto px-8 pb-8">
+        <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
+          {/* Code inputs */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-2">{t('resetPassword.resetCode')}</label>
-              <div className="flex gap-2">
-                {code.map((digit, idx) => (
+            <label className="block text-xs font-semibold text-gray-700 mb-2">{t('resetPassword.resetCode')}</label>
+            <div className="flex gap-2">
+              {code.map((digit, idx) => (
                   <input key={idx}
                     ref={el => { inputRefs.current[idx] = el; }}
                     type="text" inputMode="numeric" maxLength={1} value={digit}
@@ -127,77 +127,77 @@ function ResetPasswordForm() {
                     onKeyDown={e => handleKeyDown(idx, e)} onPaste={handlePaste}
                     className="w-12 h-12 text-center text-lg font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
                     disabled={loading} />
-                ))}
+              ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1">{t('resetPassword.codeHint')}</p>
-            </div>
+            <p className="text-xs text-gray-400 mt-1">{t('resetPassword.codeHint')}</p>
+          </div>
 
-            {/* New password */}
+          {/* New password */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.newPassword')}</label>
-              <div className="relative">
-                <input type={showPwd ? 'text' : 'password'} required value={newPassword}
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.newPassword')}</label>
+            <div className="relative">
+              <input type={showPwd ? 'text' : 'password'} required value={newPassword}
                   onChange={e => setNewPassword(e.target.value)} className={inputCls} placeholder="New password" />
-                <button type="button" onClick={() => setShowPwd(!showPwd)}
+              <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  {showPwd ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                {showPwd ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                 </button>
-              </div>
-              {/* Requirements */}
+            </div>
+            {/* Requirements */}
               <div className="mt-2 grid grid-cols-2 gap-1">
-                {[
+              {[
                   { ok: checks.length, label: t('resetPassword.minLength') },
                   { ok: checks.upper, label: t('resetPassword.uppercase') },
                   { ok: checks.lower, label: t('resetPassword.lowercase') },
                   { ok: checks.numSym, label: t('resetPassword.numberOrSymbol') },
                 ].map(({ ok, label }) => (
                   <div key={label} className={`flex items-center gap-1 text-xs ${ok ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span>{ok ? '✓' : '○'}</span><span>{label}</span>
-                  </div>
-                ))}
+                  <span>{ok ? '' : ''}</span><span>{label}</span>
+                </div>
+              ))}
               </div>
-            </div>
+          </div>
 
-            {/* Confirm password */}
+          {/* Confirm password */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.confirmPassword')}</label>
-              <div className="relative">
-                <input type={showConfirm ? 'text' : 'password'} required value={confirmPassword}
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.confirmPassword')}</label>
+            <div className="relative">
+              <input type={showConfirm ? 'text' : 'password'} required value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)} className={inputCls} placeholder="Confirm password" />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  {showConfirm ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                {showConfirm ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                 </button>
-              </div>
-              {confirmPassword && newPassword !== confirmPassword && (
+            </div>
+            {confirmPassword && newPassword !== confirmPassword && (
                 <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
-              )}
+            )}
             </div>
 
-            <button type="submit"
+          <button type="submit"
               disabled={loading || code.join('').length !== 6 || !Object.values(checks).every(Boolean) || newPassword !== confirmPassword}
               className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading
+            {loading
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Resetting...</>
-                : t('resetPassword.resetButton')}
+              : t('resetPassword.resetButton')}
             </button>
 
-            <div className="text-center">
-              <Link href="/login" className="text-sm text-teal-600 font-semibold hover:underline">
-                ← {t('resetPassword.backToLogin')}
+          <div className="text-center">
+            <Link href="/login" className="text-sm text-teal-600 font-semibold hover:underline">
+              ← {t('resetPassword.backToLogin')}
               </Link>
-            </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">Loading...</div></div>}>
-      <ResetPasswordForm />
-    </Suspense>
-  );
+    <ResetPasswordForm />
+  </Suspense>
+);
 }

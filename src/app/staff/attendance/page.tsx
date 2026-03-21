@@ -50,10 +50,10 @@ export default function StaffAttendancePage() {
   };
 
   const formatTime = (dateStr?: string) =>
-    dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+  dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  new Date(dateStr).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 
   const completedCount = records.filter(r => r.status === 'COMPLETED').length;
 
@@ -61,77 +61,77 @@ export default function StaffAttendancePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
+    {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Attendance</h1>
-        <p className="text-sm text-gray-500 mt-1">Your shift history</p>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Attendance</h1>
+      <p className="text-sm text-gray-500 mt-1">Your shift history</p>
+    </div>
 
-      {/* Stats */}
+    {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-violet-600">{records.length}</p>
-          <p className="text-xs text-gray-500 mt-1">Total Records</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-emerald-600">{completedCount}</p>
-          <p className="text-xs text-gray-500 mt-1">Completed</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-blue-600">{totalHours.toFixed(1)}h</p>
-          <p className="text-xs text-gray-500 mt-1">Total Hours</p>
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+        <p className="text-2xl font-bold text-violet-600">{records.length}</p>
+        <p className="text-xs text-gray-500 mt-1">Total Records</p>
       </div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+        <p className="text-2xl font-bold text-emerald-600">{completedCount}</p>
+        <p className="text-xs text-gray-500 mt-1">Completed</p>
+      </div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+        <p className="text-2xl font-bold text-blue-600">{totalHours.toFixed(1)}h</p>
+        <p className="text-xs text-gray-500 mt-1">Total Hours</p>
+      </div>
+    </div>
 
-      {/* Records */}
+    {/* Records */}
       {records.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-sm border border-gray-100 dark:border-gray-700">
-          <ClockIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No attendance records yet</p>
-          <p className="text-gray-400 text-sm mt-1">Your records will appear here after your first shift</p>
-        </div>
-      ) : (
+        <ClockIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">No attendance records yet</p>
+        <p className="text-gray-400 text-sm mt-1">Your records will appear here after your first shift</p>
+      </div>
+    ) : (
         <div className="space-y-3">
-          {records.map((record) => (
+        {records.map((record) => (
             <div key={record.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{formatDate(record.clockInTime)}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                      {record.status.replace(/_/g, ' ')}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{formatDate(record.clockInTime)}</p>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
+                    {record.status.replace(/_/g, ' ')}
                     </span>
-                  </div>
+                </div>
 
-                  <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
-                    <div>
-                      <span className="text-xs text-gray-400">In:</span> {formatTime(record.clockInTime)}
+                <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
+                  <div>
+                    <span className="text-xs text-gray-400">In:</span> {formatTime(record.clockInTime)}
                       {record.clockInApprover && (
-                        <span className="text-xs text-emerald-600 ml-1">✓ {record.clockInApprover.firstName}</span>
-                      )}
-                    </div>
-                    {record.clockOutTime && (
-                      <div>
-                        <span className="text-xs text-gray-400">Out:</span> {formatTime(record.clockOutTime)}
-                        {record.clockOutApprover && (
-                          <span className="text-xs text-emerald-600 ml-1">✓ {record.clockOutApprover.firstName}</span>
-                        )}
-                      </div>
+                        <span className="text-xs text-emerald-600 ml-1"> {record.clockInApprover.firstName}</span>
                     )}
+                    </div>
+                  {record.clockOutTime && (
+                      <div>
+                      <span className="text-xs text-gray-400">Out:</span> {formatTime(record.clockOutTime)}
+                        {record.clockOutApprover && (
+                          <span className="text-xs text-emerald-600 ml-1"> {record.clockOutApprover.firstName}</span>
+                      )}
+                      </div>
+                  )}
                     {record.totalHours && (
                       <div className="font-medium text-violet-600">{record.totalHours.toFixed(1)}h</div>
-                    )}
+                  )}
                   </div>
 
-                  {record.rejectionReason && (
+                {record.rejectionReason && (
                     <p className="text-xs text-red-500 mt-1">Rejection: {record.rejectionReason}</p>
-                  )}
+                )}
                 </div>
-              </div>
             </div>
-          ))}
+          </div>
+        ))}
         </div>
-      )}
+    )}
     </div>
-  );
+);
 }

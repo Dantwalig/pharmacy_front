@@ -1,40 +1,51 @@
 'use client';
-// src/app/(staff)/StaffSidebar.tsx
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut, X } from 'lucide-react';
 
-export default function StaffSidebar() {
+interface StaffSidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function StaffSidebar({ open = false, onClose }: StaffSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
   const nav = [
-    { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard') },
-    { href: '/staff/attendance',       icon: Clock,           label: t('staff.attendance') },
-    { href: '/staff/profile',          icon: User,            label: t('staff.profile') },
-    { href: '/staff/change-password',  icon: Lock,            label: t('staff.changePassword') },
+    { href: '/staff/dashboard',      icon: LayoutDashboard, label: t('staff.dashboard') },
+    { href: '/staff/attendance',     icon: Clock,           label: t('staff.attendance') },
+    { href: '/staff/profile',        icon: User,            label: t('staff.profile') },
+    { href: '/staff/change-password',icon: Lock,            label: t('staff.changePassword') },
   ];
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex flex-col w-72" style={{ backgroundColor: '#1E4D8C' }}>
-      <div className="px-6 py-7 border-b border-white/10">
-        <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
-        <p className="text-white/60 text-sm mt-0.5">{t('staff.portal')}</p>
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      style={{ backgroundColor: '#1E4D8C' }}
+    >
+      <div className="px-6 py-7 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
+          <p className="text-white/60 text-sm mt-0.5">{t('staff.portal')}</p>
+        </div>
+        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10">
+          <X size={18} className="text-white/70" />
+        </button>
       </div>
 
-      <nav className="flex-1 px-4 py-5 space-y-1">
+      <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
         {nav.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+              onClick={onClose}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
               style={active ? { backgroundColor: '#2D9B8A' } : {}}
             >
               <Icon size={18} />

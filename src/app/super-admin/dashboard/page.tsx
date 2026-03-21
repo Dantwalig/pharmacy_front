@@ -64,9 +64,9 @@ export default function SuperAdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner />
-      </div>
-    );
+      <LoadingSpinner />
+    </div>
+  );
   }
 
   const stats = [
@@ -107,30 +107,30 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
+    {/* Sidebar */}
       <SuperAdminSidebar />
 
-      {/* Main Content */}
+    {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Topbar */}
+      {/* Topbar */}
         <SuperAdminTopbar />
 
-        {/* Page Content */}
+      {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
-          <div className="space-y-6">
-            {/* Header */}
+        <div className="space-y-6">
+          {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                👑 {t('superAdmin.title')}
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+               {t('superAdmin.title')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Welcome back, Super Admin! Here's what's happening today.
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Welcome back, Super Admin! Here's what's happening today.
               </p>
-            </div>
+          </div>
 
-            {/* Stats Grid */}
+          {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {stats.map((stat) => {
+            {stats.map((stat) => {
                 const Icon = stat.icon;
                 return (
                   <div
@@ -140,149 +140,149 @@ export default function SuperAdminDashboard() {
                       stat.action ? 'cursor-pointer' : ''
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`${stat.bgColor} p-3 rounded-xl`}>
-                        <Icon className={`w-6 h-6 ${stat.textColor}`} />
-                      </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`${stat.bgColor} p-3 rounded-xl`}>
+                      <Icon className={`w-6 h-6 ${stat.textColor}`} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                      {stat.value}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{stat.name}</p>
                   </div>
-                );
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {stat.value}
+                    </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.name}</p>
+                </div>
+              );
               })}
             </div>
 
-            {/* Two Column Layout */}
+          {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Pending Pharmacies */}
+            {/* Pending Pharmacies */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    ⏳ {t('superAdmin.pendingPharmacies')}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  {t('superAdmin.pendingPharmacies')}
                   </h2>
-                  <button
+                <button
                     onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
                     className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium"
                   >
-                    {t('superAdmin.viewAll')}
+                  {t('superAdmin.viewAll')}
                   </button>
-                </div>
+              </div>
 
-                {pendingPharmacies.length === 0 ? (
+              {pendingPharmacies.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-6xl mb-4">✅</p>
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No pending applications
+                  <p className="text-6xl mb-4"></p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No pending applications
                     </p>
-                  </div>
-                ) : (
+                </div>
+              ) : (
                   <div className="space-y-3">
-                    {pendingPharmacies.slice(0, 5).map((pharmacy) => (
+                  {pendingPharmacies.slice(0, 5).map((pharmacy) => (
                       <div
                         key={pharmacy.id}
                         onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
                         className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-linear-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold">
-                            {pharmacy.name.charAt(0)}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-linear-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold">
+                          {pharmacy.name.charAt(0)}
                           </div>
-                          <div>
-                            <p className="font-semibold text-gray-900 dark:text-gray-100">
-                              {pharmacy.name}
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">
+                            {pharmacy.name}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {pharmacy.user.email}
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {pharmacy.user.email}
                             </p>
-                          </div>
                         </div>
-                        <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">
-                          Pending
-                        </span>
                       </div>
-                    ))}
+                      <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">
+                        Pending
+                        </span>
+                    </div>
+                  ))}
                   </div>
-                )}
+              )}
               </div>
 
-              {/* Quick Stats */}
+            {/* Quick Stats */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
-                  📊 Platform Overview
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+                 Platform Overview
                 </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        Approved Pharmacies
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-6 h-6 text-green-500" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Approved Pharmacies
                       </span>
-                    </div>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.approvedPharmacies || 0}
-                    </span>
                   </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <ShoppingCartIcon className="w-6 h-6 text-blue-500" />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        Total Orders
-                      </span>
-                    </div>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.totalOrders || 0}
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.approvedPharmacies || 0}
                     </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <CheckCircleIcon className="w-6 h-6 text-purple-500" />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        Completed Orders
-                      </span>
-                    </div>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.completedOrders || 0}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-linear-to-r from-green-500 to-emerald-500 rounded-xl text-white">
-                    <div className="flex items-center gap-3">
-                      <CurrencyDollarIcon className="w-6 h-6" />
-                      <span>Total Revenue</span>
-                    </div>
-                    <span className="text-2xl font-bold">
-                      ${analytics?.totalRevenue?.toLocaleString() || 0}
-                    </span>
-                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* System Status */}
-            <div className="bg-linear-to-r from-green-500 to-emerald-500 rounded-2xl shadow-lg p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <CheckCircleIcon className="w-7 h-7" />
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <ShoppingCartIcon className="w-6 h-6 text-blue-500" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Total Orders
+                      </span>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{t('superAdmin.systemStatus')}</h3>
-                    <p className="text-green-100">{t('superAdmin.allSystemsOperational')}</p>
-                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.totalOrders || 0}
+                    </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium">Live</span>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-6 h-6 text-purple-500" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Completed Orders
+                      </span>
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.completedOrders || 0}
+                    </span>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-linear-to-r from-green-500 to-emerald-500 rounded-xl text-white">
+                  <div className="flex items-center gap-3">
+                    <CurrencyDollarIcon className="w-6 h-6" />
+                    <span>Total Revenue</span>
+                  </div>
+                  <span className="text-2xl font-bold">
+                    ${analytics?.totalRevenue?.toLocaleString() || 0}
+                    </span>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+
+          {/* System Status */}
+            <div className="bg-linear-to-r from-green-500 to-emerald-500 rounded-2xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <CheckCircleIcon className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{t('superAdmin.systemStatus')}</h3>
+                  <p className="text-green-100">{t('superAdmin.allSystemsOperational')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">Live</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
 }

@@ -57,47 +57,47 @@ export default function BranchPendingApprovalPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          {/* Status icon */}
+    <div className="w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        {/* Status icon */}
           <div className="text-center mb-8">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
               isPending ? 'bg-yellow-100' : 'bg-emerald-100'
             }`}>
-              {isPending
+            {isPending
                 ? <ClockIcon className="w-8 h-8 text-yellow-600" />
-                : <CloudArrowUpIcon className="w-8 h-8 text-emerald-600" />
-              }
+              : <CloudArrowUpIcon className="w-8 h-8 text-emerald-600" />
+            }
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {isPending ? 'Under Review' : 'Upload Branch License'}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {isPending ? 'Under Review' : 'Upload Branch License'}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">
-              {isPending
+          <p className="text-sm text-gray-500 mt-2">
+            {isPending
                 ? 'Your branch license has been submitted. Our team will review it and approve your branch shortly.'
                 : 'To activate your branch, please upload your pharmacy license. This will be reviewed by our admin team.'
               }
             </p>
-          </div>
+        </div>
 
-          {isPending ? (
+        {isPending ? (
             // Waiting state
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-xl p-4 text-center">
-              <p className="text-yellow-800 dark:text-yellow-400 font-medium text-sm">
-                Approval typically takes 1-2 business days
+            <p className="text-yellow-800 dark:text-yellow-400 font-medium text-sm">
+              Approval typically takes 1-2 business days
               </p>
-              <p className="text-yellow-600 dark:text-yellow-500 text-xs mt-1">
-                You will be notified once your branch is approved
+            <p className="text-yellow-600 dark:text-yellow-500 text-xs mt-1">
+              You will be notified once your branch is approved
               </p>
-            </div>
-          ) : (
+          </div>
+        ) : (
             // Upload form
             <form onSubmit={handleUpload} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Pharmacy License (PDF or image)
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Pharmacy License (PDF or image)
                 </label>
-                <div
+              <div
                   className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
                     file
                       ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
@@ -105,50 +105,50 @@ export default function BranchPendingApprovalPage() {
                   }`}
                   onClick={() => document.getElementById('license-input')?.click()}
                 >
-                  <CloudArrowUpIcon className={`w-8 h-8 mx-auto mb-2 ${file ? 'text-emerald-500' : 'text-gray-400'}`} />
-                  {file ? (
+                <CloudArrowUpIcon className={`w-8 h-8 mx-auto mb-2 ${file ? 'text-emerald-500' : 'text-gray-400'}`} />
+                {file ? (
                     <>
-                      <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{file.name}</p>
-                      <p className="text-xs text-emerald-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                    </>
-                  ) : (
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{file.name}</p>
+                    <p className="text-xs text-emerald-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </>
+                ) : (
                     <>
-                      <p className="text-sm text-gray-500">Click to select your license file</p>
-                      <p className="text-xs text-gray-400 mt-1">PDF, PNG, JPG up to 10MB</p>
-                    </>
-                  )}
+                    <p className="text-sm text-gray-500">Click to select your license file</p>
+                    <p className="text-xs text-gray-400 mt-1">PDF, PNG, JPG up to 10MB</p>
+                  </>
+                )}
                 </div>
-                <input
+              <input
                   id="license-input"
                   type="file"
                   accept=".pdf,.png,.jpg,.jpeg"
                   className="hidden"
                   onChange={e => setFile(e.target.files?.[0] || null)}
                 />
-              </div>
+            </div>
 
-              <button
+            <button
                 type="submit"
                 disabled={!file || uploading}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {uploading ? (
+              {uploading ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
-                ) : (
+              ) : (
                   <><CheckCircleIcon className="w-5 h-5" /> Submit License</>
-                )}
+              )}
               </button>
-            </form>
-          )}
+          </form>
+        )}
 
           <button
             onClick={logout}
             className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
-            Log out
+          Log out
           </button>
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

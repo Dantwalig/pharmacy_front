@@ -106,73 +106,73 @@ export default function NewStaffPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
+    {/* Header */}
       <div className="flex items-center gap-3">
-        <button
+      <button
           onClick={() => router.back()}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
         >
-          <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Add Staff Member</h1>
-          <p className="text-sm text-gray-500">They will receive login credentials by email</p>
+        <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
+      </button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Add Staff Member</h1>
+        <p className="text-sm text-gray-500">They will receive login credentials by email</p>
+      </div>
+    </div>
+
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Personal Info */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Personal Information</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+            <input required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+            <input required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+            <input required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+            <input value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
+                placeholder="+250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">National ID</label>
+            <input value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Gender</label>
+            <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
+            <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Info */}
+      {/* Role */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Personal Information</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-              <input required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-              <input required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-              <input required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-              <input value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
-                placeholder="+250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">National ID</label>
-              <input value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Gender</label>
-              <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-              <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* Role */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Role *</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {(['PHARMACIST', 'CASHIER', 'NURSE'] as const).map(role => (
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Role *</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {(['PHARMACIST', 'CASHIER', 'NURSE'] as const).map(role => (
               <button
                 type="button"
                 key={role}
@@ -183,25 +183,25 @@ export default function NewStaffPage() {
                     : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
                 }`}
               >
-                {role}
+              {role}
               </button>
-            ))}
+          ))}
           </div>
-          <p className="text-xs text-gray-500 mt-2">Default permissions for this role will be preselected below</p>
-        </div>
+        <p className="text-xs text-gray-500 mt-2">Default permissions for this role will be preselected below</p>
+      </div>
 
-        {/* Permissions */}
+      {/* Permissions */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Permissions
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Permissions
             <span className="ml-2 text-sm font-normal text-gray-500">({form.permissions.length} selected)</span>
-          </h2>
-          <div className="space-y-4">
-            {PERMISSION_GROUPS.map(group => (
+        </h2>
+        <div className="space-y-4">
+          {PERMISSION_GROUPS.map(group => (
               <div key={group.label}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{group.label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {group.perms.map(perm => (
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{group.label}</p>
+              <div className="flex flex-wrap gap-2">
+                {group.perms.map(perm => (
                     <button
                       type="button"
                       key={perm}
@@ -212,28 +212,28 @@ export default function NewStaffPage() {
                           : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       }`}
                     >
-                      {perm.replace(/_/g, ' ')}
+                    {perm.replace(/_/g, ' ')}
                     </button>
-                  ))}
+                ))}
                 </div>
-              </div>
-            ))}
+            </div>
+          ))}
           </div>
-        </div>
+      </div>
 
-        {/* Submit */}
+      {/* Submit */}
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? (
+        {loading ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Creating...</>
-          ) : (
+        ) : (
             'Create Staff Member & Send Credentials'
           )}
         </button>
-      </form>
-    </div>
-  );
+    </form>
+  </div>
+);
 }

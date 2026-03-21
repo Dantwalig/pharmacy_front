@@ -372,6 +372,10 @@ export const fr = {
     credentialsFailed: 'Échec de l\'envoi des identifiants',
     fetchError: 'Échec du chargement des détails de l\'agence',
     createError: 'Échec de la création de l\'agence',
+    inventory: 'Inventaire',
+    analytics: 'Analytique',
+    patients: 'Patients',
+    notifications: 'Notifications',
   },
   pharmacy: {
     dashboard: 'Tableau de bord pharmacie',

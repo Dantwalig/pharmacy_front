@@ -372,6 +372,10 @@ export const rw = {
     credentialsFailed: 'Kohereza amakuru ntibyakunze',
     fetchError: 'Kugeraho amakuru y\'ishami ntibyakunze',
     createError: 'Gukora ishami ntibyakunze',
+    inventory: 'Ububiko',
+    analytics: 'Isesengura',
+    patients: 'Abarwayi',
+    notifications: 'Menyesha',
   },
   pharmacy: {
     dashboard: 'Ikibaho cya Iduka',

@@ -121,7 +121,7 @@ export default function BranchDashboardPage() {
   };
 
   const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
@@ -134,119 +134,119 @@ export default function BranchDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+    {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Branch Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Today's overview and pending approvals</p>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Branch Dashboard</h1>
+      <p className="text-sm text-gray-500 mt-1">Today's overview and pending approvals</p>
+    </div>
 
-      {/* Stats */}
+    {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat) => {
+      {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
+              <Icon className="w-5 h-5" />
             </div>
-          );
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+            <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+          </div>
+        );
         })}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Pending Clock-Ins */}
+    <div className="grid lg:grid-cols-2 gap-6">
+      {/* Pending Clock-Ins */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Ins</h2>
-            <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
-              {pendingClockIns.length}
+        <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Ins</h2>
+          <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
+            {pendingClockIns.length}
             </span>
-          </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {pendingClockIns.length === 0 ? (
+        </div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {pendingClockIns.length === 0 ? (
               <p className="p-6 text-center text-gray-400 text-sm">No pending clock-ins</p>
-            ) : (
+          ) : (
               pendingClockIns.map((record) => (
                 <div key={record.id} className="p-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                      {record.staff.firstName} {record.staff.lastName}
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                    {record.staff.firstName} {record.staff.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{record.staff.user.role.toLowerCase()} · {formatTime(record.clockInTime)}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
+                  <p className="text-xs text-gray-500">{record.staff.user.role.toLowerCase()} · {formatTime(record.clockInTime)}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
                       onClick={() => approveClockIn(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all disabled:opacity-50"
                       title="Approve"
                     >
-                      <CheckCircleIcon className="w-4 h-4" />
-                    </button>
-                    <button
+                    <CheckCircleIcon className="w-4 h-4" />
+                  </button>
+                  <button
                       onClick={() => rejectClockIn(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
                       title="Reject"
                     >
-                      <XCircleIcon className="w-4 h-4" />
-                    </button>
-                  </div>
+                    <XCircleIcon className="w-4 h-4" />
+                  </button>
                 </div>
-              ))
+              </div>
+            ))
             )}
           </div>
-        </div>
+      </div>
 
-        {/* Pending Clock-Outs */}
+      {/* Pending Clock-Outs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Outs</h2>
-            <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
-              {pendingClockOuts.length}
+        <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Outs</h2>
+          <span className="w-6 h-6 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full flex items-center justify-center">
+            {pendingClockOuts.length}
             </span>
-          </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {pendingClockOuts.length === 0 ? (
+        </div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {pendingClockOuts.length === 0 ? (
               <p className="p-6 text-center text-gray-400 text-sm">No pending clock-outs</p>
-            ) : (
+          ) : (
               pendingClockOuts.map((record) => (
                 <div key={record.id} className="p-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                      {record.staff.firstName} {record.staff.lastName}
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                    {record.staff.firstName} {record.staff.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {record.staff.user.role.toLowerCase()} · out: {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
+                  <p className="text-xs text-gray-500">
+                    {record.staff.user.role.toLowerCase()} · out: {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
                     </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
+                </div>
+                <div className="flex gap-2">
+                  <button
                       onClick={() => approveClockOut(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all disabled:opacity-50"
                       title="Approve"
                     >
-                      <CheckCircleIcon className="w-4 h-4" />
-                    </button>
-                    <button
+                    <CheckCircleIcon className="w-4 h-4" />
+                  </button>
+                  <button
                       onClick={() => rejectClockOut(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
                       title="Reject"
                     >
-                      <XCircleIcon className="w-4 h-4" />
-                    </button>
-                  </div>
+                    <XCircleIcon className="w-4 h-4" />
+                  </button>
                 </div>
-              ))
+              </div>
+            ))
             )}
           </div>
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

@@ -373,6 +373,10 @@ export const en = {
     credentialsFailed: 'Failed to send credentials',
     fetchError: 'Failed to load branch details',
     createError: 'Failed to create branch',
+    inventory: 'Inventory',
+    analytics: 'Analytics',
+    patients: 'Patients',
+    notifications: 'Notifications',
   },
   // LEGACY PHARMACY (single-branch dashboard)
   pharmacy: {

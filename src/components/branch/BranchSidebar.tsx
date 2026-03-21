@@ -1,33 +1,40 @@
 'use client';
-// src/app/(branch)/BranchSidebar.tsx
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import {
-  LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut, X } from 'lucide-react';
 
-export default function BranchSidebar() {
+interface BranchSidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function BranchSidebar({ open = false, onClose }: BranchSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
   const nav = [
-    { href: '/branch/dashboard',  icon: LayoutDashboard, label: t('branch.dashboard') },
-    { href: '/branch/staff',      icon: Users,           label: t('branch.staff') },
-    { href: '/branch/attendance', icon: Clock,           label: t('branch.attendance') },
-    { href: '/branch/change-password', icon: Lock,       label: t('branch.changePassword') },
+    { href: '/branch/dashboard',       icon: LayoutDashboard, label: t('branch.dashboard') },
+    { href: '/branch/staff',           icon: Users,           label: t('branch.staff') },
+    { href: '/branch/attendance',      icon: Clock,           label: t('branch.attendance') },
+    { href: '/branch/change-password', icon: Lock,            label: t('branch.changePassword') },
   ];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-40 flex flex-col w-72"
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       style={{ backgroundColor: '#1E4D8C' }}
     >
-      <div className="px-6 py-7 border-b border-white/10">
-        <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
-        <p className="text-white/60 text-sm mt-0.5">{t('branch.portal')}</p>
+      <div className="px-6 py-7 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
+          <p className="text-white/60 text-sm mt-0.5">{t('branch.portal')}</p>
+        </div>
+        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10">
+          <X size={18} className="text-white/70" />
+        </button>
       </div>
 
       <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
@@ -37,9 +44,8 @@ export default function BranchSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+              onClick={onClose}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
               style={active ? { backgroundColor: '#2D9B8A' } : {}}
             >
               <Icon size={18} />
@@ -56,10 +62,7 @@ export default function BranchSidebar() {
             <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
           </div>
           <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
-          <button
-            className="w-full py-2 rounded-lg text-white text-sm font-medium"
-            style={{ backgroundColor: '#2D9B8A' }}
-          >
+          <button className="w-full py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: '#2D9B8A' }}>
             {t('common.getSupport')}
           </button>
         </div>
