@@ -520,5 +520,10 @@ export const fr = {
     tempPassword: 'Mot de passe temporaire',
     newPassword: 'Nouveau mot de passe',
     confirmPassword: 'Confirmer le nouveau mot de passe',
+    orders: 'Commandes',
+    ordersSubtitle: 'Voir et gerer les commandes de l\'agence',
+    updateStatus: 'Mettre a jour le statut',
+    itemsSold: 'Articles',
+    hasPresription: 'A une ordonnance',
   },
 };

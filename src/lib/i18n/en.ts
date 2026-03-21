@@ -522,5 +522,10 @@ export const en = {
     tempPassword: 'Temporary Password',
     newPassword: 'New Password',
     confirmPassword: 'Confirm New Password',
+    orders: 'Orders',
+    ordersSubtitle: 'View and manage branch orders',
+    updateStatus: 'Update Status',
+    itemsSold: 'Items',
+    hasPresription: 'Has Prescription',
   },
 };
