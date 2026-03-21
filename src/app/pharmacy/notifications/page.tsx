@@ -7,9 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
 import {
   ShoppingCartIcon,
   ExclamationTriangleIcon,
@@ -141,15 +138,7 @@ export default function PharmacyNotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-    <PharmacySidebar />
-    <SupportBot />
-
-    <div className="flex-1 flex flex-col lg:ml-72">
-      <PharmacyTopbar />
-
-      <main className="flex-1 p-4 lg:p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
           {/* Header */}
             <div className="flex justify-between items-center">
             <div>
@@ -297,9 +286,6 @@ export default function PharmacyNotificationsPage() {
                 })
               )}
             </div>
-        </div>
-      </main>
-    </div>
-  </div>
-);
+          </div>
+  );
 }

@@ -7,9 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
 import { 
   UserGroupIcon,
   MagnifyingGlassIcon,
@@ -77,15 +74,7 @@ export default function PharmacyPatientsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-    <PharmacySidebar />
-    <SupportBot />
-
-    <div className="flex-1 flex flex-col lg:ml-72">
-      <PharmacyTopbar />
-
-      <main className="flex-1 p-4 lg:p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
           {/* Header */}
             <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
             <h1 className="text-2xl lg:text-3xl font-bold mb-2">
@@ -260,8 +249,5 @@ export default function PharmacyPatientsPage() {
               </div>
           )}
           </div>
-      </main>
-    </div>
-  </div>
-);
+  );
 }
