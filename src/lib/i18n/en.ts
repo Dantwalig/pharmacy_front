@@ -373,6 +373,10 @@ export const en = {
     credentialsFailed: 'Failed to send credentials',
     fetchError: 'Failed to load branch details',
     createError: 'Failed to create branch',
+    inventory: 'Inventory',
+    analytics: 'Analytics',
+    patients: 'Patients',
+    notifications: 'Notifications',
   },
   // LEGACY PHARMACY (single-branch dashboard)
   pharmacy: {
@@ -491,6 +495,13 @@ export const en = {
     reject: 'Reject',
     pending: 'Pending',
     approved: 'Approved',
+    analytics: 'Analytics',
+    staffDetail: 'Staff Details',
+    attendanceHistory: 'Attendance History',
+    totalShifts: 'Total Shifts',
+    completedShifts: 'Completed Shifts',
+    totalHours: 'Total Hours',
+    removeFromBranch: 'Remove from Branch',
   },
   staff: {
     portal: 'Staff Portal',
@@ -511,5 +522,10 @@ export const en = {
     tempPassword: 'Temporary Password',
     newPassword: 'New Password',
     confirmPassword: 'Confirm New Password',
+    orders: 'Orders',
+    ordersSubtitle: 'View and manage branch orders',
+    updateStatus: 'Update Status',
+    itemsSold: 'Items',
+    hasPresription: 'Has Prescription',
   },
 };
