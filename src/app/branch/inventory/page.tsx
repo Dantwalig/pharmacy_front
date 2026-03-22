@@ -1,0 +1,272 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import toast from 'react-hot-toast';
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  PencilIcon,
+  ExclamationTriangleIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
+
+const FDA_CATEGORIES = [
+  'All Categories',
+  'Analgesics & Antipyretics', 'Antibiotics & Antimicrobials', 'Antifungals',
+  'Antivirals & Antiretrovirals', 'Antimalaria', 'Antituberculosis',
+  'Antiparasitics & Anthelmintics', 'Cardiovascular & Antihypertensives',
+  'Antidiabetics', 'Gastrointestinal', 'Respiratory & Bronchodilators',
+  'Central Nervous System', 'Vitamins, Minerals & Supplements', 'Dermatologicals',
+  'Ophthalmologicals', 'ENT (Ear, Nose & Throat)', 'Hormones & Endocrine',
+  'Vaccines & Biologicals', 'Oncologicals', 'Immunosuppressants', 'Contraceptives',
+  'Haematologicals', 'Musculoskeletal & Anti-inflammatories', 'Urological',
+  'Psychiatric & Psychotropic', 'Anesthetics', 'Diagnostics & Contrast Media',
+  'Traditional & Herbal Medicines', 'Other',
+];
+
+export default function BranchInventoryPage() {
+  const router = useRouter();
+  const [medications, setMedications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [backendReady, setBackendReady] = useState(true);
+  const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW' | 'OUT'>('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => { fetchMedications(); }, []);
+
+  const fetchMedications = async () => {
+    setLoading(true);
+    try {
+      // BACKEND PENDING: GET /medications/pharmacy/my-medications
+      // This endpoint currently restricts access to Role.PHARMACY only.
+      // The backend team needs to add Role.BRANCH_MANAGER to this endpoint's
+      // @Roles decorator in medications.controller.ts.
+      // The same update is needed for:
+      //   GET /medications/pharmacy/low-stock   → add Role.BRANCH_MANAGER
+      //   GET /medications/pharmacy/out-of-stock → add Role.BRANCH_MANAGER
+      // When done, this page will work automatically with no frontend changes needed.
+      const res = await api.get('/medications/pharmacy/my-medications');
+      setMedications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setBackendReady(true);
+    } catch (err: any) {
+      if (err?.response?.status === 403) {
+        setBackendReady(false);
+      } else {
+        toast.error('Failed to load medications');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtered = medications.filter(m => {
+    const matchSearch = !searchTerm ||
+      m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCat = categoryFilter === 'All Categories' || m.category === categoryFilter;
+    const qty = m.quantity ?? 0;
+    const threshold = m.lowStockThreshold ?? 10;
+    if (stockFilter === 'LOW') return matchSearch && matchCat && qty > 0 && qty <= threshold;
+    if (stockFilter === 'OUT') return matchSearch && matchCat && qty === 0;
+    return matchSearch && matchCat;
+  });
+
+  const stockBadge = (med: any) => {
+    const qty = med.quantity ?? 0;
+    const threshold = med.lowStockThreshold ?? 10;
+    if (qty === 0) return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+        Out of Stock
+      </span>
+    );
+    if (qty <= threshold) return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">
+        <ExclamationTriangleIcon className="w-3 h-3" /> Low
+      </span>
+    );
+    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">In Stock</span>;
+  };
+
+  const summaryStats = {
+    total:      medications.length,
+    outOfStock: medications.filter(m => (m.quantity ?? 0) === 0).length,
+    lowStock:   medications.filter(m => { const q = m.quantity ?? 0; return q > 0 && q <= (m.lowStockThreshold ?? 10); }).length,
+    categories: new Set(medications.map(m => m.category)).size,
+  };
+
+  return (
+    <div className="space-y-6">
+
+      {/* Hero */}
+      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+        <h1 className="text-2xl lg:text-3xl font-bold">Inventory</h1>
+        <p className="mt-1 text-white/70">View and manage your branch medications</p>
+      </div>
+
+      {/* Backend pending banner */}
+      {!backendReady && (
+        <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
+          <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-yellow-800">Backend access pending</p>
+            <p className="text-xs text-yellow-700 mt-0.5">
+              Inventory management for branch managers is built and ready. The backend team needs to add
+              <span className="font-mono font-bold mx-1">Role.BRANCH_MANAGER</span>
+              to the
+              <span className="font-mono mx-1">GET /medications/pharmacy/my-medications</span>,
+              <span className="font-mono mx-1">GET /medications/pharmacy/low-stock</span>,
+              <span className="font-mono mx-1">GET /medications/pharmacy/out-of-stock</span>,
+              <span className="font-mono mx-1">POST /medications</span>, and
+              <span className="font-mono mx-1">PUT /medications/:id</span>
+              endpoints in medications.controller.ts. No frontend changes will be needed once that is done.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Stat cards */}
+      {backendReady && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Items',  value: summaryStats.total,      color: NAVY },
+            { label: 'Categories',   value: summaryStats.categories,  color: TEAL },
+            { label: 'Low Stock',    value: summaryStats.lowStock,    color: '#92400E' },
+            { label: 'Out of Stock', value: summaryStats.outOfStock,  color: '#991B1B' },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-100">
+              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className="bg-white rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between border border-gray-100">
+        <div className="relative w-full sm:w-72">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or category..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
+          />
+        </div>
+
+        <select
+          value={categoryFilter}
+          onChange={e => setCategoryFilter(e.target.value)}
+          className="w-full sm:w-52 px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none"
+        >
+          {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        <div className="flex gap-2 shrink-0">
+          {(['ALL', 'LOW', 'OUT'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setStockFilter(f)}
+              className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
+              style={stockFilter === f ? { backgroundColor: TEAL, color: '#fff' } : { backgroundColor: '#F3F4F6', color: '#374151' }}
+            >
+              {f === 'ALL' ? 'All' : f === 'LOW' ? 'Low Stock' : 'Out of Stock'}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => router.push('/branch/inventory/add')}
+          className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0"
+          style={{ backgroundColor: TEAL }}
+        >
+          <PlusIcon className="w-4 h-4" /> Add Medication
+        </button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex justify-center py-16"><LoadingSpinner /></div>
+      ) : !backendReady ? (
+        <div className="bg-white rounded-xl p-16 text-center border border-gray-100">
+          <LockClosedIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+          <p className="text-gray-500 font-medium">Inventory access is pending</p>
+          <p className="text-gray-400 text-sm mt-1">See the banner above for details</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-xl p-16 text-center border border-gray-100">
+          <p className="text-gray-500 font-medium">No medications found</p>
+          <p className="text-gray-400 text-sm mt-1">
+            {searchTerm || categoryFilter !== 'All Categories'
+              ? 'Try adjusting your search or filters'
+              : 'Add your first medication to get started'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  {['Medication', 'Category', 'Price', 'Quantity', 'Threshold', 'Prescription', 'Status', 'Actions'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map((med: any) => (
+                  <tr key={med.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-900">{med.name}</p>
+                      {med.description && <p className="text-xs text-gray-400 truncate max-w-[160px]">{med.description}</p>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>
+                    </td>
+                    <td className="px-4 py-3 font-semibold whitespace-nowrap" style={{ color: TEAL }}>
+                      {Number(med.price ?? 0).toLocaleString()} RWF
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`font-bold ${(med.quantity ?? 0) === 0 ? 'text-red-600' : (med.quantity ?? 0) <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-gray-800'}`}>
+                        {med.quantity ?? 0}
+                      </span>
+                      <span className="text-gray-400 text-xs ml-1">units</span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
+                    <td className="px-4 py-3">
+                      {med.requiresPrescription
+                        ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">Required</span>
+                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
+                    </td>
+                    <td className="px-4 py-3">{stockBadge(med)}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => router.push(`/branch/inventory/${med.id}`)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                      >
+                        <PencilIcon className="w-3.5 h-3.5" /> Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+            <p className="text-xs text-gray-500">
+              Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

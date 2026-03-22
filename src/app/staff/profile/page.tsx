@@ -29,9 +29,9 @@ interface StaffProfile {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  PHARMACIST: 'bg-violet-100 text-violet-800',
+  PHARMACIST: 'bg-blue-100 text-blue-800',
   CASHIER:    'bg-blue-100 text-blue-800',
-  NURSE:      'bg-pink-100 text-pink-800',
+  NURSE:      'bg-blue-100 text-blue-800',
 };
 
 export default function StaffProfilePage() {
@@ -60,13 +60,16 @@ export default function StaffProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Profile</h1>
+      <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#1E4D8C' }}>
+        <h1 className="text-2xl font-bold">My Profile</h1>
+        <p className="mt-1 text-white/70">Your personal and branch information</p>
+      </div>
 
     {/* Identity card */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <div className="flex items-center gap-5 mb-6">
-        <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center">
-          <UserCircleIcon className="w-10 h-10 text-violet-500" />
+        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0F7F6' }}>
+          <UserCircleIcon className="w-10 h-10" style={{ color: '#2D9B8A' }} />
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
@@ -77,7 +80,7 @@ export default function StaffProfilePage() {
               {profile.user.role}
               </span>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+                profile.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
               }`}>
               {profile.status}
               </span>
@@ -132,7 +135,7 @@ export default function StaffProfilePage() {
       ) : (
           <div className="flex flex-wrap gap-2">
           {permissions.map((perm) => (
-              <span key={perm} className="px-3 py-1.5 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 rounded-lg text-xs font-medium">
+              <span key={perm} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ backgroundColor: '#F0F7F6', color: '#2D9B8A' }}>
               {perm.replace(/_/g, ' ')}
               </span>
           ))}
