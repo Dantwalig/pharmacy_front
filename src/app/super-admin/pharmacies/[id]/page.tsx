@@ -1,4 +1,3 @@
-// frontend/src/app/super-admin/pharmacies/[id]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,9 +5,28 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import SuperAdminTopbar from '@/components/super-admin/SuperAdminTopbar';
-import SuperAdminSidebar from '@/components/super-admin/SuperAdminSidebar';
-import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon, DocumentTextIcon, MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  DocumentTextIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  BuildingOfficeIcon,
+  ClockIcon,
+  ShoppingCartIcon,
+  ArchiveBoxIcon,
+} from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
+
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  PENDING:  { bg: '#FEF3C7', text: '#92400E', label: 'Pending Review' },
+  APPROVED: { bg: '#D1FAE5', text: '#065F46', label: 'Approved' },
+  REJECTED: { bg: '#FEE2E2', text: '#991B1B', label: 'Rejected' },
+};
 
 export default function SuperAdminPharmacyDetailPage() {
   const params = useParams();
@@ -23,20 +41,28 @@ export default function SuperAdminPharmacyDetailPage() {
 
   const fetchPharmacy = async () => {
     try {
+      // GET /super-admin/pharmacies/:id — returns full pharmacy with documents,
+      // medications, orders, _count
       const res = await api.get(`/super-admin/pharmacies/${params.id}`);
       setPharmacy(res.data);
-    } catch { toast.error('Failed to load pharmacy'); }
-    finally { setLoading(false); }
+    } catch {
+      toast.error('Failed to load pharmacy details');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApprove = async () => {
     setActionLoading(true);
     try {
       await api.patch(`/super-admin/pharmacies/${params.id}/approve`);
-      toast.success('Pharmacy approved!');
+      toast.success('Pharmacy approved');
       fetchPharmacy();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
-    finally { setActionLoading(false); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to approve');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleReject = async () => {
@@ -47,145 +73,313 @@ export default function SuperAdminPharmacyDetailPage() {
       toast.success('Pharmacy rejected');
       setShowReject(false);
       fetchPharmacy();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
-    finally { setActionLoading(false); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to reject');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (loading) return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    <SuperAdminSidebar /><div className="flex-1 flex flex-col"><SuperAdminTopbar />
-      <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
-    </div>
-  </div>
-);
+    <div className="flex justify-center py-20"><LoadingSpinner /></div>
+  );
 
   if (!pharmacy) return null;
-  const statusColor: Record<string,string> = { PENDING:'bg-yellow-100 text-yellow-700', APPROVED:'bg-green-100 text-green-700', REJECTED:'bg-red-100 text-red-700' };
+
+  const status = STATUS_STYLES[pharmacy.status] ?? { bg: '#F3F4F6', text: '#374151', label: pharmacy.status };
+
+  // Registration number fields from the Prisma schema
+  const registrationNumbers = [
+    { label: 'RDB Certificate Number',        value: pharmacy.rdbCertificate,       docType: 'rdb' },
+    { label: 'Pharmacy License Number',        value: pharmacy.pharmacyLicense,      docType: 'license' },
+    { label: 'Business Registration Number',   value: pharmacy.businessRegistration, docType: null },
+  ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    <SuperAdminSidebar />
-    <div className="flex-1 flex flex-col">
-      <SuperAdminTopbar />
-      <main className="flex-1 p-6 overflow-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-            <ArrowLeftIcon className="w-4 h-4" /> Back to Pharmacies
-            </button>
+    <div className="space-y-6 max-w-5xl mx-auto">
 
-          {/* Header */}
-            <div className="bg-linear-to-r from-red-600 to-pink-600 rounded-2xl p-6 text-white flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-1">{pharmacy.name}</h1>
-              <p className="text-red-200 text-sm">Submitted: {new Date(pharmacy.createdAt).toLocaleDateString()}</p>
-            </div>
-            <span className={`px-4 py-2 rounded-xl text-sm font-bold ${statusColor[pharmacy.status] || 'bg-gray-100 text-gray-600'}`}>
-              {pharmacy.status}
-              </span>
+      {/* Back */}
+      <button
+        onClick={() => router.push('/super-admin/pharmacies')}
+        className="flex items-center gap-2 text-sm font-medium hover:underline"
+        style={{ color: NAVY }}
+      >
+        <ArrowLeftIcon className="w-4 h-4" /> Back to Applications
+      </button>
+
+      {/* Hero */}
+      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-white/60 text-sm mb-1">Pharmacy Application</p>
+            <h1 className="text-2xl lg:text-3xl font-bold">{pharmacy.name}</h1>
+            <p className="text-white/70 mt-1 text-sm">
+              Submitted {new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
           </div>
+          <span
+            className="px-4 py-2 rounded-xl text-sm font-bold"
+            style={{ backgroundColor: status.bg, color: status.text }}
+          >
+            {status.label}
+          </span>
+        </div>
 
-          {/* Actions for PENDING */}
-            {pharmacy.status === 'PENDING' && (
-              <div className="flex flex-wrap gap-3">
-              <button onClick={handleApprove} disabled={actionLoading}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50">
-                <CheckCircleIcon className="w-4 h-4" /> Approve Pharmacy
-                </button>
-              <button onClick={() => setShowReject(true)}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold">
-                <XCircleIcon className="w-4 h-4" /> Reject
-                </button>
+        {/* Quick stats from _count */}
+        {pharmacy._count && (
+          <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-white/20">
+            <div className="flex items-center gap-2 text-white/80 text-sm">
+              <ArchiveBoxIcon className="w-4 h-4" />
+              {pharmacy._count.medications} medications listed
             </div>
-          )}
-
-            {/* Rejection reason */}
-            {pharmacy.status === 'REJECTED' && pharmacy.rejectionReason && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl p-4">
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Rejection Reason:</p>
-              <p className="text-sm text-red-600 dark:text-red-300">{pharmacy.rejectionReason}</p>
-            </div>
-          )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Owner Info */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
-              <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Owner / Representative</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold w-28 text-gray-500">Name:</span>
-                  {pharmacy.representativeName || pharmacy.user?.email}
-                  </div>
-                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <EnvelopeIcon className="w-4 h-4 text-gray-400 shrink-0" />
-                  {pharmacy.user?.email}
-                  </div>
-                {pharmacy.phone && <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <PhoneIcon className="w-4 h-4 text-gray-400 shrink-0" />{pharmacy.phone}
-                  </div>}
-                  {pharmacy.address && <div className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
-                  <MapPinIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />{pharmacy.address}
-                  </div>}
-                </div>
-            </div>
-
-            {/* Business Info */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
-              <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Business Details</h2>
-              <div className="space-y-3 text-sm">
-                {pharmacy.licenseNumber && <div className="flex gap-2"><span className="font-semibold text-gray-500 w-28">License No:</span><span className="text-gray-700 dark:text-gray-300">{pharmacy.licenseNumber}</span></div>}
-                  {pharmacy.dateOfIncorporation && <div className="flex gap-2"><span className="font-semibold text-gray-500 w-28">Incorporated:</span><span className="text-gray-700 dark:text-gray-300">{new Date(pharmacy.dateOfIncorporation).toLocaleDateString()}</span></div>}
-                  {pharmacy.operatingHours && <div className="flex gap-2"><span className="font-semibold text-gray-500 w-28">Hours:</span><span className="text-gray-700 dark:text-gray-300">{pharmacy.operatingHours}</span></div>}
-                </div>
+            <div className="flex items-center gap-2 text-white/80 text-sm">
+              <ShoppingCartIcon className="w-4 h-4" />
+              {pharmacy._count.orders} orders total
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Documents */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <DocumentTextIcon className="w-5 h-5 text-purple-500" /> Submitted Documents
-              </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                  { label: 'RDB Certificate', url: pharmacy.rdbCertificate || pharmacy.businessRegistrationUrl },
-                  { label: 'Pharmacy License', url: pharmacy.pharmacyLicense || pharmacy.pharmacyLicenseUrl },
-                ].map(doc => (
-                  <div key={doc.label} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{doc.label}</p>
-                    {doc.url ? <p className="text-xs text-green-600"> Uploaded</p> : <p className="text-xs text-red-500"> Missing</p>}
-                    </div>
-                  {doc.url && (
-                      <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-200">
-                      View
-                      </a>
-                  )}
-                  </div>
-              ))}
-              </div>
+      {/* Action buttons for PENDING */}
+      {pharmacy.status === 'PENDING' && (
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleApprove}
+            disabled={actionLoading}
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-xl text-sm font-semibold disabled:opacity-50 transition-all"
+            style={{ backgroundColor: TEAL }}
+          >
+            <CheckCircleIcon className="w-5 h-5" /> Approve Application
+          </button>
+          <button
+            onClick={() => setShowReject(true)}
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 transition-all"
+          >
+            <XCircleIcon className="w-5 h-5" /> Reject Application
+          </button>
+        </div>
+      )}
+
+      {/* Rejection reason display */}
+      {pharmacy.status === 'REJECTED' && pharmacy.rejectionReason && (
+        <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-red-200 bg-red-50">
+          <XCircleIcon className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-red-700">Rejection Reason</p>
+            <p className="text-sm text-red-600 mt-0.5">{pharmacy.rejectionReason}</p>
+            {pharmacy.approvedAt && (
+              <p className="text-xs text-red-400 mt-1">
+                Actioned: {new Date(pharmacy.approvedAt).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
-      </main>
-    </div>
+      )}
 
-    {/* Reject Modal */}
-      {showReject && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-md">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Reject Pharmacy</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Provide a clear rejection reason — it will be shown to the pharmacy owner.</p>
-          <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={4} placeholder="e.g. License is expired, invalid document..."
-              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" />
-          <div className="flex gap-3 mt-4">
-            <button onClick={() => setShowReject(false)} className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium">Cancel</button>
-            <button onClick={handleReject} disabled={actionLoading || !rejectReason.trim()}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-              Confirm Rejection
-              </button>
+      {/* Approval date */}
+      {pharmacy.status === 'APPROVED' && pharmacy.approvedAt && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-green-200 bg-green-50">
+          <CheckCircleIcon className="w-5 h-5 text-green-600" />
+          <p className="text-sm font-medium text-green-700">
+            Approved on {new Date(pharmacy.approvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Owner / Contact */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+            Owner & Contact
+          </h2>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center gap-3 text-gray-700">
+              <BuildingOfficeIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="font-medium">{pharmacy.representativeName || '—'}</span>
+            </div>
+            <div className="flex items-center gap-3 text-gray-700">
+              <EnvelopeIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              {pharmacy.user?.email || '—'}
+            </div>
+            {pharmacy.phone && (
+              <div className="flex items-center gap-3 text-gray-700">
+                <PhoneIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                {pharmacy.phone}
+              </div>
+            )}
+            {pharmacy.address && (
+              <div className="flex items-start gap-3 text-gray-700">
+                <MapPinIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                {pharmacy.address}
+              </div>
+            )}
+            {pharmacy.dateOfIncorporation && (
+              <div className="flex items-center gap-3 text-gray-700">
+                <ClockIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                Incorporated: {new Date(pharmacy.dateOfIncorporation).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Registration Numbers — the three searchable fields */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+            Registration Numbers
+          </h2>
+          <div className="space-y-4">
+            {registrationNumbers.map(item => (
+              <div key={item.label}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{item.label}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-sm font-mono ${item.value ? 'text-gray-800 font-semibold' : 'text-gray-300 italic'}`}>
+                    {item.value || 'Not provided'}
+                  </p>
+                  {item.value && item.docType && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          // GET /super-admin/pharmacies/:id/documents/rdb-certificate
+                          // GET /super-admin/pharmacies/:id/documents/pharmacy-license
+                          const endpoint = item.docType === 'rdb'
+                            ? `/super-admin/pharmacies/${params.id}/documents/rdb-certificate`
+                            : `/super-admin/pharmacies/${params.id}/documents/pharmacy-license`;
+                          const res = await api.get(endpoint);
+                          const url = res.data?.url || res.data;
+                          if (url) window.open(url, '_blank');
+                          else toast.error('Document URL not available');
+                        } catch {
+                          toast.error('Could not fetch document');
+                        }
+                      }}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                      style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                    >
+                      View Doc
+                    </button>
+                  )}
+                </div>
+                <div className="h-px bg-gray-100 mt-3" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    )}
+
+      {/* Submitted Documents */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide flex items-center gap-2" style={{ color: NAVY }}>
+          <DocumentTextIcon className="w-4 h-4" />
+          Submitted Documents
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            {
+              label: 'RDB Certificate',
+              value: pharmacy.rdbCertificate,
+              endpoint: `/super-admin/pharmacies/${params.id}/documents/rdb-certificate`,
+            },
+            {
+              label: 'Pharmacy License',
+              value: pharmacy.pharmacyLicense,
+              endpoint: `/super-admin/pharmacies/${params.id}/documents/pharmacy-license`,
+            },
+          ].map(doc => (
+            <div
+              key={doc.label}
+              className="flex items-center justify-between p-4 rounded-xl border"
+              style={{ borderColor: doc.value ? '#D1FAE5' : '#FEE2E2', backgroundColor: doc.value ? '#F0FDF4' : '#FEF2F2' }}
+            >
+              <div>
+                <p className="text-sm font-semibold text-gray-800">{doc.label}</p>
+                {doc.value
+                  ? <p className="text-xs text-green-600 mt-0.5">Document uploaded</p>
+                  : <p className="text-xs text-red-500 mt-0.5">Document missing</p>}
+              </div>
+              {doc.value && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await api.get(doc.endpoint);
+                      const url = res.data?.url || res.data;
+                      if (url) window.open(url, '_blank');
+                      else toast.error('Document URL not available');
+                    } catch {
+                      toast.error('Could not fetch document');
+                    }
+                  }}
+                  className="px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-all"
+                  style={{ backgroundColor: TEAL }}
+                >
+                  Open
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent orders from this pharmacy */}
+      {pharmacy.orders && pharmacy.orders.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+            Recent Orders
+          </h2>
+          <div className="space-y-2">
+            {pharmacy.orders.slice(0, 5).map((order: any) => (
+              <div key={order.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {order.patient ? `${order.patient.firstName} ${order.patient.lastName}` : 'Patient'}
+                  </p>
+                  <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold" style={{ color: TEAL }}>
+                    {Number(order.total ?? 0).toLocaleString()} RWF
+                  </p>
+                  <span className="text-xs text-gray-400">{order.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Reject modal */}
+      {showReject && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Reject Application</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              The rejection reason will be shown to the pharmacy owner so they can correct and resubmit.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={4}
+              placeholder="e.g. The submitted pharmacy license is expired. Please resubmit with a valid document dated within the last 12 months."
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-400 resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => { setShowReject(false); setRejectReason(''); }}
+                className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={actionLoading || !rejectReason.trim()}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-);
+  );
 }
