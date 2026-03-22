@@ -112,7 +112,7 @@ export default function StaffDashboardPage() {
 
       {/* Today's Shift */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Today's Shift</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Today's Shift</h2>
 
         {!todayShift ? (
           <div className="text-center py-6">
@@ -132,8 +132,8 @@ export default function StaffDashboardPage() {
                 : <ClockIcon className="w-5 h-5" />}
               Clock In
             </button>
-        </div>
-      ) : (
+          </div>
+        ) : (
           <div className="space-y-4">
             {shiftInfo && (
               <div className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${shiftInfo.color}`}>
@@ -150,7 +150,7 @@ export default function StaffDashboardPage() {
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
                     Approved by {todayShift.clockInApprover.firstName}
                   </p>
-              )}
+                )}
               </div>
               <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                 <p className="text-xs text-gray-500 mb-1">Clock Out</p>
@@ -159,13 +159,13 @@ export default function StaffDashboardPage() {
                   <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
                 )}
               </div>
-          </div>
+            </div>
 
             {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-              <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
-            </div>
-          )}
+                <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
+              </div>
+            )}
 
             {todayShift.status === 'APPROVED' && (
               <button
@@ -178,7 +178,7 @@ export default function StaffDashboardPage() {
                   : <ClockIcon className="w-5 h-5" />}
                 Clock Out
               </button>
-          )}
+            )}
 
             {todayShift.status === 'REJECTED' && (
               <button
@@ -192,9 +192,9 @@ export default function StaffDashboardPage() {
                   : <ClockIcon className="w-5 h-5" />}
                 Try Again
               </button>
-          )}
+            )}
           </div>
-      )}
+        )}
       </div>
 
       {/* Quick links */}

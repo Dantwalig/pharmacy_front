@@ -46,7 +46,7 @@ export default function StaffChangePasswordPage() {
   };
 
   const toggle = (field: keyof typeof showPass) =>
-  setShowPass(prev => ({ ...prev, [field]: !prev[field] }));
+    setShowPass(prev => ({ ...prev, [field]: !prev[field] }));
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: NAVY }}>
@@ -62,11 +62,6 @@ export default function StaffChangePasswordPage() {
               Please set a permanent password before accessing your account.
             </p>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome!</h1>
-          <p className="text-sm text-gray-500 mt-2">
-            Please set a permanent password before accessing your account.
-            </p>
-        </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
@@ -93,9 +88,9 @@ export default function StaffChangePasswordPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {showPass[field] ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
             <button
               type="submit"
@@ -103,13 +98,14 @@ export default function StaffChangePasswordPage() {
               className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
               style={{ backgroundColor: TEAL }}
             >
-            {loading ? (
+              {loading ? (
                 <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</>
-            ) : (
+              ) : (
                 'Set Password & Continue'
               )}
             </button>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -23,11 +23,12 @@ const FDA_CATEGORIES = [
   'Traditional & Herbal Medicines', 'Other',
 ];
 
-export default function StaffEditMedicationPage() {
+export default function BranchEditMedicationPage() {
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [backendReady, setBackendReady] = useState(true);
   const [med, setMed] = useState<any>(null);
   const [form, setForm] = useState<any>({});
 
@@ -35,7 +36,7 @@ export default function StaffEditMedicationPage() {
 
   const fetchMedication = async () => {
     try {
-      // GET /medications/:id is public — no role restriction
+      // GET /medications/:id is public — no role restriction — works for all roles
       const res = await api.get(`/medications/${params.id}`);
       const data = res.data;
       setMed(data);
@@ -60,7 +61,10 @@ export default function StaffEditMedicationPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      // PUT /medications/:id — Role.PHARMACIST now permitted
+      // BACKEND PENDING: PUT /medications/:id
+      // This endpoint currently restricts access to Role.PHARMACY only.
+      // The backend team needs to add Role.BRANCH_MANAGER to the @Roles decorator
+      // in medications.controller.ts. No frontend changes will be needed once done.
       await api.put(`/medications/${params.id}`, {
         name: form.name,
         category: form.category,
@@ -72,9 +76,14 @@ export default function StaffEditMedicationPage() {
         requiresPrescription: form.requiresPrescription,
       });
       toast.success('Medication updated');
-      router.push('/staff/inventory');
+      router.push('/branch/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update medication');
+      if (err?.response?.status === 403) {
+        setBackendReady(false);
+        toast.error('Backend access not yet enabled for this role. See banner above.');
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to update medication');
+      }
     } finally {
       setSaving(false);
     }
@@ -88,8 +97,9 @@ export default function StaffEditMedicationPage() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
 
-      <button onClick={() => router.push('/staff/inventory')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline" style={{ color: NAVY }}>
+      <button onClick={() => router.push('/branch/inventory')}
+        className="flex items-center gap-2 text-sm font-medium hover:underline"
+        style={{ color: NAVY }}>
         <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
       </button>
 
@@ -97,6 +107,22 @@ export default function StaffEditMedicationPage() {
         <h1 className="text-2xl font-bold">Edit Medication</h1>
         <p className="mt-1 text-white/70">{med?.name}</p>
       </div>
+
+      {!backendReady && (
+        <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
+          <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-yellow-800">Backend access pending</p>
+            <p className="text-xs text-yellow-700 mt-0.5">
+              The backend team needs to add
+              <span className="font-mono font-bold mx-1">Role.BRANCH_MANAGER</span>
+              to the
+              <span className="font-mono mx-1">PUT /medications/:id</span>
+              endpoint. The form is fully built and will work immediately once access is granted.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSave} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
 
@@ -160,12 +186,12 @@ export default function StaffEditMedicationPage() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="button" onClick={() => router.push('/staff/inventory')}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50">
+          <button type="button" onClick={() => router.push('/branch/inventory')}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all">
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ backgroundColor: TEAL }}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
