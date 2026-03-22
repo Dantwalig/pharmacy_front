@@ -115,123 +115,123 @@ export default function PharmacyRejectedPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-red-600 via-orange-600 to-yellow-600 flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Background Pattern */}
+    {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-      </div>
+      <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+    </div>
 
-      {/* Language Switcher - Top Right */}
+    {/* Language Switcher - Top Right */}
       <div className="absolute top-6 right-6 z-20">
-        <LanguageSwitcher />
+      <LanguageSwitcher />
+    </div>
+
+    {/* Main Card */}
+      <div className="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 relative z-10 max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+        <div className="text-center mb-8">
+        <div className="text-6xl mb-4"></div>
+        <h1 className="text-3xl md:text-4xl font-bold text-red-600 dark:text-red-500 mb-4">
+          Application Rejected
+          </h1>
+        <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
+          Your pharmacy application was rejected. Please review the feedback and resubmit.
+          </p>
       </div>
 
-      {/* Main Card */}
-      <div className="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 relative z-10 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-red-600 dark:text-red-500 mb-4">
-            Application Rejected
-          </h1>
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-            Your pharmacy application was rejected. Please review the feedback and resubmit.
-          </p>
-        </div>
-
-        {/* Rejection Reason */}
+      {/* Rejection Reason */}
         {pharmacyData?.rejectionReason && (
           <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-700 rounded-2xl p-6 mb-8">
-            <div className="flex items-start gap-4">
-              <div className="text-3xl">📋</div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  Rejection Reason
+          <div className="flex items-start gap-4">
+            <div className="text-3xl"></div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Rejection Reason
                 </h3>
-                <p className="text-gray-700 dark:text-gray-300">
-                  {pharmacyData.rejectionReason}
+              <p className="text-gray-700 dark:text-gray-300">
+                {pharmacyData.rejectionReason}
                 </p>
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* Resubmission Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Pharmacy Name *
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Pharmacy Name *
               </label>
-              <input
+            <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               />
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Representative Name *
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Representative Name *
               </label>
-              <input
+            <input
                 type="text"
                 value={formData.representativeName}
                 onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
                 required
                 className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               />
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Phone Number *
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Phone Number *
               </label>
-              <input
+            <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
                 className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               />
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Date of Incorporation *
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Date of Incorporation *
               </label>
-              <input
+            <input
                 type="date"
                 value={formData.dateOfIncorporation}
                 onChange={(e) => setFormData({ ...formData, dateOfIncorporation: e.target.value })}
                 required
                 className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               />
-            </div>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Address *
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Address *
             </label>
-            <textarea
+          <textarea
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               required
               rows={3}
               className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
             />
-          </div>
+        </div>
 
-          {/* Document Uploads */}
+        {/* Document Uploads */}
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                RDB Certificate * (Upload new document if needed)
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              RDB Certificate * (Upload new document if needed)
               </label>
-              <input
+            <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => {
@@ -240,18 +240,18 @@ export default function PharmacyRejectedPage() {
                 }}
                 className="w-full"
               />
-              {formData.rdbCertificate && (
+            {formData.rdbCertificate && (
                 <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                  ✓ Document uploaded
+                 Document uploaded
                 </p>
-              )}
+            )}
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Pharmacy License * (Upload new document if needed)
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Pharmacy License * (Upload new document if needed)
               </label>
-              <input
+            <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => {
@@ -260,56 +260,56 @@ export default function PharmacyRejectedPage() {
                 }}
                 className="w-full"
               />
-              {formData.pharmacyLicense && (
+            {formData.pharmacyLicense && (
                 <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                  ✓ Document uploaded
+                 Document uploaded
                 </p>
-              )}
+            )}
             </div>
-          </div>
+        </div>
 
-          {/* Action Buttons */}
+        {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <button
+          <button
               type="submit"
               disabled={loading}
               className="flex-1 bg-linear-to-r from-orange-600 to-red-600 text-white py-4 rounded-xl font-bold hover:from-orange-700 hover:to-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+            {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Resubmitting...</span>
-                </div>
-              ) : (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Resubmitting...</span>
+              </div>
+            ) : (
                 'Resubmit Application'
               )}
             </button>
             
-            <button
+          <button
               type="button"
               onClick={handleLogout}
               className="px-8 py-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
             >
-              Logout
+            Logout
             </button>
-          </div>
-        </form>
-
-        {/* Contact Info */}
-        <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Need help? Contact our support team
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-            Email: <span className="text-orange-600 dark:text-orange-400 font-medium">support@evuze.com</span>
-          </p>
         </div>
-      </div>
+      </form>
 
-      {/* Footer */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-75">
-        © 2025 E-Vuze Healthcare Platform. All rights reserved.
+      {/* Contact Info */}
+        <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Need help? Contact our support team
+          </p>
+        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+          Email: <span className="text-orange-600 dark:text-orange-400 font-medium">support@evuze.com</span>
+        </p>
       </div>
     </div>
-  );
+
+    {/* Footer */}
+      <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-75">
+      © 2025 E-Vuze Healthcare Platform. All rights reserved.
+      </div>
+  </div>
+);
 }

@@ -74,27 +74,27 @@ export default function BranchDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-400">
-        {t('common.loading')}
+      {t('common.loading')}
       </div>
-    );
+  );
   }
 
   if (fetchError || !branch) {
     return (
       <div className="space-y-4">
-        <button
+      <button
           onClick={() => router.push('/pharmacy/branches')}
           className="flex items-center gap-2 text-sm font-medium hover:underline"
           style={{ color: NAVY }}
         >
-          <ArrowLeft size={16} />
-          {t('pharmacyOwner.backToBranches')}
+        <ArrowLeft size={16} />
+        {t('pharmacyOwner.backToBranches')}
         </button>
-        <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
-          {fetchError ?? t('common.noData')}
+      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+        {fetchError ?? t('common.noData')}
         </div>
-      </div>
-    );
+    </div>
+  );
   }
 
   const managerEmail = branch.manager?.email ?? null;
@@ -137,62 +137,62 @@ export default function BranchDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back */}
+    {/* Back */}
       <button
         onClick={() => router.push('/pharmacy/branches')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}
       >
-        <ArrowLeft size={16} />
-        {t('pharmacyOwner.backToBranches')}
+      <ArrowLeft size={16} />
+      {t('pharmacyOwner.backToBranches')}
       </button>
 
-      {/* Hero */}
+    {/* Hero */}
       <div className="rounded-2xl p-8 text-white flex items-start justify-between" style={{ backgroundColor: NAVY }}>
-        <div>
-          <h1 className="text-3xl font-bold">{branch.name}</h1>
-          <p className="mt-1 text-white/70">{branch.address}</p>
-          {branch.phone && <p className="mt-0.5 text-white/50 text-sm">{branch.phone}</p>}
+      <div>
+        <h1 className="text-3xl font-bold">{branch.name}</h1>
+        <p className="mt-1 text-white/70">{branch.address}</p>
+        {branch.phone && <p className="mt-0.5 text-white/50 text-sm">{branch.phone}</p>}
         </div>
-        <span
+      <span
           className="px-3 py-1 rounded-full text-xs font-semibold mt-1"
           style={{ backgroundColor: badge.bg, color: badge.text }}
         >
-          {badge.label}
+        {badge.label}
         </span>
-      </div>
+    </div>
 
-      {/* Stats */}
+    {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s, i) => {
+      {stats.map((s, i) => {
           const Icon = s.icon;
           return (
             <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
                 style={{ backgroundColor: '#F0F7F6' }}>
-                <Icon size={18} style={{ color: TEAL }} />
-              </div>
-              <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-              <p className="text-sm font-bold text-gray-900 truncate">{s.value}</p>
+              <Icon size={18} style={{ color: TEAL }} />
             </div>
-          );
+            <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+            <p className="text-sm font-bold text-gray-900 truncate">{s.value}</p>
+          </div>
+        );
         })}
       </div>
 
-      {/* Staff list */}
+    {/* Staff list */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-4">{t('pharmacyOwner.staffMembers')}</h3>
-        {staffList.length === 0 ? (
+      <h3 className="font-semibold text-gray-800 mb-4">{t('pharmacyOwner.staffMembers')}</h3>
+      {staffList.length === 0 ? (
           <p className="text-gray-400 text-sm">{t('common.noData')}</p>
-        ) : (
+      ) : (
           <div className="space-y-3">
-            {staffList.map((s: any) => (
+          {staffList.map((s: any) => (
               <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{s.firstName} {s.lastName}</p>
-                  <p className="text-xs text-gray-500">{s.user?.email}</p>
-                </div>
-                <span
+              <div>
+                <p className="text-sm font-medium text-gray-800">{s.firstName} {s.lastName}</p>
+                <p className="text-xs text-gray-500">{s.user?.email}</p>
+              </div>
+              <span
                   className="px-2.5 py-1 rounded-full text-xs font-semibold"
                   style={
                     s.status === 'ACTIVE'
@@ -200,17 +200,17 @@ export default function BranchDetailPage() {
                       : { backgroundColor: '#F3F4F6', color: '#6B7280' }
                   }
                 >
-                  {s.status}
+                {s.status}
                 </span>
-              </div>
-            ))}
+            </div>
+          ))}
           </div>
-        )}
+      )}
       </div>
 
-      {/* Actions */}
+    {/* Actions */}
       <div className="space-y-3">
-        {actionMsg && (
+      {actionMsg && (
           <div
             className="px-4 py-3 rounded-xl text-sm font-medium"
             style={{
@@ -218,56 +218,56 @@ export default function BranchDetailPage() {
               color: actionMsg.ok ? '#065F46' : '#92400E',
             }}
           >
-            {actionMsg.text}
+          {actionMsg.text}
           </div>
-        )}
+      )}
 
         {/* Credentials context */}
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="font-semibold text-gray-800 mb-1">Manager Account</h3>
-          <p className="text-xs text-gray-400 mb-4">
-            {hasManager
+        <h3 className="font-semibold text-gray-800 mb-1">Manager Account</h3>
+        <p className="text-xs text-gray-400 mb-4">
+          {hasManager
               ? `Account created for ${managerEmail}. Use Resend if they need a new password.`
               : `No account yet for ${branch.branchManagerEmail ?? '—'}. Send credentials to create their login.`}
           </p>
-          <div className="flex flex-wrap gap-3">
-            <button
+        <div className="flex flex-wrap gap-3">
+          <button
               onClick={handleSendCredentials}
               disabled={sendingCreds || hasManager}
               title={hasManager ? 'Manager account already exists' : undefined}
               className="px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ backgroundColor: TEAL }}
             >
-              {sendingCreds ? t('common.saving') : t('pharmacyOwner.sendCredentials')}
+            {sendingCreds ? t('common.saving') : t('pharmacyOwner.sendCredentials')}
             </button>
-            <button
+          <button
               onClick={handleResend}
               disabled={resendingCreds || !hasManager || isApproved}
               title={!hasManager ? 'Send credentials first' : isApproved ? 'Branch is already approved' : undefined}
               className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {resendingCreds ? t('common.saving') : t('pharmacyOwner.resendCredentials')}
+            {resendingCreds ? t('common.saving') : t('pharmacyOwner.resendCredentials')}
             </button>
-          </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
+      <div className="flex flex-wrap gap-3">
+        <button
             disabled
             title="Coming soon"
             className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed"
           >
-            {t('pharmacyOwner.reassignManager')}
+          {t('pharmacyOwner.reassignManager')}
           </button>
-          <button
+        <button
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium"
             style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
           >
-            <Ban size={16} />
-            {t('pharmacyOwner.disableBranch')}
+          <Ban size={16} />
+          {t('pharmacyOwner.disableBranch')}
           </button>
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

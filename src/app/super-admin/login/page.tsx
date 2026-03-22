@@ -44,21 +44,21 @@ export default function SuperAdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-red-600 to-pink-700 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-4">🔐</div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Super Admin Access
+    <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+      <div className="text-center mb-8">
+        <div className="text-4xl mb-4"></div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Super Admin Access
           </h1>
-          <p className="text-gray-600">Enter your secret key to continue</p>
-        </div>
+        <p className="text-gray-600">Enter your secret key to continue</p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="secretKey" className="block text-sm font-medium text-gray-700 mb-2">
-              Secret Key
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="secretKey" className="block text-sm font-medium text-gray-700 mb-2">
+            Secret Key
             </label>
-            <input
+          <input
               id="secretKey"
               type="password"
               value={secretKey}
@@ -68,34 +68,34 @@ export default function SuperAdminLoginPage() {
               placeholder="Enter your secret key"
               autoComplete="off"
             />
-          </div>
+        </div>
 
-          <button
+        <button
             type="submit"
             disabled={loading}
             className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Verifying...' : 'Access Dashboard'}
+          {loading ? 'Verifying...' : 'Access Dashboard'}
           </button>
-        </form>
+      </form>
 
-        <div className="mt-6 text-center">
-          <Link
+      <div className="mt-6 text-center">
+        <Link
             href="/login"
             className="text-sm text-gray-600 hover:text-gray-900"
           >
-            ← Back to regular login
+          ← Back to regular login
           </Link>
-        </div>
+      </div>
 
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs text-yellow-800">
-            <strong>⚠️ Authorized Access Only</strong><br />
-            This area is restricted to authorized administrators only.
+      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p className="text-xs text-yellow-800">
+          <strong> Authorized Access Only</strong><br />
+          This area is restricted to authorized administrators only.
             Unauthorized access attempts are logged and monitored.
           </p>
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

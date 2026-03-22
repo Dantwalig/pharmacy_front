@@ -47,188 +47,181 @@ export default function SuperAdminAnalyticsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner />
-      </div>
-    );
+      <LoadingSpinner />
+    </div>
+  );
   }
+
+  const completionRate = analytics?.totalOrders
+    ? ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1)
+    : '0.0';
 
   const metrics = [
     {
-      name: 'Total Revenue',
-      value: `$${analytics?.totalRevenue?.toLocaleString() || 0}`,
+      name: 'Total Revenue (RWF)',
+      value: `RWF ${analytics?.totalRevenue?.toLocaleString() || 0}`,
       icon: CurrencyDollarIcon,
-      change: '+12.5%',
-      positive: true,
+      sub: `${revenue?.transactionCount || 0} transactions`,
     },
     {
       name: 'Total Orders',
       value: analytics?.totalOrders || 0,
       icon: ShoppingCartIcon,
-      change: '+8.2%',
-      positive: true,
+      sub: `${analytics?.completedOrders || 0} completed`,
     },
     {
-      name: 'Completed Orders',
-      value: analytics?.completedOrders || 0,
+      name: 'Completion Rate',
+      value: `${completionRate}%`,
       icon: ChartBarIcon,
-      change: '+15.3%',
-      positive: true,
+      sub: 'of all orders completed',
     },
     {
       name: 'Platform Revenue',
       value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
       icon: ArrowTrendingUpIcon,
-      change: '+6.7%',
-      positive: true,
+      sub: `$${analytics?.platformFeePerPharmacy || 0}/pharmacy/month`,
     },
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
+    {/* Sidebar */}
       <SuperAdminSidebar />
 
-      {/* Main Content */}
+    {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Topbar */}
+      {/* Topbar */}
         <SuperAdminTopbar />
 
-        {/* Page Content */}
+      {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
-          <div className="space-y-6">
-            {/* Header */}
+        <div className="space-y-6">
+          {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                📊 {t('superAdmin.analytics')}
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+               {t('superAdmin.analytics')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Detailed platform performance metrics
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Detailed platform performance metrics
               </p>
-            </div>
+          </div>
 
-            {/* Metrics Grid */}
+          {/* Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {metrics.map((metric) => {
+            {metrics.map((metric) => {
                 const Icon = metric.icon;
                 return (
-                  <div
-                    key={metric.name}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                        <Icon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <span
-                        className={`text-sm font-semibold ${
-                          metric.positive ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        {metric.change}
-                      </span>
+                  <div key={metric.name} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                      <Icon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                      {metric.value}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{metric.name}</p>
                   </div>
-                );
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {metric.value}
+                    </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{metric.name}</p>
+                  {metric.sub && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{metric.sub}</p>
+                  )}
+                  </div>
+              );
               })}
             </div>
 
-            {/* Revenue Breakdown */}
+          {/* Revenue Breakdown */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-                Revenue Overview
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              Revenue Overview
               </h2>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Transactions</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {revenue?.transactionCount || 0}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Transactions</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {revenue?.transactionCount || 0}
                     </p>
-                  </div>
-                  <ShoppingCartIcon className="w-12 h-12 text-purple-500" />
                 </div>
+                <ShoppingCartIcon className="w-12 h-12 text-purple-500" />
+              </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Average Order Value</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      ${revenue?.transactionCount ? (revenue.totalRevenue / revenue.transactionCount).toFixed(2) : 0}
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Average Order Value</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    ${revenue?.transactionCount ? (revenue.totalRevenue / revenue.transactionCount).toFixed(2) : 0}
                     </p>
-                  </div>
-                  <CurrencyDollarIcon className="w-12 h-12 text-green-500" />
+                </div>
+                <CurrencyDollarIcon className="w-12 h-12 text-green-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Pharmacy Insights
+                </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Total Pharmacies</span>
+                  <span className="font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.totalPharmacies || 0}
+                    </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Approved</span>
+                  <span className="font-bold text-green-600">
+                    {analytics?.approvedPharmacies || 0}
+                    </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Pending</span>
+                  <span className="font-bold text-yellow-600">
+                    {analytics?.pendingPharmacies || 0}
+                    </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Monthly Fee per Pharmacy</span>
+                  <span className="font-bold text-gray-900 dark:text-gray-100">
+                    ${analytics?.platformFeePerPharmacy || 0}
+                    </span>
                 </div>
               </div>
             </div>
 
-            {/* Platform Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  Pharmacy Insights
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Patient Insights
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Total Pharmacies</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.totalPharmacies || 0}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Total Patients</span>
+                  <span className="font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.totalPatients || 0}
                     </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Approved</span>
-                    <span className="font-bold text-green-600">
-                      {analytics?.approvedPharmacies || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Pending</span>
-                    <span className="font-bold text-yellow-600">
-                      {analytics?.pendingPharmacies || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Monthly Fee per Pharmacy</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100">
-                      ${analytics?.platformFeePerPharmacy || 0}
-                    </span>
-                  </div>
                 </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  Patient Insights
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Total Patients</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.totalPatients || 0}
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Active Orders</span>
+                  <span className="font-bold text-blue-600">
+                    {(analytics?.totalOrders || 0) - (analytics?.completedOrders || 0)}
                     </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Active Orders</span>
-                    <span className="font-bold text-blue-600">
-                      {(analytics?.totalOrders || 0) - (analytics?.completedOrders || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100">
-                      {analytics?.totalOrders ? 
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
+                  <span className="font-bold text-gray-900 dark:text-gray-100">
+                    {analytics?.totalOrders ? 
                         ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1) : 0}%
                     </span>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
 }
