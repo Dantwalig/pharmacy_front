@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut, X, ShoppingCart, Package, ClipboardList } from 'lucide-react';
 
 interface StaffSidebarProps {
   open?: boolean;
@@ -14,10 +14,13 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
   const { t } = useTranslation();
 
   const nav = [
-    { href: '/staff/dashboard',      icon: LayoutDashboard, label: t('staff.dashboard') },
-    { href: '/staff/attendance',     icon: Clock,           label: t('staff.attendance') },
-    { href: '/staff/profile',        icon: User,            label: t('staff.profile') },
-    { href: '/staff/change-password',icon: Lock,            label: t('staff.changePassword') },
+    { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard') },
+    { href: '/staff/orders',          icon: ShoppingCart,    label: t('staff.orders') },
+    { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory') },
+    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions') },
+    { href: '/staff/attendance',      icon: Clock,           label: t('staff.attendance') },
+    { href: '/staff/profile',         icon: User,            label: t('staff.profile') },
+    { href: '/staff/change-password', icon: Lock,            label: t('staff.changePassword') },
   ];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
