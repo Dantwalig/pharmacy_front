@@ -67,9 +67,9 @@ export default function SuperAdminTopbar({ onMenuClick }: SuperAdminTopbarProps)
           </svg>
         </button>
         <div className="flex items-center gap-3">
-          <ShieldCheckIcon className="w-8 h-8 text-red-600 dark:text-red-400 hidden sm:block" />
+          <ShieldCheckIcon className="w-8 h-8 text-slate-800 dark:text-slate-200 hidden sm:block" />
           <div>
-            <h2 className="text-lg lg:text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+            <h2 className="text-lg lg:text-2xl font-bold text-slate-900 dark:text-white">
               {t('superAdmin.topbar.title')}
               </h2>
             <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
@@ -92,7 +92,7 @@ export default function SuperAdminTopbar({ onMenuClick }: SuperAdminTopbarProps)
             >
             <BellIcon className="w-6 h-6" />
             {notifications.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
             )}
             </button>
 
@@ -145,7 +145,7 @@ export default function SuperAdminTopbar({ onMenuClick }: SuperAdminTopbarProps)
                 {t('superAdmin.role')}
                 </p>
             </div>
-            <div className="w-8 h-8 bg-linear-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+            <div className="w-8 h-8 bg-slate-800 dark:bg-slate-700 rounded-full flex items-center justify-center text-white font-bold">
               SA
               </div>
           </button>
@@ -178,7 +178,7 @@ export default function SuperAdminTopbar({ onMenuClick }: SuperAdminTopbarProps)
               <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
                 <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3 text-red-600 dark:text-red-400"
+                    className="w-full px-4 py-3 text-left hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center gap-3 text-rose-600 dark:text-rose-400"
                   >
                   <ArrowRightOnRectangleIcon className="w-5 h-5" />
                   <span>{t('common.logout')}</span>

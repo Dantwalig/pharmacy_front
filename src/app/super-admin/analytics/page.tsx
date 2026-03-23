@@ -7,8 +7,6 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import SuperAdminTopbar from '@/components/super-admin/SuperAdminTopbar';
-import SuperAdminSidebar from '@/components/super-admin/SuperAdminSidebar';
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -84,18 +82,7 @@ export default function SuperAdminAnalyticsPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    {/* Sidebar */}
-      <SuperAdminSidebar />
-
-    {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-      {/* Topbar */}
-        <SuperAdminTopbar />
-
-      {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-        <div className="space-y-6">
+    <div className="space-y-6">
           {/* Header */}
             <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
@@ -113,8 +100,8 @@ export default function SuperAdminAnalyticsPage() {
                 return (
                   <div key={metric.name} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                      <Icon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="p-3 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
+                      <Icon className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                     </div>
                   </div>
                   <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
@@ -143,7 +130,7 @@ export default function SuperAdminAnalyticsPage() {
                     {revenue?.transactionCount || 0}
                     </p>
                 </div>
-                <ShoppingCartIcon className="w-12 h-12 text-purple-500" />
+                <ShoppingCartIcon className="w-12 h-12 text-rose-500" />
               </div>
 
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
@@ -220,8 +207,5 @@ export default function SuperAdminAnalyticsPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  </div>
-);
+  );
 }

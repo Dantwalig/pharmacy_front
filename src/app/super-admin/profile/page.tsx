@@ -7,8 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import SuperAdminTopbar from '@/components/super-admin/SuperAdminTopbar';
-import SuperAdminSidebar from '@/components/super-admin/SuperAdminSidebar';
 import {
   UserCircleIcon,
   LockClosedIcon,
@@ -60,14 +58,7 @@ export default function SuperAdminProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    <SuperAdminSidebar />
-
-    <div className="flex-1 flex flex-col">
-      <SuperAdminTopbar />
-
-      <main className="flex-1 p-6 overflow-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
             <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
@@ -86,7 +77,7 @@ export default function SuperAdminProfilePage() {
               </h2>
 
             <div className="flex items-center gap-6 mb-6">
-              <div className="w-20 h-20 bg-linear-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+              <div className="w-20 h-20 bg-slate-800 dark:bg-slate-700 rounded-full flex items-center justify-center text-white text-3xl font-bold">
                 SA
                 </div>
               <div>
@@ -136,7 +127,7 @@ export default function SuperAdminProfilePage() {
                     value={passwords.currentPassword}
                     onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
 
@@ -150,7 +141,7 @@ export default function SuperAdminProfilePage() {
                     onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
 
@@ -164,14 +155,14 @@ export default function SuperAdminProfilePage() {
                     onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
 
               <button
                   type="submit"
                   disabled={changingPassword}
-                  className="w-full bg-linear-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                  className="w-full bg-rose-600 text-white py-4 rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                 >
                 {changingPassword ? (
                     <div className="flex items-center justify-center gap-2">
@@ -201,8 +192,5 @@ export default function SuperAdminProfilePage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  </div>
-);
+  );
 }
