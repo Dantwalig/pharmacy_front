@@ -7,8 +7,6 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import SuperAdminTopbar from '@/components/super-admin/SuperAdminTopbar';
-import SuperAdminSidebar from '@/components/super-admin/SuperAdminSidebar';
 import {
   UserGroupIcon,
   EnvelopeIcon,
@@ -57,18 +55,7 @@ export default function SuperAdminPatientsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    {/* Sidebar */}
-      <SuperAdminSidebar />
-
-    {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-      {/* Topbar */}
-        <SuperAdminTopbar />
-
-      {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-        <div className="space-y-6">
+    <div className="space-y-6">
           {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
@@ -87,7 +74,7 @@ export default function SuperAdminPatientsPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search patients..."
-                  className="w-full sm:w-64 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                  className="w-full sm:w-64 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                 />
             </div>
           </div>
@@ -108,7 +95,7 @@ export default function SuperAdminPatientsPage() {
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden"
                   >
                   {/* Card Header */}
-                    <div className="bg-linear-to-r from-blue-600 to-cyan-600 p-6 text-white">
+                    <div className="bg-slate-800 p-6 text-white">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold backdrop-blur-sm">
                         {patient.firstName?.charAt(0)}{patient.lastName?.charAt(0)}
@@ -156,11 +143,11 @@ export default function SuperAdminPatientsPage() {
                     )}
 
                       {patient.insuranceProvider && (
-                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-1">
+                        <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 mb-1">
                           Insurance Provider
                           </p>
-                        <p className="text-sm text-blue-600 dark:text-blue-300">
+                        <p className="text-sm text-slate-800 dark:text-slate-300">
                           {patient.insuranceProvider}
                           </p>
                       </div>
@@ -171,8 +158,5 @@ export default function SuperAdminPatientsPage() {
               </div>
           )}
           </div>
-      </main>
-    </div>
-  </div>
-);
+  );
 }
