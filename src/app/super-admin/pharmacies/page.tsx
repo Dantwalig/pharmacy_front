@@ -14,8 +14,7 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
+// Removed NAVY and TEAL constants in favor of Authority Theme (slate/rose)
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING:  'bg-yellow-100 text-yellow-700',
@@ -123,7 +122,7 @@ function PharmaciesContent() {
     <div className="space-y-6">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-slate-900">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold">Pharmacy Applications</h1>
@@ -141,7 +140,7 @@ function PharmaciesContent() {
       {/* Search panel */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          <FunnelIcon className="w-4 h-4" style={{ color: TEAL }} />
+          <FunnelIcon className="w-4 h-4 text-rose-600" />
           Search & Filter Applications
         </div>
 
@@ -153,7 +152,7 @@ function PharmaciesContent() {
             placeholder="Search by pharmacy name, owner name, or email..."
             value={searchName}
             onChange={e => setSearchName(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-rose-400"
           />
         </div>
 
@@ -168,7 +167,7 @@ function PharmaciesContent() {
               placeholder="e.g. RDB/2024/001"
               value={searchRdb}
               onChange={e => setSearchRdb(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-rose-400"
             />
           </div>
           <div>
@@ -180,7 +179,7 @@ function PharmaciesContent() {
               placeholder="e.g. PL/2024/001"
               value={searchLicense}
               onChange={e => setSearchLicense(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-rose-400"
             />
           </div>
           <div>
@@ -192,7 +191,7 @@ function PharmaciesContent() {
               placeholder="e.g. BRN/2024/001"
               value={searchBusiness}
               onChange={e => setSearchBusiness(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-rose-400"
             />
           </div>
         </div>
@@ -204,8 +203,7 @@ function PharmaciesContent() {
             </p>
             <button
               onClick={clearSearch}
-              className="text-xs font-medium hover:underline"
-              style={{ color: TEAL }}
+              className="text-xs font-medium hover:underline text-rose-600"
             >
               Clear all filters
             </button>
@@ -219,10 +217,7 @@ function PharmaciesContent() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"
-            style={filter === s
-              ? { backgroundColor: NAVY, color: '#fff' }
-              : { backgroundColor: '#F3F4F6', color: '#374151' }}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${filter === s ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-700'}`}
           >
             {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
             {s === 'PENDING' && pendingCount > 0 && (
@@ -266,8 +261,7 @@ function PharmaciesContent() {
                     {/* Pharmacy name */}
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-                          style={{ backgroundColor: NAVY }}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 bg-slate-900">
                           {p.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div>

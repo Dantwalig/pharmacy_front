@@ -43,7 +43,7 @@ export default function SuperAdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-red-600 to-pink-700 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
     <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
       <div className="text-center mb-8">
         <div className="text-4xl mb-4"></div>
@@ -64,7 +64,7 @@ export default function SuperAdminLoginPage() {
               value={secretKey}
               onChange={(e) => setSecretKey(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
               placeholder="Enter your secret key"
               autoComplete="off"
             />
@@ -73,7 +73,7 @@ export default function SuperAdminLoginPage() {
         <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-rose-600 text-white py-3 rounded-lg font-medium hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
           {loading ? 'Verifying...' : 'Access Dashboard'}
           </button>

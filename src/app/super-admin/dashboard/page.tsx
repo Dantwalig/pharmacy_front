@@ -8,8 +8,6 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import SuperAdminTopbar from '@/components/super-admin/SuperAdminTopbar';
-import SuperAdminSidebar from '@/components/super-admin/SuperAdminSidebar';
 import {
   BuildingStorefrontIcon,
   UserGroupIcon,
@@ -106,18 +104,7 @@ export default function SuperAdminDashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-    {/* Sidebar */}
-      <SuperAdminSidebar />
-
-    {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-      {/* Topbar */}
-        <SuperAdminTopbar />
-
-      {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-        <div className="space-y-6">
+    <div className="space-y-6">
           {/* Header */}
             <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
@@ -164,7 +151,7 @@ export default function SuperAdminDashboard() {
                   </h2>
                 <button
                     onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
-                    className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium"
+                    className="text-sm text-rose-600 dark:text-rose-400 hover:underline font-medium"
                   >
                   {t('superAdmin.viewAll')}
                   </button>
@@ -186,7 +173,7 @@ export default function SuperAdminDashboard() {
                         className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                       >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-linear-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 bg-slate-800 dark:bg-slate-700 rounded-lg flex items-center justify-center text-white font-bold">
                           {pharmacy.name.charAt(0)}
                           </div>
                         <div>
@@ -239,7 +226,7 @@ export default function SuperAdminDashboard() {
 
                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <CheckCircleIcon className="w-6 h-6 text-purple-500" />
+                    <CheckCircleIcon className="w-6 h-6 text-slate-500" />
                     <span className="text-gray-700 dark:text-gray-300">
                       Completed Orders
                       </span>
@@ -281,8 +268,5 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  </div>
-);
+  );
 }
