@@ -14,6 +14,7 @@ import {
 
 const TEAL  = '#2D9B8A';
 const NAVY  = '#1E4D8C';
+const { t } = useTranslation();
 const BRANCH_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 
 function fmt(n: number) {
