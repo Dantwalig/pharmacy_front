@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, MapPinIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { t } from 'i18next';
 
 function ResetPasswordForm() {
   const { t } = useTranslation();

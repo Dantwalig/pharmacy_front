@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { ArrowLeftIcon, MapPinIcon, PhoneIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { useCart } from '@/context/CartContext';
+import { ArrowLeftIcon, MapPinIcon, PhoneIcon, ShoppingCartIcon, BeakerIcon } from '@heroicons/react/24/outline';
 
 interface Medication {
   id: string;
@@ -35,6 +36,7 @@ export default function PharmacyDetailsPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
+  const { addToCart } = useCart();
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,25 +58,17 @@ export default function PharmacyDetailsPage() {
   };
 
   const handleAddToCart = (medication: Medication) => {
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItemIndex = existingCart.findIndex((item: any) => item.medicationId === medication.id);
-
-    if (existingItemIndex > -1) {
-      existingCart[existingItemIndex].quantity += 1;
-    } else {
-      existingCart.push({
-        medicationId: medication.id,
-        name: medication.name,
-        price: medication.price,
-        quantity: 1,
-        pharmacyId: pharmacy?.id,
-        pharmacyName: pharmacy?.name,
-        requiresPrescription: medication.requiresPrescription,
-      });
-    }
-
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    toast.success(`${medication.name} added to cart!`);
+    addToCart({
+      medicationId: medication.id,
+      name: medication.name,
+      price: medication.price,
+      quantity: 1,
+      pharmacyId: pharmacy?.id || '',
+      pharmacyName: pharmacy?.name || '',
+      requiresPrescription: medication.requiresPrescription,
+      imageUrl: medication.imageUrl,
+    });
+    router.push('/patient/cart');
   };
 
   if (loading) {
@@ -89,9 +83,9 @@ export default function PharmacyDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('patient.pharmacyNotFound')}</p>
-        <button onClick={() => router.back()} className="bg-purple-600 text-white px-6 py-2 rounded-xl hover:bg-purple-700">
-          {t('common.goBack')}
+        <p className="text-gray-500 dark:text-gray-400 mb-4">Pharmacy Not Found</p>
+        <button onClick={() => router.back()} className="bg-[#1E4D8C] text-white px-6 py-2 rounded-xl hover:bg-[#1a3d6f]">
+          Go Back
           </button>
       </div>
     </div>
@@ -113,20 +107,20 @@ export default function PharmacyDetailsPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
         <ArrowLeftIcon className="w-5 h-5" />
-        {t('common.back')}
+        Back
         </button>
 
       {/* Pharmacy Header */}
-        <div className="bg-linear-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
+        <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
         <h1 className="text-3xl sm:text-4xl font-bold mb-4">{pharmacy.name}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3">
             <MapPinIcon className="w-6 h-6 mt-0.5 shrink-0" />
-            <span className="text-purple-100">{pharmacy.address}</span>
+            <span className="text-blue-100">{pharmacy.address}</span>
           </div>
           <div className="flex items-center gap-3">
             <PhoneIcon className="w-6 h-6 shrink-0" />
-            <a href={`tel:${pharmacy.phone}`} className="text-purple-100 hover:text-white font-medium underline">
+            <a href={`tel:${pharmacy.phone}`} className="text-blue-100 hover:text-white font-medium underline">
               {pharmacy.phone}
               </a>
           </div>
@@ -138,10 +132,10 @@ export default function PharmacyDetailsPage() {
         <div className="relative">
           <input
               type="text"
-              placeholder={t('patient.searchMedications')}
+              placeholder="Search medications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
+              className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#2D9B8A] dark:focus:border-[#2D9B8A] transition-colors"
             />
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
         </div>
@@ -152,7 +146,7 @@ export default function PharmacyDetailsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all ${
                   selectedCategory === category
-                    ? 'bg-linear-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                    ? 'bg-linear-to-r from-[#2D9B8A] to-[#207a6c] text-white shadow-lg'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -163,14 +157,14 @@ export default function PharmacyDetailsPage() {
       </div>
 
       <div className="text-gray-600 dark:text-gray-400 text-sm">
-        {filteredMedications.length} {t('patient.medicationsFound')}
+        {filteredMedications.length} Medications Found
         </div>
 
       {filteredMedications.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-          <p className="text-6xl mb-4"></p>
+          <BeakerIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {searchQuery || selectedCategory !== 'ALL' ? t('patient.noMedicationsMatch') : t('patient.noMedicationsAvailable')}
+            No medications available matching your search
             </p>
         </div>
       ) : (
@@ -178,18 +172,18 @@ export default function PharmacyDetailsPage() {
           {filteredMedications.map((medication) => (
               <div key={medication.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden">
               {medication.imageUrl ? (
-                  <div className="h-48 bg-linear-to-br from-purple-100 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/20">
+                  <div className="h-48 bg-gray-100 dark:bg-gray-700/30">
                   <img src={medication.imageUrl} alt={medication.name} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                  <div className="h-48 bg-linear-to-br from-purple-100 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/20 flex items-center justify-center">
-                  <span className="text-6xl"></span>
+                  <div className="h-48 bg-gray-100 dark:bg-gray-700/30 flex items-center justify-center">
+                  <BeakerIcon className="w-16 h-16 text-gray-300 dark:text-gray-600" />
                 </div>
               )}
                 <div className="p-6 space-y-4">
                 <div>
                   <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">{medication.name}</h3>
-                  <span className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-xs font-medium">
+                  <span className="inline-block px-3 py-1 bg-[#1E4D8C]/10 dark:bg-[#1E4D8C]/30 text-[#1E4D8C] dark:text-blue-400 rounded-full text-xs font-medium">
                     {medication.category}
                     </span>
                 </div>
@@ -198,29 +192,29 @@ export default function PharmacyDetailsPage() {
                 )}
                   <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">{t('patient.inStock')}:</span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-100">{medication.quantity} {t('patient.units')}</span>
+                    <span className="text-gray-600 dark:text-gray-400">In Stock:</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">{medication.quantity} Units</span>
                   </div>
                   {medication.requiresPrescription && (
                       <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
                       <span></span>
-                      <span className="text-xs font-medium">{t('patient.prescriptionRequired')}</span>
+                      <span className="text-xs font-medium">Prescription Required</span>
                     </div>
                   )}
                   </div>
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('patient.price')}</p>
-                    <p className="text-2xl font-bold bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Price</p>
+                    <p className="text-2xl font-bold bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
                       {medication.price.toLocaleString()} RWF
                       </p>
                   </div>
                   <button
                       onClick={() => handleAddToCart(medication)}
-                      className="bg-linear-to-r from-purple-600 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2"
+                      className="bg-linear-to-r from-[#2D9B8A] to-[#207a6c] text-white px-4 py-3 rounded-xl font-semibold hover:from-[#207a6c] hover:to-[#185e53] transition-all shadow-lg flex items-center gap-2"
                     >
                     <ShoppingCartIcon className="w-5 h-5" />
-                    {t('patient.addToCart')}
+                    Add to Cart
                     </button>
                 </div>
               </div>

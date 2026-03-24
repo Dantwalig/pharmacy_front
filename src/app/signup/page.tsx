@@ -49,8 +49,7 @@ export default function SignupPage() {
     }
     setLoading(true);
     try {
-      const { confirmPassword, ...data } = patientForm;
-      const res = await api.post('/auth/register/patient', data);
+      const res = await api.post('/auth/register/patient', patientForm);
       toast.success(res.data.message || t('signup.accountCreated'));
       router.push(`/verify-email?email=${encodeURIComponent(patientForm.email)}`);
     } catch (err: any) {

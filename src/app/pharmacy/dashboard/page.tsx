@@ -14,7 +14,6 @@ import {
 
 const TEAL  = '#2D9B8A';
 const NAVY  = '#1E4D8C';
-const { t } = useTranslation();
 const BRANCH_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 
 function fmt(n: number) {
@@ -50,14 +49,17 @@ function SkeletonChart() {
   return <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-72" />;
 }
 
-const EMPTY_STATE = (
-  <div className="flex items-center justify-center h-48 text-gray-300 text-sm">
-    <div className="text-center space-y-1">
-      <Activity size={28} className="mx-auto text-gray-200" />
-      <p>{t('dashboard.noDataYet')}</p>
+function EmptyState() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center h-48 text-gray-300 text-sm">
+      <div className="text-center space-y-1">
+        <Activity size={28} className="mx-auto text-gray-200" />
+        <p>{t('dashboard.noDataYet')}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 // Custom tooltip for charts
 function RevenueTooltip({ active, payload, label }: any) {
@@ -369,7 +371,7 @@ export default function PharmacyDashboard() {
               ))}
             </LineChart>
           </ResponsiveContainer>
-        ) : EMPTY_STATE}
+        ) : <EmptyState />}
       </div>
 
       {/* ── Pharmacy-wide total revenue trend (30-day) ─────────────────── */}
@@ -400,7 +402,7 @@ export default function PharmacyDashboard() {
               <Bar dataKey="revenue" name="Total Revenue" fill={TEAL} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        ) : EMPTY_STATE}
+        ) : <EmptyState />}
       </div>
 
       {/* ── Revenue by branch (this month) + Inventory distribution ─────── */}
@@ -417,7 +419,7 @@ export default function PharmacyDashboard() {
                 <Bar dataKey="revenue" name="Revenue" fill={NAVY} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          ) : EMPTY_STATE}
+          ) : <EmptyState />}
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
@@ -434,7 +436,7 @@ export default function PharmacyDashboard() {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
-          ) : EMPTY_STATE}
+          ) : <EmptyState />}
         </div>
       </div>
 

@@ -157,6 +157,8 @@ function VerifyEmailForm() {
 }
 
 export default function VerifyEmailPage() {
+  const { t } = useTranslation();
+
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">{t('common.loading')}</div></div>}>
     <VerifyEmailForm />
