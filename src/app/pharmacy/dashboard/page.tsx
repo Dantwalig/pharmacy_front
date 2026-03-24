@@ -53,7 +53,7 @@ const EMPTY_STATE = (
   <div className="flex items-center justify-center h-48 text-gray-300 text-sm">
     <div className="text-center space-y-1">
       <Activity size={28} className="mx-auto text-gray-200" />
-      <p>No data yet</p>
+      <p>{t('dashboard.noDataYet')}</p>
     </div>
   </div>
 );
@@ -245,7 +245,7 @@ export default function PharmacyDashboard() {
 
       {/* Overview stat cards */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Business Overview</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('dashboard.businessOverview')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {overviewCards.map((s, i) => {
             const Icon = s.icon;
@@ -266,7 +266,7 @@ export default function PharmacyDashboard() {
 
       {/* Monthly performance cards */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Monthly Performance</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('dashboard.monthlyPerformance')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {analyticsCards.map((s, i) => {
             const Icon = s.icon;
@@ -291,7 +291,7 @@ export default function PharmacyDashboard() {
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-gray-800">Revenue per Branch</h3>
+            <h3 className="font-semibold text-gray-800">{t('dashboard.revenuePerBranch')}</h3>
             <p className="text-xs text-gray-400 mt-0.5">Past 30 days, {revenueView === 'daily' ? 'day by day' : 'grouped by week'}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export default function PharmacyDashboard() {
       {/* ── Pharmacy-wide total revenue trend (30-day) ─────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800">Total Revenue Trend</h3>
+          <h3 className="font-semibold text-gray-800">{t('dashboard.totalRevenueTrend')}</h3>
           <p className="text-xs text-gray-400 mt-0.5">All branches combined, past 30 days ({revenueView === 'daily' ? 'daily' : 'weekly'})</p>
         </div>
         {totalTimeData.length > 0 ? (

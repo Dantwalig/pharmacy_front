@@ -27,19 +27,19 @@ export default function OrderDetailsPage() {
       setOrder(res.data);
     } catch (error) {
       console.error('Failed to fetch order:', error);
-      toast.error('Failed to load order');
+      toast.error(t('errors.failedToLoadOrder'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelOrder = async () => {
-    if (!cancellationReason.trim()) { toast.error('Please provide a cancellation reason'); return; }
+    if (!cancellationReason.trim()) { toast.error(t('orders2.provideCancellationReason')); return; }
     if (!confirm(t('orders.confirmCancel'))) return;
     setCancelling(true);
     try {
       await api.patch(`/orders/${params.id}/cancel`, { cancellationReason: cancellationReason.trim() });
-      toast.success('Order cancelled successfully');
+      toast.success(t('success.orderCancelled'));
       fetchOrderDetails();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel order');
@@ -98,7 +98,7 @@ export default function OrderDetailsPage() {
 
         {order.status === 'CANCELLED' && order.cancellationReason && (
           <div className="mt-6 bg-red-500/20 backdrop-blur-sm rounded-xl p-4 border border-red-300/30">
-          <p className="text-sm font-semibold mb-1">Cancellation Reason:</p>
+          <p className="text-sm font-semibold mb-1">{t('orders2.cancellationReason')}</p>
           <p className="text-sm text-white/90">{order.cancellationReason}</p>
         </div>
       )}
@@ -192,7 +192,7 @@ export default function OrderDetailsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
         <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100"> Prescription Information</h2>
         <div className="space-y-2 text-gray-700 dark:text-gray-300">
-          <p><strong>Status:</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
+          <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
           {order.prescription.fileUrl && (
               <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:text-blue-700 underline">
               View Prescription
@@ -205,11 +205,11 @@ export default function OrderDetailsPage() {
       {/* Cancel Order */}
       {canCancel && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
-        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">Cancel Order</h3>
+        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('orders2.cancelOrder')}</h3>
         <textarea
             value={cancellationReason}
             onChange={(e) => setCancellationReason(e.target.value)}
-            placeholder="Please provide a reason for cancellation..."
+            placeholder={t('orders2.cancellationReason')}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all resize-none"
             rows={3}
           />

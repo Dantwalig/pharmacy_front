@@ -3,6 +3,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -11,6 +12,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminLoginPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [secretKey, setSecretKey] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ export default function SuperAdminLoginPage() {
       // Save user
       Cookies.set('user', JSON.stringify(user), { expires: 7 });
       
-      toast.success('Super Admin login successful!');
+      toast.success(t('auth2.superAdminLoginSuccess'));
       
       // Redirect to super admin dashboard
       router.push('/super-admin/dashboard');
@@ -50,7 +52,7 @@ export default function SuperAdminLoginPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Super Admin Access
           </h1>
-        <p className="text-gray-600">Enter your secret key to continue</p>
+        <p className="text-gray-600">{t('superAdminPages.secretKeyPrompt')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -65,7 +67,7 @@ export default function SuperAdminLoginPage() {
               onChange={(e) => setSecretKey(e.target.value)}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-              placeholder="Enter your secret key"
+              placeholder={t('superAdminPages.enterSecretKey')}
               autoComplete="off"
             />
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -37,6 +38,7 @@ interface PendingAttendance {
 }
 
 export default function BranchDashboardPage() {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<AttendanceSummary | null>(null);
   const [pendingClockIns, setPendingClockIns] = useState<PendingAttendance[]>([]);
   const [pendingClockOuts, setPendingClockOuts] = useState<PendingAttendance[]>([]);
@@ -69,7 +71,7 @@ export default function BranchDashboardPage() {
     setActionLoading(id);
     try {
       await api.put(`/attendance/${id}/approve-clock-in`, {});
-      toast.success('Clock-in approved');
+      toast.success(t('success.clockInApproved'));
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, pending: prev.pending - 1, approved: prev.approved + 1 } : prev);
     } catch (err: any) {
@@ -81,7 +83,7 @@ export default function BranchDashboardPage() {
     setActionLoading(id + '-reject');
     try {
       await api.put(`/attendance/${id}/reject-clock-in`, { reason: 'Rejected by manager' });
-      toast.success('Clock-in rejected');
+      toast.success(t('success.clockInRejected'));
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reject');
@@ -92,7 +94,7 @@ export default function BranchDashboardPage() {
     setActionLoading(id + '-out');
     try {
       await api.put(`/attendance/${id}/approve-clock-out`, {});
-      toast.success('Clock-out approved');
+      toast.success(t('success.clockOutApproved'));
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, completed: prev.completed + 1 } : prev);
     } catch (err: any) {
@@ -104,7 +106,7 @@ export default function BranchDashboardPage() {
     setActionLoading(id + '-out-reject');
     try {
       await api.put(`/attendance/${id}/reject-clock-out`, { reason: 'Rejected by manager' });
-      toast.success('Clock-out rejected');
+      toast.success(t('success.clockOutRejected'));
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reject');
@@ -127,8 +129,8 @@ export default function BranchDashboardPage() {
     <div className="space-y-6">
       {/* Hero banner — matches pharmacy owner pattern */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Branch Dashboard</h1>
-        <p className="mt-1 text-white/70">Today's overview and pending approvals</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('dashboard.branchDashboard')}</h1>
+        <p className="mt-1 text-white/70">{t('dashboard.todayOverview')}</p>
       </div>
 
       {/* Stat cards — inline navy/teal, same pattern as pharmacy owner */}
@@ -158,14 +160,14 @@ export default function BranchDashboardPage() {
         {/* Pending Clock-Ins */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Ins</h2>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockIns')}</h2>
             <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockIns.length}
             </span>
           </div>
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {pendingClockIns.length === 0 ? (
-              <p className="p-6 text-center text-gray-400 text-sm">No pending clock-ins</p>
+              <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockIns')}</p>
             ) : (
               pendingClockIns.map((record) => (
                 <div key={record.id} className="p-4 flex items-center justify-between gap-3">
@@ -183,7 +185,7 @@ export default function BranchDashboardPage() {
                       disabled={!!actionLoading}
                       className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
                       style={{ borderColor: TEAL, color: TEAL }}
-                      title="Approve"
+                      title={t('branch.approve')}
                     >
                       <CheckCircleIcon className="w-4 h-4" />
                     </button>
@@ -191,7 +193,7 @@ export default function BranchDashboardPage() {
                       onClick={() => rejectClockIn(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                      title="Reject"
+                      title={t('branch.reject')}
                     >
                       <XCircleIcon className="w-4 h-4" />
                     </button>
@@ -205,14 +207,14 @@ export default function BranchDashboardPage() {
         {/* Pending Clock-Outs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Clock-Outs</h2>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockOuts')}</h2>
             <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockOuts.length}
             </span>
           </div>
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {pendingClockOuts.length === 0 ? (
-              <p className="p-6 text-center text-gray-400 text-sm">No pending clock-outs</p>
+              <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockOuts')}</p>
             ) : (
               pendingClockOuts.map((record) => (
                 <div key={record.id} className="p-4 flex items-center justify-between gap-3">
@@ -230,7 +232,7 @@ export default function BranchDashboardPage() {
                       disabled={!!actionLoading}
                       className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
                       style={{ borderColor: TEAL, color: TEAL }}
-                      title="Approve"
+                      title={t('branch.approve')}
                     >
                       <CheckCircleIcon className="w-4 h-4" />
                     </button>
@@ -238,7 +240,7 @@ export default function BranchDashboardPage() {
                       onClick={() => rejectClockOut(record.id)}
                       disabled={!!actionLoading}
                       className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                      title="Reject"
+                      title={t('branch.reject')}
                     >
                       <XCircleIcon className="w-4 h-4" />
                     </button>

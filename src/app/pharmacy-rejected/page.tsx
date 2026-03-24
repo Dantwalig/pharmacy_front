@@ -80,7 +80,7 @@ export default function PharmacyRejectedPage() {
 
     try {
       await api.patch('/pharmacies/profile/resubmit', formData);
-      toast.success('Application resubmitted successfully!');
+      toast.success(t('success.applicationResubmitted'));
       // Refresh user data to update status
       window.location.href = '/pending-approval';
     } catch (error: any) {
@@ -104,7 +104,7 @@ export default function PharmacyRejectedPage() {
         ...prev,
         [field]: reader.result as string,
       }));
-      toast.success('Document uploaded successfully');
+      toast.success(t('success.documentUploaded'));
     };
     reader.readAsDataURL(file);
   };
@@ -278,7 +278,7 @@ export default function PharmacyRejectedPage() {
             {loading ? (
                 <div className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Resubmitting...</span>
+                <span>{t('pharmacyRejected.resubmitting')}</span>
               </div>
             ) : (
                 'Resubmit Application'

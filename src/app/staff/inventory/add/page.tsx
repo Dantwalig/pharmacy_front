@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function StaffAddMedicationPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [branchName, setBranchName] = useState('');
@@ -42,13 +44,13 @@ export default function StaffAddMedicationPage() {
         setBranchName(res.data?.branch?.name ?? '');
         setBranchId(res.data?.branchId ?? res.data?.branch?.id ?? '');
       })
-      .catch(() => toast.error('Could not load branch info'))
+      .catch(() => toast.error(t('errors.failedLoadBranchInfo')))
       .finally(() => setProfileLoading(false));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!branchId) { toast.error('Branch not found'); return; }
+    if (!branchId) { toast.error(t('errors.branchNotFound')); return; }
     setLoading(true);
     try {
       // POST /medications — Role.PHARMACIST now permitted
@@ -63,7 +65,7 @@ export default function StaffAddMedicationPage() {
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
-      toast.success('Medication added successfully');
+      toast.success(t('success.medicationAdded'));
       router.push('/staff/inventory');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to add medication');
@@ -81,8 +83,8 @@ export default function StaffAddMedicationPage() {
       </button>
 
       <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl font-bold">Add Medication</h1>
-        <p className="mt-1 text-white/70">Add a new medication to your branch inventory</p>
+        <h1 className="text-2xl font-bold">{t('staff.addMedication')}</h1>
+        <p className="mt-1 text-white/70">{t('inventory.addMedicationBranchSubtitle')}</p>
       </div>
 
       {profileLoading ? (
@@ -91,10 +93,10 @@ export default function StaffAddMedicationPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
 
           <div>
-            <label className={labelCls}>Branch</label>
+            <label className={labelCls}>{t('form.branch')}</label>
             <input type="text" readOnly value={branchName || 'Your branch'}
               className={`${inputCls} bg-gray-50 text-gray-500`} />
-            <p className="text-xs text-gray-400 mt-1">Medication will be added to your assigned branch</p>
+            <p className="text-xs text-gray-400 mt-1">{t('inventory.medicationAddedToAssignedBranch')}</p>
           </div>
 
           <div>
@@ -105,7 +107,7 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>Chemical / Generic Name</label>
+            <label className={labelCls}>{t('inventory.chemicalName')}</label>
             <input type="text" value={form.chemicalName}
               onChange={e => setForm(f => ({ ...f, chemicalName: e.target.value }))}
               placeholder="e.g. Amoxicillin trihydrate" className={inputCls} />
@@ -135,24 +137,24 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>Low Stock Threshold (units)</label>
+            <label className={labelCls}>{t('inventory.lowStockThresholdUnits')}</label>
             <input type="number" min="1" value={form.lowStockThreshold}
               onChange={e => setForm(f => ({ ...f, lowStockThreshold: e.target.value }))} className={inputCls} />
-            <p className="text-xs text-gray-400 mt-1">Alert raised when stock falls below this number</p>
+            <p className="text-xs text-gray-400 mt-1">{t('inventory.alertRaisedBelow')}</p>
           </div>
 
           <div>
-            <label className={labelCls}>Description</label>
+            <label className={labelCls}>{t('inventory.description')}</label>
             <textarea rows={3} value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              placeholder="Optional notes" className={`${inputCls} resize-none`} />
+              placeholder={t('inventory.searchBranchPlaceholder')} className={`${inputCls} resize-none`} />
           </div>
 
           <div className="flex items-center gap-3">
             <input type="checkbox" id="rx" checked={form.requiresPrescription}
               onChange={e => setForm(f => ({ ...f, requiresPrescription: e.target.checked }))}
               className="w-4 h-4 rounded" />
-            <label htmlFor="rx" className="text-sm font-medium text-gray-700">Requires prescription</label>
+            <label htmlFor="rx" className="text-sm font-medium text-gray-700">{t('inventory.requiresPrescription')}</label>
           </div>
 
           <div className="flex gap-3 pt-2">

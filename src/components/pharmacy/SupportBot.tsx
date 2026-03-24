@@ -2,6 +2,8 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
+
 import { useState } from 'react';
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -11,7 +13,9 @@ interface SupportBotProps {
   onClose?: () => void;
 }
 
-export default function SupportBot({ open: openProp, onOpen, onClose }: SupportBotProps) {
+export default function SupportBot({
+  open: openProp, onOpen, onClose }: SupportBotProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', issue: '' });
 
@@ -50,7 +54,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
       <button
         onClick={handleOpen}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-        aria-label="Contact Support"
+        aria-label={t('supportBot.contactSupport')}
       >
       <ChatBubbleLeftRightIcon className="w-6 h-6" />
     </button>
@@ -79,7 +83,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
             <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4">
               <ChatBubbleLeftRightIcon className="w-6 h-6 text-teal-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Contact Support</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t('supportBot.contactSupport')}</h2>
             <p className="text-gray-600 text-sm mt-1">
               We're here to help! Fill out the form below and we'll get back to you soon.
               </p>
@@ -93,36 +97,36 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
-              <p className="text-gray-600">We'll get back to you as soon as possible.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('supportBot.messageSent')}</h3>
+              <p className="text-gray-600">{t('supportBot.getBackSoon')}</p>
             </div>
           ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">{t('supportBot.fullName')}</label>
                 <input
                     type="text" id="name" name="name" value={formData.name}
                     onChange={handleChange} required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                    placeholder="John Doe"
+                    placeholder={t('form.name')}
                   />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{t('supportBot.emailAddress')}</label>
                 <input
                     type="email" id="email" name="email" value={formData.email}
                     onChange={handleChange} required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                    placeholder="john@example.com"
+                    placeholder={t('form.email')}
                   />
               </div>
               <div>
-                <label htmlFor="issue" className="block text-sm font-medium text-gray-700 mb-1">Describe Your Issue</label>
+                <label htmlFor="issue" className="block text-sm font-medium text-gray-700 mb-1">{t('supportBot.describeIssue')}</label>
                 <textarea
                     id="issue" name="issue" value={formData.issue}
                     onChange={handleChange} required rows={4}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Tell us what you need help with..."
+                    placeholder={t('supportBot.describeIssuePlaceholder')}
                   />
               </div>
               <button

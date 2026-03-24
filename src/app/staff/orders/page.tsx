@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -46,6 +47,7 @@ function fmt(n: number) {
 }
 
 export default function StaffOrdersPage() {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -62,7 +64,7 @@ export default function StaffOrdersPage() {
       setOrders(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
     } catch (error) {
       console.error('Failed to load orders:', error);
-      toast.error('Failed to load orders');
+      toast.error(t('errors.failedToLoadOrders'));
     } finally {
       setLoading(false);
     }
@@ -96,8 +98,8 @@ export default function StaffOrdersPage() {
 
       {/* Hero */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Orders</h1>
-        <p className="mt-1 text-white/70">View and update order status for your branch</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('staff.orders')}</h1>
+        <p className="mt-1 text-white/70">{t('orders2.noOrders2')}</p>
       </div>
 
       {/* Stat cards */}
@@ -141,7 +143,7 @@ export default function StaffOrdersPage() {
       {filtered.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
           <ShoppingCartIcon className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No orders found</p>
+          <p className="text-gray-500 font-medium">{t('pharmacy.noOrders')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -175,7 +177,7 @@ export default function StaffOrdersPage() {
                     <div className="text-right hidden sm:block">
                       <p className="text-sm font-bold text-gray-900">{fmt(order.total)}</p>
                       {order.prescription && (
-                        <p className="text-xs text-gray-400 mt-0.5">Has prescription</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{t('orders2.hasPrescription')}</p>
                       )}
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -191,7 +193,7 @@ export default function StaffOrdersPage() {
 
                     {/* Items */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Items</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.items')}</p>
                       <div className="space-y-2">
                         {order.orderItems.map((item, i) => (
                           <div key={i} className="flex items-center justify-between text-sm">
@@ -204,7 +206,7 @@ export default function StaffOrdersPage() {
                         ))}
                       </div>
                       <div className="flex justify-between text-sm font-bold mt-3 pt-3 border-t border-gray-100">
-                        <span className="text-gray-900">Total</span>
+                        <span className="text-gray-900">{t('cart.total')}</span>
                         <span style={{ color: NAVY }}>{fmt(order.total)}</span>
                       </div>
                     </div>
@@ -212,7 +214,7 @@ export default function StaffOrdersPage() {
                     {/* Patient contact */}
                     {order.patient.phone && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Patient Contact</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{t('orders2.patientContact')}</p>
                         <p className="text-sm text-gray-700">{order.patient.phone}</p>
                       </div>
                     )}
@@ -227,7 +229,7 @@ export default function StaffOrdersPage() {
                     {/* Status update actions */}
                     {nextStatuses.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Update Status</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.updateStatus')}</p>
                         <div className="flex flex-wrap gap-2">
                           {nextStatuses.map(s => (
                             <button

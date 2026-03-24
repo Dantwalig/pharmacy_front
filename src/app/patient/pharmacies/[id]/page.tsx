@@ -49,7 +49,7 @@ export default function PharmacyDetailsPage() {
       setPharmacy(res.data);
     } catch (error) {
       console.error('Failed to fetch pharmacy:', error);
-      toast.error('Failed to load pharmacy details');
+      toast.error(t('pharmacies.loadFailed'));
     } finally {
       setLoading(false);
     }

@@ -74,10 +74,10 @@ function ResetPasswordForm() {
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1">Evuze</h1>
-          <p className="text-blue-200 text-sm">Healthcare Platform</p>
+          <p className="text-blue-200 text-sm">{t('auth.healthcarePlatform')}</p>
         </div>
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-3">Reset Password</h2>
+          <h2 className="text-2xl font-bold mb-3">{t('resetPassword.title')}</h2>
           <p className="text-blue-100 text-sm leading-relaxed">
             Enter the 6-digit code from your email and create a new secure password.
             </p>
@@ -137,7 +137,7 @@ function ResetPasswordForm() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.newPassword')}</label>
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} required value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)} className={inputCls} placeholder="New password" />
+                  onChange={e => setNewPassword(e.target.value)} className={inputCls} placeholder={t('resetPassword.newPassword')} />
               <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                 {showPwd ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
@@ -163,14 +163,14 @@ function ResetPasswordForm() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">{t('resetPassword.confirmPassword')}</label>
             <div className="relative">
               <input type={showConfirm ? 'text' : 'password'} required value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)} className={inputCls} placeholder="Confirm password" />
+                  onChange={e => setConfirmPassword(e.target.value)} className={inputCls} placeholder={t('resetPassword.confirmPassword')} />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                 {showConfirm ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                 </button>
             </div>
             {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                <p className="text-xs text-red-500 mt-1">{t('form.passwordsDoNotMatch')}</p>
             )}
             </div>
 
@@ -196,7 +196,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">Loading...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">{t('common.loading')}</div></div>}>
     <ResetPasswordForm />
   </Suspense>
 );

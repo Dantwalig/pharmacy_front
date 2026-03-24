@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -29,6 +30,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }>
 };
 
 export default function SuperAdminPharmacyDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [pharmacy, setPharmacy] = useState<any>(null);
@@ -46,7 +48,7 @@ export default function SuperAdminPharmacyDetailPage() {
       const res = await api.get(`/super-admin/pharmacies/${params.id}`);
       setPharmacy(res.data);
     } catch {
-      toast.error('Failed to load pharmacy details');
+      toast.error(t('pharmacies.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export default function SuperAdminPharmacyDetailPage() {
     setActionLoading(true);
     try {
       await api.patch(`/super-admin/pharmacies/${params.id}/approve`);
-      toast.success('Pharmacy approved');
+      toast.success(t('success.pharmacyApproved'));
       fetchPharmacy();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to approve');
@@ -66,11 +68,11 @@ export default function SuperAdminPharmacyDetailPage() {
   };
 
   const handleReject = async () => {
-    if (!rejectReason.trim()) { toast.error('Provide a rejection reason'); return; }
+    if (!rejectReason.trim()) { toast.error(t('form.provideRejectionReason')); return; }
     setActionLoading(true);
     try {
       await api.patch(`/super-admin/pharmacies/${params.id}/reject`, { reason: rejectReason });
-      toast.success('Pharmacy rejected');
+      toast.success(t('success.pharmacyRejected'));
       setShowReject(false);
       fetchPharmacy();
     } catch (err: any) {
@@ -111,7 +113,7 @@ export default function SuperAdminPharmacyDetailPage() {
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-white/60 text-sm mb-1">Pharmacy Application</p>
+            <p className="text-white/60 text-sm mb-1">{t('superAdminPages.pharmacyApplication')}</p>
             <h1 className="text-2xl lg:text-3xl font-bold">{pharmacy.name}</h1>
             <p className="text-white/70 mt-1 text-sm">
               Submitted {new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -165,7 +167,7 @@ export default function SuperAdminPharmacyDetailPage() {
         <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-red-200 bg-red-50">
           <XCircleIcon className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-red-700">Rejection Reason</p>
+            <p className="text-sm font-semibold text-red-700">{t('superAdminPages.rejectionReason')}</p>
             <p className="text-sm text-red-600 mt-0.5">{pharmacy.rejectionReason}</p>
             {pharmacy.approvedAt && (
               <p className="text-xs text-red-400 mt-1">
@@ -248,9 +250,9 @@ export default function SuperAdminPharmacyDetailPage() {
                           const res = await api.get(endpoint);
                           const url = res.data?.url || res.data;
                           if (url) window.open(url, '_blank');
-                          else toast.error('Document URL not available');
+                          else toast.error(t('form.documentUrlNotAvailable'));
                         } catch {
-                          toast.error('Could not fetch document');
+                          toast.error(t('errors.couldNotFetchDocument'));
                         }
                       }}
                       className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
@@ -294,8 +296,8 @@ export default function SuperAdminPharmacyDetailPage() {
               <div>
                 <p className="text-sm font-semibold text-gray-800">{doc.label}</p>
                 {doc.value
-                  ? <p className="text-xs text-green-600 mt-0.5">Document uploaded</p>
-                  : <p className="text-xs text-red-500 mt-0.5">Document missing</p>}
+                  ? <p className="text-xs text-green-600 mt-0.5">{t('superAdminPages.documentUploaded')}</p>
+                  : <p className="text-xs text-red-500 mt-0.5">{t('superAdminPages.documentMissing')}</p>}
               </div>
               {doc.value && (
                 <button
@@ -304,9 +306,9 @@ export default function SuperAdminPharmacyDetailPage() {
                       const res = await api.get(doc.endpoint);
                       const url = res.data?.url || res.data;
                       if (url) window.open(url, '_blank');
-                      else toast.error('Document URL not available');
+                      else toast.error(t('form.documentUrlNotAvailable'));
                     } catch {
-                      toast.error('Could not fetch document');
+                      toast.error(t('errors.couldNotFetchDocument'));
                     }
                   }}
                   className="px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-all"
@@ -351,7 +353,7 @@ export default function SuperAdminPharmacyDetailPage() {
       {showReject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Reject Application</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('superAdminPages.rejectApplication')}</h3>
             <p className="text-sm text-gray-600 mb-4">
               The rejection reason will be shown to the pharmacy owner so they can correct and resubmit.
             </p>
@@ -359,7 +361,7 @@ export default function SuperAdminPharmacyDetailPage() {
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
               rows={4}
-              placeholder="e.g. The submitted pharmacy license is expired. Please resubmit with a valid document dated within the last 12 months."
+              placeholder={t('superAdminPages.rejectionReason')}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-400 resize-none"
             />
             <div className="flex gap-3 mt-4">

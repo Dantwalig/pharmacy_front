@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -58,6 +59,7 @@ interface AttendanceRecord {
 }
 
 export default function StaffDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const staffId = params.id as string;
@@ -79,7 +81,7 @@ export default function StaffDetailPage() {
       })
       .catch(err => {
         if (err?.code === 'ERR_CANCELED') return;
-        toast.error('Failed to load staff details');
+        toast.error(t('errors.failedToLoad'));
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -180,7 +182,7 @@ export default function StaffDetailPage() {
 
       {/* Profile details */}
       <div className="bg-white rounded-2xl p-6 border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Profile Information</h2>
+        <h2 className="font-semibold text-gray-800 mb-4">{t('staffMgmt.profileInformation')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { icon: EnvelopeIcon,      label: 'Email',       value: staff.user.email },
@@ -206,7 +208,7 @@ export default function StaffDetailPage() {
         {/* Permissions */}
         {staff.permissions && staff.permissions.permissions.length > 0 && (
           <div className="mt-5 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2">Permissions</p>
+            <p className="text-xs text-gray-500 mb-2">{t('staffMgmt.permissions')}</p>
             <div className="flex flex-wrap gap-2">
               {staff.permissions.permissions.map(p => (
                 <span key={p} className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
@@ -221,7 +223,7 @@ export default function StaffDetailPage() {
       {/* Attendance history */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="p-5 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-800">Attendance History</h2>
+          <h2 className="font-semibold text-gray-800">{t('staffMgmt.attendanceHistory')}</h2>
           <p className="text-xs text-gray-500 mt-0.5">{attendance.length} record{attendance.length !== 1 ? 's' : ''} total</p>
         </div>
 

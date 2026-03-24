@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -19,6 +20,7 @@ const NAVY = '#1E4D8C';
 const PIE_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function PharmacyAnalyticsPage() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
@@ -79,8 +81,8 @@ export default function PharmacyAnalyticsPage() {
     <div className="space-y-6">
     {/* Header */}
       <div className="bg-gradient-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-      <h1 className="text-2xl lg:text-3xl font-bold mb-1">Analytics</h1>
-      <p className="text-blue-100 text-sm">Track your pharmacy performance this month</p>
+      <h1 className="text-2xl lg:text-3xl font-bold mb-1">{t('analytics.analyticsTitle')}</h1>
+      <p className="text-blue-100 text-sm">{t('analytics.trackPerformance')}</p>
     </div>
 
     {/* Stats Cards */}
@@ -110,7 +112,7 @@ export default function PharmacyAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Revenue trend */}
         <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Revenue Trend (6 Months)</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.revenueTrend6Months')}</h2>
         {revenueOverTime.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
             <LineChart data={revenueOverTime} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -122,13 +124,13 @@ export default function PharmacyAnalyticsPage() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No revenue data available yet</div>
+            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noRevenueData')}</div>
         )}
         </div>
 
       {/* Revenue by branch */}
         <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Revenue by Branch (This Month)</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.revenueByBranch')}</h2>
         {revenueByBranch.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
             <BarChart data={revenueByBranch} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -140,14 +142,14 @@ export default function PharmacyAnalyticsPage() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No branch data available yet</div>
+            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noBranchData')}</div>
         )}
         </div>
     </div>
 
     {/* Inventory distribution */}
       <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Inventory Distribution by Branch</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.inventoryDistribution')}</h2>
       {inventoryDistribution.length > 0 ? (
           <div className="flex flex-col lg:flex-row items-center gap-6">
           <ResponsiveContainer width="100%" height={240}>
@@ -163,13 +165,13 @@ export default function PharmacyAnalyticsPage() {
           </ResponsiveContainer>
         </div>
       ) : (
-          <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No inventory data available yet</div>
+          <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noInventoryData')}</div>
       )}
       </div>
 
     {/* Monthly performance summary */}
       <div className="bg-white rounded-xl shadow-md p-6 pb-8">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Monthly Performance Summary</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.monthlyPerformance')}</h2>
       <div className="space-y-4">
         {[
             { label: 'Revenue Growth', value: `RWF ${fmt(analytics?.totalRevenue ?? 0)}`, change: analytics?.revenueChange },
@@ -184,7 +186,7 @@ export default function PharmacyAnalyticsPage() {
             {row.change !== undefined && (
                 <div className={`text-right ${getChangeColor(row.change)}`}>
                 <p className="text-xl font-bold">{formatChange(row.change)}</p>
-                <p className="text-xs text-gray-500">vs last month</p>
+                <p className="text-xs text-gray-500">{t('analytics.vsLastMonth')}</p>
               </div>
             )}
             </div>

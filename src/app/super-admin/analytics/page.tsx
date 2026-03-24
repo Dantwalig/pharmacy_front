@@ -36,7 +36,7 @@ export default function SuperAdminAnalyticsPage() {
       setRevenue(revenueRes.data);
     } catch (error: any) {
       console.error('Failed to fetch analytics:', error);
-      toast.error('Failed to load analytics');
+      toast.error(t('errors.failedToLoadAnalytics'));
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export default function SuperAdminAnalyticsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Transactions</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.totalTransactions')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {revenue?.transactionCount || 0}
                     </p>
@@ -135,7 +135,7 @@ export default function SuperAdminAnalyticsPage() {
 
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Average Order Value</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.avgOrderValue')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     ${revenue?.transactionCount ? (revenue.totalRevenue / revenue.transactionCount).toFixed(2) : 0}
                     </p>
@@ -153,25 +153,25 @@ export default function SuperAdminAnalyticsPage() {
                 </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Total Pharmacies</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.totalPharmacies')}</span>
                   <span className="font-bold text-gray-900 dark:text-gray-100">
                     {analytics?.totalPharmacies || 0}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Approved</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.approved')}</span>
                   <span className="font-bold text-green-600">
                     {analytics?.approvedPharmacies || 0}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Pending</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.pending')}</span>
                   <span className="font-bold text-yellow-600">
                     {analytics?.pendingPharmacies || 0}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Monthly Fee per Pharmacy</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.monthlyFeePerPharmacy')}</span>
                   <span className="font-bold text-gray-900 dark:text-gray-100">
                     ${analytics?.platformFeePerPharmacy || 0}
                     </span>
@@ -185,19 +185,19 @@ export default function SuperAdminAnalyticsPage() {
                 </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Total Patients</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.totalPatients')}</span>
                   <span className="font-bold text-gray-900 dark:text-gray-100">
                     {analytics?.totalPatients || 0}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Active Orders</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.activeOrders')}</span>
                   <span className="font-bold text-blue-600">
                     {(analytics?.totalOrders || 0) - (analytics?.completedOrders || 0)}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.completionRate')}</span>
                   <span className="font-bold text-gray-900 dark:text-gray-100">
                     {analytics?.totalOrders ? 
                         ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1) : 0}%

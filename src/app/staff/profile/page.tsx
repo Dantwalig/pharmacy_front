@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -35,6 +36,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function StaffProfilePage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,15 +56,15 @@ export default function StaffProfilePage() {
   }, []);
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
-  if (!profile) return <div className="text-center py-20 text-gray-500">Profile not found</div>;
+  if (!profile) return <div className="text-center py-20 text-gray-500">{t('profile2.profileNotFound')}</div>;
 
   const permissions: string[] = profile.permissions?.permissions || [];
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#1E4D8C' }}>
-        <h1 className="text-2xl font-bold">My Profile</h1>
-        <p className="mt-1 text-white/70">Your personal and branch information</p>
+        <h1 className="text-2xl font-bold">{t('staff.profile')}</h1>
+        <p className="mt-1 text-white/70">{t('profile2.yourPersonalAndBranch')}</p>
       </div>
 
     {/* Identity card */}
@@ -107,18 +109,18 @@ export default function StaffProfilePage() {
 
     {/* Branch info */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Branch</h3>
+      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('form.branch')}</h3>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-xs text-gray-500">Pharmacy</p>
+          <p className="text-xs text-gray-500">{t('form.pharmacy')}</p>
           <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.pharmacy.name}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">Branch</p>
+          <p className="text-xs text-gray-500">{t('form.branch')}</p>
           <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.name}</p>
         </div>
         <div className="col-span-2">
-          <p className="text-xs text-gray-500">Address</p>
+          <p className="text-xs text-gray-500">{t('form.address')}</p>
           <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.address}</p>
         </div>
       </div>
@@ -131,7 +133,7 @@ export default function StaffProfilePage() {
           <span className="ml-2 text-sm font-normal text-gray-500">({permissions.length} granted)</span>
       </h3>
       {permissions.length === 0 ? (
-          <p className="text-gray-400 text-sm">No permissions assigned</p>
+          <p className="text-gray-400 text-sm">{t('profile2.noPermissionsAssigned')}</p>
       ) : (
           <div className="flex flex-wrap gap-2">
           {permissions.map((perm) => (

@@ -28,7 +28,7 @@ export default function SearchMedications() {
       if (res.data.length === 0) toast.error(t('medications.noMedications'));
     } catch (error) {
       console.error('Search failed:', error);
-      toast.error('Search failed');
+      toast.error(t('errors.searchFailed'));
     } finally { setLoading(false); }
   };
 
@@ -126,7 +126,7 @@ export default function SearchMedications() {
       {!searched && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
         <p className="text-6xl mb-4"></p>
-        <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
+        <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.enterMedicationName')}</p>
       </div>
     )}
     </div>

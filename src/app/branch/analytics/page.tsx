@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -39,6 +40,7 @@ function RevenueTooltip({ active, payload, label }: any) {
 }
 
 export default function BranchAnalyticsPage() {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<any[]>([]);
   const [attendanceSummary, setAttendanceSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -98,8 +100,8 @@ export default function BranchAnalyticsPage() {
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Branch Analytics</h1>
-        <p className="mt-1 text-white/70">Your branch performance overview</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('analytics.branchAnalytics')}</h1>
+        <p className="mt-1 text-white/70">{t('analytics.branchPerformance')}</p>
       </div>
 
       {/* Stat cards */}
@@ -149,8 +151,8 @@ export default function BranchAnalyticsPage() {
 
       {/* Revenue trend chart */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-1">Revenue Trend</h3>
-        <p className="text-xs text-gray-400 mb-4">Last 14 days, completed orders only</p>
+        <h3 className="font-semibold text-gray-800 mb-1">{t('analytics.revenueTrend')}</h3>
+        <p className="text-xs text-gray-400 mb-4">{t('analytics.last14Days')}</p>
         {last14.some(d => d.revenue > 0) ? (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={last14} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -170,8 +172,8 @@ export default function BranchAnalyticsPage() {
 
       {/* Order status breakdown */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-1">Orders by Status</h3>
-        <p className="text-xs text-gray-400 mb-4">All-time breakdown</p>
+        <h3 className="font-semibold text-gray-800 mb-1">{t('analytics.ordersByStatus')}</h3>
+        <p className="text-xs text-gray-400 mb-4">{t('analytics.allTimeBreakdown')}</p>
         {statusData.length > 0 ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={statusData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslation } from 'react-i18next';
+
 import { useAuth } from '@/context/AuthContext';
 import { UserCircleIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
@@ -14,7 +16,9 @@ interface StaffTopbarProps {
   onMenuClick?: () => void;
 }
 
-export default function StaffTopbar({ onMenuClick }: StaffTopbarProps) {
+export default function StaffTopbar({
+  onMenuClick }: StaffTopbarProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const roleInfo = ROLE_LABELS[user?.role || ''] || { label: 'Staff', color: 'bg-gray-100 text-gray-800' };
 
@@ -29,8 +33,8 @@ export default function StaffTopbar({ onMenuClick }: StaffTopbarProps) {
             <Bars3Icon className="w-5 h-5 text-gray-600" />
           </button>
           <div>
-            <h2 className="text-lg font-semibold text-violet-700">Staff Portal</h2>
-            <p className="text-xs text-gray-500 hidden sm:block">E-Vuze Healthcare Platform</p>
+            <h2 className="text-lg font-semibold text-violet-700">{t('topbar.staffPortal')}</h2>
+            <p className="text-xs text-gray-500 hidden sm:block">{t('topbar.eVuzeHealthcare')}</p>
           </div>
         </div>
 

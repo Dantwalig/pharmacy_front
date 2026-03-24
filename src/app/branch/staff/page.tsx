@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -38,6 +39,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function BranchStaffPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function BranchStaffPage() {
     try {
       await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
       setStaff(prev => prev.filter(s => s.id !== staffId));
-      toast.success('Staff member removed');
+      toast.success(t('success.staffMemberRemoved'));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete staff');
     } finally {
@@ -92,7 +94,7 @@ export default function BranchStaffPage() {
     {/* Header */}
       <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Staff</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.staff')}</h1>
         <p className="text-sm text-gray-500 mt-1">{staff.length} member{staff.length !== 1 ? 's' : ''} in your branch</p>
       </div>
       <button
@@ -109,8 +111,8 @@ export default function BranchStaffPage() {
       {staff.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-16 text-center">
         <UserGroupIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500 font-medium">No staff members yet</p>
-        <p className="text-gray-400 text-sm mt-1">Add your first staff member to get started</p>
+        <p className="text-gray-500 font-medium">{t('staffMgmt.noStaffYet')}</p>
+        <p className="text-gray-400 text-sm mt-1">{t('staffMgmt.addFirst')}</p>
         <button
             onClick={() => router.push('/branch/staff/new')}
             className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
@@ -124,12 +126,12 @@ export default function BranchStaffPage() {
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Contact</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Permissions</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.name')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('form.role')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">{t('common.phone')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">{t('staffMgmt.permissions')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -169,7 +171,7 @@ export default function BranchStaffPage() {
                         onClick={() => router.push(`/branch/staff/${member.id}`)}
                         className="p-1.5 rounded-lg transition-all"
                         style={{ color: TEAL }}
-                        title="View details"
+                        title={t('staffMgmt.viewDetails')}
                       >
                       <EyeIcon className="w-4 h-4" />
                     </button>
@@ -177,7 +179,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleResendCredentials(member.id, member.user.email)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
-                        title="Resend credentials"
+                        title={t('staffMgmt.resendCredentials')}
                       >
                       <ArrowPathIcon className="w-4 h-4" />
                     </button>
@@ -185,7 +187,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        title="Remove staff member"
+                        title={t('staffMgmt.removeStaffMember')}
                       >
                       <TrashIcon className="w-4 h-4" />
                     </button>

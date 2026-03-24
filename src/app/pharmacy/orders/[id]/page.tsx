@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -44,6 +45,7 @@ const statusColor: Record<string, string> = {
 };
 
 export default function PharmacyOrderDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
@@ -58,7 +60,7 @@ export default function PharmacyOrderDetailPage() {
     try {
       const res = await api.get(`/orders/${params.id}`);
       setOrder(res.data);
-    } catch { toast.error('Failed to load order'); }
+    } catch { toast.error(t('errors.failedToLoadOrder')); }
     finally { setLoading(false); }
   };
 
@@ -73,11 +75,11 @@ export default function PharmacyOrderDetailPage() {
   };
 
   const handleReject = async () => {
-    if (!rejectReason.trim()) { toast.error('Please provide a reason'); return; }
+    if (!rejectReason.trim()) { toast.error(t('form.provideReason')); return; }
     setActionLoading(true);
     try {
       await api.patch(`/orders/${params.id}/cancel`, { cancellationReason: rejectReason });
-      toast.success('Order cancelled');
+      toast.success(t('success.orderCancelled2'));
       setShowReject(false);
       fetchOrder();
     } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
@@ -163,7 +165,7 @@ export default function PharmacyOrderDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Patient Info */}
               <div className="bg-white rounded-xl shadow p-5">
-              <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><UserIcon className="w-4 h-4 text-teal-500"/>Patient Info</h2>
+              <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><UserIcon className="w-4 h-4 text-teal-500"/>{t('orders2.patientInfo')}</h2>
               <div className="space-y-2 text-sm">
                 <p className="font-semibold text-gray-800">{order.patient?.firstName} {order.patient?.lastName}</p>
                 <p className="text-gray-600">{order.patient?.user?.email || order.patient?.email}</p>
@@ -202,7 +204,7 @@ export default function PharmacyOrderDetailPage() {
                   )}
                   </div>
               ) : (
-                  <p className="text-sm text-gray-500">No prescription attached</p>
+                  <p className="text-sm text-gray-500">{t('orders2.noPrescriptionAttached')}</p>
               )}
               </div>
           </div>
@@ -213,10 +215,10 @@ export default function PharmacyOrderDetailPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-gray-200">
                 <tr>
-                  <th className="text-left pb-2 text-gray-600 font-semibold">Item</th>
+                  <th className="text-left pb-2 text-gray-600 font-semibold">{t('orders2.item')}</th>
                   <th className="text-center pb-2 text-gray-600 font-semibold">Qty</th>
-                  <th className="text-right pb-2 text-gray-600 font-semibold">Unit Price</th>
-                  <th className="text-right pb-2 text-gray-600 font-semibold">Total</th>
+                  <th className="text-right pb-2 text-gray-600 font-semibold">{t('orders2.unitPrice')}</th>
+                  <th className="text-right pb-2 text-gray-600 font-semibold">{t('cart.total')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -234,9 +236,9 @@ export default function PharmacyOrderDetailPage() {
                 </tbody>
             </table>
             <div className="mt-4 pt-3 border-t border-gray-200 space-y-1 text-sm">
-              <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{Number(order.subtotal || 0).toLocaleString()} RWF</span></div>
-              {order.deliveryFee > 0 && <div className="flex justify-between text-gray-600"><span>Delivery Fee</span><span>{Number(order.deliveryFee).toLocaleString()} RWF</span></div>}
-                <div className="flex justify-between font-bold text-base border-t pt-2"><span>Total</span><span className="text-teal-600">{Number(order.total || 0).toLocaleString()} RWF</span></div>
+              <div className="flex justify-between text-gray-600"><span>{t('orders2.subtotal')}</span><span>{Number(order.subtotal || 0).toLocaleString()} RWF</span></div>
+              {order.deliveryFee > 0 && <div className="flex justify-between text-gray-600"><span>{t('orders2.deliveryFee')}</span><span>{Number(order.deliveryFee).toLocaleString()} RWF</span></div>}
+                <div className="flex justify-between font-bold text-base border-t pt-2"><span>{t('cart.total')}</span><span className="text-teal-600">{Number(order.total || 0).toLocaleString()} RWF</span></div>
             </div>
           </div>
         </div>
@@ -247,12 +249,12 @@ export default function PharmacyOrderDetailPage() {
       {showReject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Reject Order</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">{t('orders2.rejectOrder')}</h3>
           <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={4}
-              placeholder="Reason for rejection (required)..."
+              placeholder={t('checkout2.rejectReasonPlaceholder')}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" />
           <div className="flex gap-3 mt-4">
-            <button onClick={() => setShowReject(false)} className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium">Cancel</button>
+            <button onClick={() => setShowReject(false)} className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium">{t('common.cancel')}</button>
             <button onClick={handleReject} disabled={actionLoading || !rejectReason.trim()}
                 className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
               Confirm Rejection

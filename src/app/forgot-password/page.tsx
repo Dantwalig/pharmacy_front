@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) { toast.error('Please enter your email address'); return; }
+    if (!email.trim()) { toast.error(t('form.enterEmail')); return; }
     setLoading(true);
     try {
       await authApi.forgotPassword({ email });
@@ -38,10 +38,10 @@ export default function ForgotPasswordPage() {
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1">Evuze</h1>
-          <p className="text-blue-200 text-sm">Healthcare Platform</p>
+          <p className="text-blue-200 text-sm">{t('auth.healthcarePlatform')}</p>
         </div>
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-3">Password Recovery</h2>
+          <h2 className="text-2xl font-bold mb-3">{t('forgotPassword.title')}</h2>
           <p className="text-blue-100 text-sm leading-relaxed">
             We'll send a secure reset code to your registered email address.
             </p>

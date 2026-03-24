@@ -61,8 +61,8 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
     <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-2">My Orders </h1>
-      <p className="text-blue-100 text-lg">Track and manage your medication orders</p>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('orders2.myOrders')}</h1>
+      <p className="text-blue-100 text-lg">{t('orders2.trackManage')}</p>
     </div>
 
     {/* Filter Tabs */}
@@ -78,8 +78,8 @@ export default function OrdersPage() {
     {filteredOrders.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
         <p className="text-6xl mb-4"></p>
-        <p className="text-gray-500 dark:text-gray-400 text-lg font-semibold mb-2">No orders found</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500">Your orders will appear here</p>
+        <p className="text-gray-500 dark:text-gray-400 text-lg font-semibold mb-2">{t('orders2.noOrdersFound')}</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">{t('orders2.ordersWillAppear')}</p>
       </div>
     ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -119,7 +119,7 @@ export default function OrdersPage() {
               </div>
               <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('cart.total')}</p>
                   <p className="text-2xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                     {order.total.toLocaleString()} RWF
                     </p>

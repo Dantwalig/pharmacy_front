@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -22,6 +23,7 @@ const FDA_CATEGORIES = [
 type Mode = 'manual' | 'upload';
 
 export default function AddMedicationPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('manual');
   const [loading, setLoading] = useState(false);
@@ -47,13 +49,13 @@ export default function AddMedicationPage() {
         setBranches(list);
         if (list.length === 1) setForm(f => ({ ...f, branchId: list[0].id }));
       })
-      .catch(() => toast.error('Could not load branches'))
+      .catch(() => toast.error(t('errors.failedToLoadBranches')))
       .finally(() => setBranchesLoading(false));
   }, []);
 
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.branchId) { toast.error('Please select a branch'); return; }
+    if (!form.branchId) { toast.error(t('form.selectBranch')); return; }
     setLoading(true);
     try {
       await api.post('/medications', {
@@ -67,7 +69,7 @@ export default function AddMedicationPage() {
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
-      toast.success('Medication added successfully');
+      toast.success(t('success.medicationAdded'));
       router.push('/pharmacy/inventory');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to add medication');
@@ -86,8 +88,8 @@ export default function AddMedicationPage() {
     </div>
 
     <div className="bg-gradient-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
-      <h1 className="text-2xl font-bold mb-1">Add Medication</h1>
-      <p className="text-blue-100 text-sm">Add medications to your inventory manually or upload a file</p>
+      <h1 className="text-2xl font-bold mb-1">{t('pharmacy.addMedication')}</h1>
+      <p className="text-blue-100 text-sm">{t('inventory.addMedicationSubtitle')}</p>
     </div>
 
     {/* Mode switcher */}
@@ -105,7 +107,7 @@ export default function AddMedicationPage() {
     {/* Manual form */}
       {mode === 'manual' && (
         <form onSubmit={handleManualSubmit} className="bg-white rounded-xl shadow-md p-6 space-y-5">
-        <h2 className="text-lg font-bold text-gray-900 border-b pb-3">Medication Details</h2>
+        <h2 className="text-lg font-bold text-gray-900 border-b pb-3">{t('inventory.medicationInfo')}</h2>
 
         {/* Branch selector — required */}
           <div>
@@ -119,13 +121,13 @@ export default function AddMedicationPage() {
                 onChange={e => setForm({ ...form, branchId: e.target.value })}
                 className={inputCls}
               >
-              <option value="">Select a branch</option>
+              <option value="">{t('inventory.selectBranch')}</option>
               {branches.map((b: any) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
               ))}
               </select>
           )}
-            <p className="text-xs text-gray-500 mt-1">Medication will be added to the selected branch inventory</p>
+            <p className="text-xs text-gray-500 mt-1">{t('inventory.medicationAddedToBranch')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,7 +138,7 @@ export default function AddMedicationPage() {
                 className={inputCls} placeholder="e.g. Paracetamol 500mg" />
           </div>
           <div>
-            <label className={labelCls}>Generic / Chemical Name</label>
+            <label className={labelCls}>{t('inventory.genericName')}</label>
             <input type="text" value={form.chemicalName}
                 onChange={e => setForm({ ...form, chemicalName: e.target.value })}
                 className={inputCls} placeholder="e.g. Acetaminophen" />
@@ -148,7 +150,7 @@ export default function AddMedicationPage() {
                 className={inputCls}>
               {FDA_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
-            <p className="text-xs text-gray-500 mt-1">Rwanda FDA Medicine Register categories</p>
+            <p className="text-xs text-gray-500 mt-1">{t('inventory.rwandaFdaCategories')}</p>
           </div>
           <div>
             <label className={labelCls}>Unit Price (RWF) <span className="text-red-500">*</span></label>
@@ -163,20 +165,20 @@ export default function AddMedicationPage() {
                 className={inputCls} placeholder="e.g. 100" />
           </div>
           <div>
-            <label className={labelCls}>Low Stock Threshold</label>
+            <label className={labelCls}>{t('inventory.lowStockThresholdUnits')}</label>
             <input type="number" min="1" value={form.lowStockThreshold}
                 onChange={e => setForm({ ...form, lowStockThreshold: e.target.value })}
                 className={inputCls} placeholder="e.g. 10" />
-            <p className="text-xs text-gray-500 mt-1">Alert when stock falls below this</p>
+            <p className="text-xs text-gray-500 mt-1">{t('inventory.alertWhenBelow')}</p>
           </div>
         </div>
 
         <div>
-          <label className={labelCls}>Description</label>
+          <label className={labelCls}>{t('inventory.description')}</label>
           <textarea value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               className={`${inputCls} resize-none`} rows={3}
-              placeholder="Usage instructions, side effects, storage info..." />
+              placeholder={t('inventory.searchPlaceholder')} />
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -204,10 +206,10 @@ export default function AddMedicationPage() {
       {/* Upload mode — bulk upload endpoint doesn't exist on backend, show info */}
       {mode === 'upload' && (
         <div className="bg-white rounded-xl shadow-md p-6 space-y-5">
-        <h2 className="text-lg font-bold text-gray-900 border-b pb-3">Bulk Upload</h2>
+        <h2 className="text-lg font-bold text-gray-900 border-b pb-3">{t('inventory.bulkUpload')}</h2>
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-5 text-sm text-amber-800">
-          <p className="font-semibold mb-1">Bulk upload is not yet available</p>
-          <p className="text-amber-700">This feature requires a backend endpoint that is not yet implemented. Please add medications manually using the form on the left tab, or contact your developer to enable bulk import.</p>
+          <p className="font-semibold mb-1">{t('inventory.bulkUploadNotAvailable')}</p>
+          <p className="text-amber-700">{t('inventory.bulkUploadDesc')}</p>
         </div>
         <button onClick={() => setMode('manual')}
             className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">

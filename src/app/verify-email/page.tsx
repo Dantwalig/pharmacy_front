@@ -73,10 +73,10 @@ function VerifyEmailForm() {
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1">Evuze</h1>
-          <p className="text-blue-200 text-sm">Healthcare Platform</p>
+          <p className="text-blue-200 text-sm">{t('auth.healthcarePlatform')}</p>
         </div>
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-3">Email Verification</h2>
+          <h2 className="text-2xl font-bold mb-3">{t('verify.title')}</h2>
           <p className="text-blue-100 text-sm leading-relaxed">
             Almost there! Verify your email to activate your account and start using Evuze.
             </p>
@@ -158,7 +158,7 @@ function VerifyEmailForm() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">Loading...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-500 text-sm">{t('common.loading')}</div></div>}>
     <VerifyEmailForm />
   </Suspense>
 );

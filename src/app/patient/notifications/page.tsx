@@ -90,9 +90,9 @@ export default function PatientNotificationsPage() {
       // PUT /notifications/read-all?userType=patient
       await api.put('/notifications/read-all?userType=patient');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      toast.success('All notifications marked as read');
+      toast.success(t('success.allNotificationsRead'));
     } catch (error) {
-      toast.error('Failed to mark all as read');
+      toast.error(t('success.notificationsReadFailed'));
     }
   };
 
@@ -125,7 +125,7 @@ export default function PatientNotificationsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Notifications</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('notifications2.notifications')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
             You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
             </p>

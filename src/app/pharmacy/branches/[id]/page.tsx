@@ -224,7 +224,7 @@ export default function BranchDetailPage() {
 
         {/* Credentials context */}
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-1">Manager Account</h3>
+        <h3 className="font-semibold text-gray-800 mb-1">{t('superAdminPages.managerAccount')}</h3>
         <p className="text-xs text-gray-400 mb-4">
           {hasManager
               ? `Account created for ${managerEmail}. Use Resend if they need a new password.`
@@ -254,7 +254,7 @@ export default function BranchDetailPage() {
       <div className="flex flex-wrap gap-3">
         <button
             disabled
-            title="Coming soon"
+            title={t('common.inactive')}
             className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed"
           >
           {t('pharmacyOwner.reassignManager')}

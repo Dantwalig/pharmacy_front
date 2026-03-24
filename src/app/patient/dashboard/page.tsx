@@ -68,29 +68,29 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
     <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-2">Welcome Back</h1>
-      <p className="text-blue-100 text-lg">Manage your healthcare needs all in one place</p>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('dashboard.welcomeBack')}</h1>
+      <p className="text-blue-100 text-lg">{t('dashboard.manageHealthcare')}</p>
     </div>
 
     {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Orders</h3>
+          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">{t('dashboard.totalOrders')}</h3>
           <span className="text-3xl"></span>
         </div>
         <p className="text-4xl font-bold text-blue-700 dark:text-blue-400">{stats.totalOrders}</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Completed</h3>
+          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">{t('dashboard.completed')}</h3>
           <span className="text-3xl"></span>
         </div>
         <p className="text-4xl font-bold text-teal-700 dark:text-teal-400">{stats.completedOrders}</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Pending</h3>
+          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">{t('dashboard.pending')}</h3>
           <span className="text-3xl">⏰</span>
         </div>
         <p className="text-4xl font-bold text-blue-700 dark:text-blue-400">{stats.pendingOrders}</p>
@@ -99,7 +99,7 @@ export default function PatientDashboard() {
 
     {/* Quick Actions */}
       <div>
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Quick Actions</h2>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{t('dashboard.quickActions')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {quickActions.map((action, idx) => (
             <Link key={idx} href={action.href}>
@@ -116,7 +116,7 @@ export default function PatientDashboard() {
     {/* Recent Orders */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
       <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Recent Orders</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{t('dashboard.recentOrders')}</h2>
         <Link href="/patient/orders" className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">View All →</Link>
       </div>
       {recentOrders.length > 0 ? (
@@ -147,8 +147,8 @@ export default function PatientDashboard() {
       ) : (
           <div className="text-center py-12">
           <p className="text-6xl mb-4"></p>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">No orders yet</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">Start by searching for medications</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.noOrdersYet')}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{t('dashboard.startShopping')}</p>
         </div>
       )}
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -20,6 +21,7 @@ const STATUS_STYLES: Record<string, string> = {
 type Tab = 'outgoing' | 'incoming';
 
 export default function BranchTransfersPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('outgoing');
   const [transfers, setTransfers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function BranchTransfersPage() {
       if (err?.response?.status === 403 || err?.response?.status === 404) {
         setBackendReady(false);
       } else {
-        toast.error('Failed to load transfers');
+        toast.error(t('errors.failedToLoadTransfers'));
       }
     } finally {
       setLoading(false);
@@ -99,9 +101,9 @@ export default function BranchTransfersPage() {
 
   const handleSubmitTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.toBranchId) { toast.error('Select a destination branch'); return; }
+    if (!form.toBranchId) { toast.error(t('form.selectDestinationBranch')); return; }
     if (form.items.some(item => !item.medicationId || !item.quantity)) {
-      toast.error('Fill in all medication items'); return;
+      toast.error(t('form.enterMedicationItems')); return;
     }
     setSubmitting(true);
     try {
@@ -115,14 +117,14 @@ export default function BranchTransfersPage() {
           quantity: parseInt(item.quantity),
         })),
       });
-      toast.success('Transfer request submitted');
+      toast.success(t('success.transferSubmitted'));
       setShowForm(false);
       setForm({ toBranchId: '', notes: '', items: [{ medicationId: '', quantity: '' }] });
       fetchTransfers();
     } catch (err: any) {
       if (err?.response?.status === 403 || err?.response?.status === 404) {
         setBackendReady(false);
-        toast.error('Backend access not yet enabled. See banner above.');
+        toast.error(t('errors.backendNotEnabledTransfers'));
       } else {
         toast.error(err.response?.data?.message || 'Failed to submit transfer');
       }
@@ -143,8 +145,8 @@ export default function BranchTransfersPage() {
 
       {/* Hero */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Stock Transfers</h1>
-        <p className="mt-1 text-white/70">Request and manage medication transfers between branches</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('transfers.stockTransfers')}</h1>
+        <p className="mt-1 text-white/70">{t('transfers.requestManage')}</p>
       </div>
 
       {/* Backend pending banner */}
@@ -152,7 +154,7 @@ export default function BranchTransfersPage() {
         <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
           <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-yellow-800">Backend access pending</p>
+            <p className="text-sm font-semibold text-yellow-800">{t('branch.backendPending')}</p>
             <p className="text-xs text-yellow-700 mt-1 space-y-1">
               <span className="block">
                 The stock transfer feature is fully built on the frontend. The backend team needs to create
@@ -169,7 +171,7 @@ export default function BranchTransfersPage() {
               <span className="block">
                 3. <span className="font-mono font-bold">PATCH /stock-transfers/:id/status</span> — Role.BRANCH_MANAGER — approve, reject, ship, or complete a transfer
               </span>
-              <span className="block">No frontend changes will be needed once these are deployed.</span>
+              <span className="block">{t('transfers.noFrontendChanges')}</span>
             </p>
           </div>
         </div>
@@ -231,8 +233,8 @@ export default function BranchTransfersPage() {
       {showForm && (
         <form onSubmit={handleSubmitTransfer} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-800">New Transfer Request</h3>
-            <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 text-sm">Cancel</button>
+            <h3 className="font-semibold text-gray-800">{t('transfers.newTransferRequest')}</h3>
+            <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 text-sm">{t('common.cancel')}</button>
           </div>
 
           {/* Destination branch */}
@@ -244,7 +246,7 @@ export default function BranchTransfersPage() {
               <select required value={form.toBranchId}
                 onChange={e => setForm(f => ({ ...f, toBranchId: e.target.value }))}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400">
-                <option value="">Select branch...</option>
+                <option value="">{t('transfers.selectBranch')}</option>
                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             ) : (
@@ -256,7 +258,7 @@ export default function BranchTransfersPage() {
                 </p>
                 <input type="text" required value={form.toBranchId}
                   onChange={e => setForm(f => ({ ...f, toBranchId: e.target.value }))}
-                  placeholder="Branch ID (UUID)"
+                  placeholder={t('transfers.branchIdPlaceholder')}
                   className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400" />
               </div>
             )}
@@ -281,13 +283,13 @@ export default function BranchTransfersPage() {
                     <select required value={item.medicationId}
                       onChange={e => updateItem(i, 'medicationId', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400">
-                      <option value="">Select medication...</option>
+                      <option value="">{t('transfers.selectMedication')}</option>
                       {medications.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                     </select>
                   ) : (
                     <input type="text" required value={item.medicationId}
                       onChange={e => updateItem(i, 'medicationId', e.target.value)}
-                      placeholder="Medication ID (UUID)"
+                      placeholder={t('transfers.medicationIdPlaceholder')}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400" />
                   )}
                   <input type="number" required min="1" value={item.quantity}
@@ -307,10 +309,10 @@ export default function BranchTransfersPage() {
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Notes</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">{t('transfers.notes')}</label>
             <textarea rows={2} value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              placeholder="Optional reason or instructions for this transfer"
+              placeholder={t('transfers.notesPlaceholder')}
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400 resize-none" />
           </div>
 
@@ -334,8 +336,8 @@ export default function BranchTransfersPage() {
       ) : !backendReady ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
           <LockClosedIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Transfer access is pending</p>
-          <p className="text-gray-400 text-sm mt-1">See the banner above for what the backend team needs to build</p>
+          <p className="text-gray-500 font-medium">{t('transfers.transferAccessPending')}</p>
+          <p className="text-gray-400 text-sm mt-1">{t('transfers.seeAboveForBackend')}</p>
         </div>
       ) : displayed.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">

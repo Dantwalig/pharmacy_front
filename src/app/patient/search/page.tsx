@@ -50,10 +50,10 @@ export default function SearchPage() {
       try {
         const res = await api.get(`/medications/search?query=${searchQuery}`);
         setMedications(res.data);
-        if (res.data.length === 0) toast.error('No medications found');
+        if (res.data.length === 0) toast.error(t('errors.noMedicationsFound'));
       } catch (error) {
         console.error('Search failed:', error);
-        toast.error('Search failed');
+        toast.error(t('errors.searchFailed'));
       } finally {
         setLoading(false);
       }
@@ -81,7 +81,7 @@ export default function SearchPage() {
       <h1 className="text-3xl sm:text-4xl font-bold mb-2">
         Find Pharmacy & Medicine
         </h1>
-      <p className="text-blue-100 text-lg">Search for nearby pharmacies and available medications</p>
+      <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
     </div>
 
     {/* Search Form */}
@@ -91,7 +91,7 @@ export default function SearchPage() {
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
               type="text"
-              placeholder="Search pharmacies or medications..."
+              placeholder={t('search.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
@@ -174,7 +174,7 @@ export default function SearchPage() {
           {pharmacies.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No pharmacies found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.noPharmaciesFound')}</p>
           </div>
         )}
         </div>
@@ -210,13 +210,13 @@ export default function SearchPage() {
           {searched && medications.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No medications found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.noMedicationsFound')}</p>
           </div>
         )}
           {!searched && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.enterMedicationName')}</p>
           </div>
         )}
         </div>

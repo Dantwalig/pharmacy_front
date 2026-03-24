@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ import { CloudArrowUpIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/2
 type BranchStatus = 'INVITED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export default function BranchPendingApprovalPage() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -28,7 +30,7 @@ export default function BranchPendingApprovalPage() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      toast.error('Please select a file');
+      toast.error(t('form.pleaseSelectFile'));
       return;
     }
     setUploading(true);
@@ -44,7 +46,7 @@ export default function BranchPendingApprovalPage() {
       // Step 2: Link license URL to branch via PUT /auth/branch/upload-license
       await api.put('/auth/branch/upload-license', { pharmacyLicense: url });
 
-      toast.success('License uploaded! Your branch is now under review.');
+      toast.success(t('success.licenseUploaded'));
       setBranchStatus('PENDING');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Upload failed');
@@ -113,8 +115,8 @@ export default function BranchPendingApprovalPage() {
                   </>
                 ) : (
                     <>
-                    <p className="text-sm text-gray-500">Click to select your license file</p>
-                    <p className="text-xs text-gray-400 mt-1">PDF, PNG, JPG up to 10MB</p>
+                    <p className="text-sm text-gray-500">{t('pendingApproval.clickToSelectFile')}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('pendingApproval.fileTypes')}</p>
                   </>
                 )}
                 </div>

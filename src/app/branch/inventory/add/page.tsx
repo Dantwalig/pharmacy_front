@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function BranchAddMedicationPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [branchId, setBranchId] = useState('');
@@ -87,12 +89,12 @@ export default function BranchAddMedicationPage() {
         requiresPrescription: form.requiresPrescription,
         // branchId will be resolved from JWT by the backend service
       });
-      toast.success('Medication added successfully');
+      toast.success(t('success.medicationAdded'));
       router.push('/branch/inventory');
     } catch (err: any) {
       if (err?.response?.status === 403) {
         setBackendReady(false);
-        toast.error('Backend access not yet enabled for this role. See banner above.');
+        toast.error(t('errors.backendNotEnabled'));
       } else {
         toast.error(err.response?.data?.message || 'Failed to add medication');
       }
@@ -116,15 +118,15 @@ export default function BranchAddMedicationPage() {
       </button>
 
       <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl font-bold">Add Medication</h1>
-        <p className="mt-1 text-white/70">Add a new medication to your branch inventory</p>
+        <h1 className="text-2xl font-bold">{t('branch.addMedication')}</h1>
+        <p className="mt-1 text-white/70">{t('inventory.addMedicationBranchSubtitle')}</p>
       </div>
 
       {!backendReady && (
         <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
           <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-yellow-800">Backend access pending</p>
+            <p className="text-sm font-semibold text-yellow-800">{t('branch.backendPending')}</p>
             <p className="text-xs text-yellow-700 mt-0.5">
               The backend team needs to add
               <span className="font-mono font-bold mx-1">Role.BRANCH_MANAGER</span>
@@ -146,7 +148,7 @@ export default function BranchAddMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>Chemical / Generic Name</label>
+          <label className={labelCls}>{t('inventory.chemicalName')}</label>
           <input type="text" value={form.chemicalName}
             onChange={e => setForm(f => ({ ...f, chemicalName: e.target.value }))}
             placeholder="e.g. Amoxicillin trihydrate" className={inputCls} />
@@ -177,18 +179,18 @@ export default function BranchAddMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>Low Stock Threshold (units)</label>
+          <label className={labelCls}>{t('inventory.lowStockThresholdUnits')}</label>
           <input type="number" min="1" value={form.lowStockThreshold}
             onChange={e => setForm(f => ({ ...f, lowStockThreshold: e.target.value }))}
             className={inputCls} />
-          <p className="text-xs text-gray-400 mt-1">An alert will be raised when stock falls below this number</p>
+          <p className="text-xs text-gray-400 mt-1">{t('inventory.alertRaisedBelow')}</p>
         </div>
 
         <div>
-          <label className={labelCls}>Description</label>
+          <label className={labelCls}>{t('inventory.description')}</label>
           <textarea rows={3} value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            placeholder="Optional notes about this medication"
+            placeholder={t('inventory.searchBranchPlaceholder')}
             className={`${inputCls} resize-none`} />
         </div>
 
@@ -196,7 +198,7 @@ export default function BranchAddMedicationPage() {
           <input type="checkbox" id="rx" checked={form.requiresPrescription}
             onChange={e => setForm(f => ({ ...f, requiresPrescription: e.target.checked }))}
             className="w-4 h-4 rounded" />
-          <label htmlFor="rx" className="text-sm font-medium text-gray-700">Requires prescription</label>
+          <label htmlFor="rx" className="text-sm font-medium text-gray-700">{t('inventory.requiresPrescription')}</label>
         </div>
 
         <div className="flex gap-3 pt-2">

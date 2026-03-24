@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -42,6 +43,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function PharmacyInventoryPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function PharmacyInventoryPage() {
       const res = await api.get(url);
       setMedications(res.data);
     } catch {
-      toast.error('Failed to load medications');
+      toast.error(t('errors.failedToLoadMedication'));
     } finally { setLoading(false); }
   };
 
@@ -75,9 +77,9 @@ export default function PharmacyInventoryPage() {
   const stockBadge = (med: any) => {
     const qty = med.quantity ?? med.quantityInStock ?? 0;
     const threshold = med.lowStockThreshold ?? 10;
-    if (qty === 0) return <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Out of Stock</span>;
+    if (qty === 0) return <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">{t('inventory.outOfStock')}</span>;
     if (qty <= threshold) return <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full"><ExclamationTriangleIcon className="w-3 h-3"/>Low</span>;
-    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">In Stock</span>;
+    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">{t('inventory.inStock')}</span>;
   };
 
   const summaryStats = {
@@ -94,7 +96,7 @@ export default function PharmacyInventoryPage() {
     <div className="space-y-6">
     {/* Header */}
       <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
-      <h1 className="text-2xl font-bold mb-1">Inventory Management</h1>
+      <h1 className="text-2xl font-bold mb-1">{t('pharmacy.inventoryManagement')}</h1>
       <p className="text-blue-100 text-sm">Manage your pharmacy's medication stock — categories follow Rwanda FDA Medicine Register</p>
     </div>
 
@@ -118,7 +120,7 @@ export default function PharmacyInventoryPage() {
       {/* Search */}
         <div className="relative w-full sm:w-72">
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input type="text" placeholder="Search by name, category, manufacturer..."
+        <input type="text" placeholder={t('inventory.searchPlaceholder')}
             value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
       </div>
@@ -158,7 +160,7 @@ export default function PharmacyInventoryPage() {
     ) : filtered.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-16 text-center border border-gray-100">
         <div className="text-5xl mb-3"></div>
-        <p className="text-gray-500 font-medium mb-1">No medications found</p>
+        <p className="text-gray-500 font-medium mb-1">{t('errors.noMedicationsFound')}</p>
         <p className="text-gray-400 text-sm">
           {searchTerm || categoryFilter !== 'All Categories' ? 'Try adjusting your search or filters' : 'Add your first medication to get started'}
           </p>
@@ -194,12 +196,12 @@ export default function PharmacyInventoryPage() {
                       <span className={`font-bold ${qty === 0 ? 'text-red-600' : qty <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-gray-800'}`}>
                         {qty}
                         </span>
-                      <span className="text-gray-400 text-xs ml-1">units</span>
+                      <span className="text-gray-400 text-xs ml-1">{t('inventory.units')}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
                     <td className="px-4 py-3">
                       {med.requiresPrescription
-                          ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">Required</span>
+                          ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">{t('inventory.required')}</span>
                         : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
                       </td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
@@ -224,7 +226,7 @@ export default function PharmacyInventoryPage() {
           <p className="text-xs text-gray-500">
             Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
             </p>
-          <p className="text-xs text-gray-400">Categories based on Rwanda FDA Medicine Register</p>
+          <p className="text-xs text-gray-400">{t('inventory.categoriesFootnote')}</p>
         </div>
       </div>
     )}

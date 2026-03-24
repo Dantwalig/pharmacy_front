@@ -53,7 +53,7 @@ export default function SuperAdminDashboard() {
       setPendingPharmacies(pendingRes.data);
     } catch (error: any) {
       console.error('Failed to fetch dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      toast.error(t('errors.failedToLoadDashboard'));
     } finally {
       setLoading(false);
     }
@@ -239,7 +239,7 @@ export default function SuperAdminDashboard() {
                 <div className="flex items-center justify-between p-4 bg-linear-to-r from-green-500 to-emerald-500 rounded-xl text-white">
                   <div className="flex items-center gap-3">
                     <CurrencyDollarIcon className="w-6 h-6" />
-                    <span>Total Revenue</span>
+                    <span>{t('superAdminPages.totalRevenue')}</span>
                   </div>
                   <span className="text-2xl font-bold">
                     ${analytics?.totalRevenue?.toLocaleString() || 0}
@@ -263,7 +263,7 @@ export default function SuperAdminDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Live</span>
+                <span className="text-sm font-medium">{t('superAdminPages.live')}</span>
               </div>
             </div>
           </div>

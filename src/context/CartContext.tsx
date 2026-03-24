@@ -2,6 +2,8 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -30,6 +32,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<CartItem[]>([]);
   const [pharmacyId, setPharmacyId] = useState<string | null>(null);
 
@@ -51,7 +54,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = (item: CartItem) => {
     // Check if adding from different pharmacy
     if (pharmacyId && pharmacyId !== item.pharmacyId) {
-      toast.error('You can only order from one pharmacy at a time. Clear your cart first.');
+      toast.error(t('cart2.onePharmacyOnly'));
       return;
     }
 
@@ -66,11 +69,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             : i
         )
       );
-      toast.success('Quantity updated in cart');
+      toast.success(t('cart2.quantityUpdated'));
     } else {
       setItems([...items, item]);
       setPharmacyId(item.pharmacyId);
-      toast.success('Added to cart');
+      toast.success(t('cart2.addedToCart'));
     }
   };
 
@@ -82,7 +85,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPharmacyId(null);
     }
     
-    toast.success('Removed from cart');
+    toast.success(t('cart2.removedFromCart'));
   };
 
   const updateQuantity = (medicationId: string, quantity: number) => {
@@ -101,7 +104,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setItems([]);
     setPharmacyId(null);
-    toast.success('Cart cleared');
+    toast.success(t('cart2.cartCleared'));
   };
 
   const getTotal = () => {

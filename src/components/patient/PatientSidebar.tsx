@@ -53,7 +53,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
         <BuildingStorefrontIcon className="w-10 h-10 text-white" />
         <div>
           <h1 className="text-2xl font-bold text-white">Evuze</h1>
-          <p className="text-xs text-blue-200">Healthcare Platform</p>
+          <p className="text-xs text-blue-200">{t('auth.healthcarePlatform')}</p>
         </div>
       </div>
       <button
