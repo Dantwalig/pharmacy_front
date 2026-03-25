@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -34,6 +35,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function BranchAttendancePage() {
+  const { t } = useTranslation();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export default function BranchAttendancePage() {
     {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attendance</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('attendance.attendance')}</h1>
         <p className="text-sm text-gray-500 mt-1">{records.length} records total</p>
       </div>
       {/* Filter */}
@@ -116,7 +118,7 @@ export default function BranchAttendancePage() {
     {/* Records */}
       {filtered.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center border border-gray-100 dark:border-gray-700">
-        <p className="text-gray-400">No attendance records found</p>
+        <p className="text-gray-400">{t('attendance.noRecordsFound')}</p>
       </div>
     ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
@@ -124,13 +126,13 @@ export default function BranchAttendancePage() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Staff</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock In</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Clock Out</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Hours</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.staff')}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.date')}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.clockIn')}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.clockOut')}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{t('attendance.hours')}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.status')}</th>
+                <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{t('attendance.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -168,7 +170,7 @@ export default function BranchAttendancePage() {
                               onClick={() => handleAction(record.id, 'approve-clock-in', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
-                              title="Approve clock-in"
+                              title={t('attendance.approveClockIn')}
                             >
                             <CheckCircleIcon className="w-4 h-4" />
                           </button>
@@ -176,7 +178,7 @@ export default function BranchAttendancePage() {
                               onClick={() => handleAction(record.id, 'reject-clock-in', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
-                              title="Reject clock-in"
+                              title={t('attendance.rejectClockIn')}
                             >
                             <XCircleIcon className="w-4 h-4" />
                           </button>
@@ -189,7 +191,7 @@ export default function BranchAttendancePage() {
                               onClick={() => handleAction(record.id, 'approve-clock-out', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
-                              title="Approve clock-out"
+                              title={t('attendance.approveClockOut')}
                             >
                             <CheckCircleIcon className="w-4 h-4" />
                           </button>
@@ -197,7 +199,7 @@ export default function BranchAttendancePage() {
                               onClick={() => handleAction(record.id, 'reject-clock-out', record.status)}
                               disabled={!!actionId}
                               className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
-                              title="Reject clock-out"
+                              title={t('attendance.rejectClockOut')}
                             >
                             <XCircleIcon className="w-4 h-4" />
                           </button>

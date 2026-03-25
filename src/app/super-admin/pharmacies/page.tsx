@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 function PharmaciesContent() {
   const router = useRouter();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [pharmacies, setPharmacies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ function PharmaciesContent() {
       const res = await api.get(url);
       setPharmacies(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
     } catch {
-      toast.error('Failed to load pharmacies');
+      toast.error(t('errors.failedToLoadPharmacies'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ function PharmaciesContent() {
     setActionId(id);
     try {
       await api.patch(`/super-admin/pharmacies/${id}/approve`);
-      toast.success('Pharmacy approved');
+      toast.success(t('success.pharmacyApproved'));
       fetchPharmacies();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to approve');
@@ -71,13 +73,13 @@ function PharmaciesContent() {
 
   const handleReject = async () => {
     if (!rejectModal || !rejectReason.trim()) {
-      toast.error('Please provide a rejection reason');
+      toast.error(t('form.provideRejectionReason'));
       return;
     }
     setActionId(rejectModal.id);
     try {
       await api.patch(`/super-admin/pharmacies/${rejectModal.id}/reject`, { reason: rejectReason });
-      toast.success('Pharmacy rejected');
+      toast.success(t('success.pharmacyRejected'));
       setRejectModal(null);
       setRejectReason('');
       fetchPharmacies();
@@ -125,8 +127,8 @@ function PharmaciesContent() {
       <div className="rounded-2xl p-6 lg:p-8 text-white bg-slate-900">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Pharmacy Applications</h1>
-            <p className="mt-1 text-white/70">Review, verify and action incoming pharmacy registrations</p>
+            <h1 className="text-2xl lg:text-3xl font-bold">{t('superAdminPages.pharmacyApplications')}</h1>
+            <p className="mt-1 text-white/70">{t('superAdminPages.reviewVerify')}</p>
           </div>
           {pendingCount > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-400/20 border border-yellow-300/30">
@@ -149,7 +151,7 @@ function PharmaciesContent() {
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by pharmacy name, owner name, or email..."
+            placeholder={t('inventory.searchPlaceholder')}
             value={searchName}
             onChange={e => setSearchName(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-rose-400"
@@ -236,7 +238,7 @@ function PharmaciesContent() {
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
           <BuildingStorefrontIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">No pharmacies found</p>
+          <p className="text-gray-500 font-medium">{t('superAdminPages.noPharmaciesFound')}</p>
           <p className="text-gray-400 text-sm mt-1">
             {hasActiveSearch ? 'Try adjusting your search terms' : 'No applications in this category yet'}
           </p>
@@ -322,7 +324,7 @@ function PharmaciesContent() {
                           onClick={() => router.push(`/super-admin/pharmacies/${p.id}`)}
                           className="p-1.5 rounded-lg transition-colors"
                           style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}
-                          title="View full details"
+                          title={t('common.viewDetails')}
                         >
                           <EyeIcon className="w-4 h-4" />
                         </button>
@@ -333,7 +335,7 @@ function PharmaciesContent() {
                               disabled={actionId === p.id}
                               className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
                               style={{ backgroundColor: '#F0FDF4', color: '#15803D' }}
-                              title="Approve"
+                              title={t('superAdmin.approve')}
                             >
                               <CheckCircleIcon className="w-4 h-4" />
                             </button>
@@ -342,7 +344,7 @@ function PharmaciesContent() {
                               disabled={actionId === p.id}
                               className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
                               style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}
-                              title="Reject"
+                              title={t('superAdmin.reject')}
                             >
                               <XCircleIcon className="w-4 h-4" />
                             </button>
@@ -373,7 +375,7 @@ function PharmaciesContent() {
       {rejectModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Reject Application</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('superAdminPages.rejectApplication')}</h3>
             <p className="text-sm text-gray-600 mb-4">
               You are rejecting <strong>{rejectModal.name}</strong>. The reason will be shown to the pharmacy owner.
             </p>
@@ -381,7 +383,7 @@ function PharmaciesContent() {
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
               rows={4}
-              placeholder="e.g. Submitted license is expired. Please resubmit with a valid document."
+              placeholder={t('superAdminPages.rejectionReason')}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-400 resize-none"
             />
             <div className="flex gap-3 mt-4">
@@ -407,6 +409,7 @@ function PharmaciesContent() {
 }
 
 export default function PharmaciesPage() {
+  const { t } = useTranslation();
   return (
     <Suspense fallback={<div className="flex justify-center py-20"><LoadingSpinner /></div>}>
       <PharmaciesContent />

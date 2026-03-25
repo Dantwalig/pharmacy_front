@@ -125,7 +125,7 @@ export default function BranchManagementPage() {
           {loading ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.loading')}</td></tr>
           ) : fetchError ? (
-              <tr><td colSpan={6} className="py-12 text-center text-gray-400 text-sm">Could not load branches. Check your connection and try again.</td></tr>
+              <tr><td colSpan={6} className="py-12 text-center text-gray-400 text-sm">{t('errors.failedToLoadBranches')}</td></tr>
           ) : filtered.length === 0 ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.noData')}</td></tr>
           ) : (

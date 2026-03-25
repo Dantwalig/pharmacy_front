@@ -3,12 +3,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function BranchChangePasswordPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({ current: false, new: false, confirm: false });
@@ -21,11 +23,11 @@ export default function BranchChangePasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.newPassword !== form.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('form.passwordsDoNotMatch'));
       return;
     }
     if (form.newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
+      toast.error(t('form.passwordTooShort'));
       return;
     }
     setLoading(true);
@@ -36,7 +38,7 @@ export default function BranchChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
-      toast.success('Password changed successfully!');
+      toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to change password');
@@ -57,7 +59,7 @@ export default function BranchChangePasswordPage() {
           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <ShieldCheckIcon className="w-7 h-7 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Set Your Password</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.changePasswordTitle')}</h1>
           <p className="text-sm text-gray-500 mt-2">
             You're logging in for the first time. Please set a permanent password to continue.
             </p>
@@ -76,7 +78,7 @@ export default function BranchChangePasswordPage() {
                   required
                   value={form.tempPassword}
                   onChange={e => setForm(p => ({...p, tempPassword: e.target.value}))}
-                  placeholder="Enter your temporary password"
+                  placeholder={t('branch.tempPassword')}
                   className="w-full pl-9 pr-9 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               <button type="button" onClick={() => toggle('current')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -98,7 +100,7 @@ export default function BranchChangePasswordPage() {
                   minLength={8}
                   value={form.newPassword}
                   onChange={e => setForm(p => ({...p, newPassword: e.target.value}))}
-                  placeholder="At least 8 characters"
+                  placeholder={t('signup.minChars')}
                   className="w-full pl-9 pr-9 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               <button type="button" onClick={() => toggle('new')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -119,7 +121,7 @@ export default function BranchChangePasswordPage() {
                   required
                   value={form.confirmPassword}
                   onChange={e => setForm(p => ({...p, confirmPassword: e.target.value}))}
-                  placeholder="Re-enter new password"
+                  placeholder={t('branch.confirmPassword')}
                   className="w-full pl-9 pr-9 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               <button type="button" onClick={() => toggle('confirm')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">

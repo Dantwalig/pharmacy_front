@@ -3,6 +3,8 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
@@ -21,6 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -46,22 +49,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Route based on role
       switch (userData.role) {
         case 'PATIENT':
-          toast.success('Welcome back!');
+          toast.success(t('auth2.welcomeBack'));
           router.push('/patient/dashboard');
           break;
 
         case 'PHARMACY':
           if (userData.pharmacyStatus === 'PENDING') {
-            toast.success('Your application is being reviewed');
+            toast.success(t('auth2.applicationUnderReview'));
             router.push('/pending-approval');
           } else if (userData.pharmacyStatus === 'REJECTED') {
-            toast.error('Your application was rejected. Please resubmit with corrections.');
+            toast.error(t('auth2.applicationRejected'));
             router.push('/pharmacy-rejected');
           } else if (userData.pharmacyStatus === 'APPROVED') {
-            toast.success('Welcome back!');
+            toast.success(t('auth2.welcomeBack'));
             router.push('/pharmacy/dashboard');
           } else {
-            toast.error('Invalid pharmacy status');
+            toast.error(t('auth2.invalidPharmacyStatus'));
             removeAuthTokens();
             setUser(null);
             router.push('/login');
@@ -69,12 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         case 'SUPER_ADMIN':
-          toast.success('Welcome Admin!');
+          toast.success(t('auth2.welcomeAdmin'));
           router.push('/super-admin/dashboard');
           break;
 
         case 'BRANCH_MANAGER':
-          toast.success('Welcome, Branch Manager!');
+          toast.success(t('auth2.welcomeBranchManager'));
           // If first login (temp password), redirect to change password
           if (response.data.requiresPasswordChange) {
             router.push('/branch/change-password');
@@ -86,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'PHARMACIST':
         case 'CASHIER':
         case 'NURSE':
-          toast.success('Welcome back!');
+          toast.success(t('auth2.welcomeBack'));
           // If first login (temp password), redirect to change password
           if (response.data.requiresPasswordChange) {
             router.push('/staff/change-password');
@@ -96,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         default:
-          toast.error('Invalid user role');
+          toast.error(t('auth2.invalidRole'));
           removeAuthTokens();
           setUser(null);
           router.push('/login');
@@ -118,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearUserCache();
       setUser(null);
       router.push('/login');
-      toast.success('Logged out successfully');
+      toast.success(t('auth2.loggedOut'));
     }
   };
 

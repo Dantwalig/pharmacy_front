@@ -16,14 +16,14 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Shopping Cart</h1>
-        <p className="text-blue-100 text-lg">Review and checkout your items</p>
+      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
+        <p className="text-blue-100 text-lg">{t('cart.title')}</p>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-        <p className="text-6xl mb-4"></p>
-        <p className="text-gray-500 dark:text-gray-400 text-lg mb-2 font-semibold">Your cart is empty</p>
-        <p className="text-gray-400 dark:text-gray-500 mb-6">Start by searching for medications</p>
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl m-6 border border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center">
+        <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-800 dark:text-gray-200 text-lg mb-2 font-semibold">{t('cart.empty')}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">{t('dashboard.startShopping')}</p>
         <Link href="/patient/search">
           <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
             Browse Medications
@@ -41,8 +41,8 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
-    <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-2">Shopping Cart </h1>
+    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
       <p className="text-blue-100"> {pharmacyName}</p>
     </div>
 
@@ -51,7 +51,7 @@ export default function CartPage() {
         <div className="lg:col-span-2 space-y-4">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Shopping Cart ({items.length})</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{t('cart.title')} ({items.length})</h2>
             <button onClick={clearCart} className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
               <TrashIcon className="w-4 h-4" /> Clear Cart
               </button>
@@ -85,7 +85,7 @@ export default function CartPage() {
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Subtotal</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('cart.subtotal')}</span>
                   <span className="font-bold text-lg text-blue-600 dark:text-blue-400">{(item.price * item.quantity).toLocaleString()} RWF</span>
                 </div>
               </div>
@@ -97,22 +97,22 @@ export default function CartPage() {
       {/* Order Summary */}
         <div className="lg:col-span-1">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-6">
-          <h2 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-6">Order Summary</h2>
+          <h2 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-6">{t('orders.paymentSummary')}</h2>
           <div className="space-y-4 mb-6">
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-              <span>Subtotal</span><span className="font-semibold">{subtotal.toLocaleString()} RWF</span>
+              <span>{t('cart.subtotal')}</span><span className="font-semibold">{subtotal.toLocaleString()} RWF</span>
             </div>
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-              <span>Delivery Fee</span><span className="font-semibold">{deliveryFee.toLocaleString()} RWF</span>
+              <span>{t('cart.deliveryFee')}</span><span className="font-semibold">{deliveryFee.toLocaleString()} RWF</span>
             </div>
             <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-4 flex justify-between">
-              <span className="font-bold text-lg text-gray-800 dark:text-gray-100">Total</span>
+              <span className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('cart.total')}</span>
               <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">{total.toLocaleString()} RWF</span>
             </div>
           </div>
           <div className="space-y-3">
             <button onClick={() => router.push('/patient/checkout')}
-                className="w-full bg-linear-to-r from-blue-600 to-blue-800 text-white py-4 rounded-xl font-bold hover:from-blue-700 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
               Proceed to Checkout
               </button>
             <Link href="/patient/search">

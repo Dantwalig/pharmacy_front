@@ -34,7 +34,7 @@ export default function SuperAdminPatientsPage() {
       setPatients(res.data);
     } catch (error: any) {
       console.error('Failed to fetch patients:', error);
-      toast.error('Failed to load patients');
+      toast.error(t('errors.failedToLoadPatients'));
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,11 @@ export default function SuperAdminPatientsPage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+<<<<<<< HEAD
                   placeholder="Search patients..."
+=======
+                  placeholder={t('patients.searchPlaceholder')}
+>>>>>>> a22a8dfaa1979fa7c358a3eb7358d9abbe56e0c1
                   className="w-full sm:w-64 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                 />
             </div>
@@ -107,7 +111,7 @@ export default function SuperAdminPatientsPage() {
                         {patient.user?.isVerified && (
                             <div className="flex items-center gap-1 text-xs">
                             <ShieldCheckIcon className="w-4 h-4" />
-                            <span>Verified</span>
+                            <span>{t('patients.verified')}</span>
                           </div>
                         )}
                         </div>

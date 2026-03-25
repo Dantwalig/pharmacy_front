@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -31,6 +32,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function BranchInventoryPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function BranchInventoryPage() {
       if (err?.response?.status === 403) {
         setBackendReady(false);
       } else {
-        toast.error('Failed to load medications');
+        toast.error(t('errors.failedToLoadMedication'));
       }
     } finally {
       setLoading(false);
@@ -91,7 +93,7 @@ export default function BranchInventoryPage() {
         <ExclamationTriangleIcon className="w-3 h-3" /> Low
       </span>
     );
-    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">In Stock</span>;
+    return <span className="inline-flex px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">{t('inventory.inStock')}</span>;
   };
 
   const summaryStats = {
@@ -106,8 +108,8 @@ export default function BranchInventoryPage() {
 
       {/* Hero */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Inventory</h1>
-        <p className="mt-1 text-white/70">View and manage your branch medications</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('branch.inventory')}</h1>
+        <p className="mt-1 text-white/70">{t('branch.inventorySubtitle')}</p>
       </div>
 
       {/* Backend pending banner */}
@@ -115,7 +117,7 @@ export default function BranchInventoryPage() {
         <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
           <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-yellow-800">Backend access pending</p>
+            <p className="text-sm font-semibold text-yellow-800">{t('branch.backendPending')}</p>
             <p className="text-xs text-yellow-700 mt-0.5">
               Inventory management for branch managers is built and ready. The backend team needs to add
               <span className="font-mono font-bold mx-1">Role.BRANCH_MANAGER</span>
@@ -154,7 +156,7 @@ export default function BranchInventoryPage() {
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by name or category..."
+            placeholder={t('inventory.searchBranchPlaceholder')}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400"
@@ -197,12 +199,12 @@ export default function BranchInventoryPage() {
       ) : !backendReady ? (
         <div className="bg-white rounded-xl p-16 text-center border border-gray-100">
           <LockClosedIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Inventory access is pending</p>
-          <p className="text-gray-400 text-sm mt-1">See the banner above for details</p>
+          <p className="text-gray-500 font-medium">{t('inventory.inventoryAccessPending')}</p>
+          <p className="text-gray-400 text-sm mt-1">{t('inventory.seeAbove')}</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-xl p-16 text-center border border-gray-100">
-          <p className="text-gray-500 font-medium">No medications found</p>
+          <p className="text-gray-500 font-medium">{t('errors.noMedicationsFound')}</p>
           <p className="text-gray-400 text-sm mt-1">
             {searchTerm || categoryFilter !== 'All Categories'
               ? 'Try adjusting your search or filters'
@@ -237,12 +239,12 @@ export default function BranchInventoryPage() {
                       <span className={`font-bold ${(med.quantity ?? 0) === 0 ? 'text-red-600' : (med.quantity ?? 0) <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-gray-800'}`}>
                         {med.quantity ?? 0}
                       </span>
-                      <span className="text-gray-400 text-xs ml-1">units</span>
+                      <span className="text-gray-400 text-xs ml-1">{t('inventory.units')}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
                     <td className="px-4 py-3">
                       {med.requiresPrescription
-                        ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">Required</span>
+                        ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">{t('inventory.required')}</span>
                         : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
                     </td>
                     <td className="px-4 py-3">{stockBadge(med)}</td>

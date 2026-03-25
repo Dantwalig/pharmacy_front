@@ -43,22 +43,22 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
   return (
     <aside className={`
-      w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white min-h-screen
+      w-64 bg-gradient-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white min-h-screen
       fixed left-0 top-0 shadow-2xl z-40 flex flex-col
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
-    <div className="p-6 border-b border-blue-600/50 flex items-center justify-between">
+    <div className="p-6 border-b border-white/10 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <BuildingStorefrontIcon className="w-10 h-10 text-white" />
         <div>
           <h1 className="text-2xl font-bold text-white">Evuze</h1>
-          <p className="text-xs text-blue-200">Healthcare Platform</p>
+          <p className="text-xs text-blue-200">{t('auth.healthcarePlatform')}</p>
         </div>
       </div>
       <button
           onClick={onClose}
-          className="lg:hidden p-1 rounded-lg hover:bg-blue-600/50 transition-colors"
+          className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors"
         >
         <XMarkIcon className="w-5 h-5" />
       </button>
@@ -76,8 +76,8 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
               onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'bg-teal-500 text-white font-semibold shadow-lg'
-                  : 'hover:bg-blue-600/50 hover:translate-x-1'
+                  ? 'bg-[#2D9B8A] text-white font-semibold shadow-lg'
+                  : 'hover:bg-white/10 hover:translate-x-1'
               }`}
             >
             <Icon className="w-5 h-5 shrink-0" />
@@ -87,17 +87,17 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
         })}
       </nav>
 
-    <div className="p-4 border-t border-blue-600/50">
+    <div className="p-4 border-t border-white/10">
       <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-blue-600/50 w-full text-left"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-white/10 w-full text-left"
         >
         <ArrowRightOnRectangleIcon className="w-5 h-5 shrink-0" />
         <span className="text-sm">{t('common.logout')}</span>
       </button>
     </div>
 
-    <div className="p-4 border-t border-blue-600/50">
+    <div className="p-4 border-t border-white/10">
       <p className="text-xs text-blue-200 text-center">
         &copy; 2026 Evuze Platform
         </p>

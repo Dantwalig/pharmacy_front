@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useCart } from '@/context/CartContext';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -12,6 +13,7 @@ import { MagnifyingGlassIcon, ShoppingCartIcon } from '@heroicons/react/24/outli
 
 export default function SearchMedications() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { addToCart } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [medications, setMedications] = useState([]);
@@ -28,7 +30,7 @@ export default function SearchMedications() {
       if (res.data.length === 0) toast.error(t('medications.noMedications'));
     } catch (error) {
       console.error('Search failed:', error);
-      toast.error('Search failed');
+      toast.error(t('errors.searchFailed'));
     } finally { setLoading(false); }
   };
 
@@ -43,13 +45,14 @@ export default function SearchMedications() {
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });
+    router.push('/patient/cart');
   };
 
   return (
     <div className="space-y-6">
-    <div className="bg-linear-to-r from-green-600 to-emerald-600 rounded-2xl shadow-xl p-8 text-white">
+    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
       <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('medications.title')} </h1>
-      <p className="text-green-100 text-lg">{t('medications.subtitle')}</p>
+      <p className="text-blue-100 text-lg">{t('medications.subtitle')}</p>
     </div>
 
     <form onSubmit={handleSearch} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
@@ -65,7 +68,7 @@ export default function SearchMedications() {
             />
         </div>
         <button type="submit" disabled={loading}
-            className="px-8 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 whitespace-nowrap">
+            className="px-8 py-3 bg-linear-to-r from-[#2D9B8A] to-teal-500 text-white rounded-xl font-semibold hover:from-teal-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 whitespace-nowrap">
           {loading ? t('medications.searching') : t('common.search')}
           </button>
       </div>
@@ -81,8 +84,8 @@ export default function SearchMedications() {
         {medications.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {medications.map((med: any) => (
-                <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden">
-                <div className="bg-linear-to-r from-green-500 to-emerald-500 p-6 text-white">
+                <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all transform hover:scale-105 overflow-hidden">
+                <div className="bg-linear-to-r from-[#2D9B8A] to-teal-500 p-6 text-white">
                   <h3 className="font-bold text-xl mb-1">{med.name}</h3>
                   <p className="text-sm opacity-90">{med.category}</p>
                 </div>
@@ -100,12 +103,12 @@ export default function SearchMedications() {
                   )}
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-3xl font-bold text-green-600 dark:text-green-400">{med.price.toLocaleString()} RWF</span>
+                      <span className="text-2xl font-bold text-[#1E4D8C] dark:text-blue-400">{med.price.toLocaleString()} RWF</span>
                     </div>
                     <button
                         onClick={() => handleAddToCart(med)}
                         disabled={med.quantity === 0}
-                        className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-linear-to-r from-[#2D9B8A] to-teal-500 text-white py-3 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                       {med.quantity > 0 ? (<><ShoppingCartIcon className="w-5 h-5" />{t('medications.addToCart')}</>) : t('medications.outOfStock')}
                       </button>
@@ -115,18 +118,20 @@ export default function SearchMedications() {
             ))}
             </div>
         ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-            <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('medications.noMedications')}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md p-12 text-center mt-6">
+            <MagnifyingGlassIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-800 dark:text-gray-200 text-xl font-semibold mb-2">{t('medications.noMedications')}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Try using different keywords or checking your spelling.</p>
           </div>
         )}
         </>
     )}
 
       {!searched && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
-        <p className="text-6xl mb-4"></p>
-        <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md p-12 text-center mt-6">
+        <ShoppingCartIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-800 dark:text-gray-200 text-xl font-semibold mb-2">{t('search.enterMedicationName')}</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">Search across all registered pharmacies instantly.</p>
       </div>
     )}
     </div>

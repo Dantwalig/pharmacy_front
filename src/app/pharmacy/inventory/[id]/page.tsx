@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -23,6 +24,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function EditMedicationPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export default function EditMedicationPage() {
         manufacturer: res.data.manufacturer || '',
         expiryDate: res.data.expiryDate ? new Date(res.data.expiryDate).toISOString().split('T')[0] : '',
       });
-    } catch { toast.error('Failed to load medication'); }
+    } catch { toast.error(t('errors.failedToLoadMedication')); }
     finally { setLoading(false); }
   };
 
@@ -67,7 +69,7 @@ export default function EditMedicationPage() {
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
-      toast.success('Medication updated!');
+      toast.success(t('success.medicationUpdated'));
       setEditing(false);
       fetchMedication();
     } catch (err: any) {
@@ -80,7 +82,7 @@ export default function EditMedicationPage() {
     setDeleting(true);
     try {
       await api.delete(`/medications/${params.id}`);
-      toast.success('Medication removed');
+      toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Delete failed');
@@ -160,17 +162,17 @@ export default function EditMedicationPage() {
 
           {/* Form / View */}
             <div className="bg-white rounded-xl shadow-md p-6 space-y-5">
-            <h2 className="text-base font-bold text-gray-900 border-b pb-3">Medication Information</h2>
+            <h2 className="text-base font-bold text-gray-900 border-b pb-3">{t('inventory.medicationInfo')}</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Name</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('common.name')}</label>
                 {editing
                     ? <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className={inputCls} />
                   : <div className={viewCls}>{form.name}</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('pharmacy.category')}</label>
                 {editing
                     ? <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className={inputCls}>
                       {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -178,37 +180,37 @@ export default function EditMedicationPage() {
                   : <div className={viewCls}>{form.category}</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Dosage / Strength</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.dosageStrength')}</label>
                 {editing
                     ? <input type="text" value={form.dosage} onChange={e => setForm({...form, dosage: e.target.value})} className={inputCls} />
                   : <div className={viewCls}>{form.dosage || '—'}</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Manufacturer</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.manufacturer')}</label>
                 {editing
                     ? <input type="text" value={form.manufacturer} onChange={e => setForm({...form, manufacturer: e.target.value})} className={inputCls} />
                   : <div className={viewCls}>{form.manufacturer || '—'}</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Unit Price (RWF)</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.unitPriceRwf')}</label>
                 {editing
                     ? <input type="number" min="0" value={form.unitPrice} onChange={e => setForm({...form, unitPrice: e.target.value})} className={inputCls} />
                   : <div className={`${viewCls} font-semibold text-teal-600`}>{Number(form.unitPrice).toLocaleString()} RWF</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Quantity In Stock</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.quantityInStock')}</label>
                 {editing
                     ? <input type="number" min="0" value={form.quantityInStock} onChange={e => setForm({...form, quantityInStock: e.target.value})} className={inputCls} />
                   : <div className={`${viewCls} ${stockStatus !== 'ok' ? 'text-red-600 font-semibold' : ''}`}>{form.quantityInStock} units</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Low Stock Threshold</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('pharmacy.lowStockThreshold')}</label>
                 {editing
                     ? <input type="number" min="1" value={form.lowStockThreshold} onChange={e => setForm({...form, lowStockThreshold: e.target.value})} className={inputCls} />
                   : <div className={viewCls}>{form.lowStockThreshold} units</div>}
                 </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Expiry Date</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.expiryDate')}</label>
                 {editing
                     ? <input type="date" value={form.expiryDate} onChange={e => setForm({...form, expiryDate: e.target.value})} className={inputCls} />
                   : <div className={viewCls}>{form.expiryDate || '—'}</div>}
@@ -216,7 +218,7 @@ export default function EditMedicationPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">{t('inventory.description')}</label>
               {editing
                   ? <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className={`${inputCls} resize-none`} rows={3} />
                 : <div className={`${viewCls} min-h-[60px]`}>{form.description || '—'}</div>}

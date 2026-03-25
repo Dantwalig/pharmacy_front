@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -36,6 +37,7 @@ const STATUS_INFO: Record<string, { label: string; color: string; dot: string }>
 };
 
 export default function StaffDashboardPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ export default function StaffDashboardPage() {
     setActionLoading(true);
     try {
       await api.post('/attendance/clock-in', {});
-      toast.success('Clock-in request submitted. Waiting for manager approval.');
+      toast.success(t('dashboard.clockInRequest'));
       fetchData();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to clock in');
@@ -73,7 +75,7 @@ export default function StaffDashboardPage() {
     setActionLoading(true);
     try {
       await api.post('/attendance/clock-out', {});
-      toast.success('Clock-out request submitted. Waiting for manager approval.');
+      toast.success(t('dashboard.clockOutRequest'));
       fetchData();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to clock out');
@@ -112,15 +114,15 @@ export default function StaffDashboardPage() {
 
       {/* Today's Shift */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Today's Shift</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('dashboard.todayShift')}</h2>
 
         {!todayShift ? (
           <div className="text-center py-6">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F6' }}>
               <ClockIcon className="w-8 h-8" style={{ color: TEAL }} />
             </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-1">You have not clocked in today</p>
-            <p className="text-gray-400 text-sm mb-6">Click below to start your shift</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-1">{t('dashboard.notClockedIn')}</p>
+            <p className="text-gray-400 text-sm mb-6">{t('dashboard.clickToStart')}</p>
             <button
               onClick={handleClockIn}
               disabled={actionLoading}
@@ -144,7 +146,7 @@ export default function StaffDashboardPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p className="text-xs text-gray-500 mb-1">Clock In</p>
+                <p className="text-xs text-gray-500 mb-1">{t('staff.clockIn')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
                 {todayShift.clockInApprover && (
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
@@ -153,7 +155,7 @@ export default function StaffDashboardPage() {
                 )}
               </div>
               <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p className="text-xs text-gray-500 mb-1">Clock Out</p>
+                <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
                 {todayShift.totalHours && (
                   <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
@@ -202,20 +204,20 @@ export default function StaffDashboardPage() {
         <a href="/staff/orders"
           className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all">
           <ShoppingCartIcon className="w-6 h-6 mb-2" style={{ color: TEAL }} />
-          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Orders</p>
-          <p className="text-xs text-gray-500 mt-1">View branch orders</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('staff.orders')}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('dashboard.viewBranchOrders')}</p>
         </a>
         <a href="/staff/attendance"
           className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all">
           <ClockIcon className="w-6 h-6 mb-2" style={{ color: TEAL }} />
-          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Attendance</p>
-          <p className="text-xs text-gray-500 mt-1">View all your records</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('staff.attendance')}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('dashboard.viewAllRecords')}</p>
         </a>
         <a href="/staff/profile"
           className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all">
           <CheckCircleIcon className="w-6 h-6 mb-2" style={{ color: TEAL }} />
-          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">My Profile</p>
-          <p className="text-xs text-gray-500 mt-1">View your details</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('staff.profile')}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('dashboard.viewYourDetails')}</p>
         </a>
       </div>
     </div>

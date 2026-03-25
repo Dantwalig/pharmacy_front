@@ -70,7 +70,7 @@ export default function PharmacyTopbar({
             <User size={16} />
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-semibold text-gray-800">Pharmacy</p>
+            <p className="text-sm font-semibold text-gray-800">{t('topbar.pharmacy')}</p>
             <p className="text-xs text-gray-500">{currentRole}</p>
           </div>
         </div>

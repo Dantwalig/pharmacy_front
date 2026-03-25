@@ -27,12 +27,12 @@ export default function SuperAdminProfilePage() {
     e.preventDefault();
 
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t('profile2.newPasswordsMismatch'));
       return;
     }
 
     if (passwords.newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
+      toast.error(t('form.passwordTooShort'));
       return;
     }
 
@@ -44,7 +44,7 @@ export default function SuperAdminProfilePage() {
         confirmPassword: passwords.confirmPassword,
       });
       
-      toast.success('Password changed successfully!');
+      toast.success(t('form.passwordChanged'));
       setPasswords({
         currentPassword: '',
         newPassword: '',
@@ -96,13 +96,13 @@ export default function SuperAdminProfilePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Role</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('form.role')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
                   Super Administrator
                   </p>
               </div>
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Email</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('form.email')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
                   {user?.email}
                   </p>
@@ -167,7 +167,7 @@ export default function SuperAdminProfilePage() {
                 {changingPassword ? (
                     <div className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Changing Password...</span>
+                    <span>{t('profile2.changingPassword')}</span>
                   </div>
                 ) : (
                     'Change Password'

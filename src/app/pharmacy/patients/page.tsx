@@ -90,7 +90,7 @@ export default function PharmacyPatientsPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Patients</p>
+                  <p className="text-sm text-gray-600 mb-1">{t('patients.totalPatients')}</p>
                   <p className="text-3xl font-bold text-gray-900">{totalPatients}</p>
                 </div>
                 <UserGroupIcon className="w-12 h-12 text-teal-600" />
@@ -100,7 +100,7 @@ export default function PharmacyPatientsPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Orders</p>
+                  <p className="text-sm text-gray-600 mb-1">{t('patients.totalOrders')}</p>
                   <p className="text-3xl font-bold text-gray-900">
                     {patients.reduce((sum, p) => sum + p.totalOrders, 0)}
                     </p>
@@ -112,7 +112,7 @@ export default function PharmacyPatientsPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
+                  <p className="text-sm text-gray-600 mb-1">{t('patients.totalRevenue')}</p>
                   <p className="text-3xl font-bold text-gray-900">
                     {patients.reduce((sum, p) => sum + p.totalSpent, 0).toLocaleString()} RWF
                     </p>
@@ -128,7 +128,7 @@ export default function PharmacyPatientsPage() {
               <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                   type="text"
-                  placeholder="Search patients by name, email, or phone..."
+                  placeholder={t('patients.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
@@ -165,7 +165,7 @@ export default function PharmacyPatientsPage() {
                         <p className="text-teal-100 text-sm">{patient.phone}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-teal-100 mb-1">Total Spent</p>
+                        <p className="text-sm text-teal-100 mb-1">{t('patients.totalSpent')}</p>
                         <p className="text-2xl font-bold">
                           {patient.totalSpent.toLocaleString()} RWF
                           </p>
@@ -177,19 +177,19 @@ export default function PharmacyPatientsPage() {
                     <div className="grid grid-cols-3 gap-4 p-6 border-b border-gray-200">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-gray-900">{patient.totalOrders}</p>
-                      <p className="text-sm text-gray-600">Orders</p>
+                      <p className="text-sm text-gray-600">{t('patients.orders')}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-gray-900">
                         {Math.round(patient.totalSpent / patient.totalOrders).toLocaleString()}
                         </p>
-                      <p className="text-sm text-gray-600">Avg Order (RWF)</p>
+                      <p className="text-sm text-gray-600">{t('patients.avgOrder')}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-900 font-medium">
                         {new Date(patient.lastOrderDate).toLocaleDateString()}
                         </p>
-                      <p className="text-sm text-gray-600">Last Order</p>
+                      <p className="text-sm text-gray-600">{t('patients.lastOrder')}</p>
                     </div>
                   </div>
 

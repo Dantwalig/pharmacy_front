@@ -65,9 +65,9 @@ export default function PharmacyNotificationsPage() {
     try {
       await api.put('/notifications/read-all?userType=pharmacy');
       setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-      toast.success('All notifications marked as read');
+      toast.success(t('success.allNotificationsRead'));
     } catch (error) {
-      toast.error('Failed to mark all as read');
+      toast.error(t('success.notificationsReadFailed'));
     }
   };
 
@@ -142,7 +142,7 @@ export default function PharmacyNotificationsPage() {
           {/* Header */}
             <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('notifications2.notifications')}</h1>
               <p className="text-gray-600">You have {unreadCount} unread notifications</p>
             </div>
             <div className="flex gap-3">
@@ -161,7 +161,7 @@ export default function PharmacyNotificationsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-4xl font-bold text-gray-900">{orderCount}</p>
-                  <p className="text-sm text-gray-600 mt-1">Order Notifications</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('notifications2.orderNotifications')}</p>
                 </div>
                 <ShoppingCartIcon className="w-12 h-12 text-blue-500" />
               </div>
@@ -171,7 +171,7 @@ export default function PharmacyNotificationsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-4xl font-bold text-gray-900">{inventoryCount}</p>
-                  <p className="text-sm text-gray-600 mt-1">Stock Alerts</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('notifications2.stockAlerts')}</p>
                 </div>
                 <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
               </div>
@@ -181,7 +181,7 @@ export default function PharmacyNotificationsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-4xl font-bold text-gray-900">{unreadCount}</p>
-                  <p className="text-sm text-gray-600 mt-1">Unread</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('notifications2.unread')}</p>
                 </div>
                 <BellIcon className="w-12 h-12 text-teal-500" />
               </div>
@@ -238,12 +238,12 @@ export default function PharmacyNotificationsPage() {
 
           {/* Notifications List */}
             <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">All Notifications</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('notifications2.allNotifications')}</h2>
               
             {filteredNotifications.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-md p-16 text-center">
                 <BellIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No notifications yet</p>
+                <p className="text-gray-500 text-lg">{t('notifications2.noNotificationsYet')}</p>
               </div>
             ) : (
                 filteredNotifications.map((notif) => {

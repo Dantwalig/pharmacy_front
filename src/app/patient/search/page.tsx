@@ -50,10 +50,10 @@ export default function SearchPage() {
       try {
         const res = await api.get(`/medications/search?query=${searchQuery}`);
         setMedications(res.data);
-        if (res.data.length === 0) toast.error('No medications found');
+        if (res.data.length === 0) toast.error(t('errors.noMedicationsFound'));
       } catch (error) {
         console.error('Search failed:', error);
-        toast.error('Search failed');
+        toast.error(t('errors.searchFailed'));
       } finally {
         setLoading(false);
       }
@@ -77,11 +77,11 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
     {/* Header */}
-      <div className="bg-linear-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl p-8 text-white">
+      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
       <h1 className="text-3xl sm:text-4xl font-bold mb-2">
         Find Pharmacy & Medicine
         </h1>
-      <p className="text-blue-100 text-lg">Search for nearby pharmacies and available medications</p>
+      <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
     </div>
 
     {/* Search Form */}
@@ -91,13 +91,13 @@ export default function SearchPage() {
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
               type="text"
-              placeholder="Search pharmacies or medications..."
+              placeholder={t('search.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-[#2D9B8A] focus:border-transparent outline-none transition-all"
             />
         </div>
-        <button type="submit" className="px-8 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap">
+        <button type="submit" className="px-8 py-3 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl whitespace-nowrap">
           Search
           </button>
       </div>
@@ -107,13 +107,13 @@ export default function SearchPage() {
       <div className="flex gap-3">
       <button
           onClick={() => setActiveTab('pharmacies')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'pharmacies' ? 'bg-blue-700 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'pharmacies' ? 'bg-[#1E4D8C] text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
         >
         Pharmacies
         </button>
       <button
           onClick={() => setActiveTab('medications')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'medications' ? 'bg-blue-700 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'medications' ? 'bg-[#1E4D8C] text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
         >
         Medications
         </button>
@@ -128,8 +128,8 @@ export default function SearchPage() {
             <div key={pharmacy.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4 flex-1">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-3xl"></span>
+                <div className="w-16 h-16 bg-[#1E4D8C]/10 dark:bg-[#1E4D8C]/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-3xl font-bold text-[#1E4D8C]">🏨</span>
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{pharmacy.name}</h3>
@@ -161,10 +161,10 @@ export default function SearchPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-3">
-                <span className={`px-4 py-2 rounded-full text-xs font-semibold ${pharmacy.status === 'Open' || !pharmacy.status ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
-                  {pharmacy.status || 'Open'}
+                <span className={`px-4 py-2 rounded-full text-xs font-semibold ${pharmacy.status === 'Open' || !pharmacy.status ? 'bg-[#2D9B8A]/10 text-[#2D9B8A]' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+                   {pharmacy.status || 'Open'}
                   </span>
-                <button onClick={() => router.push(`/patient/pharmacies/${pharmacy.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-semibold transition-all shadow-lg">
+                <button onClick={() => router.push(`/patient/pharmacies/${pharmacy.id}`)} className="bg-[#1E4D8C] hover:bg-[#1a3d6f] text-white px-6 py-2 rounded-xl font-semibold transition-all shadow-lg">
                   View Details
                   </button>
               </div>
@@ -174,7 +174,7 @@ export default function SearchPage() {
           {pharmacies.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No pharmacies found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.noPharmaciesFound')}</p>
           </div>
         )}
         </div>
@@ -193,13 +193,13 @@ export default function SearchPage() {
                     <p className="text-sm text-gray-600 dark:text-gray-400">Available at: {med.pharmacy.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">RWF {med.price.toLocaleString()}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
+                    <span className="text-2xl font-bold text-[#1E4D8C] dark:text-blue-400">RWF {med.price.toLocaleString()}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-[#2D9B8A]/10 text-[#2D9B8A]' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
                       {med.quantity > 0 ? `In Stock (${med.quantity})` : 'Out of Stock'}
                       </span>
                   </div>
                   <button onClick={() => handleAddToCart(med)} disabled={med.quantity === 0}
-                      className="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition-all shadow-lg">
+                      className="w-full bg-[#2D9B8A] hover:bg-[#207a6c] disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition-all shadow-lg">
                     Add to Cart
                     </button>
                 </div>
@@ -210,13 +210,13 @@ export default function SearchPage() {
           {searched && medications.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No medications found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.noMedicationsFound')}</p>
           </div>
         )}
           {!searched && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
             <p className="text-6xl mb-4"></p>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">Enter a medication name to search</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('search.enterMedicationName')}</p>
           </div>
         )}
         </div>

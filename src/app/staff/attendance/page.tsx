@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ClockIcon } from '@heroicons/react/24/outline';
@@ -29,6 +30,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function StaffAttendancePage() {
+  const { t } = useTranslation();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalHours, setTotalHours] = useState(0);
@@ -63,8 +65,8 @@ export default function StaffAttendancePage() {
 
       {/* Hero */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">My Attendance</h1>
-        <p className="mt-1 text-white/70">Your shift history</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('attendance.myAttendance')}</h1>
+        <p className="mt-1 text-white/70">{t('attendance.yourShiftHistory')}</p>
       </div>
 
       {/* Stats */}
@@ -89,8 +91,8 @@ export default function StaffAttendancePage() {
       {records.length === 0 ? (
         <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
           <ClockIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500">No attendance records yet</p>
-          <p className="text-gray-400 text-sm mt-1">Your records will appear here after your first shift</p>
+          <p className="text-gray-500">{t('attendance.noRecordsYet')}</p>
+          <p className="text-gray-400 text-sm mt-1">{t('attendance.firstShiftMessage')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -116,7 +118,7 @@ export default function StaffAttendancePage() {
                     </div>
                     {record.clockOutTime && (
                       <div>
-                        <span className="text-xs text-gray-400">Out:</span> {formatTime(record.clockOutTime)}
+                        <span className="text-xs text-gray-400">{t('attendance.out')}</span> {formatTime(record.clockOutTime)}
                         {record.clockOutApprover && (
                           <span className="text-xs ml-1" style={{ color: TEAL }}>
                             {record.clockOutApprover.firstName}

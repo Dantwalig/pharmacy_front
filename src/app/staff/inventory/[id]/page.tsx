@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ const FDA_CATEGORIES = [
 ];
 
 export default function StaffEditMedicationPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export default function StaffEditMedicationPage() {
         requiresPrescription: data.requiresPrescription || false,
       });
     } catch {
-      toast.error('Failed to load medication');
+      toast.error(t('errors.failedToLoadMedication'));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export default function StaffEditMedicationPage() {
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
-      toast.success('Medication updated');
+      toast.success(t('success.medicationUpdated'));
       router.push('/staff/inventory');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update medication');
@@ -94,7 +96,7 @@ export default function StaffEditMedicationPage() {
       </button>
 
       <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl font-bold">Edit Medication</h1>
+        <h1 className="text-2xl font-bold">{t('staff.editMedication')}</h1>
         <p className="mt-1 text-white/70">{med?.name}</p>
       </div>
 
@@ -108,7 +110,7 @@ export default function StaffEditMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>Chemical / Generic Name</label>
+          <label className={labelCls}>{t('inventory.chemicalName')}</label>
           <input type="text" value={form.chemicalName}
             onChange={e => setForm((f: any) => ({ ...f, chemicalName: e.target.value }))}
             className={inputCls} />
@@ -139,14 +141,14 @@ export default function StaffEditMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>Low Stock Threshold (units)</label>
+          <label className={labelCls}>{t('inventory.lowStockThresholdUnits')}</label>
           <input type="number" min="1" value={form.lowStockThreshold}
             onChange={e => setForm((f: any) => ({ ...f, lowStockThreshold: e.target.value }))}
             className={inputCls} />
         </div>
 
         <div>
-          <label className={labelCls}>Description</label>
+          <label className={labelCls}>{t('inventory.description')}</label>
           <textarea rows={3} value={form.description}
             onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))}
             className={`${inputCls} resize-none`} />
@@ -156,7 +158,7 @@ export default function StaffEditMedicationPage() {
           <input type="checkbox" id="rx" checked={form.requiresPrescription}
             onChange={e => setForm((f: any) => ({ ...f, requiresPrescription: e.target.checked }))}
             className="w-4 h-4 rounded" />
-          <label htmlFor="rx" className="text-sm font-medium text-gray-700">Requires prescription</label>
+          <label htmlFor="rx" className="text-sm font-medium text-gray-700">{t('inventory.requiresPrescription')}</label>
         </div>
 
         <div className="flex gap-3 pt-2">

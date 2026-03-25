@@ -57,7 +57,7 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-semibold text-gray-800">{branchName}</p>
-            <p className="text-xs text-gray-500">Branch Manager</p>
+            <p className="text-xs text-gray-500">{t('topbar.branchManager')}</p>
           </div>
         </div>
       </div>

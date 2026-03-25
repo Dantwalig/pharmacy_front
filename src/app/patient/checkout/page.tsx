@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import api from '@/lib/api';
@@ -10,6 +11,7 @@ import Link from 'next/link';
 import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function CheckoutPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { items, getTotal, clearCart, pharmacyId } = useCart();
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ export default function CheckoutPage() {
   // Step 3: Use returned prescriptionId in the order
   const handleUploadPrescription = async () => {
     if (!prescriptionFile) {
-      toast.error('Please select a prescription file first');
+      toast.error(t('form.selectPrescriptionFirst'));
       return;
     }
 
@@ -74,7 +76,7 @@ export default function CheckoutPage() {
 
       setPrescriptionId(prescriptionRes.data.id);
       setPrescriptionUploaded(true);
-      toast.success('Prescription uploaded successfully!');
+      toast.success(t('success.prescriptionUploaded'));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to upload prescription');
     } finally {
@@ -84,15 +86,15 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (orderType === 'DELIVERY' && !deliveryAddress.trim()) {
-      toast.error('Please enter a delivery address');
+      toast.error(t('form.enterDeliveryAddress'));
       return;
     }
     if (hasPrescription && !prescriptionId) {
-      toast.error('Please upload and confirm your prescription first');
+      toast.error(t('form.uploadConfirmPrescription'));
       return;
     }
     if (!branchId) {
-      toast.error('Unable to determine pharmacy branch. Please try again.');
+      toast.error(t('form.unableToDeterminePharmacy'));
       return;
     }
 
@@ -120,7 +122,7 @@ export default function CheckoutPage() {
 
       const res = await api.post('/orders', orderPayload);
       clearCart();
-      toast.success('Order placed successfully!');
+      toast.success(t('success.orderPlaced'));
       router.push(`/patient/orders/${res.data.id}`);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to place order');
@@ -132,14 +134,14 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
-        <h1 className="text-3xl font-bold">Checkout</h1>
+      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
+        <h1 className="text-3xl font-bold">{t('checkout.title')}</h1>
       </div>
-      <div className="bg-white rounded-2xl shadow p-12 text-center">
-        <p className="text-5xl mb-4"></p>
-        <p className="text-gray-500 mb-4">Your cart is empty</p>
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl m-6 shadow-sm p-12 text-center">
+        <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-800 dark:text-gray-200 text-lg font-semibold mb-4">{t('checkout2.cartEmpty')}</p>
         <Link href="/patient/search">
-          <button className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold">Browse Medications</button>
+          <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md">{t('checkout2.browseMedications')}</button>
         </Link>
       </div>
     </div>
@@ -152,9 +154,9 @@ export default function CheckoutPage() {
       <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
       </button>
 
-    <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
-      <h1 className="text-3xl font-bold mb-1">Checkout</h1>
-      <p className="text-blue-100">Complete your order</p>
+    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
+      <h1 className="text-3xl font-bold mb-1">{t('checkout.title')}</h1>
+      <p className="text-blue-100">{t('checkout.subtitle')}</p>
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -163,7 +165,7 @@ export default function CheckoutPage() {
 
         {/* Order Type (maps to DTO field: type) */}
           <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">Fulfillment Method</h2>
+          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.fulfillmentMethod')}</h2>
           <div className="grid grid-cols-2 gap-4">
             {(['PICKUP', 'DELIVERY'] as const).map(type => (
                 <button key={type} onClick={() => setOrderType(type)}
@@ -176,12 +178,12 @@ export default function CheckoutPage() {
             </div>
           {orderType === 'DELIVERY' && (
               <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Delivery Address</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.deliveryAddress')}</label>
               <div className="relative">
                 <MapPinIcon className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <textarea value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm resize-none" rows={2}
-                    placeholder="Enter your full delivery address..." />
+                    placeholder={t('checkout2.deliveryAddressPlaceholder')} />
               </div>
             </div>
           )}
@@ -201,7 +203,7 @@ export default function CheckoutPage() {
             {!prescriptionUploaded ? (
                 <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Select Prescription File</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.selectPrescriptionFile')}</label>
                   <input
                       type="file"
                       accept="image/*,.pdf"
@@ -227,7 +229,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <span className="text-green-600 text-xl"></span>
                 <div>
-                  <p className="text-sm font-semibold text-green-800">Prescription uploaded</p>
+                  <p className="text-sm font-semibold text-green-800">{t('checkout2.prescriptionUploaded')}</p>
                   <p className="text-xs text-green-600">{prescriptionFile?.name}</p>
                 </div>
                 <button
@@ -244,7 +246,7 @@ export default function CheckoutPage() {
 
           {/* Payment Method */}
           <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">Payment Method</h2>
+          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.paymentMethod')}</h2>
           <div className="space-y-3">
             {[
                 { value: 'MTN_MOMO', label: 'MTN Mobile Money', emoji: '' },
@@ -272,7 +274,7 @@ export default function CheckoutPage() {
       {/* RIGHT: Summary */}
         <div>
         <div className="bg-white rounded-2xl shadow p-6 sticky top-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">Order Summary</h2>
+          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.orderSummary')}</h2>
           <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
             {items.map(item => (
                 <div key={item.medicationId} className="flex justify-between text-sm">
@@ -283,19 +285,19 @@ export default function CheckoutPage() {
             </div>
           <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
-              <span>Subtotal</span><span>{subtotal.toLocaleString()} RWF</span>
+              <span>{t('cart.subtotal')}</span><span>{subtotal.toLocaleString()} RWF</span>
             </div>
             <div className="flex justify-between text-gray-600">
-              <span>Delivery</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : 'Free'}</span>
+              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : 'Free'}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
+              <span>{t('cart.total')}</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
             </div>
           </div>
           <button
               onClick={handlePlaceOrder}
               disabled={loading || (hasPrescription && !prescriptionId)}
-              className="w-full mt-4 bg-linear-to-r from-blue-600 to-blue-800 text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-700 hover:to-blue-900 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
             {loading
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -10,6 +11,7 @@ const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
 export default function StaffChangePasswordPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({ temp: false, new: false, confirm: false });
@@ -22,11 +24,11 @@ export default function StaffChangePasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.newPassword !== form.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('form.passwordsDoNotMatch'));
       return;
     }
     if (form.newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
+      toast.error(t('form.passwordTooShort'));
       return;
     }
     setLoading(true);
@@ -36,7 +38,7 @@ export default function StaffChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
-      toast.success('Password changed! Welcome to the team.');
+      toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to change password');
@@ -57,7 +59,7 @@ export default function StaffChangePasswordPage() {
               style={{ backgroundColor: '#F0F7F6' }}>
               <ShieldCheckIcon className="w-7 h-7" style={{ color: TEAL }} />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome!</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('staff.welcomeTitle')}</h1>
             <p className="text-sm text-gray-500 mt-2">
               Please set a permanent password before accessing your account.
             </p>

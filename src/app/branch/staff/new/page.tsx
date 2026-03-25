@@ -3,6 +3,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -48,6 +49,7 @@ const DEFAULT_PERMISSIONS: Record<string, string[]> = {
 };
 
 export default function NewStaffPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -78,7 +80,7 @@ export default function NewStaffPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.permissions.length === 0) {
-      toast.error('Please assign at least one permission');
+      toast.error(t('form.assignPermission'));
       return;
     }
     setLoading(true);
@@ -95,7 +97,7 @@ export default function NewStaffPage() {
         dateOfBirth: form.dateOfBirth || undefined,
         permissions: form.permissions,
       });
-      toast.success('Staff member created! Credentials sent via email.');
+      toast.success(t('success.staffCredentialsSent'));
       router.push('/branch/staff');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to create staff member');
@@ -115,15 +117,15 @@ export default function NewStaffPage() {
         <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
       </button>
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Add Staff Member</h1>
-        <p className="text-sm text-gray-500">They will receive login credentials by email</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('staffMgmt.addStaffMember')}</h1>
+        <p className="text-sm text-gray-500">{t('staffMgmt.receiveCredentials')}</p>
       </div>
     </div>
 
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Personal Info */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Personal Information</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('staffMgmt.personalInformation')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
@@ -141,27 +143,27 @@ export default function NewStaffPage() {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.phone')}</label>
             <input value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
                 placeholder="+250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">National ID</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.nationalId')}</label>
             <input value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Gender</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.gender')}</label>
             <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-              <option value="">Select</option>
-              <option>Male</option>
-              <option>Female</option>
-              <option>Other</option>
+              <option value="">{t('form.select')}</option>
+              <option>{t('form.male')}</option>
+              <option>{t('form.female')}</option>
+              <option>{t('form.other')}</option>
             </select>
           </div>
           <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.dateOfBirth')}</label>
             <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
@@ -187,7 +189,7 @@ export default function NewStaffPage() {
               </button>
           ))}
           </div>
-        <p className="text-xs text-gray-500 mt-2">Default permissions for this role will be preselected below</p>
+        <p className="text-xs text-gray-500 mt-2">{t('staffMgmt.defaultPermissions')}</p>
       </div>
 
       {/* Permissions */}

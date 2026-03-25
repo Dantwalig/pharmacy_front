@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -23,6 +24,7 @@ const STATUS_STYLES: Record<string, string> = {
 type Tab = 'queue' | 'history';
 
 export default function StaffPrescriptionsPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('queue');
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function StaffPrescriptionsPage() {
       const res = await api.get('/prescriptions/branch');
       setPrescriptions(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
     } catch {
-      toast.error('Failed to load prescriptions');
+      toast.error(t('errors.failedToLoadPrescriptions'));
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ export default function StaffPrescriptionsPage() {
     try {
       // PUT /prescriptions/:id/status — Role.PHARMACIST now permitted
       await api.put(`/prescriptions/${id}/status`, { status: 'APPROVED' });
-      toast.success('Prescription verified');
+      toast.success(t('success.prescriptionVerified'));
       setPrescriptions(prev => prev.map(p => p.id === id ? { ...p, status: 'APPROVED' } : p));
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to verify prescription');
@@ -61,12 +63,12 @@ export default function StaffPrescriptionsPage() {
   };
 
   const handleReject = async (id: string) => {
-    if (!rejectReason.trim()) { toast.error('Please provide a rejection reason'); return; }
+    if (!rejectReason.trim()) { toast.error(t('form.provideRejectionReason')); return; }
     setActionId(id);
     try {
       // PUT /prescriptions/:id/status — Role.PHARMACIST now permitted
       await api.put(`/prescriptions/${id}/status`, { status: 'REJECTED', rejectionReason: rejectReason });
-      toast.success('Prescription rejected');
+      toast.success(t('success.prescriptionRejected'));
       setPrescriptions(prev => prev.map(p =>
         p.id === id ? { ...p, status: 'REJECTED', rejectionReason: rejectReason } : p
       ));
@@ -90,8 +92,8 @@ export default function StaffPrescriptionsPage() {
     <div className="space-y-6">
 
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">Prescriptions</h1>
-        <p className="mt-1 text-white/70">Review, verify, and reject patient prescriptions</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">{t('prescriptions.prescriptionsTitle')}</h1>
+        <p className="mt-1 text-white/70">{t('prescriptions.prescriptionsSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -160,7 +162,7 @@ export default function StaffPrescriptionsPage() {
 
                   {p.extractedMedications && Array.isArray(p.extractedMedications) && p.extractedMedications.length > 0 && (
                     <div className="mt-2">
-                      <p className="text-xs font-semibold text-gray-500 mb-1">Extracted medications:</p>
+                      <p className="text-xs font-semibold text-gray-500 mb-1">{t('prescriptions.extractedMedications')}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {p.extractedMedications.map((m: any, i: number) => (
                           <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">
@@ -189,7 +191,7 @@ export default function StaffPrescriptionsPage() {
                       <div className="space-y-2 w-64">
                         <textarea rows={2} value={rejectReason}
                           onChange={e => setRejectReason(e.target.value)}
-                          placeholder="Rejection reason (required)"
+                          placeholder={t('prescriptions.rejectionReasonPlaceholder')}
                           className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none" />
                         <div className="flex gap-2">
                           <button onClick={() => { setRejectingId(null); setRejectReason(''); }}
