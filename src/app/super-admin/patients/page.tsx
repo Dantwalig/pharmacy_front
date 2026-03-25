@@ -73,11 +73,7 @@ export default function SuperAdminPatientsPage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-<<<<<<< HEAD
-                  placeholder="Search patients..."
-=======
                   placeholder={t('patients.searchPlaceholder')}
->>>>>>> a22a8dfaa1979fa7c358a3eb7358d9abbe56e0c1
                   className="w-full sm:w-64 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                 />
             </div>
