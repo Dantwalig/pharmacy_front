@@ -23,17 +23,17 @@ export default function SuperAdminLoginPage() {
 
     try {
       const response = await api.post('/auth/super-admin/login', { secretKey });
-      
+
       const { accessToken, refreshToken, user } = response.data;
-      
+
       // Save tokens
       setAuthTokens(accessToken, refreshToken);
-      
+
       // Save user
       Cookies.set('user', JSON.stringify(user), { expires: 7 });
-      
+
       toast.success(t('auth2.superAdminLoginSuccess'));
-      
+
       // Redirect to super admin dashboard
       router.push('/super-admin/dashboard');
     } catch (error: any) {
@@ -67,11 +67,7 @@ export default function SuperAdminLoginPage() {
               onChange={(e) => setSecretKey(e.target.value)}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-<<<<<<< HEAD
-              placeholder="Enter your secret key"
-=======
               placeholder={t('superAdminPages.enterSecretKey')}
->>>>>>> a22a8dfaa1979fa7c358a3eb7358d9abbe56e0c1
               autoComplete="off"
             />
         </div>
