@@ -25,6 +25,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 function PharmaciesContent() {
   const router = useRouter();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [pharmacies, setPharmacies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

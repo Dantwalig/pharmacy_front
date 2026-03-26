@@ -134,14 +134,14 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold">{t('checkout.title')}</h1>
       </div>
-      <div className="bg-white rounded-2xl shadow p-12 text-center">
-        <p className="text-5xl mb-4"></p>
-        <p className="text-gray-500 mb-4">{t('checkout2.cartEmpty')}</p>
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl m-6 shadow-sm p-12 text-center">
+        <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-800 dark:text-gray-200 text-lg font-semibold mb-4">{t('checkout2.cartEmpty')}</p>
         <Link href="/patient/search">
-          <button className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold">{t('checkout2.browseMedications')}</button>
+          <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md">{t('checkout2.browseMedications')}</button>
         </Link>
       </div>
     </div>
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
       <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
       </button>
 
-    <div className="bg-linear-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
       <h1 className="text-3xl font-bold mb-1">{t('checkout.title')}</h1>
       <p className="text-blue-100">{t('checkout.subtitle')}</p>
     </div>
@@ -297,7 +297,7 @@ export default function CheckoutPage() {
           <button
               onClick={handlePlaceOrder}
               disabled={loading || (hasPrescription && !prescriptionId)}
-              className="w-full mt-4 bg-linear-to-r from-blue-600 to-blue-800 text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-700 hover:to-blue-900 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
             {loading
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>

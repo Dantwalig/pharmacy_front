@@ -19,6 +19,13 @@ export default function OrderDetailsPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
 
+  // Payment states
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+
   useEffect(() => { fetchOrderDetails(); }, [params.id]);
 
   const fetchOrderDetails = async () => {
@@ -44,6 +51,56 @@ export default function OrderDetailsPage() {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel order');
     } finally { setCancelling(false); }
+  };
+
+  const handlePayment = async () => {
+    if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && !phoneNumber) {
+      toast.error('Please enter your mobile money number');
+      return;
+    }
+    setProcessingPayment(true);
+    try {
+      const res = await api.post('/payments/initiate', {
+        orderId: order.id,
+        phoneNumber,
+      });
+      // Handle Flutterwave responses
+      if (res.data.meta?.authorization?.mode === 'otp') {
+        setShowOtpInput(true);
+        setPaymentId(res.data.paymentId);
+        toast.success('Please enter the OTP sent to your phone');
+      } else if (res.data?.data?.link) {
+        // Card payment standard link
+        window.open(res.data.data.link, '_blank');
+        toast.success('Redirecting to secure payment page...');
+      } else {
+        toast.success(t('Payment initiated. Check your phone to approve.'));
+        // We can poll here or have user click a verify button.
+        // In the interest of simplicity we let the user await the prompt.
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to initiate payment');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) return;
+    setProcessingPayment(true);
+    try {
+      await api.post('/payments/validate-otp', {
+        paymentId,
+        otp,
+      });
+      toast.success('Payment completed successfully!');
+      setShowOtpInput(false);
+      fetchOrderDetails();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Invalid OTP');
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   const canCancel = order && !['PREPARING', 'OUT_FOR_DELIVERY', 'READY_FOR_PICKUP', 'DELIVERED', 'COMPLETED', 'CANCELLED'].includes(order.status);
@@ -182,8 +239,61 @@ export default function OrderDetailsPage() {
           {t('orders.paymentMethod')}: {order.paymentMethod}
           </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Payment Status: <span className={`font-semibold ${order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{order.paymentStatus}</span>
+          Payment Status: <span className={`font-semibold ${order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{order.paymentStatus}</span>
         </p>
+
+        {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
+          <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-900/30">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+              <span className="text-xl">💳</span> Complete your payment
+            </h3>
+            
+            {!showOtpInput ? (
+              <div className="space-y-3">
+                {['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Money Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 078XXXXXXX"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 outline-none focus:ring-2 focus:ring-[#2D9B8A]"
+                    />
+                  </div>
+                )}
+                
+                <button
+                  onClick={handlePayment}
+                  disabled={processingPayment}
+                  className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] hover:from-[#1a3d6f] hover:to-[#0f2444] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
+                >
+                  {processingPayment ? 'Processing...' : `Pay ${order.total.toLocaleString()} RWF Now`}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Enter OTP</label>
+                  <input
+                    type="text"
+                    placeholder="123456"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 outline-none focus:ring-2 focus:ring-[#2D9B8A]"
+                  />
+                </div>
+                <button
+                  onClick={handleVerifyOtp}
+                  disabled={processingPayment || !otp}
+                  className="w-full bg-linear-to-r from-[#2D9B8A] to-[#207a6c] hover:from-[#207a6c] hover:to-[#185e53] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
+                >
+                  {processingPayment ? 'Verifying...' : 'Submit OTP'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
 
