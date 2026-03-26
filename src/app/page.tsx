@@ -1,4 +1,4 @@
-// frontend/src/app/page.tsx - Landing Page
+// frontend/src/app/page.tsx 
 
 'use client';
 
@@ -17,7 +17,7 @@ export default function Home() {
         case 'PATIENT':     router.push('/patient/dashboard');    break;
         case 'PHARMACY':    router.push('/pharmacy/dashboard');   break;
         case 'SUPER_ADMIN': router.push('/super-admin/dashboard'); break;
-        case 'BRANCH_MANAGER': router.push('/branch/dashboard');     break;
+        case 'BRANCH_MANAGER': router.push('/branch/dashboard');  break;
         default:            break;
       }
     }
@@ -39,15 +39,15 @@ export default function Home() {
     <div className="min-h-screen flex flex-col" style={{ background: '#F8FBFF' }}>
 
       {/* NAV */}
-      <nav style={{ background: '#1E4D8C' }} className="flex items-center justify-between px-6 lg:px-12 py-4 border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+      <nav className="flex items-center justify-between px-6 lg:px-12 py-4 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div>
-          <span className="text-2xl font-extrabold" style={{ color: '#ffffff' }}>Evuze</span>
+          <span className="text-2xl font-extrabold" style={{ color: '#1E4D8C' }}>Evuze</span>
           <p className="text-xs font-medium" style={{ color: '#2D9B8A' }}>Healthcare Platform</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login"
-            className="px-5 py-2 rounded-lg font-semibold text-sm border-2 transition-all hover:bg-blue-400 shadow-md"
-            style={{ color: '#ffffff', borderColor: '#ffffff' }}>
+            className="px-5 py-2 rounded-lg font-semibold text-sm border-2 transition-all hover:bg-gray-50"
+            style={{ color: '#1E4D8C', borderColor: '#1E4D8C' }}>
             Login
           </Link>
           <Link href="/signup"
@@ -89,7 +89,7 @@ export default function Home() {
               </svg>
             </Link>
             <Link href="/login"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base border-2 transition-all hover:bg-gray-200"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base border-2 transition-all hover:bg-gray-50"
               style={{ color: '#1E4D8C', borderColor: '#d1dff5' }}>
               Login
             </Link>

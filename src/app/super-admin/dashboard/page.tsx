@@ -242,15 +242,28 @@ export default function SuperAdminDashboard() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {branch.pharmacyLicense && (
-                    <a
-                      href={branch.pharmacyLicense}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => {
+                        const url = branch.pharmacyLicense!;
+                        if (url.startsWith('data:')) {
+                          const [header, base64] = url.split(',');
+                          const mime = header.replace('data:', '').replace(';base64', '');
+                          const binary = atob(base64);
+                          const bytes = new Uint8Array(binary.length);
+                          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                          const blob = new Blob([bytes], { type: mime });
+                          const blobUrl = URL.createObjectURL(blob);
+                          window.open(blobUrl, '_blank');
+                          setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+                        } else {
+                          window.open(url, '_blank');
+                        }
+                      }}
                       className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all hover:bg-gray-50"
                       style={{ color: NAVY, borderColor: '#BDD9FF' }}
                     >
                       View License
-                    </a>
+                    </button>
                   )}
                   <button
                     onClick={() => handleApproveBranch(branch.id)}
