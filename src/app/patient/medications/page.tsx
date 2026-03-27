@@ -42,7 +42,6 @@ export default function SearchMedications() {
       quantity: 1,
       pharmacyId: medication.pharmacy.id,
       pharmacyName: medication.pharmacy.name,
-      branchId: medication.branchId || medication.pharmacy.branchId || '',
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });
