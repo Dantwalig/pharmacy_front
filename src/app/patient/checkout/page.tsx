@@ -13,7 +13,7 @@ import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24
 export default function CheckoutPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { items, getTotal, clearCart, pharmacyId } = useCart();
+  const { items, getTotal, clearCart, pharmacyId, branchId } = useCart();
   const [loading, setLoading] = useState(false);
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
 
@@ -29,23 +29,12 @@ export default function CheckoutPage() {
   const [prescriptionId, setPrescriptionId] = useState<string | null>(null);
   const [prescriptionUploaded, setPrescriptionUploaded] = useState(false);
 
-  // branchId — required by the backend. Currently the API does not expose a
-  // patient-accessible endpoint to list pharmacy branches, so we use pharmacyId
-  // as a placeholder. Once a GET /pharmacies/:id/branches endpoint is available,
-  // update this to let patients select a branch.
-  const [branchId, setBranchId] = useState<string>('');
+  // branchId comes from the cart (set when the patient first adds a medication from a branch)
 
   const hasPrescription = items.some(i => i.requiresPrescription);
   const subtotal = getTotal();
   const deliveryFee = orderType === 'DELIVERY' ? 1000 : 0;
   const total = subtotal + deliveryFee;
-
-  // Set branchId from pharmacyId once available (temporary workaround)
-  useEffect(() => {
-    if (pharmacyId) {
-      setBranchId(pharmacyId);
-    }
-  }, [pharmacyId]);
 
   // Step 1: Upload prescription file to /upload/prescription
   // Step 2: Create prescription record via /prescriptions

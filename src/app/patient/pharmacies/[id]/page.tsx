@@ -38,6 +38,7 @@ export default function PharmacyDetailsPage() {
   const router = useRouter();
   const { addToCart } = useCart();
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
+  const [branchId, setBranchId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -47,8 +48,16 @@ export default function PharmacyDetailsPage() {
   const fetchPharmacyDetails = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/pharmacies/${params.id}`);
-      setPharmacy(res.data);
+      const [pharmacyRes, branchesRes] = await Promise.all([
+        api.get(`/pharmacies/${params.id}`),
+        api.get(`/branches/pharmacy/${params.id}`).catch(() => ({ data: [] })),
+      ]);
+      setPharmacy(pharmacyRes.data);
+      // Use the first approved branch ID for ordering
+      const approvedBranch = (branchesRes.data as any[]).find(
+        (b: any) => b.branchStatus === 'APPROVED'
+      ) || branchesRes.data[0];
+      if (approvedBranch) setBranchId(approvedBranch.id);
     } catch (error) {
       console.error('Failed to fetch pharmacy:', error);
       toast.error(t('pharmacies.loadFailed'));
@@ -65,6 +74,7 @@ export default function PharmacyDetailsPage() {
       quantity: 1,
       pharmacyId: pharmacy?.id || '',
       pharmacyName: pharmacy?.name || '',
+      branchId: branchId,
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });
