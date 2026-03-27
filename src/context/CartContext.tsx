@@ -14,7 +14,7 @@ interface CartItem {
   quantity: number;
   pharmacyId: string;
   pharmacyName: string;
-  branchId: string;
+  branchId?: string;
   requiresPrescription: boolean;
   imageUrl?: string;
 }
@@ -77,7 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setItems([...items, item]);
       setPharmacyId(item.pharmacyId);
-      setBranchId(item.branchId);
+      setBranchId(item.branchId ?? null);
       toast.success(t('cart2.addedToCart'));
     }
   };
