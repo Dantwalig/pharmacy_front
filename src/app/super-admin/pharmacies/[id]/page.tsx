@@ -39,6 +39,29 @@ export default function SuperAdminPharmacyDetailPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
 
+  // Opens a document URL safely — handles both data URIs (DB storage) and HTTP URLs (legacy S3)
+  const openDocument = (url: string) => {
+    if (!url) { toast.error(t('form.documentUrlNotAvailable')); return; }
+
+    if (url.startsWith('data:')) {
+      // Convert data URI to Blob URL so browsers can open PDFs and images
+      const [header, base64] = url.split(',');
+      const mime = header.replace('data:', '').replace(';base64', '');
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mime });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, '_blank');
+      // Revoke after 60s to free memory
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      if (!win) toast.error('Popup blocked — please allow popups for this site');
+    } else {
+      // Legacy HTTP URL
+      window.open(url, '_blank');
+    }
+  };
+
   useEffect(() => { fetchPharmacy(); }, [params.id]);
 
   const fetchPharmacy = async () => {
@@ -248,9 +271,8 @@ export default function SuperAdminPharmacyDetailPage() {
                             ? `/super-admin/pharmacies/${params.id}/documents/rdb-certificate`
                             : `/super-admin/pharmacies/${params.id}/documents/pharmacy-license`;
                           const res = await api.get(endpoint);
-                          const url = res.data?.url || res.data;
-                          if (url) window.open(url, '_blank');
-                          else toast.error(t('form.documentUrlNotAvailable'));
+                          const url = res.data?.documentUrl || res.data?.url || res.data;
+                          openDocument(url);
                         } catch {
                           toast.error(t('errors.couldNotFetchDocument'));
                         }
@@ -304,9 +326,8 @@ export default function SuperAdminPharmacyDetailPage() {
                   onClick={async () => {
                     try {
                       const res = await api.get(doc.endpoint);
-                      const url = res.data?.url || res.data;
-                      if (url) window.open(url, '_blank');
-                      else toast.error(t('form.documentUrlNotAvailable'));
+                      const url = res.data?.documentUrl || res.data?.url || res.data;
+                      openDocument(url);
                     } catch {
                       toast.error(t('errors.couldNotFetchDocument'));
                     }

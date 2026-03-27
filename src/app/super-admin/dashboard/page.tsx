@@ -1,4 +1,8 @@
-// frontend/src/app/super-admin/dashboard/page.tsx
+// frontend/src/app/super-admin/dashboard/page.tsx — FIXED
+// Fix #3: Added pending branch verification section connected to backend
+// Backend endpoints: GET /super-admin/branches/pending
+//                   PATCH /super-admin/branches/:id/approve
+//                   PATCH /super-admin/branches/:id/reject
 
 'use client';
 
@@ -15,8 +19,11 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   CheckCircleIcon,
-  ChartBarIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
 
 interface Analytics {
   totalPatients: number;
@@ -30,27 +37,42 @@ interface Analytics {
   platformFeePerPharmacy: number;
 }
 
+interface PendingBranch {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  branchManagerEmail: string;
+  pharmacyLicense: string | null;
+  createdAt: string;
+  pharmacy: { id: string; name: string; representativeName: string };
+  manager: { email: string } | null;
+}
+
 export default function SuperAdminDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [pendingPharmacies, setPendingPharmacies] = useState<any[]>([]);
+  const [pendingBranches, setPendingBranches] = useState<PendingBranch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [branchAction, setBranchAction] = useState<string | null>(null);
+  const [rejectModal, setRejectModal] = useState<PendingBranch | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [analyticsRes, pendingRes] = await Promise.all([
+      const [analyticsRes, pendingRes, branchesRes] = await Promise.all([
         api.get('/super-admin/analytics'),
         api.get('/super-admin/pharmacies/pending'),
+        api.get('/super-admin/branches/pending'),
       ]);
-      
       setAnalytics(analyticsRes.data);
       setPendingPharmacies(pendingRes.data);
+      setPendingBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
     } catch (error: any) {
       console.error('Failed to fetch dashboard data:', error);
       toast.error(t('errors.failedToLoadDashboard'));
@@ -59,12 +81,44 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleApproveBranch = async (branchId: string) => {
+    setBranchAction(branchId);
+    try {
+      await api.patch(`/super-admin/branches/${branchId}/approve`);
+      toast.success('Branch approved successfully');
+      setPendingBranches(prev => prev.filter(b => b.id !== branchId));
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to approve branch');
+    } finally {
+      setBranchAction(null);
+    }
+  };
+
+  const handleRejectBranch = async () => {
+    if (!rejectModal || !rejectReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    setBranchAction(rejectModal.id);
+    try {
+      await api.patch(`/super-admin/branches/${rejectModal.id}/reject`, { reason: rejectReason });
+      toast.success('Branch rejected');
+      setPendingBranches(prev => prev.filter(b => b.id !== rejectModal.id));
+      setRejectModal(null);
+      setRejectReason('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to reject branch');
+    } finally {
+      setBranchAction(null);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <LoadingSpinner />
-    </div>
-  );
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   const stats = [
@@ -72,201 +126,300 @@ export default function SuperAdminDashboard() {
       name: t('superAdmin.totalPharmacies'),
       value: analytics?.totalPharmacies || 0,
       icon: BuildingStorefrontIcon,
-      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
       textColor: 'text-purple-600',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+      bgColor: 'bg-purple-100',
     },
     {
       name: t('superAdmin.pendingPharmacies'),
       value: analytics?.pendingPharmacies || 0,
       icon: ClockIcon,
-      color: 'bg-gradient-to-br from-yellow-500 to-yellow-600',
       textColor: 'text-yellow-600',
-      bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+      bgColor: 'bg-yellow-100',
       action: () => router.push('/super-admin/pharmacies?filter=pending'),
     },
     {
       name: t('superAdmin.totalPatients'),
       value: analytics?.totalPatients || 0,
       icon: UserGroupIcon,
-      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
       textColor: 'text-blue-600',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+      bgColor: 'bg-blue-100',
     },
     {
       name: t('superAdmin.platformRevenue'),
       value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
       icon: CurrencyDollarIcon,
-      color: 'bg-gradient-to-br from-green-500 to-green-600',
       textColor: 'text-green-600',
-      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      bgColor: 'bg-green-100',
     },
   ];
 
   return (
     <div className="space-y-6">
-          {/* Header */}
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800">{t('superAdmin.title')}</h1>
+        <p className="text-gray-500 mt-1">Welcome back, Super Admin! Here's what's happening today.</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.name}
+              onClick={stat.action}
+              className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md ${stat.action ? 'cursor-pointer hover:-translate-y-0.5' : ''}`}
+            >
+              <div className={`${stat.bgColor} p-3 rounded-xl inline-flex mb-4`}>
+                <Icon className={`w-6 h-6 ${stat.textColor}`} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+              <p className="text-sm text-gray-500">{stat.name}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── PENDING BRANCH VERIFICATION ── */}
+      {/* This section is NEW — connected to backend GET /super-admin/branches/pending */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg" style={{ background: '#EAF4FF' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" style={{ color: NAVY }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
             <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-               {t('superAdmin.title')}
-              </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Welcome back, Super Admin! Here's what's happening today.
-              </p>
-          </div>
-
-          {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={stat.name}
-                    onClick={stat.action}
-                    className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all transform hover:scale-105 hover:shadow-xl ${
-                      stat.action ? 'cursor-pointer' : ''
-                    }`}
-                  >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`${stat.bgColor} p-3 rounded-xl`}>
-                      <Icon className={`w-6 h-6 ${stat.textColor}`} />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                    {stat.value}
-                    </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.name}</p>
-                </div>
-              );
-              })}
+              <h2 className="font-bold text-gray-900">Branch Verification</h2>
+              <p className="text-xs text-gray-400">Branches awaiting license review</p>
             </div>
+          </div>
+          {pendingBranches.length > 0 && (
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">
+              {pendingBranches.length} pending
+            </span>
+          )}
+        </div>
 
-          {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Pending Pharmacies */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  {t('superAdmin.pendingPharmacies')}
-                  </h2>
-                <button
-                    onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
-                    className="text-sm text-rose-600 dark:text-rose-400 hover:underline font-medium"
-                  >
-                  {t('superAdmin.viewAll')}
-                  </button>
-              </div>
-
-              {pendingPharmacies.length === 0 ? (
-                  <div className="text-center py-12">
-                  <p className="text-6xl mb-4"></p>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No pending applications
-                    </p>
-                </div>
-              ) : (
-                  <div className="space-y-3">
-                  {pendingPharmacies.slice(0, 5).map((pharmacy) => (
-                      <div
-                        key={pharmacy.id}
-                        onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
-                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-                      >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-800 dark:bg-slate-700 rounded-lg flex items-center justify-center text-white font-bold">
-                          {pharmacy.name.charAt(0)}
-                          </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">
-                            {pharmacy.name}
-                            </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {pharmacy.user.email}
-                            </p>
-                        </div>
-                      </div>
-                      <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">
-                        Pending
+        {pendingBranches.length === 0 ? (
+          <div className="py-12 text-center">
+            <CheckCircleIcon className="w-10 h-10 text-green-400 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium text-sm">All branches verified</p>
+            <p className="text-gray-400 text-xs mt-1">No pending branch applications</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {pendingBranches.map((branch) => (
+              <div key={branch.id} className="px-6 py-4 flex items-start justify-between gap-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5"
+                    style={{ background: NAVY }}>
+                    {branch.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm">{branch.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{branch.pharmacy.name}</p>
+                    {branch.manager?.email && (
+                      <p className="text-xs text-gray-400">{branch.manager.email}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      {branch.pharmacyLicense ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                          <CheckCircleIcon className="w-3 h-3" /> License uploaded
                         </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                          <XCircleIcon className="w-3 h-3" /> No license
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        {new Date(branch.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                  ))}
                   </div>
-              )}
-              </div>
-
-            {/* Quick Stats */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
-                 Platform Overview
-                </h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Approved Pharmacies
-                      </span>
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.approvedPharmacies || 0}
-                    </span>
                 </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <ShoppingCartIcon className="w-6 h-6 text-blue-500" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Total Orders
-                      </span>
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.totalOrders || 0}
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <CheckCircleIcon className="w-6 h-6 text-slate-500" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Completed Orders
-                      </span>
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.completedOrders || 0}
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-linear-to-r from-green-500 to-emerald-500 rounded-xl text-white">
-                  <div className="flex items-center gap-3">
-                    <CurrencyDollarIcon className="w-6 h-6" />
-                    <span>{t('superAdminPages.totalRevenue')}</span>
-                  </div>
-                  <span className="text-2xl font-bold">
-                    ${analytics?.totalRevenue?.toLocaleString() || 0}
-                    </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  {branch.pharmacyLicense && (
+                    <button
+                      onClick={() => {
+                        const url = branch.pharmacyLicense!;
+                        if (url.startsWith('data:')) {
+                          const [header, base64] = url.split(',');
+                          const mime = header.replace('data:', '').replace(';base64', '');
+                          const binary = atob(base64);
+                          const bytes = new Uint8Array(binary.length);
+                          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                          const blob = new Blob([bytes], { type: mime });
+                          const blobUrl = URL.createObjectURL(blob);
+                          window.open(blobUrl, '_blank');
+                          setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+                        } else {
+                          window.open(url, '_blank');
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all hover:bg-gray-50"
+                      style={{ color: NAVY, borderColor: '#BDD9FF' }}
+                    >
+                      View License
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleApproveBranch(branch.id)}
+                    disabled={branchAction === branch.id || !branch.pharmacyLicense}
+                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50"
+                    style={{ background: TEAL }}
+                    title={!branch.pharmacyLicense ? 'Cannot approve: license not uploaded' : 'Approve branch'}
+                  >
+                    {branchAction === branch.id ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => setRejectModal(branch)}
+                    disabled={branchAction === branch.id}
+                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 bg-red-500 hover:bg-red-600"
+                  >
+                    Reject
+                  </button>
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pending Pharmacies */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-gray-900">{t('superAdmin.pendingPharmacies')}</h2>
+            <button
+              onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
+              className="text-sm font-medium hover:underline"
+              style={{ color: NAVY }}
+            >
+              {t('superAdmin.viewAll')}
+            </button>
           </div>
 
-          {/* System Status */}
-            <div className="bg-linear-to-r from-green-500 to-emerald-500 rounded-2xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <CheckCircleIcon className="w-7 h-7" />
+          {pendingPharmacies.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-4xl mb-3">✅</p>
+              <p className="text-gray-500 text-sm">No pending applications</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingPharmacies.slice(0, 5).map((pharmacy) => (
+                <div
+                  key={pharmacy.id}
+                  onClick={() => router.push('/super-admin/pharmacies?filter=pending')}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                      style={{ background: NAVY }}>
+                      {pharmacy.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">{pharmacy.name}</p>
+                      <p className="text-xs text-gray-400">{pharmacy.user.email}</p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                    Pending
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold">{t('superAdmin.systemStatus')}</h3>
-                  <p className="text-green-100">{t('superAdmin.allSystemsOperational')}</p>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Platform Overview */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-6">Platform Overview</h2>
+          <div className="space-y-3">
+            {[
+              { icon: CheckCircleIcon, color: 'text-green-500', label: 'Approved Pharmacies', value: analytics?.approvedPharmacies || 0 },
+              { icon: ShoppingCartIcon, color: 'text-blue-500', label: 'Total Orders', value: analytics?.totalOrders || 0 },
+              { icon: CheckCircleIcon, color: 'text-teal-500', label: 'Completed Orders', value: analytics?.completedOrders || 0 },
+            ].map(({ icon: Icon, color, label, value }) => (
+              <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-5 h-5 ${color}`} />
+                  <span className="text-gray-700 text-sm">{label}</span>
                 </div>
+                <span className="text-xl font-bold text-gray-900">{value}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">{t('superAdminPages.live')}</span>
+            ))}
+            <div className="flex items-center justify-between p-4 rounded-xl text-white"
+              style={{ background: `linear-gradient(135deg, ${TEAL}, #1a8a7a)` }}>
+              <div className="flex items-center gap-3">
+                <CurrencyDollarIcon className="w-5 h-5" />
+                <span className="text-sm">{t('superAdminPages.totalRevenue')}</span>
               </div>
+              <span className="text-xl font-bold">${analytics?.totalRevenue?.toLocaleString() || 0}</span>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* System Status */}
+      <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${TEAL}, #1a8a7a)` }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+              <CheckCircleIcon className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">{t('superAdmin.systemStatus')}</h3>
+              <p style={{ color: 'rgba(255,255,255,0.8)' }} className="text-sm">{t('superAdmin.allSystemsOperational')}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+            <span className="text-sm font-medium">{t('superAdminPages.live')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Reject Branch Modal */}
+      {rejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Reject Branch</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              You are rejecting <strong>{rejectModal.name}</strong> ({rejectModal.pharmacy.name}).
+              The manager will be notified with the reason.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={4}
+              placeholder="Reason for rejection (e.g. invalid license, incomplete documents...)"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none resize-none"
+              style={{ borderColor: rejectReason ? '#E5E7EB' : '#E5E7EB' }}
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => { setRejectModal(null); setRejectReason(''); }}
+                className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectBranch}
+                disabled={!rejectReason.trim() || !!branchAction}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
