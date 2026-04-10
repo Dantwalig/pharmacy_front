@@ -13,8 +13,8 @@ interface CartItem {
   price: number;
   quantity: number;
   pharmacyId: string;
+  branchId: string;
   pharmacyName: string;
-  branchId?: string;
   requiresPrescription: boolean;
   imageUrl?: string;
 }
@@ -56,8 +56,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [items, pharmacyId, branchId]);
 
   const addToCart = (item: CartItem) => {
-    // Check if adding from different pharmacy
-    if (pharmacyId && pharmacyId !== item.pharmacyId) {
+    // Check if adding from different pharmacy branch
+    if (branchId && branchId !== item.branchId) {
       toast.error(t('cart2.onePharmacyOnly'));
       return;
     }
@@ -77,7 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setItems([...items, item]);
       setPharmacyId(item.pharmacyId);
-      setBranchId(item.branchId ?? null);
+      setBranchId(item.branchId);
       toast.success(t('cart2.addedToCart'));
     }
   };
@@ -85,12 +85,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeFromCart = (medicationId: string) => {
     const newItems = items.filter((i) => i.medicationId !== medicationId);
     setItems(newItems);
-    
+
     if (newItems.length === 0) {
       setPharmacyId(null);
       setBranchId(null);
     }
-    
+
     toast.success(t('cart2.removedFromCart'));
   };
 

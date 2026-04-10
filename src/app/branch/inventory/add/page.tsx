@@ -87,7 +87,7 @@ export default function BranchAddMedicationPage() {
         quantity: parseInt(form.quantity),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
-        // branchId will be resolved from JWT by the backend service
+        branchId: branchId,
       });
       toast.success(t('success.medicationAdded'));
       router.push('/branch/inventory');
