@@ -13,6 +13,7 @@ interface CartItem {
   price: number;
   quantity: number;
   pharmacyId: string;
+  branchId: string;
   pharmacyName: string;
   requiresPrescription: boolean;
   imageUrl?: string;
@@ -27,6 +28,7 @@ interface CartContextType {
   getTotal: () => number;
   getItemCount: () => number;
   pharmacyId: string | null;
+  branchId: string | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,6 +37,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { t } = useTranslation();
   const [items, setItems] = useState<CartItem[]>([]);
   const [pharmacyId, setPharmacyId] = useState<string | null>(null);
+  const [branchId, setBranchId] = useState<string | null>(null);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -43,17 +46,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const parsed = JSON.parse(savedCart);
       setItems(parsed.items || []);
       setPharmacyId(parsed.pharmacyId || null);
+      setBranchId(parsed.branchId || null);
     }
   }, []);
 
   // Save cart to localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify({ items, pharmacyId }));
-  }, [items, pharmacyId]);
+    localStorage.setItem('cart', JSON.stringify({ items, pharmacyId, branchId }));
+  }, [items, pharmacyId, branchId]);
 
   const addToCart = (item: CartItem) => {
-    // Check if adding from different pharmacy
-    if (pharmacyId && pharmacyId !== item.pharmacyId) {
+    // Check if adding from different pharmacy branch
+    if (branchId && branchId !== item.branchId) {
       toast.error(t('cart2.onePharmacyOnly'));
       return;
     }
@@ -73,6 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setItems([...items, item]);
       setPharmacyId(item.pharmacyId);
+      setBranchId(item.branchId);
       toast.success(t('cart2.addedToCart'));
     }
   };
@@ -83,6 +88,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (newItems.length === 0) {
       setPharmacyId(null);
+      setBranchId(null);
     }
     
     toast.success(t('cart2.removedFromCart'));
@@ -104,6 +110,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setItems([]);
     setPharmacyId(null);
+    setBranchId(null);
     toast.success(t('cart2.cartCleared'));
   };
 
@@ -126,6 +133,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getTotal,
         getItemCount,
         pharmacyId,
+        branchId,
       }}
     >
     {children}
