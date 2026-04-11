@@ -1,7 +1,7 @@
 // frontend/src/app/signup/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
@@ -13,16 +13,23 @@ import {
   BuildingStorefrontIcon, EyeIcon, EyeSlashIcon,
   MapPinIcon, ClockIcon, UserGroupIcon, ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { isPatientEnabled, checkAndSetDevMode } from '@/lib/features';
 
 type Role = 'PATIENT' | 'PHARMACY';
 
 export default function SignupPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [role, setRole] = useState<Role>('PATIENT');
+  const patientEnabled = isPatientEnabled();
+  const [role, setRole] = useState<Role>(patientEnabled ? 'PATIENT' : 'PHARMACY');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    checkAndSetDevMode();
+  }, []);
+
 
   const [patientForm, setPatientForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -126,21 +133,24 @@ export default function SignupPage() {
           <p className="text-gray-500 text-sm mt-1">{t('signup.createAccountSubtitle')}</p>
 
           {/* Role Switcher */}
-          <div className="flex mt-4 bg-gray-200 rounded-lg p-1 w-fit">
-            <button
-              onClick={() => setRole('PATIENT')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PATIENT' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              <UserIcon className="w-4 h-4" /> {t('signup.patientTab')}
-            </button>
-            <button
-              onClick={() => setRole('PHARMACY')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PHARMACY' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              <BuildingStorefrontIcon className="w-4 h-4" /> {t('signup.pharmacyOwnerTab')}
-            </button>
-          </div>
+          {patientEnabled && (
+            <div className="flex mt-4 bg-gray-200 rounded-lg p-1 w-fit">
+              <button
+                onClick={() => setRole('PATIENT')}
+                className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PATIENT' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <UserIcon className="w-4 h-4" /> {t('signup.patientTab')}
+              </button>
+              <button
+                onClick={() => setRole('PHARMACY')}
+                className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PHARMACY' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <BuildingStorefrontIcon className="w-4 h-4" /> {t('signup.pharmacyOwnerTab')}
+              </button>
+            </div>
+          )}
         </div>
+
 
         {/* Scrollable form */}
         <div className="flex-1 overflow-y-auto px-8 pb-8">

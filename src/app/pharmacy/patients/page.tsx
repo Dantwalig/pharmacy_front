@@ -13,7 +13,10 @@ import {
   ShoppingBagIcon,
   CurrencyDollarIcon,
   CalendarIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
+import { isPatientEnabled } from '@/lib/features';
+
 
 interface Patient {
   id: string;
@@ -68,10 +71,37 @@ export default function PharmacyPatientsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  );
+        <LoadingSpinner />
+      </div>
+    );
   }
+
+  if (!isPatientEnabled()) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Patients & Customers</h1>
+          <p className="text-blue-100 text-sm lg:text-base">Order integration with patients</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 lg:p-20 text-center">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <LockClosedIcon className="w-10 h-10 text-[#1E4D8C]" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Feature Arriving Soon</h2>
+          <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
+            Real-time patient tracking and automated order connectivity are currently awaiting regulatory approval. 
+            Once authorized, you will be able to see all customers who interact with your pharmacy via the Evuze mobile app.
+          </p>
+          <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-xs font-semibold text-gray-500 border border-gray-200">
+            <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+            Status: Awaiting R-FDA Connectivity Approval
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-6">
