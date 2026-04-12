@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useAuth } from '@/context/AuthContext';
 import { ClockIcon, CheckCircleIcon, ShoppingCartIcon, CurrencyDollarIcon, PresentationChartLineIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -39,6 +40,7 @@ const STATUS_INFO: Record<string, { label: string; color: string; dot: string }>
 
 export default function StaffDashboardPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,7 @@ export default function StaffDashboardPage() {
         api.get('/attendance/my-current'),
         api.get('/orders/pharmacy-orders'),
       ]);
+
       setProfile(profileRes.data);
       setTodayShift(shiftRes.data);
 
@@ -81,14 +84,14 @@ export default function StaffDashboardPage() {
           return {
             id: o.id.slice(0, 8).toUpperCase(),
             type: o.prescription ? 'Prescription' : o.type || 'Order',
-            amount: `RWF ${Number(o.total || 0).toLocaleString()}`,
+            amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
             time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             status: o.status.replace(/_/g, ' '),
             color: statusColor
           };
         });
 
-      setRecentActivities(mappedActivities);
+        setRecentActivities(mappedActivities);
     } catch (error) {
       console.error('Failed to load dashboard:', error);
     } finally {
@@ -122,7 +125,12 @@ export default function StaffDashboardPage() {
     d ? new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
   const now = new Date();
-  const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
+  const getGreeting = () => {
+    const hour = now.getHours();
+    if (hour < 12) return t('dashboard.goodMorning');
+    if (hour < 17) return t('dashboard.goodAfternoon');
+    return t('dashboard.goodEvening');
+  };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
@@ -133,9 +141,9 @@ export default function StaffDashboardPage() {
 
       {/* Hero banner — navy/teal palette matching pharmacy owner */}
       <div className="rounded-2xl p-6 lg:p-8 text-white shadow-sm" style={{ backgroundColor: NAVY }}>
-        <p className="text-white/70 text-sm">{greeting},</p>
+        <p className="text-white/70 text-sm">{getGreeting()},</p>
         <h1 className="text-2xl lg:text-3xl font-bold mt-1">
-          {profile ? `${profile.firstName} ${profile.lastName}` : 'Staff'}
+          {profile ? `${profile.firstName} ${profile.lastName}` : t('common.loading')}
         </h1>
         {profile && (
           <div className="flex items-center gap-2 mt-3 text-white/70 text-sm flex-wrap">
@@ -150,11 +158,11 @@ export default function StaffDashboardPage() {
 
       {/* Overview stat cards & Quick Actions */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Today's Overview</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('dashboard.todaysOverview')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Transactions Today', value: String(transactionsToday), icon: ShoppingCartIcon, dark: false },
-            { label: 'Gross Sales', value: `RWF ${grossSales.toLocaleString()}`, icon: CurrencyDollarIcon, dark: true },
+            { label: t('dashboard.transactionsToday'), value: String(transactionsToday), icon: ShoppingCartIcon, dark: false },
+            { label: t('dashboard.grossSales'), value: `${t('common.currency')} ${grossSales.toLocaleString()}`, icon: CurrencyDollarIcon, dark: true },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -176,8 +184,8 @@ export default function StaffDashboardPage() {
               <PlusCircleIcon className="w-6 h-6" style={{ color: TEAL }} />
             </div>
             <div>
-              <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">New Sale</p>
-              <p className="text-xs text-gray-500 mt-0.5">Go to POS</p>
+              <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{t('dashboard.newSale')}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.goToPos')}</p>
             </div>
           </Link>
 
@@ -187,8 +195,8 @@ export default function StaffDashboardPage() {
               <DocumentTextIcon className="w-6 h-6" style={{ color: TEAL }} />
             </div>
             <div>
-              <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">Rx Check</p>
-              <p className="text-xs text-gray-500 mt-0.5">View Prescriptions</p>
+              <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{t('dashboard.rxCheck')}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.viewPrescriptions')}</p>
             </div>
           </Link>
         </div>
@@ -289,18 +297,18 @@ export default function StaffDashboardPage() {
       <div className="lg:col-span-2">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">Recent Activity</h2>
-            <Link href="/staff/orders" className="text-sm font-medium hover:underline" style={{ color: TEAL }}>View All</Link>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.recentActivity')}</h2>
+            <Link href="/staff/orders" className="text-sm font-medium hover:underline" style={{ color: TEAL }}>{t('common.viewAll')}</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Transaction ID</th>
-                  <th className="px-5 py-3 font-medium">Type</th>
-                  <th className="px-5 py-3 font-medium">Time</th>
-                  <th className="px-5 py-3 font-medium text-right">Amount</th>
-                  <th className="px-5 py-3 font-medium text-center">Status</th>
+                  <th className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
+                  <th className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
+                  <th className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
+                  <th className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
+                  <th className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -321,7 +329,7 @@ export default function StaffDashboardPage() {
             </table>
             {recentActivities.length === 0 && (
               <div className="p-8 text-center text-gray-500">
-                 No recent activity today.
+                 {t('dashboard.noRecentActivity')}
               </div>
             )}
           </div>
