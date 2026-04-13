@@ -9,9 +9,10 @@ import { isPatientEnabled } from '@/lib/features';
 interface StaffSidebarProps {
   open?: boolean;
   onClose?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function StaffSidebar({ open = false, onClose }: StaffSidebarProps) {
+export default function StaffSidebar({ open = false, onClose, onOpenSupport }: StaffSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
@@ -74,7 +75,11 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
             <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
           </div>
           <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
-          <button className="w-full py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: '#2D9B8A' }}>
+          <button
+            onClick={onOpenSupport}
+            className="w-full py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#2D9B8A' }}
+          >
             {t('common.getSupport')}
           </button>
         </div>
