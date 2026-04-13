@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { removeAuthTokens, clearUserCache } from '@/lib/auth';
+import { isPatientEnabled, checkAndSetDevMode } from '@/lib/features';
+
 
 export default function Home() {
   const router = useRouter();
@@ -18,18 +21,45 @@ export default function Home() {
         case 'PHARMACY':    router.push('/pharmacy/dashboard');   break;
         case 'SUPER_ADMIN': router.push('/super-admin/dashboard'); break;
         case 'BRANCH_MANAGER': router.push('/branch/dashboard');  break;
-        default:            break;
+        case 'PHARMACIST':
+        case 'CASHIER':
+        case 'NURSE':       router.push('/staff/dashboard');      break;
+        default:            
+          // If the cookie is corrupted or role is unauthorized, clear it!
+          removeAuthTokens();
+          clearUserCache();
+          setTimeout(() => window.location.reload(), 100);
+          break;
       }
     }
   }, [user, loading, router]);
 
-  if (loading || user) {
+  useEffect(() => {
+    checkAndSetDevMode();
+  }, []);
+
+  const patientEnabled = isPatientEnabled();
+
+  if (loading) {
+
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
             style={{ borderColor: '#2D9B8A', borderTopColor: 'transparent' }} />
           <p style={{ color: '#1E4D8C' }} className="font-medium">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
+            style={{ borderColor: '#2D9B8A', borderTopColor: 'transparent' }} />
+          <p style={{ color: '#1E4D8C' }} className="font-medium">Redirecting you to the portal...</p>
         </div>
       </div>
     );
@@ -65,25 +95,35 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border"
             style={{ background: '#EAF4FF', color: '#1E4D8C', borderColor: '#BDD9FF' }}>
             <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#2D9B8A' }} />
-            Rwanda's Healthcare Platform
+            {patientEnabled ? "Rwanda's Healthcare Platform" : "Rwanda's Pharmacy Management Solution"}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 max-w-3xl"
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 max-w-4xl"
             style={{ color: '#1a2e4a' }}>
-            Connecting Patients with{' '}
-            <span style={{ color: '#2D9B8A' }}>Nearby Pharmacies</span>
+            {patientEnabled ? (
+              <>
+                Connecting Patients with{' '}
+                <span style={{ color: '#2D9B8A' }}>Nearby Pharmacies</span>
+              </>
+            ) : (
+              <>
+                Empowering Pharmacies with{' '}
+                <span style={{ color: '#2D9B8A' }}>Modern Management</span>
+              </>
+            )}
           </h1>
 
-          <p className="text-lg text-gray-500 max-w-xl mb-10 leading-relaxed">
-            Evuze helps patients find nearby pharmacies with real-time medication
-            availability, and helps pharmacies reach more customers efficiently.
+          <p className="text-lg text-gray-500 max-w-2xl mb-10 leading-relaxed">
+            {patientEnabled 
+              ? "Evuze helps patients find nearby pharmacies with real-time medication availability, and helps pharmacies reach more customers efficiently."
+              : "Streamline your pharmacy operations, manage inventory across multiple branches, and prepare for future patient connectivity with Rwanda's leading platform."}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="/signup"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white text-base shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5"
               style={{ background: '#2D9B8A' }}>
-              Get Started
+              {patientEnabled ? "Get Started" : "Register Your Pharmacy"}
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
@@ -95,6 +135,7 @@ export default function Home() {
             </Link>
           </div>
         </section>
+
 
         {/* WHY CHOOSE EVUZE */}
         <section style={{ background: '#1E4D8C' }} className="py-20 px-6">
@@ -137,21 +178,26 @@ export default function Home() {
             Ready to get started?
           </h2>
           <p className="text-gray-500 mb-8 max-w-md mx-auto">
-            Join thousands of patients and pharmacies already using Evuze across Rwanda.
+            {patientEnabled 
+              ? "Join thousands of patients and pharmacies already using Evuze across Rwanda."
+              : "Join forward-thinking pharmacies across Rwanda managing their operations with Evuze."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup"
-              className="px-7 py-3 rounded-xl font-bold text-white text-sm shadow-md transition-all hover:opacity-90"
-              style={{ background: '#2D9B8A' }}>
-              I'm a Patient
-            </Link>
+            {patientEnabled && (
+              <Link href="/signup"
+                className="px-7 py-3 rounded-xl font-bold text-white text-sm shadow-md transition-all hover:opacity-90"
+                style={{ background: '#2D9B8A' }}>
+                I'm a Patient
+              </Link>
+            )}
             <Link href="/signup"
               className="px-7 py-3 rounded-xl font-bold text-sm border-2 transition-all hover:bg-blue-50"
               style={{ color: '#1E4D8C', borderColor: '#1E4D8C' }}>
-              I'm a Pharmacy
+              {patientEnabled ? "I'm a Pharmacy" : "Register Your Pharmacy"}
             </Link>
           </div>
         </section>
+
       </main>
 
       <footer className="py-5 text-center text-sm text-gray-400 border-t border-gray-100 bg-white">

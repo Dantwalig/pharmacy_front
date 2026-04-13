@@ -2,8 +2,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut, X, ShoppingCart, Package, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Clock, Lock, User, HelpCircle, LogOut, X, ShoppingCart, Package, ClipboardList, ShieldAlert } from 'lucide-react';
+import { isPatientEnabled } from '@/lib/features';
+
 
 interface StaffSidebarProps {
   open?: boolean;
@@ -19,8 +20,9 @@ export default function StaffSidebar({ open = false, onClose, onOpenSupport }: S
     { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard') },
     { href: '/staff/orders',          icon: ShoppingCart,    label: t('staff.orders') },
     { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory') },
-    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions') },
+    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions') + (isPatientEnabled() ? '' : ' (Soon)') },
     { href: '/staff/attendance',      icon: Clock,           label: t('staff.attendance') },
+
     { href: '/staff/profile',         icon: User,            label: t('staff.profile') },
     { href: '/staff/change-password', icon: Lock,            label: t('staff.changePassword') },
   ];
@@ -50,12 +52,18 @@ export default function StaffSidebar({ open = false, onClose, onOpenSupport }: S
               key={href}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+              className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
               style={active ? { backgroundColor: '#2D9B8A' } : {}}
             >
-              <Icon size={18} />
-              {label}
+              <div className="flex items-center gap-3">
+                <Icon size={18} />
+                {label}
+              </div>
+              {href === '/staff/prescriptions' && !isPatientEnabled() && (
+                <ShieldAlert size={14} className="text-white/40" />
+              )}
             </Link>
+
           );
         })}
       </nav>

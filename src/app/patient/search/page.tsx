@@ -66,8 +66,9 @@ export default function SearchPage() {
       name: medication.name,
       price: medication.price,
       quantity: 1,
-      pharmacyId: medication.pharmacy.id,
-      pharmacyName: medication.pharmacy.name,
+      pharmacyId: medication.pharmacy?.id || '',
+      branchId: medication.branchId || '',
+      pharmacyName: medication.pharmacy?.name || '',
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });

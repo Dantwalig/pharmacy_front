@@ -4,8 +4,10 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard, ClipboardList, GitBranch, Users, User,
-  HelpCircle, LogOut, BarChart2, Package, Bell, X,
+  HelpCircle, LogOut, BarChart2, Package, Bell, X, Lock,
 } from 'lucide-react';
+import { isPatientEnabled } from '@/lib/features';
+
 
 interface PharmacySidebarProps {
   onOpenSupport?: () => void;
@@ -22,8 +24,9 @@ export default function PharmacySidebar({ onOpenSupport, open = false, onClose }
     { href: '/pharmacy/orders',        icon: ClipboardList,   label: t('pharmacyOwner.orderOverview') },
     { href: '/pharmacy/branches',      icon: GitBranch,       label: t('pharmacyOwner.branchManagement') },
     { href: '/pharmacy/inventory',     icon: Package,         label: t('pharmacyOwner.inventory') },
-    { href: '/pharmacy/patients',      icon: Users,           label: t('pharmacyOwner.patients') },
+    { href: '/pharmacy/patients',      icon: Users,           label: t('pharmacyOwner.patients') + (isPatientEnabled() ? '' : ' (Soon)') },
     { href: '/pharmacy/analytics',     icon: BarChart2,       label: t('pharmacyOwner.analytics') },
+
     { href: '/pharmacy/notifications', icon: Bell,            label: t('pharmacyOwner.notifications') },
     { href: '/pharmacy/profile',       icon: User,            label: t('pharmacyOwner.profile') },
   ];
@@ -53,12 +56,18 @@ export default function PharmacySidebar({ onOpenSupport, open = false, onClose }
               key={href}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+              className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
               style={active ? { backgroundColor: '#2D9B8A' } : {}}
             >
-              <Icon size={18} />
-              {label}
+              <div className="flex items-center gap-3">
+                <Icon size={18} />
+                {label}
+              </div>
+              {href === '/pharmacy/patients' && !isPatientEnabled() && (
+                <Lock size={14} className="text-white/40" />
+              )}
             </Link>
+
           );
         })}
       </nav>
