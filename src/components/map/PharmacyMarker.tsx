@@ -1,6 +1,4 @@
 // src/components/map/PharmacyMarker.tsx
-// Standalone marker component — generates Leaflet DivIcon HTML strings
-// Used by MapView to render per-pharmacy pins with E-Vuze branding
 
 'use client';
 
@@ -16,10 +14,7 @@ interface MarkerOptions {
   isActive?: boolean;
 }
 
-/**
- * Returns the HTML string used inside a Leaflet DivIcon.
- * Keeps all marker styling in one place so it's easy to update branding.
- */
+
 export function buildMarkerHtml({ status, selected = false, isActive = true }: MarkerOptions): string {
   const isOpen = status === 'OPEN' && isActive;
   const size = selected ? 44 : 32;
@@ -73,24 +68,18 @@ export function buildMarkerHtml({ status, selected = false, isActive = true }: M
   `;
 }
 
-/**
- * Marker size tuple [width, height] in pixels.
- * Export so MapView can pass correct iconSize/iconAnchor to Leaflet.
- */
+
 export function getMarkerSize(selected = false): [number, number] {
   const size = selected ? 44 : 32;
   return [size, size];
 }
 
-/**
- * Icon anchor — bottom-center of the teardrop tip.
- */
+
 export function getMarkerAnchor(selected = false): [number, number] {
   const size = selected ? 44 : 32;
   return [size / 2, size];
 }
 
-// CSS to inject once for the pulse animation
 export const MARKER_CSS = `
   @keyframes markerPulse {
     0%, 100% { transform: rotate(-45deg) scale(1); opacity: 0.5; }
