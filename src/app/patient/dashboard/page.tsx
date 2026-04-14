@@ -1,303 +1,289 @@
-// frontend/src/app/patient/checkout/page.tsx
+// src/app/patient/dashboard/page.tsx
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/navigation';
-import { useCart } from '@/context/CartContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import api from '@/lib/api';
+import dynamic from 'next/dynamic';
+import {
+  MagnifyingGlassIcon,
+  ClipboardDocumentListIcon,
+  ShoppingCartIcon,
+  MapPinIcon,
+} from '@heroicons/react/24/outline';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { fetchPharmacyLocations } from '@/services/pharmacies';
+import { PharmacyLocation, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/features/map/pharmacyData';
+import { MapSkeleton } from '@/components/map/MapStates';
+import MapLayout from '@/components/map/MapLayout';
 
-export default function CheckoutPage() {
+const MapView = dynamic(() => import('@/components/map/MapView'), {
+  ssr: false,
+  loading: () => <MapSkeleton />,
+});
+
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
+
+export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { items, getTotal, clearCart, pharmacyId, branchId } = useCart();
-  const [loading, setLoading] = useState(false);
-  const [uploadingPrescription, setUploadingPrescription] = useState(false);
 
-  // Order type (DELIVERY | PICKUP) - matches backend DTO field name
-  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Payment method - matches backend enum exactly
-  const [paymentMethod, setPaymentMethod] = useState<'MTN_MOMO' | 'AIRTEL_MONEY' | 'CARD' | 'INSURANCE'>('MTN_MOMO');
+  // Map state
+  const [mapPharmacies, setMapPharmacies] = useState<PharmacyLocation[]>([]);
+  const [mapLoading, setMapLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Prescription state - separate upload flow via /upload/prescription + /prescriptions
-  const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
-  const [prescriptionId, setPrescriptionId] = useState<string | null>(null);
-  const [prescriptionUploaded, setPrescriptionUploaded] = useState(false);
+  useEffect(() => {
+    fetchDashboardData();
+    loadMapPharmacies();
+  }, []);
 
-  // branchId comes from the cart (set when the patient first adds a medication from a branch)
-
-  const hasPrescription = items.some(i => i.requiresPrescription);
-  const subtotal = getTotal();
-  const deliveryFee = orderType === 'DELIVERY' ? 1000 : 0;
-  const total = subtotal + deliveryFee;
-
-  // Step 1: Upload prescription file to /upload/prescription
-  // Step 2: Create prescription record via /prescriptions
-  // Step 3: Use returned prescriptionId in the order
-  const handleUploadPrescription = async () => {
-    if (!prescriptionFile) {
-      toast.error(t('form.selectPrescriptionFirst'));
-      return;
-    }
-
-    setUploadingPrescription(true);
+  const fetchDashboardData = async () => {
     try {
-      // Step 1: Upload the file
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', prescriptionFile);
-      const uploadRes = await api.post('/upload/prescription', uploadFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const ordersRes = await api.get('/orders/my-orders');
+      const orders = ordersRes.data;
+      setStats({
+        totalOrders: orders.length,
+        completedOrders: orders.filter((o: any) =>
+          ['COMPLETED', 'DELIVERED'].includes(o.status)
+        ).length,
+        pendingOrders: orders.filter((o: any) =>
+          ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)
+        ).length,
       });
-
-      const { url, fileName, fileType } = uploadRes.data;
-
-      // Step 2: Create the prescription record
-      const prescriptionRes = await api.post('/prescriptions', {
-        fileUrl: url,
-        fileName,
-        fileType,
-      });
-
-      setPrescriptionId(prescriptionRes.data.id);
-      setPrescriptionUploaded(true);
-      toast.success(t('success.prescriptionUploaded'));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to upload prescription');
-    } finally {
-      setUploadingPrescription(false);
-    }
-  };
-
-  const handlePlaceOrder = async () => {
-    if (orderType === 'DELIVERY' && !deliveryAddress.trim()) {
-      toast.error(t('form.enterDeliveryAddress'));
-      return;
-    }
-    if (hasPrescription && !prescriptionId) {
-      toast.error(t('form.uploadConfirmPrescription'));
-      return;
-    }
-    if (!branchId) {
-      toast.error(t('form.unableToDeterminePharmacy'));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // POST /orders — JSON body matching CreateOrderDto exactly
-      const orderPayload: any = {
-        pharmacyId,
-        branchId,
-        type: orderType,                // matches DTO field name: 'type'
-        paymentMethod,
-        items: items.map(i => ({
-          medicationId: i.medicationId,
-          quantity: i.quantity,
-        })),
-      };
-
-      if (orderType === 'DELIVERY') {
-        orderPayload.deliveryAddress = deliveryAddress;
-      }
-
-      if (prescriptionId) {
-        orderPayload.prescriptionId = prescriptionId;
-      }
-
-      const res = await api.post('/orders', orderPayload);
-      clearCart();
-      toast.success(t('success.orderPlaced'));
-      router.push(`/patient/orders/${res.data.id}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to place order');
+      setRecentOrders(orders.slice(0, 5));
+    } catch {
+      setStats({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
+      setRecentOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
-  if (items.length === 0) {
+  const loadMapPharmacies = async () => {
+    try {
+      const data = await fetchPharmacyLocations();
+      // Show only first 6 on dashboard preview
+      setMapPharmacies(data.slice(0, 6));
+    } catch {
+      setMapPharmacies([]);
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  const quickActions = [
+    {
+      title: 'Find Pharmacy & Medicine',
+      description: 'Browse pharmacies and search medications',
+      icon: MagnifyingGlassIcon,
+      href: '/patient/search',
+      bg: `linear-gradient(135deg, ${NAVY}, #1a3d6f)`,
+    },
+    {
+      title: 'View Orders',
+      description: 'Track your current and past orders',
+      icon: ClipboardDocumentListIcon,
+      href: '/patient/orders',
+      bg: `linear-gradient(135deg, ${TEAL}, #207a6c)`,
+    },
+    {
+      title: 'Shopping Cart',
+      description: 'Review items in your cart',
+      icon: ShoppingCartIcon,
+      href: '/patient/cart',
+      bg: `linear-gradient(135deg, ${NAVY}, ${TEAL})`,
+    },
+  ];
+
+  if (loading) {
     return (
-      <div className="space-y-6">
-      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
-        <h1 className="text-3xl font-bold">{t('checkout.title')}</h1>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
       </div>
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl m-6 shadow-sm p-12 text-center">
-        <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-        <p className="text-gray-800 dark:text-gray-200 text-lg font-semibold mb-4">{t('checkout2.cartEmpty')}</p>
-        <Link href="/patient/search">
-          <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md">{t('checkout2.browseMedications')}</button>
-        </Link>
-      </div>
-    </div>
-  );
+    );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-    <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-      <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
-      </button>
+    <div className="space-y-6">
+      {/* Welcome banner */}
+      <div
+        className="rounded-2xl shadow-xl p-8 text-white"
+        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
+      >
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('dashboard.welcomeBack')}</h1>
+        <p className="text-blue-100 text-lg">{t('dashboard.manageHealthcare')}</p>
+      </div>
 
-    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
-      <h1 className="text-3xl font-bold mb-1">{t('checkout.title')}</h1>
-      <p className="text-blue-100">{t('checkout.subtitle')}</p>
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* LEFT: Options */}
-        <div className="lg:col-span-2 space-y-5">
-
-        {/* Order Type (maps to DTO field: type) */}
-          <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.fulfillmentMethod')}</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {(['PICKUP', 'DELIVERY'] as const).map(type => (
-                <button key={type} onClick={() => setOrderType(type)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
-                <span className="text-3xl">{type === 'PICKUP' ? '' : ''}</span>
-                <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? 'Pickup' : 'Delivery'}</span>
-                <span className="text-xs text-gray-500">{type === 'PICKUP' ? 'Free' : '+1,000 RWF'}</span>
-              </button>
-            ))}
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: t('dashboard.totalOrders'), value: stats.totalOrders, emoji: '📦', color: NAVY },
+          { label: t('dashboard.completed'), value: stats.completedOrders, emoji: '✅', color: TEAL },
+          { label: t('dashboard.pending'), value: stats.pendingOrders, emoji: '⏰', color: NAVY },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">{s.label}</h3>
+              <span className="text-3xl">{s.emoji}</span>
             </div>
-          {orderType === 'DELIVERY' && (
-              <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.deliveryAddress')}</label>
-              <div className="relative">
-                <MapPinIcon className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <textarea value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm resize-none" rows={2}
-                    placeholder={t('checkout2.deliveryAddressPlaceholder')} />
-              </div>
-            </div>
-          )}
+            <p className="text-4xl font-bold" style={{ color: s.color }}>
+              {s.value}
+            </p>
           </div>
+        ))}
+      </div>
 
-        {/* Prescription Upload (if required) */}
-          {hasPrescription && (
-            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-6">
-            <h2 className="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
-              <DocumentTextIcon className="w-5 h-5 text-yellow-600" />
-              Prescription Required
-              </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              One or more items require a valid prescription. Please upload it before placing your order.
-              </p>
-
-            {!prescriptionUploaded ? (
-                <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.selectPrescriptionFile')}</label>
-                  <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={e => setPrescriptionFile(e.target.files?.[0] || null)}
-                      className="w-full text-sm border border-gray-300 rounded-lg p-2"
-                    />
-                  {prescriptionFile && (
-                      <p className="text-xs text-gray-500 mt-1">{prescriptionFile.name}</p>
-                  )}
-                  </div>
-                <button
-                    type="button"
-                    onClick={handleUploadPrescription}
-                    disabled={!prescriptionFile || uploadingPrescription}
-                    className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
-                  >
-                  {uploadingPrescription
-                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
-                    : ' Upload Prescription'}
-                  </button>
+      {/* Quick actions */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+          {t('dashboard.quickActions')}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {quickActions.map((action) => (
+            <Link key={action.href} href={action.href}>
+              <div
+                className="text-white p-8 rounded-2xl shadow-xl cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                style={{ background: action.bg }}
+              >
+                <action.icon className="w-12 h-12 mb-4 opacity-90" />
+                <h3 className="font-bold text-xl mb-2">{action.title}</h3>
+                <p className="text-sm opacity-90">{action.description}</p>
               </div>
-            ) : (
-                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <span className="text-green-600 text-xl"></span>
-                <div>
-                  <p className="text-sm font-semibold text-green-800">{t('checkout2.prescriptionUploaded')}</p>
-                  <p className="text-xs text-green-600">{prescriptionFile?.name}</p>
-                </div>
-                <button
-                    type="button"
-                    onClick={() => { setPrescriptionUploaded(false); setPrescriptionId(null); setPrescriptionFile(null); }}
-                    className="ml-auto text-xs text-gray-500 hover:text-red-500 underline"
-                  >
-                  Change
-                  </button>
-              </div>
-            )}
-            </div>
-        )}
-
-          {/* Payment Method */}
-          <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.paymentMethod')}</h2>
-          <div className="space-y-3">
-            {[
-                { value: 'MTN_MOMO', label: 'MTN Mobile Money', emoji: '' },
-                { value: 'AIRTEL_MONEY', label: 'Airtel Money', emoji: '' },
-                { value: 'CARD', label: 'Debit / Credit Card', emoji: '' },
-                { value: 'INSURANCE', label: 'Insurance', emoji: '' },
-              ].map(opt => (
-                <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
-                <input
-                    type="radio"
-                    name="payment"
-                    value={opt.value}
-                    checked={paymentMethod === (opt.value as any)}
-                    onChange={() => setPaymentMethod(opt.value as any)}
-                    className="text-teal-500"
-                  />
-                <span className="text-xl">{opt.emoji}</span>
-                <span className="text-sm font-medium text-gray-800">{opt.label}</span>
-              </label>
-            ))}
-            </div>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* RIGHT: Summary */}
-        <div>
-        <div className="bg-white rounded-2xl shadow p-6 sticky top-6">
-          <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.orderSummary')}</h2>
-          <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-            {items.map(item => (
-                <div key={item.medicationId} className="flex justify-between text-sm">
-                <span className="text-gray-700">{item.name} × {item.quantity}</span>
-                <span className="font-semibold text-gray-900">{(item.price * item.quantity).toLocaleString()} RWF</span>
-              </div>
-            ))}
-            </div>
-          <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>{t('cart.subtotal')}</span><span>{subtotal.toLocaleString()} RWF</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : 'Free'}</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>{t('cart.total')}</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
-            </div>
-          </div>
-          <button
-              onClick={handlePlaceOrder}
-              disabled={loading || (hasPrescription && !prescriptionId)}
-              className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
+      {/* ─── NEARBY PHARMACIES MAP SECTION ─── */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: `${TEAL}15` }}
             >
-            {loading
-                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>
-              : ' Place Order'}
-            </button>
-          {hasPrescription && !prescriptionId && (
-              <p className="text-xs text-yellow-600 mt-2 text-center"> Upload prescription to continue</p>
-          )}
+              <MapPinIcon className="w-6 h-6" style={{ color: TEAL }} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+                Nearby Pharmacies
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {mapPharmacies.length} pharmacies on the map
+              </p>
+            </div>
           </div>
+          <Link
+            href="/patient/search"
+            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
+            style={{ background: NAVY }}
+          >
+            View All →
+          </Link>
+        </div>
+
+        <div className="p-4" style={{ height: 380 }}>
+          {mapLoading ? (
+            <MapSkeleton />
+          ) : (
+            <MapView
+              pharmacies={mapPharmacies}
+              center={DEFAULT_CENTER}
+              zoom={DEFAULT_ZOOM}
+              selectedId={selectedId}
+              onSelectPharmacy={(p) => setSelectedId(p.id)}
+              onViewDetails={(id) => router.push(`/patient/pharmacies/${id}`)}
+              className="h-full rounded-xl"
+            />
+          )}
+        </div>
+
+        {/* Quick pharmacy chips below map */}
+        {!mapLoading && mapPharmacies.length > 0 && (
+          <div className="px-4 pb-4 flex gap-2 flex-wrap">
+            {mapPharmacies.slice(0, 5).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelectedId(p.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                  selectedId === p.id
+                    ? 'text-white border-transparent'
+                    : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-teal-400'
+                }`}
+                style={selectedId === p.id ? { background: TEAL, borderColor: TEAL } : {}}
+              >
+                {p.status === 'OPEN' ? '🟢' : '🔴'} {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Recent Orders */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {t('dashboard.recentOrders')}
+          </h2>
+          <Link href="/patient/orders" className="text-sm font-medium hover:underline" style={{ color: NAVY }}>
+            View All →
+          </Link>
+        </div>
+        {recentOrders.length > 0 ? (
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {recentOrders.map((order: any) => (
+              <Link key={order.id} href={`/patient/orders/${order.id}`}>
+                <div className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-gray-800 dark:text-gray-100">
+                        Order #{order.id.slice(0, 8)}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">{order.pharmacy?.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
+                          ['COMPLETED', 'DELIVERED'].includes(order.status)
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : order.status === 'CANCELLED'
+                            ? 'bg-red-50 text-red-600'
+                            : 'bg-blue-50 text-blue-700'
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                      <p className="text-sm text-gray-500 mt-1 font-medium">
+                        {order.total?.toLocaleString()} RWF
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 m-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+            <ClipboardDocumentListIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-700 dark:text-gray-200 text-lg font-semibold mb-1">
+              {t('dashboard.noOrdersYet')}
+            </p>
+            <p className="text-sm text-gray-400">{t('dashboard.startShopping')}</p>
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
 }
