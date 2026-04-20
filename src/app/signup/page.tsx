@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import LocationPicker from '@/components/shared/LocationPicker';
 import {
   EnvelopeIcon, LockClosedIcon, UserIcon, PhoneIcon,
   BuildingStorefrontIcon, EyeIcon, EyeSlashIcon,
@@ -30,13 +31,16 @@ export default function SignupPage() {
     checkAndSetDevMode();
   }, []);
 
-
+  // ── Patient form state ───────────────────────────────────────────────────
   const [patientForm, setPatientForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     password: '', confirmPassword: '', address: '',
     dateOfBirth: '', gender: 'MALE',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
   });
 
+  // ── Pharmacy form state ──────────────────────────────────────────────────
   const [pharmacyForm, setPharmacyForm] = useState({
     email: '', password: '', confirmPassword: '',
     pharmacyName: '', representativeName: '', phone: '',
@@ -44,8 +48,11 @@ export default function SignupPage() {
     rdbCertificate: '',
     pharmacyLicense: '',
     businessRegistration: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
   });
 
+  // ── Patient submit ───────────────────────────────────────────────────────
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (patientForm.password !== patientForm.confirmPassword) {
@@ -56,7 +63,13 @@ export default function SignupPage() {
     }
     setLoading(true);
     try {
-      const res = await api.post('/auth/register/patient', patientForm);
+      const payload = {
+        ...patientForm,
+        // Only include lat/lng if the user actually pinned a location
+        latitude: patientForm.latitude,
+        longitude: patientForm.longitude,
+      };
+      const res = await api.post('/auth/register/patient', payload);
       toast.success(res.data.message || t('signup.accountCreated'));
       router.push(`/verify-email?email=${encodeURIComponent(patientForm.email)}`);
     } catch (err: any) {
@@ -64,6 +77,7 @@ export default function SignupPage() {
     } finally { setLoading(false); }
   };
 
+  // ── Pharmacy submit ──────────────────────────────────────────────────────
   const handlePharmacySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pharmacyForm.password !== pharmacyForm.confirmPassword) {
@@ -71,6 +85,11 @@ export default function SignupPage() {
     }
     if (!pharmacyForm.rdbCertificate || !pharmacyForm.pharmacyLicense || !pharmacyForm.businessRegistration) {
       toast.error(t('signup.fillDocuments')); return;
+    }
+    // Coordinates are required for pharmacies
+    if (pharmacyForm.latitude === undefined || pharmacyForm.longitude === undefined) {
+      toast.error('Please pin your pharmacy location on the map before submitting.');
+      return;
     }
     setLoading(true);
     try {
@@ -151,9 +170,12 @@ export default function SignupPage() {
           )}
         </div>
 
-
         {/* Scrollable form */}
         <div className="flex-1 overflow-y-auto px-8 pb-8">
+
+          {/* ═══════════════════════════════════════════════════════════════
+              PATIENT FORM
+          ═══════════════════════════════════════════════════════════════ */}
           {role === 'PATIENT' ? (
             <form onSubmit={handlePatientSubmit} className="space-y-4 max-w-lg">
               <div className="grid grid-cols-2 gap-4">
@@ -176,6 +198,7 @@ export default function SignupPage() {
                   </div>
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.email')}</label>
                 <div className="relative">
@@ -185,6 +208,7 @@ export default function SignupPage() {
                     className={inputCls} placeholder="you@example.com" />
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.phone')}</label>
                 <div className="relative">
@@ -194,6 +218,7 @@ export default function SignupPage() {
                     className={inputCls} placeholder="+250 7XX XXX XXX" />
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>{t('signup.dateOfBirth')}</label>
@@ -212,6 +237,8 @@ export default function SignupPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Text address */}
               <div>
                 <label className={labelCls}>{t('signup.address')}</label>
                 <div className="relative">
@@ -221,6 +248,17 @@ export default function SignupPage() {
                     className={`${inputCls} resize-none`} rows={2} placeholder={t('signup.yourAddress')} />
                 </div>
               </div>
+
+              {/* Map picker — optional for patients */}
+              <LocationPicker
+                latitude={patientForm.latitude}
+                longitude={patientForm.longitude}
+                onChange={(lat, lng) => setPatientForm(f => ({ ...f, latitude: lat, longitude: lng }))}
+                required={false}
+                label="Pin Your Home Location (optional)"
+                height="260px"
+              />
+
               <div>
                 <label className={labelCls}>{t('signup.password')}</label>
                 <div className="relative">
@@ -235,6 +273,7 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.confirmPassword')}</label>
                 <div className="relative">
@@ -249,22 +288,29 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
+
               <button type="submit" disabled={loading}
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading
                   ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> {t('auth.creatingAccount')}</span>
                   : t('signup.createAccount')}
               </button>
+
               <p className="text-center text-sm text-gray-600">
                 {t('auth.alreadyHaveAccount')}{' '}
                 <Link href="/login" className="text-teal-600 font-semibold hover:underline">{t('auth.signIn')}</Link>
               </p>
             </form>
+
           ) : (
+          /* ═══════════════════════════════════════════════════════════════
+              PHARMACY FORM
+          ═══════════════════════════════════════════════════════════════ */
             <form onSubmit={handlePharmacySubmit} className="space-y-4 max-w-lg">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
                 ℹ {t('signup.applicationNotice')}
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.pharmacyName')}</label>
                 <div className="relative">
@@ -274,6 +320,7 @@ export default function SignupPage() {
                     className={inputCls} placeholder={t('signup.pharmacyNamePlaceholder')} />
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.representativeName')}</label>
                 <div className="relative">
@@ -283,6 +330,7 @@ export default function SignupPage() {
                     className={inputCls} placeholder={t('signup.representativeNamePlaceholder')} />
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>{t('signup.email')}</label>
@@ -303,6 +351,7 @@ export default function SignupPage() {
                   </div>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>{t('signup.dateOfIncorporation')}</label>
@@ -320,44 +369,54 @@ export default function SignupPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Map picker — REQUIRED for pharmacies */}
+              <LocationPicker
+                latitude={pharmacyForm.latitude}
+                longitude={pharmacyForm.longitude}
+                onChange={(lat, lng) => setPharmacyForm(f => ({ ...f, latitude: lat, longitude: lng }))}
+                required={true}
+                label="Pin Pharmacy Location on Map"
+                height="300px"
+              />
+
               {/* Documents */}
-              <div className="space-y-3">
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>
-                      {t('signup.rdbCertificateNumber')} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="text" required value={pharmacyForm.rdbCertificate}
-                        onChange={e => setPharmacyForm({...pharmacyForm, rdbCertificate: e.target.value})}
-                        className={inputCls} placeholder={t('signup.rdbCertificatePlaceholder')} />
-                    </div>
+              <div className="space-y-4">
+                <div>
+                  <label className={labelCls}>
+                    {t('signup.rdbCertificateNumber')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.rdbCertificate}
+                      onChange={e => setPharmacyForm({...pharmacyForm, rdbCertificate: e.target.value})}
+                      className={inputCls} placeholder={t('signup.rdbCertificatePlaceholder')} />
                   </div>
-                  <div>
-                    <label className={labelCls}>
-                      {t('signup.pharmacyLicenseNumber')} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="text" required value={pharmacyForm.pharmacyLicense}
-                        onChange={e => setPharmacyForm({...pharmacyForm, pharmacyLicense: e.target.value})}
-                        className={inputCls} placeholder={t('signup.pharmacyLicensePlaceholder')} />
-                    </div>
+                </div>
+                <div>
+                  <label className={labelCls}>
+                    {t('signup.pharmacyLicenseNumber')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.pharmacyLicense}
+                      onChange={e => setPharmacyForm({...pharmacyForm, pharmacyLicense: e.target.value})}
+                      className={inputCls} placeholder={t('signup.pharmacyLicensePlaceholder')} />
                   </div>
-                  <div>
-                    <label className={labelCls}>
-                      {t('signup.businessRegistrationNumber')} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <BuildingStorefrontIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="text" required value={pharmacyForm.businessRegistration}
-                        onChange={e => setPharmacyForm({...pharmacyForm, businessRegistration: e.target.value})}
-                        className={inputCls} placeholder={t('signup.businessRegistrationPlaceholder')} />
-                    </div>
+                </div>
+                <div>
+                  <label className={labelCls}>
+                    {t('signup.businessRegistrationNumber')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <BuildingStorefrontIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={pharmacyForm.businessRegistration}
+                      onChange={e => setPharmacyForm({...pharmacyForm, businessRegistration: e.target.value})}
+                      className={inputCls} placeholder={t('signup.businessRegistrationPlaceholder')} />
                   </div>
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.password')}</label>
                 <div className="relative">
@@ -372,6 +431,7 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
+
               <div>
                 <label className={labelCls}>{t('signup.confirmPassword')}</label>
                 <div className="relative">
@@ -386,12 +446,14 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
+
               <button type="submit" disabled={loading}
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50">
                 {loading
                   ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> {t('auth.submitting')}</span>
                   : t('auth.submitApplication')}
               </button>
+
               <p className="text-center text-sm text-gray-600">
                 {t('auth.alreadyRegistered')}{' '}
                 <Link href="/login" className="text-teal-600 font-semibold hover:underline">{t('auth.signIn')}</Link>
