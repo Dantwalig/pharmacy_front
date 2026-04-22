@@ -61,6 +61,10 @@ export default function SignupPage() {
     if (patientForm.password.length < 8) {
       toast.error(t('signup.passwordTooShort')); return;
     }
+    if (patientForm.latitude === undefined || patientForm.longitude === undefined) {
+      toast.error('Please pin your home location on the map before submitting.');
+      return;
+    }
     setLoading(true);
     try {
       const payload = {
@@ -254,8 +258,8 @@ export default function SignupPage() {
                 latitude={patientForm.latitude}
                 longitude={patientForm.longitude}
                 onChange={(lat, lng) => setPatientForm(f => ({ ...f, latitude: lat, longitude: lng }))}
-                required={false}
-                label="Pin Your Home Location (optional)"
+                required={true}
+                label="Pin Your Home Location"
                 height="260px"
               />
 
