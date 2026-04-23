@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut, X, BarChart2, Package, ArrowLeftRight } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut, X, BarChart2, Package, ArrowLeftRight, Map } from 'lucide-react';
 
 interface BranchSidebarProps {
   open?: boolean;
@@ -20,6 +20,7 @@ export default function BranchSidebar({ open = false, onClose }: BranchSidebarPr
     { href: '/branch/analytics',       icon: BarChart2,       label: t('branch.analytics') },
     { href: '/branch/inventory',       icon: Package,         label: t('branch.inventory') },
     { href: '/branch/transfers',       icon: ArrowLeftRight,  label: t('branch.transfers') },
+    { href: '/branch/map',             icon: Map,             label: 'Network Map' },
     { href: '/branch/change-password', icon: Lock,            label: t('branch.changePassword') },
   ];
 
