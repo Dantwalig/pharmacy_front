@@ -14,11 +14,13 @@ import {
   ArrowRightOnRectangleIcon,
   BuildingStorefrontIcon,
   XMarkIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
   { id: 'dashboard', nameKey: 'patient.dashboard', href: '/patient/dashboard', icon: HomeIcon },
   { id: 'search', nameKey: 'Find Pharmacy & Medicine', href: '/patient/search', icon: MagnifyingGlassIcon },
+  { id: 'pharmacies-map', nameKey: 'Pharmacy Map', href: '/patient/search', icon: MapPinIcon },
   { id: 'cart', nameKey: 'cart.title', href: '/patient/cart', icon: ShoppingCartIcon },
   { id: 'orders', nameKey: 'patient.myOrders', href: '/patient/orders', icon: ClipboardDocumentListIcon },
   { id: 'notifications', nameKey: 'common.notifications', href: '/patient/notifications', icon: BellIcon },

@@ -10,6 +10,7 @@ import {
   ChartBarIcon,
   ShieldCheckIcon,
   XMarkIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 
 interface SuperAdminSidebarProps {
@@ -26,6 +27,7 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
     { name: t('superAdmin.pharmacies'), href: '/super-admin/pharmacies', icon: BuildingStorefrontIcon },
     { name: t('superAdmin.patients'),   href: '/super-admin/patients',   icon: UserGroupIcon },
     { name: t('superAdmin.analytics'),  href: '/super-admin/analytics',  icon: ChartBarIcon },
+    { name: 'Pharmacy Map',             href: '/super-admin/map',        icon: MapPinIcon },
   ];
 
   return (
