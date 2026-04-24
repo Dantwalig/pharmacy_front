@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import LocationPicker from '@/components/shared/LocationPicker';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -18,6 +19,8 @@ import {
   ClockIcon,
   ShoppingCartIcon,
   ArchiveBoxIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -38,6 +41,7 @@ export default function SuperAdminPharmacyDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // Opens a document URL safely — handles both data URIs (DB storage) and HTTP URLs (legacy S3)
   const openDocument = (url: string) => {
@@ -102,6 +106,19 @@ export default function SuperAdminPharmacyDetailPage() {
       toast.error(err.response?.data?.message || 'Failed to reject');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleVerifyLocation = async (verified: boolean) => {
+    setLocationLoading(true);
+    try {
+      await api.patch(`/super-admin/pharmacies/${params.id}/verify-location`, { verified });
+      toast.success(verified ? 'Location marked as verified.' : 'Location flagged as unverified.');
+      fetchPharmacy();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update location status.');
+    } finally {
+      setLocationLoading(false);
     }
   };
 
@@ -289,6 +306,100 @@ export default function SuperAdminPharmacyDetailPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Location Verification Card */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="font-bold text-sm uppercase tracking-wide flex items-center gap-2" style={{ color: NAVY }}>
+            <MapPinIcon className="w-4 h-4" />
+            Location Verification
+          </h2>
+
+          {/* Verification status badge */}
+          {pharmacy.isLocationVerified ? (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
+              <ShieldCheckIcon className="w-3.5 h-3.5" /> Location Verified
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+              <ExclamationTriangleIcon className="w-3.5 h-3.5" /> Not Yet Verified
+            </span>
+          )}
+        </div>
+
+        {/* Instruction */}
+        <p className="text-xs text-gray-500">
+          Review the map pin below against the submitted text address. Verify if the coordinates are authentic and match the stated location.
+        </p>
+
+        {/* Submitted text address for reference */}
+        <div className="flex items-start gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+          <MapPinIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Submitted Address</p>
+            <p className="text-sm text-gray-800">{pharmacy.address || '—'}</p>
+          </div>
+        </div>
+
+        {/* Map preview — read-only (no onChange needed, but LocationPicker requires it) */}
+        {pharmacy.latitude && pharmacy.longitude ? (
+          <>
+            <LocationPicker
+              latitude={pharmacy.latitude}
+              longitude={pharmacy.longitude}
+              onChange={() => {/* read-only view */}}
+              label="Submitted GPS Coordinates"
+              height="280px"
+            />
+
+            {/* Coordinate values */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs text-gray-400 mb-0.5">Latitude</p>
+                <p className="font-mono font-semibold text-gray-800">{pharmacy.latitude}</p>
+              </div>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs text-gray-400 mb-0.5">Longitude</p>
+                <p className="font-mono font-semibold text-gray-800">{pharmacy.longitude}</p>
+              </div>
+            </div>
+
+            {/* Verify / Flag buttons */}
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => handleVerifyLocation(true)}
+                disabled={locationLoading || pharmacy.isLocationVerified}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+                style={{ backgroundColor: TEAL }}
+              >
+                <ShieldCheckIcon className="w-4 h-4" />
+                {pharmacy.isLocationVerified ? 'Already Verified' : 'Verify Location'}
+              </button>
+              <button
+                onClick={() => handleVerifyLocation(false)}
+                disabled={locationLoading || !pharmacy.isLocationVerified}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-all"
+              >
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                Flag as Unverified
+              </button>
+            </div>
+
+            {pharmacy.locationVerifiedAt && (
+              <p className="text-xs text-gray-400">
+                Last verified: {new Date(pharmacy.locationVerifiedAt).toLocaleString()}
+              </p>
+            )}
+          </>
+        ) : (
+          <div className="flex items-center gap-3 px-4 py-4 rounded-xl border border-amber-100 bg-amber-50">
+            <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-700">
+              This pharmacy did not submit GPS coordinates. Location verification is not possible until coordinates are provided.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Submitted Documents */}
