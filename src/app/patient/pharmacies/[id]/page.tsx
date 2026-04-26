@@ -102,7 +102,7 @@ export default function PharmacyDetailsPage() {
   );
   }
 
-  const filteredMedications = pharmacy.medications.filter((med) => {
+  const filteredMedications = (pharmacy.medications || []).filter((med) => {
     const matchesSearch =
       med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       med.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -110,7 +110,7 @@ export default function PharmacyDetailsPage() {
     return matchesSearch && matchesCategory && med.quantity > 0;
   });
 
-  const categories = ['ALL', ...new Set(pharmacy.medications.map((med) => med.category))];
+  const categories = ['ALL', ...new Set((pharmacy.medications || []).map((med) => med.category))];
 
   return (
     <div className="flex-1 p-6 overflow-auto">
