@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useAuth } from '@/context/AuthContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -27,10 +28,16 @@ const FDA_CATEGORIES = [
 export default function StaffAddMedicationPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [branchName, setBranchName] = useState('');
   const [branchId, setBranchId] = useState('');
   const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role === 'CASHIER') router.replace('/staff/inventory');
+  }, [user, router]);
+  if (user?.role === 'CASHIER') return null;
 
   const [form, setForm] = useState({
     name: '', category: FDA_CATEGORIES[0], chemicalName: '', description: '',
