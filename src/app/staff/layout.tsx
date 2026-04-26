@@ -38,7 +38,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   if (isStandalone) return <>{children}</>;
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50">
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
