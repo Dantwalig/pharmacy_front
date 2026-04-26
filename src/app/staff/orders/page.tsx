@@ -6,6 +6,8 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
+import CashierOrdersView from '@/components/staff/CashierOrdersView';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -48,6 +50,9 @@ function fmt(n: number) {
 
 export default function StaffOrdersPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isCashier = user?.role === 'CASHIER';
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -90,6 +95,8 @@ export default function StaffOrdersPage() {
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   const statusFilters = ['all', 'PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'];
+
+  if (isCashier) return <CashierOrdersView orders={orders as any} loading={loading} />;
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
