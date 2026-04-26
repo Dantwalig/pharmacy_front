@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -33,6 +34,8 @@ const FDA_CATEGORIES = [
 export default function StaffInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
+  const isCashier = user?.role === 'CASHIER';
   const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW' | 'OUT'>('ALL');
@@ -134,11 +137,13 @@ export default function StaffInventoryPage() {
           ))}
         </div>
 
-        <button onClick={() => router.push('/staff/inventory/add')}
-          className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0"
-          style={{ backgroundColor: TEAL }}>
-          <PlusIcon className="w-4 h-4" /> Add Medication
-        </button>
+        {!isCashier && (
+          <button onClick={() => router.push('/staff/inventory/add')}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0"
+            style={{ backgroundColor: TEAL }}>
+            <PlusIcon className="w-4 h-4" /> Add Medication
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -156,7 +161,7 @@ export default function StaffInventoryPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Medication', 'Category', 'Price', 'Quantity', 'Threshold', 'Prescription', 'Status', 'Actions'].map(h => (
+                  {['Medication', 'Category', 'Price', 'Quantity', 'Threshold', 'Prescription', 'Status', ...(isCashier ? [] : ['Actions'])].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -187,13 +192,15 @@ export default function StaffInventoryPage() {
                         : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
                     </td>
                     <td className="px-4 py-3">{stockBadge(med)}</td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
-                        style={{ backgroundColor: '#F0F7F6', color: TEAL }}>
-                        <PencilIcon className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    </td>
+                    {!isCashier && (
+                      <td className="px-4 py-3">
+                        <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: '#F0F7F6', color: TEAL }}>
+                          <PencilIcon className="w-3.5 h-3.5" /> Edit
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
