@@ -6,7 +6,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
-import { ClockIcon, CheckCircleIcon, ShoppingCartIcon, CurrencyDollarIcon, PresentationChartLineIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, ShoppingCartIcon, CurrencyDollarIcon, PresentationChartLineIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 const NAVY = '#1E4D8C';
@@ -41,6 +41,7 @@ const STATUS_INFO: Record<string, { label: string; color: string; dot: string }>
 export default function StaffDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const isCashier = user?.role === 'CASHIER';
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,16 +190,27 @@ export default function StaffDashboardPage() {
             </div>
           </Link>
 
-          {/* Quick Action 2 */}
-          <Link href="/staff/prescriptions" className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform" style={{ backgroundColor: '#F0F7F6' }}>
-              <DocumentTextIcon className="w-6 h-6" style={{ color: TEAL }} />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{t('dashboard.rxCheck')}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.viewPrescriptions')}</p>
-            </div>
-          </Link>
+          {isCashier ? (
+            <Link href="/staff/orders" className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform" style={{ backgroundColor: '#F0F7F6' }}>
+                <CreditCardIcon className="w-6 h-6" style={{ color: TEAL }} />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{t('dashboard.processPayments')}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.processPaymentsSubtitle')}</p>
+              </div>
+            </Link>
+          ) : (
+            <Link href="/staff/prescriptions" className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform" style={{ backgroundColor: '#F0F7F6' }}>
+                <DocumentTextIcon className="w-6 h-6" style={{ color: TEAL }} />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{t('dashboard.rxCheck')}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.viewPrescriptions')}</p>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
 
