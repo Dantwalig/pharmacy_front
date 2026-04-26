@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useAuth } from '@/context/AuthContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -28,10 +29,16 @@ export default function StaffEditMedicationPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [med, setMed] = useState<any>(null);
   const [form, setForm] = useState<any>({});
+
+  useEffect(() => {
+    if (user?.role === 'CASHIER') router.replace('/staff/inventory');
+  }, [user, router]);
+  if (user?.role === 'CASHIER') return null;
 
   useEffect(() => { fetchMedication(); }, [params.id]);
 
