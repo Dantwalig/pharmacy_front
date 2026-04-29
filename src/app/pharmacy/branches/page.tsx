@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, X } from 'lucide-react';
 import { api } from '@/lib/api';
+import dynamic from 'next/dynamic';
+
+const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -16,7 +19,7 @@ export default function BranchManagementPage() {
   const [search, setSearch]     = useState('');
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm]          = useState({ name: '', address: '', branchManagerEmail: '' });
+  const [form, setForm]          = useState({ name: '', address: '', branchManagerEmail: '', latitude: undefined as number | undefined, longitude: undefined as number | undefined });
   const [submitting, setSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [createError, setCreateError] = useState('');
@@ -48,7 +51,7 @@ export default function BranchManagementPage() {
     try {
       await api.post('/branches/create', form);
       setShowModal(false);
-      setForm({ name: '', address: '', branchManagerEmail: '' });
+      setForm({ name: '', address: '', branchManagerEmail: '', latitude: undefined, longitude: undefined });
       setCreateSuccess('Branch added successfully.');
       setTimeout(() => setCreateSuccess(''), 4000);
       load(true);
@@ -170,7 +173,7 @@ export default function BranchManagementPage() {
     {/* Add Branch Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-bold text-gray-900">{t('pharmacyOwner.addBranch')}</h2>
             <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -201,13 +204,22 @@ export default function BranchManagementPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Manager Email *
-                </label>
+              </label>
               <input
-                  value={form.branchManagerEmail}
-                  onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-                />
+                value={form.branchManagerEmail}
+                onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+              />
             </div>
+
+            <LocationPicker
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onChange={(lat, lng) => setForm(f => ({ ...f, latitude: lat, longitude: lng }))}
+              required={true}
+              label="Pin Branch Location"
+              height="240px"
+            />
           </div>
           {createError && (
               <p className="mt-4 text-sm" style={{ color: '#92400E' }}>{createError}</p>
@@ -221,7 +233,7 @@ export default function BranchManagementPage() {
               </button>
             <button
                 onClick={handleAdd}
-                disabled={submitting || !form.name || !form.address || !form.branchManagerEmail}
+                disabled={submitting || !form.name || !form.address || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
                 style={{ backgroundColor: TEAL }}
               >
