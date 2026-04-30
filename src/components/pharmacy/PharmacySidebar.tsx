@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard, ClipboardList, GitBranch, Users, User,
-  HelpCircle, LogOut, BarChart2, Package, Bell, X, Lock,
+  HelpCircle, LogOut, BarChart2, Package, Bell, X, Lock, Map,
 } from 'lucide-react';
 import { isPatientEnabled } from '@/lib/features';
 
@@ -23,10 +23,10 @@ export default function PharmacySidebar({ onOpenSupport, open = false, onClose }
     { href: '/pharmacy/dashboard',     icon: LayoutDashboard, label: t('pharmacyOwner.dashboard') },
     { href: '/pharmacy/orders',        icon: ClipboardList,   label: t('pharmacyOwner.orderOverview') },
     { href: '/pharmacy/branches',      icon: GitBranch,       label: t('pharmacyOwner.branchManagement') },
+    { href: '/pharmacy/map',           icon: Map,             label: 'Branch Map' },
     { href: '/pharmacy/inventory',     icon: Package,         label: t('pharmacyOwner.inventory') },
     { href: '/pharmacy/patients',      icon: Users,           label: t('pharmacyOwner.patients') + (isPatientEnabled() ? '' : ' (Soon)') },
     { href: '/pharmacy/analytics',     icon: BarChart2,       label: t('pharmacyOwner.analytics') },
-
     { href: '/pharmacy/notifications', icon: Bell,            label: t('pharmacyOwner.notifications') },
     { href: '/pharmacy/profile',       icon: User,            label: t('pharmacyOwner.profile') },
   ];
@@ -67,7 +67,6 @@ export default function PharmacySidebar({ onOpenSupport, open = false, onClose }
                 <Lock size={14} className="text-white/40" />
               )}
             </Link>
-
           );
         })}
       </nav>
