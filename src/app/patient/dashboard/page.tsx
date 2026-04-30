@@ -7,12 +7,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 import {
-  MagnifyingGlassIcon,
-  ClipboardDocumentListIcon,
   ShoppingCartIcon,
   MapPinIcon,
+  BoltIcon,
+  CheckCircleIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { fetchPharmacyLocations } from '@/services/pharmacies';
@@ -28,9 +30,18 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good Morning';
+  if (h < 17) return 'Good Afternoon';
+  return 'Good Evening';
+};
+
 export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
+  const firstName = (user as any)?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
 
   const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
@@ -82,25 +93,31 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: 'Find Pharmacy & Medicine',
-      description: 'Browse pharmacies and search medications',
-      icon: MagnifyingGlassIcon,
-      href: '/patient/search',
-      bg: `linear-gradient(135deg, ${NAVY}, #1a3d6f)`,
-    },
-    {
-      title: 'View Orders',
-      description: 'Track your current and past orders',
-      icon: ClipboardDocumentListIcon,
-      href: '/patient/orders',
-      bg: `linear-gradient(135deg, ${TEAL}, #207a6c)`,
-    },
-    {
       title: 'Shopping Cart',
-      description: 'Review items in your cart',
+      description: 'Review your pending medical items and proceed to checkout.',
       icon: ShoppingCartIcon,
       href: '/patient/cart',
-      bg: `linear-gradient(135deg, ${NAVY}, ${TEAL})`,
+      color: '#1E4D8C',
+      cardBg: '#EBF5FF',
+      iconBg: '#BFDBFE',
+    },
+    {
+      title: 'Active Orders',
+      description: `You have ${stats.pendingOrders} pending order${stats.pendingOrders !== 1 ? 's' : ''} out for delivery.`,
+      icon: BoltIcon,
+      href: '/patient/orders',
+      color: '#D97706',
+      cardBg: '#FFFBEB',
+      iconBg: '#FDE68A',
+    },
+    {
+      title: 'Completed',
+      description: `View history of your past ${stats.completedOrders} completed orders.`,
+      icon: CheckCircleIcon,
+      href: '/patient/orders?status=completed',
+      color: '#059669',
+      cardBg: '#F0FDF4',
+      iconBg: '#BBF7D0',
     },
   ];
 
@@ -114,56 +131,64 @@ export default function PatientDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome banner */}
-      <div
-        className="rounded-2xl shadow-xl p-8 text-white"
-        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
-      >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('dashboard.welcomeBack')}</h1>
-        <p className="text-blue-100 text-lg">{t('dashboard.manageHealthcare')}</p>
-      </div>
+      {/* Welcome hero banner */}
+      <div className="rounded-2xl px-12 py-30 relative overflow-hidden" style={{ background: '#EBF5FF' }}>
+        {/* Decorative heartbeat watermark */}
+        <svg
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]"
+          viewBox="0 0 320 140"
+          fill="none"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <polyline
+            points="0,70 55,70 80,15 108,125 135,30 162,105 188,70 320,70"
+            stroke="#1E4D8C" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: t('dashboard.totalOrders'), value: stats.totalOrders, emoji: '📦', color: NAVY },
-          { label: t('dashboard.completed'), value: stats.completedOrders, emoji: '✅', color: TEAL },
-          { label: t('dashboard.pending'), value: stats.pendingOrders, emoji: '⏰', color: NAVY },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+        <div className="relative z-10">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-3" style={{ color: NAVY }}>
+            {getGreeting()},<br />{firstName}.
+          </h1>
+          <p className="text-gray-500 text-lg mb-7">Your health metrics are looking excellent today.</p>
+          <Link
+            href="/patient/search"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90"
+            style={{ background: TEAL }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">{s.label}</h3>
-              <span className="text-3xl">{s.emoji}</span>
-            </div>
-            <p className="text-4xl font-bold" style={{ color: s.color }}>
-              {s.value}
-            </p>
-          </div>
-        ))}
+            <MapPinIcon className="w-5 h-5" />
+            Browse Nearby Pharmacies
+          </Link>
+        </div>
       </div>
 
       {/* Quick actions */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-          {t('dashboard.quickActions')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {quickActions.map((action) => (
-            <Link key={action.href} href={action.href}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+        {quickActions.map((action) => (
+          <Link key={action.href} href={action.href} className="flex">
+            <div
+              className="flex flex-col items-center text-center rounded-2xl px-8 pt-14 pb-8 w-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              style={{
+                background: action.cardBg,
+                borderBottom: `4px solid ${action.color}`,
+              }}
+            >
+              {/* Icon container */}
               <div
-                className="text-white p-8 rounded-2xl shadow-xl cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-                style={{ background: action.bg }}
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5  -translate-y-5"
+                style={{ background: action.iconBg }}
               >
-                <action.icon className="w-12 h-12 mb-4 opacity-90" />
-                <h3 className="font-bold text-xl mb-2">{action.title}</h3>
-                <p className="text-sm opacity-90">{action.description}</p>
+                <action.icon className="w-8 h-8" style={{ color: action.color }} />
               </div>
-            </Link>
-          ))}
-        </div>
+
+              {/* Text */}
+              <h3 className="font-bold text-2xl mb-3" style={{ color: action.color }}>
+                {action.title}
+              </h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{action.description}</p>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* ─── NEARBY PHARMACIES MAP SECTION ─── */}
@@ -232,52 +257,85 @@ export default function PatientDashboard() {
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            {t('dashboard.recentOrders')}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
+            Recent Medical Orders
           </h2>
-          <Link href="/patient/orders" className="text-sm font-medium hover:underline" style={{ color: NAVY }}>
-            View All →
+          <Link
+            href="/patient/orders"
+            className="font-semibold text-sm flex items-center gap-1 hover:underline"
+            style={{ color: NAVY }}
+          >
+            View All <span className="text-base">›</span>
           </Link>
         </div>
+
         {recentOrders.length > 0 ? (
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {recentOrders.map((order: any) => (
-              <Link key={order.id} href={`/patient/orders/${order.id}`}>
-                <div className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-gray-800 dark:text-gray-100">
-                        Order #{order.id.slice(0, 8)}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">{order.pharmacy?.name}</p>
+          <div className="flex flex-col" style={{ gap: '20px' }}>
+            {recentOrders.map((order: any) => {
+              const firstItem = order.items?.[0] ?? order.orderItems?.[0];
+              const medName = firstItem?.medication?.name ?? 'Medication';
+              const medImage = firstItem?.medication?.imageUrl;
+              const pharmacyName = order.pharmacy?.name ?? '—';
+              const branchName = order.branch?.name ?? '';
+
+              const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
+                PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+                ACCEPTED:  { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+                PREPARING: { bg: '#FEF3C7', color: '#D97706', dot: '#F59E0B' },
+                COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
+                DELIVERED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
+                CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
+              };
+              const s = statusMap[order.status] ?? statusMap.PENDING;
+
+              return (
+                <Link key={order.id} href={`/patient/orders/${order.id}`}>
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5 hover:shadow-md transition-all cursor-pointer">
+                    {/* Medication image */}
+                    <div
+                      className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
+                      style={{ background: '#F0F7FF' }}
+                    >
+                      {medImage ? (
+                        <img src={medImage} alt={medName} className="w-full h-full object-contain p-2" />
+                      ) : (
+                        <ShoppingCartIcon className="w-8 h-8 text-blue-300" />
+                      )}
                     </div>
-                    <div className="text-right">
-                      <span
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
-                          ['COMPLETED', 'DELIVERED'].includes(order.status)
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : order.status === 'CANCELLED'
-                            ? 'bg-red-50 text-red-600'
-                            : 'bg-blue-50 text-blue-700'
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                      <p className="text-sm text-gray-500 mt-1 font-medium">
+
+                    {/* Order info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}</p>
+                      <p className="font-semibold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {pharmacyName}{branchName ? ` • ${branchName}` : ''}
+                      </p>
+                    </div>
+
+                    {/* Price + status */}
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-gray-900 text-lg">
                         {order.total?.toLocaleString()} RWF
                       </p>
+                      <span
+                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase"
+                        style={{ background: s.bg, color: s.color }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
+                        {order.status}
+                      </span>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-12 m-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
             <ClipboardDocumentListIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-700 dark:text-gray-200 text-lg font-semibold mb-1">
+            <p className="text-gray-700 text-lg font-semibold mb-1">
               {t('dashboard.noOrdersYet')}
             </p>
             <p className="text-sm text-gray-400">{t('dashboard.startShopping')}</p>
