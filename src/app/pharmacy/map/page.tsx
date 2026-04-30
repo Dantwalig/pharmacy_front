@@ -274,7 +274,7 @@ export default function PharmacyMapPage() {
                     key={b.id}
                     branch={b}
                     active={selectedBranch?.id === b.id}
-                    onClick={() => setSelectedBranch(prev => prev?.id === b.id ? null : b)}
+                    onClick={() => setSelectedBranch((prev: any) => prev?.id === b.id ? null : b)}
                   />
                 ))
               )}
