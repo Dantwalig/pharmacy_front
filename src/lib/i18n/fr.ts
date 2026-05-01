@@ -946,6 +946,7 @@ export const fr = {
     getBackSoon: 'Nous vous répondrons dès que possible.',
     fullName: 'Nom complet',
     emailAddress: 'Adresse email',
+    phoneNumber: "Numéro de téléphone",
     describeIssue: 'Décrivez votre problème',
     describeIssuePlaceholder: 'Dites-nous comment nous pouvons vous aider...',
   },

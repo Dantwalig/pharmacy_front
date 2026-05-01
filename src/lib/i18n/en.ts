@@ -948,6 +948,7 @@ export const en = {
     getBackSoon: "We'll get back to you as soon as possible.",
     fullName: 'Full Name',
     emailAddress: 'Email Address',
+    phoneNumber: "Phone Number",
     describeIssue: 'Describe Your Issue',
     describeIssuePlaceholder: 'Tell us what you need help with...',
   },

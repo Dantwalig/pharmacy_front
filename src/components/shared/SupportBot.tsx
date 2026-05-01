@@ -13,7 +13,7 @@ interface SupportBotProps {
 export default function SupportBot({ open: openProp, onOpen, onClose }: SupportBotProps) {
   const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', issue: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', issue: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -28,7 +28,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
       setIsSubmitting(false);
       setSubmitSuccess(true);
       setTimeout(() => {
-        setFormData({ name: '', email: '', issue: '' });
+        setFormData({ name: '', email: '', phone: '', issue: '' });
         setSubmitSuccess(false);
         handleClose();
       }, 2000);
@@ -114,6 +114,17 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                       onChange={handleChange} required
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                       placeholder={t('form.email')}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="support-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('supportBot.phoneNumber')}
+                    </label>
+                    <input
+                      type="tel" id="support-phone" name="phone" value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                      placeholder={t('form.phone')}
                     />
                   </div>
                   <div>
