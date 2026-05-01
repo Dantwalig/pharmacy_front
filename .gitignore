@@ -44,6 +44,7 @@ next-env.d.ts
 .claude/
 skills.md
 strategy.md
+i18n_audit_report.md
 
 # personal reference screenshots (kept locally, not tracked)
 /public/processes-assigned to cashier.png
