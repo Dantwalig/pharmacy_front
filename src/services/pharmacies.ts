@@ -18,9 +18,9 @@ export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
     const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
     return res.data.pharmacies;
-  } catch {
-    // Endpoint not yet available — fall back to mock data so the map renders
-    return MOCK_PHARMACIES;
+  } catch (error) {
+    console.error('Error fetching global locations:', error);
+    return []; // No more mock data
   }
 }
 
