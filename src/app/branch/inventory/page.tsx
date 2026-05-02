@@ -137,10 +137,10 @@ export default function BranchInventoryPage() {
       {backendReady && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Items',  value: summaryStats.total,      color: NAVY },
-            { label: 'Categories',   value: summaryStats.categories,  color: TEAL },
-            { label: 'Low Stock',    value: summaryStats.lowStock,    color: '#92400E' },
-            { label: 'Out of Stock', value: summaryStats.outOfStock,  color: '#991B1B' },
+            { label: t('inventory.totalItems'),  value: summaryStats.total,      color: NAVY },
+            { label: t('inventory.categories'),  value: summaryStats.categories,  color: TEAL },
+            { label: t('inventory.lowStock'),    value: summaryStats.lowStock,    color: '#92400E' },
+            { label: t('inventory.outOfStock'), value: summaryStats.outOfStock,  color: '#991B1B' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-100">
               <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
@@ -168,7 +168,8 @@ export default function BranchInventoryPage() {
           onChange={e => setCategoryFilter(e.target.value)}
           className="w-full sm:w-52 px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none"
         >
-          {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          <option value="All Categories">{t('inventory.allCategories')}</option>
+          {FDA_CATEGORIES.filter(c => c !== 'All Categories').map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
         </select>
 
         <div className="flex gap-2 shrink-0">
@@ -179,7 +180,7 @@ export default function BranchInventoryPage() {
               className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
               style={stockFilter === f ? { backgroundColor: TEAL, color: '#fff' } : { backgroundColor: '#F3F4F6', color: '#374151' }}
             >
-              {f === 'ALL' ? 'All' : f === 'LOW' ? 'Low Stock' : 'Out of Stock'}
+              {f === 'ALL' ? t('inventory.stockAll') : f === 'LOW' ? t('inventory.stockLow') : t('inventory.stockOut')}
             </button>
           ))}
         </div>
@@ -189,7 +190,7 @@ export default function BranchInventoryPage() {
           className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0"
           style={{ backgroundColor: TEAL }}
         >
-          <PlusIcon className="w-4 h-4" /> Add Medication
+          <PlusIcon className="w-4 h-4" /> {t('branch.addMedication')}
         </button>
       </div>
 
@@ -207,8 +208,8 @@ export default function BranchInventoryPage() {
           <p className="text-gray-500 font-medium">{t('errors.noMedicationsFound')}</p>
           <p className="text-gray-400 text-sm mt-1">
             {searchTerm || categoryFilter !== 'All Categories'
-              ? 'Try adjusting your search or filters'
-              : 'Add your first medication to get started'}
+              ? t('inventory.adjustFilters')
+              : t('inventory.addFirstMedication')}
           </p>
         </div>
       ) : (
@@ -217,7 +218,16 @@ export default function BranchInventoryPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Medication', 'Category', 'Price', 'Quantity', 'Threshold', 'Prescription', 'Status', 'Actions'].map(h => (
+                  {[
+                    t('inventory.colMedication'),
+                    t('inventory.colCategory'),
+                    t('inventory.colPrice'),
+                    t('inventory.colQuantity'),
+                    t('inventory.colThreshold'),
+                    t('inventory.colPrescription'),
+                    t('inventory.colStatus'),
+                    t('inventory.colActions'),
+                  ].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -245,7 +255,7 @@ export default function BranchInventoryPage() {
                     <td className="px-4 py-3">
                       {med.requiresPrescription
                         ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">{t('inventory.required')}</span>
-                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
+                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">{t('common.no')}</span>}
                     </td>
                     <td className="px-4 py-3">{stockBadge(med)}</td>
                     <td className="px-4 py-3">

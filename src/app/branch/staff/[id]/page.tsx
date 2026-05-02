@@ -58,8 +58,6 @@ interface AttendanceRecord {
   clockOutApprover?: { firstName: string; lastName: string };
 }
 
-const GENDER_KEYS: Record<string, string> = { male: 'form.male', female: 'form.female', other: 'form.other' };
-
 export default function StaffDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -92,14 +90,14 @@ export default function StaffDetailPage() {
   const handleDeactivate = async () => {
     if (!staff) return;
     const name = `${staff.firstName} ${staff.lastName}`;
-    if (!confirm(t('extras.branch.confirmRemoveStaff', { name }))) return;
+    if (!confirm(`Remove ${name} from the branch? This cannot be undone.`)) return;
     setDeactivating(true);
     try {
       await api.delete(`/staff/${staffId}`);
-      toast.success(t('extras.branch.staffRemovedToast', { name }));
+      toast.success(`${name} has been removed`);
       router.push('/branch/staff');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToDeleteStaff'));
+      toast.error(err.response?.data?.message || t('staffMgmt.failedToRemove'));
     } finally { setDeactivating(false); }
   };
 
@@ -119,10 +117,10 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
+        <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
-        {t('staffMgmt.noStaffYet')}
+        {t('staffMgmt.staffNotFound')}
       </div>
     </div>
   );
@@ -133,7 +131,7 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
+        <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
 
       {/* Hero */}
@@ -147,10 +145,10 @@ export default function StaffDetailPage() {
             <h1 className="text-2xl font-bold">{staff.firstName} {staff.lastName}</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white`}>
-                {t(`roles.${staff.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
+                {staff.user.role}
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${staff.status === 'ACTIVE' ? 'bg-green-400/30 text-green-100' : 'bg-gray-400/30 text-gray-200'}`}>
-                {t(`staffStatus.${staff.status.toLowerCase()}`)}
+                {staff.status}
               </span>
             </div>
           </div>
@@ -160,16 +158,16 @@ export default function StaffDetailPage() {
           disabled={deactivating}
           className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 disabled:opacity-50 transition-all self-start sm:self-center"
         >
-          {deactivating ? 'Removing...' : 'Remove from Branch'}
+          {deactivating ? t('staffMgmt.removing') : t('staffMgmt.removeFromBranch')}
         </button>
       </div>
 
       {/* Attendance summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: t('branch.totalShifts'),     value: attendance.length },
-          { label: t('branch.completedShifts'), value: completedShifts   },
-          { label: t('branch.totalHours'),      value: `${totalHours.toFixed(1)}h` },
+          { label: t('staffMgmt.totalShifts'),      value: attendance.length },
+          { label: t('staffMgmt.completedShifts'),  value: completedShifts   },
+          { label: t('staffMgmt.totalHours'),       value: `${totalHours.toFixed(1)}h` },
         ].map((s, i) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -187,12 +185,12 @@ export default function StaffDetailPage() {
         <h2 className="font-semibold text-gray-800 mb-4">{t('staffMgmt.profileInformation')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { icon: EnvelopeIcon,      label: t('common.email'),             value: staff.user.email },
-            { icon: PhoneIcon,         label: t('common.phone'),             value: staff.phone || '—' },
-            { icon: IdentificationIcon,label: t('form.nationalId'),          value: staff.nationalId || '—' },
-            { icon: UserCircleIcon,    label: t('form.gender'),              value: staff.gender ? (t(GENDER_KEYS[staff.gender.toLowerCase()] ?? '') || staff.gender) : '—' },
-            { icon: ClockIcon,         label: t('form.dateOfBirth'),         value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
-            { icon: ClockIcon,         label: t('extras.staff.memberSince'), value: formatDate(staff.createdAt) },
+            { icon: EnvelopeIcon,      label: t('form.email'),       value: staff.user.email },
+            { icon: PhoneIcon,         label: t('form.phone'),       value: staff.phone || '—' },
+            { icon: IdentificationIcon,label: t('form.nationalId'),  value: staff.nationalId || '—' },
+            { icon: UserCircleIcon,    label: t('form.gender'),      value: staff.gender || '—' },
+            { icon: ClockIcon,         label: t('form.dateOfBirth'), value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
+            { icon: ClockIcon,         label: t('staffMgmt.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
@@ -214,7 +212,7 @@ export default function StaffDetailPage() {
             <div className="flex flex-wrap gap-2">
               {staff.permissions.permissions.map(p => (
                 <span key={p} className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  {t(`permissions.${p}`, { defaultValue: p.replace(/_/g, ' ') })}
+                  {p.replace(/_/g, ' ')}
                 </span>
               ))}
             </div>
@@ -226,20 +224,26 @@ export default function StaffDetailPage() {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="p-5 border-b border-gray-100">
           <h2 className="font-semibold text-gray-800">{t('staffMgmt.attendanceHistory')}</h2>
-          <p className="text-xs text-gray-500 mt-0.5">{attendance.length} record{attendance.length !== 1 ? 's' : ''} total</p>
+          <p className="text-xs text-gray-500 mt-0.5">{attendance.length} {t('staffMgmt.records')}</p>
         </div>
 
         {attendance.length === 0 ? (
           <div className="p-10 text-center text-gray-400 text-sm">
             <ClockIcon className="w-10 h-10 mx-auto mb-3 text-gray-200" />
-            {t('attendance.noRecordsYet')}
+            {t('staffMgmt.noAttendanceRecords')}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {[t('common.date'), t('attendance.clockIn'), t('attendance.clockOut'), t('attendance.hours'), t('common.status')].map(h => (
+                  {[
+                    t('attendance.date'),
+                    t('attendance.clockIn'),
+                    t('attendance.clockOut'),
+                    t('attendance.hours'),
+                    t('attendance.status'),
+                  ].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       {h}
                     </th>

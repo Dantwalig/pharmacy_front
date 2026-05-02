@@ -61,27 +61,27 @@ export default function BranchStaffPage() {
   };
 
   const handleResendCredentials = async (staffId: string, email: string) => {
-    if (!confirm(t('extras.branch.confirmResendCredentials', { email }))) return;
+    if (!confirm(`Resend login credentials to ${email}?`)) return;
     setActionId(staffId + '-resend');
     try {
       await api.post(`/staff/${staffId}/resend-credentials`); // POST /staff/:id/resend-credentials
-      toast.success(t('extras.branch.credentialsResentToEmail', { email }));
+      toast.success(`Credentials resent to ${email}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToResendCredentials'));
+      toast.error(err.response?.data?.message || t('staffMgmt.failedToResend'));
     } finally {
       setActionId(null);
     }
   };
 
   const handleDelete = async (staffId: string, name: string) => {
-    if (!confirm(t('extras.branch.confirmDeleteStaff', { name }))) return;
+    if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
     setActionId(staffId + '-delete');
     try {
       await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
       setStaff(prev => prev.filter(s => s.id !== staffId));
       toast.success(t('success.staffMemberRemoved'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToDeleteStaff'));
+      toast.error(err.response?.data?.message || 'Failed to delete staff');
     } finally {
       setActionId(null);
     }
@@ -95,7 +95,7 @@ export default function BranchStaffPage() {
       <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.staff')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{t('extras.branch.membersInBranch', { count: staff.length })}</p>
+        <p className="text-sm text-gray-500 mt-1">{staff.length} member{staff.length !== 1 ? 's' : ''} in your branch</p>
       </div>
       <button
           onClick={() => router.push('/branch/staff/new')}
@@ -103,7 +103,7 @@ export default function BranchStaffPage() {
           style={{ backgroundColor: TEAL }}
         >
         <PlusIcon className="w-4 h-4" />
-        {t('extras.branch.addStaff')}
+        Add Staff
         </button>
     </div>
 
@@ -118,7 +118,7 @@ export default function BranchStaffPage() {
             className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={{ backgroundColor: TEAL }}
           >
-          {t('staffMgmt.addStaffMember')}
+          Add Staff Member
           </button>
       </div>
     ) : (
@@ -145,7 +145,7 @@ export default function BranchStaffPage() {
                 </td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.user.role] || 'bg-gray-100 text-gray-700'}`}>
-                    {t(`roles.${member.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
+                    {member.user.role}
                     </span>
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">
@@ -153,7 +153,7 @@ export default function BranchStaffPage() {
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
                   <p className="text-xs text-gray-500">
-                    {t('extras.staff.permissionsCount', { count: member.permissions?.permissions?.length ?? 0 })}
+                    {member.permissions?.permissions?.length ?? 0} permissions
                     </p>
                 </td>
                 <td className="px-6 py-4">
@@ -162,7 +162,7 @@ export default function BranchStaffPage() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-600'
                     }`}>
-                    {t(`staffStatus.${member.status.toLowerCase()}`)}
+                    {member.status}
                     </span>
                 </td>
                 <td className="px-6 py-4">

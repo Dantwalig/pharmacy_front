@@ -49,13 +49,13 @@ export default function OrderDetailsPage() {
       toast.success(t('success.orderCancelled'));
       fetchOrderDetails();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t('errors.failedToCancelOrder'));
+      toast.error(error.response?.data?.message || t('orders.failedToCancel'));
     } finally { setCancelling(false); }
   };
 
   const handlePayment = async () => {
     if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && !phoneNumber) {
-      toast.error(t('payment.enterMomoNumber'));
+      toast.error(t('orders.enterMobileNumber'));
       return;
     }
     setProcessingPayment(true);
@@ -68,18 +68,18 @@ export default function OrderDetailsPage() {
       if (res.data.meta?.authorization?.mode === 'otp') {
         setShowOtpInput(true);
         setPaymentId(res.data.paymentId);
-        toast.success(t('payment.enterOtp'));
+        toast.success(t('orders.enterOtpSent'));
       } else if (res.data?.data?.link) {
         // Card payment standard link
         window.open(res.data.data.link, '_blank');
-        toast.success(t('payment.redirecting'));
+        toast.success(t('orders.redirectingPayment'));
       } else {
-        toast.success(t('payment.completed'));
+        toast.success(t('Payment initiated. Check your phone to approve.'));
         // We can poll here or have user click a verify button.
         // In the interest of simplicity we let the user await the prompt.
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to initiate payment');
+      toast.error(err.response?.data?.message || t('orders.failedToInitiatePayment'));
     } finally {
       setProcessingPayment(false);
     }
@@ -93,11 +93,11 @@ export default function OrderDetailsPage() {
         paymentId,
         otp,
       });
-      toast.success(t('payment.completed'));
+      toast.success('Payment completed successfully!');
       setShowOtpInput(false);
       fetchOrderDetails();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Invalid OTP');
+      toast.error(err.response?.data?.message || t('orders.invalidOtp'));
     } finally {
       setProcessingPayment(false);
     }
@@ -130,7 +130,7 @@ export default function OrderDetailsPage() {
             order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
             order.status === 'CANCELLED' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'
           }`}>
-          {t(`orderStatus.${order.status.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
+          {order.status}
           </span>
       </div>
 
@@ -145,7 +145,7 @@ export default function OrderDetailsPage() {
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-[#1E4D8C] shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
                     {isComplete ? '' : index + 1}
                     </div>
-                  <p className="text-xs mt-2 text-center text-white/90 font-medium">{t(`orderStatus.${status.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}</p>
+                  <p className="text-xs mt-2 text-center text-white/90 font-medium">{status}</p>
                 </div>
               );
               })}
@@ -252,10 +252,10 @@ export default function OrderDetailsPage() {
               <div className="space-y-3">
                 {['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">{t('payment.momoNumberLabel')}</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Money Number</label>
                     <input
                       type="text"
-                      placeholder={t('payment.momoNumberPlaceholder')}
+                      placeholder="e.g. 078XXXXXXX"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 outline-none focus:ring-2 focus:ring-[#2D9B8A]"
@@ -268,16 +268,16 @@ export default function OrderDetailsPage() {
                   disabled={processingPayment}
                   className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] hover:from-[#1a3d6f] hover:to-[#0f2444] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
                 >
-                  {processingPayment ? t('cashier.processing') : `${t('common.total')}: ${order.total.toLocaleString()} ${t('common.currency')}`}
+                  {processingPayment ? t('orders.processing') : `${t('orders.payNow').replace('{amount}', order.total.toLocaleString())}`}
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('payment.enterOtpLabel')}</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Enter OTP</label>
                   <input
                     type="text"
-                    placeholder={t('payment.otpPlaceholder')}
+                    placeholder="123456"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 outline-none focus:ring-2 focus:ring-[#2D9B8A]"
@@ -288,7 +288,7 @@ export default function OrderDetailsPage() {
                   disabled={processingPayment || !otp}
                   className="w-full bg-linear-to-r from-[#2D9B8A] to-[#207a6c] hover:from-[#207a6c] hover:to-[#185e53] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
                 >
-                  {processingPayment ? 'Verifying...' : 'Submit OTP'}
+                  {processingPayment ? t('orders.verifying') : t('orders.submitOtp')}
                 </button>
               </div>
             )}
@@ -300,12 +300,12 @@ export default function OrderDetailsPage() {
     {/* Prescription Info */}
       {order.prescription && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('payment.prescriptionInfo')}</h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100"> Prescription Information</h2>
         <div className="space-y-2 text-gray-700 dark:text-gray-300">
-          <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{t(`prescriptionStatus.${order.prescription.status.toLowerCase()}`)}</span></p>
+          <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
           {order.prescription.fileUrl && (
               <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[#1E4D8C] hover:text-[#2D9B8A] underline">
-              {t('payment.viewPrescription')}
+              View Prescription
               </a>
           )}
           </div>

@@ -84,7 +84,7 @@ export default function BranchEditMedicationPage() {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabled'));
       } else {
-        toast.error(err.response?.data?.message || 'Failed to update medication');
+        toast.error(err.response?.data?.message || t('errors.failedToLoad'));
       }
     } finally {
       setSaving(false);
@@ -129,7 +129,7 @@ export default function BranchEditMedicationPage() {
       <form onSubmit={handleSave} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
 
         <div>
-          <label className={labelCls}>{t('extras.branch.medicationName')} <span className="text-red-500">*</span></label>
+          <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
           <input type="text" required value={form.name}
             onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))}
             className={inputCls} />
@@ -143,11 +143,11 @@ export default function BranchEditMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>{t('extras.inventory.tableCategory')} <span className="text-red-500">*</span></label>
+          <label className={labelCls}>Category <span className="text-red-500">*</span></label>
           <select required value={form.category}
             onChange={e => setForm((f: any) => ({ ...f, category: e.target.value }))}
             className={inputCls}>
-            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
           </select>
         </div>
 
@@ -195,7 +195,7 @@ export default function BranchEditMedicationPage() {
           <button type="submit" disabled={saving}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ backgroundColor: TEAL }}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('branch.saving') : t('common.saveChanges')}
           </button>
         </div>
       </form>

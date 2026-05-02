@@ -253,14 +253,14 @@ export default function BaseMap({
             const labels: Record<string, string> = { own: 'This branch', hq: 'HQ', sibling: 'Sibling branch', competitor: 'Competitor' };
             return (
               <div key={type} className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                 <span className="text-xs text-gray-600">{labels[type]}</span>
               </div>
             );
           })}
           {triangulate && (
             <div className="flex items-center gap-2 pt-0.5 border-t border-gray-100 mt-0.5">
-              <span className="w-5 border-t border-dashed flex-shrink-0" style={{ borderColor: NAVY, opacity: 0.5 }} />
+              <span className="w-5 border-t border-dashed shrink-0" style={{ borderColor: NAVY, opacity: 0.5 }} />
               <span className="text-xs text-gray-500">Triangulation</span>
             </div>
           )}

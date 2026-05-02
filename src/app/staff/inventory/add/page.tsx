@@ -75,7 +75,7 @@ export default function StaffAddMedicationPage() {
       toast.success(t('success.medicationAdded'));
       router.push('/staff/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to add medication');
+      toast.error(err.response?.data?.message || t('errors.failedToLoad'));
     } finally { setLoading(false); }
   };
 
@@ -107,7 +107,7 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>{t('extras.branch.medicationName')} <span className="text-red-500">*</span></label>
+            <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
             <input type="text" required value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Amoxicillin 500mg" className={inputCls} />
@@ -121,10 +121,10 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>{t('extras.inventory.tableCategory')} <span className="text-red-500">*</span></label>
+            <label className={labelCls}>Category <span className="text-red-500">*</span></label>
             <select required value={form.category}
               onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={inputCls}>
-              {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
             </select>
           </div>
 
@@ -172,7 +172,7 @@ export default function StaffAddMedicationPage() {
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
               style={{ backgroundColor: TEAL }}>
-              {loading ? 'Adding...' : 'Add Medication'}
+              {loading ? t('branch.adding') : t('staff.addMedication')}
             </button>
           </div>
         </form>

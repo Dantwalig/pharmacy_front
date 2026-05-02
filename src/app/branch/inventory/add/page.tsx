@@ -96,7 +96,7 @@ export default function BranchAddMedicationPage() {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabled'));
       } else {
-        toast.error(err.response?.data?.message || 'Failed to add medication');
+        toast.error(err.response?.data?.message || t('errors.failedToLoad'));
       }
     } finally {
       setLoading(false);
@@ -141,7 +141,7 @@ export default function BranchAddMedicationPage() {
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
 
         <div>
-          <label className={labelCls}>{t('extras.branch.medicationName')} <span className="text-red-500">*</span></label>
+          <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
           <input type="text" required value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             placeholder="e.g. Amoxicillin 500mg" className={inputCls} />
@@ -155,11 +155,11 @@ export default function BranchAddMedicationPage() {
         </div>
 
         <div>
-          <label className={labelCls}>{t('extras.inventory.tableCategory')} <span className="text-red-500">*</span></label>
+          <label className={labelCls}>Category <span className="text-red-500">*</span></label>
           <select required value={form.category}
             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
             className={inputCls}>
-            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
           </select>
         </div>
 
@@ -209,7 +209,7 @@ export default function BranchAddMedicationPage() {
           <button type="submit" disabled={loading}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ backgroundColor: TEAL }}>
-            {loading ? 'Adding...' : 'Add Medication'}
+            {loading ? t('branch.adding') : t('branch.addMedicationAction')}
           </button>
         </div>
       </form>

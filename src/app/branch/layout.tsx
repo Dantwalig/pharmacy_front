@@ -6,7 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import BranchSidebar from '@/components/branch/BranchSidebar';
 import BranchTopbar from '@/components/branch/BranchTopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import SupportBot from '@/components/shared/SupportBot';
 
 const STANDALONE_PAGES = ['/branch/change-password', '/branch/pending-approval'];
 
@@ -15,7 +14,6 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -45,16 +43,11 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-      <BranchSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onOpenSupport={() => setSupportOpen(true)} />
+      <BranchSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 lg:ml-64 min-w-0">
         <BranchTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="p-4 lg:p-6">{children}</main>
       </div>
-      <SupportBot
-        open={supportOpen}
-        onOpen={() => setSupportOpen(true)}
-        onClose={() => setSupportOpen(false)}
-      />
     </div>
   );
 }

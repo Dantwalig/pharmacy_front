@@ -69,10 +69,10 @@ export default function BranchAnalyticsPage() {
   const avgOrderValue   = completedOrders.length > 0 ? totalRevenue / completedOrders.length : 0;
 
   const statCards = [
-    { icon: ShoppingCartIcon,  label: 'Total Orders',     value: orders.length,               dark: false },
-    { icon: CheckCircleIcon,   label: 'Completed Orders', value: completedOrders.length,       dark: false },
-    { icon: CurrencyDollarIcon,label: 'Total Revenue',    value: `RWF ${fmt(totalRevenue)}`,   dark: false },
-    { icon: ArrowTrendingUpIcon,label: 'Avg Order Value', value: `RWF ${fmt(avgOrderValue)}`,  dark: true  },
+    { icon: ShoppingCartIcon,   label: t('analytics.totalOrders'),     value: orders.length,              dark: false },
+    { icon: CheckCircleIcon,    label: t('analytics.completedOrders'), value: completedOrders.length,     dark: false },
+    { icon: CurrencyDollarIcon, label: t('analytics.totalRevenue'),    value: `RWF ${fmt(totalRevenue)}`, dark: false },
+    { icon: ArrowTrendingUpIcon,label: t('analytics.avgOrderValue2'),  value: `RWF ${fmt(avgOrderValue)}`,dark: true  },
   ];
 
   // ── Revenue by day (last 14 days) ──────────────────────────────────────────
@@ -132,10 +132,10 @@ export default function BranchAnalyticsPage() {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Attendance — Today</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: t('extras.analytics.activeShifts'), value: attendanceSummary.approved  ?? 0 },
-              { label: t('orderStatus.pending'),          value: attendanceSummary.pending   ?? 0 },
-              { label: t('dashboard.completed'),          value: attendanceSummary.completed ?? 0 },
-              { label: t('extras.branch.hoursWorked'),    value: `${(attendanceSummary.totalHoursWorked ?? 0).toFixed(1)}h` },
+              { label: t('analytics.activeShifts'),   value: attendanceSummary.approved  ?? 0 },
+              { label: t('analytics.pendingShifts'),  value: attendanceSummary.pending   ?? 0 },
+              { label: t('analytics.completedShifts'),value: attendanceSummary.completed ?? 0 },
+              { label: t('analytics.hoursWorked'),    value: `${(attendanceSummary.totalHoursWorked ?? 0).toFixed(1)}h` },
             ].map(s => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: '#F0F7F6' }}>

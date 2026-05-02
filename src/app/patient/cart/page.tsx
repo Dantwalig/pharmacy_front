@@ -26,7 +26,7 @@ export default function CartPage() {
         <p className="text-gray-500 dark:text-gray-400 mb-6">{t('dashboard.startShopping')}</p>
         <Link href="/patient/search">
           <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-            {t('cart2.browseMedications')}
+            Browse Medications
             </button>
         </Link>
       </div>
@@ -53,7 +53,7 @@ export default function CartPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{t('cart.title')} ({items.length})</h2>
             <button onClick={clearCart} className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
-              <TrashIcon className="w-4 h-4" /> {t('cart.clearCart')}
+              <TrashIcon className="w-4 h-4" /> Clear Cart
               </button>
           </div>
           <div className="space-y-4">
@@ -65,7 +65,7 @@ export default function CartPage() {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.price.toLocaleString()} RWF</p>
                     {item.requiresPrescription && (
                         <span className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded-full font-medium">
-                         {t('medications.prescriptionRequired')}
+                         Prescription Required
                         </span>
                     )}
                     </div>
@@ -113,11 +113,11 @@ export default function CartPage() {
           <div className="space-y-3">
             <button onClick={() => router.push('/patient/checkout')}
                 className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-              {t('cart.proceedToCheckout')}
+              Proceed to Checkout
               </button>
             <Link href="/patient/search">
               <button className="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2">
-                <ShoppingBagIcon className="w-5 h-5" /> {t('cart.continueShopping')}
+                <ShoppingBagIcon className="w-5 h-5" /> Continue Shopping
                 </button>
             </Link>
           </div>

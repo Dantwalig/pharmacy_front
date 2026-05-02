@@ -67,7 +67,7 @@ export default function CheckoutPage() {
       setPrescriptionUploaded(true);
       toast.success(t('success.prescriptionUploaded'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to upload prescription');
+      toast.error(err.response?.data?.message || t('errors.failedToUploadPrescription'));
     } finally {
       setUploadingPrescription(false);
     }
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
       toast.success(t('success.orderPlaced'));
       router.push(`/patient/orders/${res.data.id}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to place order');
+      toast.error(err.response?.data?.message || t('errors.failedToPlaceOrder'));
     } finally {
       setLoading(false);
     }
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
     <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-      <ArrowLeftIcon className="w-4 h-4" /> {t('extras.checkout.backToCart')}
+      <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
       </button>
 
     <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
@@ -160,8 +160,8 @@ export default function CheckoutPage() {
                 <button key={type} onClick={() => setOrderType(type)}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
                 <span className="text-3xl">{type === 'PICKUP' ? '' : ''}</span>
-                <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? t('checkout.pickup') : t('checkout.delivery')}</span>
-                <span className="text-xs text-gray-500">{type === 'PICKUP' ? t('extras.checkout.free') : t('extras.checkout.plusFee')}</span>
+                <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? 'Pickup' : 'Delivery'}</span>
+                <span className="text-xs text-gray-500">{type === 'PICKUP' ? 'Free' : '+1,000 RWF'}</span>
               </button>
             ))}
             </div>
@@ -183,10 +183,10 @@ export default function CheckoutPage() {
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-6">
             <h2 className="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
               <DocumentTextIcon className="w-5 h-5 text-yellow-600" />
-              {t('medications.prescriptionRequired')}
+              Prescription Required
               </h2>
             <p className="text-sm text-gray-600 mb-4">
-              {t('extras.checkout.prescriptionWarning')}
+              One or more items require a valid prescription. Please upload it before placing your order.
               </p>
 
             {!prescriptionUploaded ? (
@@ -210,8 +210,8 @@ export default function CheckoutPage() {
                     className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
                   >
                   {uploadingPrescription
-                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('extras.checkout.uploading')}</>
-                    : t('extras.checkout.uploadPrescription')}
+                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                    : ' Upload Prescription'}
                   </button>
               </div>
             ) : (
@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                     onClick={() => { setPrescriptionUploaded(false); setPrescriptionId(null); setPrescriptionFile(null); }}
                     className="ml-auto text-xs text-gray-500 hover:text-red-500 underline"
                   >
-                  {t('extras.common.change')}
+                  Change
                   </button>
               </div>
             )}
@@ -238,10 +238,10 @@ export default function CheckoutPage() {
           <h2 className="font-bold text-lg text-gray-800 mb-4">{t('checkout2.paymentMethod')}</h2>
           <div className="space-y-3">
             {[
-                { value: 'MTN_MOMO', label: t('payment.mtnMomo'), emoji: '' },
-                { value: 'AIRTEL_MONEY', label: t('payment.airtelMoney'), emoji: '' },
-                { value: 'CARD', label: t('payment.card'), emoji: '' },
-                { value: 'INSURANCE', label: t('payment.insurance'), emoji: '' },
+                { value: 'MTN_MOMO', label: 'MTN Mobile Money', emoji: '' },
+                { value: 'AIRTEL_MONEY', label: 'Airtel Money', emoji: '' },
+                { value: 'CARD', label: 'Debit / Credit Card', emoji: '' },
+                { value: 'INSURANCE', label: t('checkout2.insurancePayment'), emoji: '' },
               ].map(opt => (
                 <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
                 <input
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
               <span>{t('cart.subtotal')}</span><span>{subtotal.toLocaleString()} RWF</span>
             </div>
             <div className="flex justify-between text-gray-600">
-              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : t('extras.checkout.free')}</span>
+              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : t('checkout2.free')}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span>{t('cart.total')}</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
@@ -289,11 +289,11 @@ export default function CheckoutPage() {
               className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
             {loading
-                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('extras.checkout.placingOrder')}</>
-              : t('extras.checkout.placeOrder')}
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>
+              : ' Place Order'}
             </button>
           {hasPrescription && !prescriptionId && (
-              <p className="text-xs text-yellow-600 mt-2 text-center">{t('extras.checkout.uploadPrescriptionToContinue')}</p>
+              <p className="text-xs text-yellow-600 mt-2 text-center"> Upload prescription to continue</p>
           )}
           </div>
       </div>

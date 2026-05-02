@@ -97,16 +97,16 @@ export default function PharmacyInventoryPage() {
     {/* Header */}
       <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
       <h1 className="text-2xl font-bold mb-1">{t('pharmacy.inventoryManagement')}</h1>
-      <p className="text-blue-100 text-sm">{t('inventory.addMedicationSubtitle')}</p>
+      <p className="text-blue-100 text-sm">Manage your pharmacy's medication stock — categories follow Rwanda FDA Medicine Register</p>
     </div>
 
     {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {[
-          { label: t('extras.inventory.totalItems'),  value: summaryStats.total,      color: 'text-blue-600' },
-          { label: t('extras.inventory.categoriesCount'), value: summaryStats.categories, color: 'text-teal-600' },
-          { label: t('inventory.lowStock'),            value: summaryStats.lowStock,   color: 'text-yellow-600' },
-          { label: t('inventory.outOfStock'),          value: summaryStats.outOfStock, color: 'text-red-600' },
+          { label: t('inventory.totalItems'),  value: summaryStats.total,       color: 'text-blue-600' },
+          { label: t('inventory.categories'),  value: summaryStats.categories,  color: 'text-teal-600' },
+          { label: t('inventory.lowStock'),    value: summaryStats.lowStock,    color: 'text-yellow-600' },
+          { label: t('inventory.outOfStock'), value: summaryStats.outOfStock,  color: 'text-red-600' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
           <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -136,7 +136,7 @@ export default function PharmacyInventoryPage() {
         {(['ALL','LOW_STOCK','OUT_OF_STOCK'] as const).map(f => (
             <button key={f} onClick={() => setStockFilter(f)}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${stockFilter === f ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-            {f === 'ALL' ? t('common.all') : f === 'LOW_STOCK' ? t('inventory.lowStock') : t('inventory.outOfStock')}
+            {f === 'ALL' ? 'All' : f === 'LOW_STOCK' ? 'Low Stock' : 'Out of Stock'}
             </button>
         ))}
         </div>
@@ -145,11 +145,11 @@ export default function PharmacyInventoryPage() {
         <div className="flex gap-2 shrink-0">
         <button onClick={() => router.push('/pharmacy/inventory/add?mode=upload')}
             className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-teal-500 text-teal-600 rounded-lg text-sm font-medium hover:bg-teal-50 transition-all">
-          <ArrowUpTrayIcon className="w-4 h-4" /> {t('extras.inventory.uploadFileTab')}
+          <ArrowUpTrayIcon className="w-4 h-4" /> Upload
           </button>
         <button onClick={() => router.push('/pharmacy/inventory/add')}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all">
-          <PlusIcon className="w-4 h-4" /> {t('extras.inventory.addMedication')}
+          <PlusIcon className="w-4 h-4" /> Add Medication
           </button>
       </div>
     </div>
@@ -162,7 +162,7 @@ export default function PharmacyInventoryPage() {
         <div className="text-5xl mb-3"></div>
         <p className="text-gray-500 font-medium mb-1">{t('errors.noMedicationsFound')}</p>
         <p className="text-gray-400 text-sm">
-          {searchTerm || categoryFilter !== 'All Categories' ? t('extras.inventory.tryFilters') : t('extras.inventory.addFirst')}
+          {searchTerm || categoryFilter !== 'All Categories' ? 'Try adjusting your search or filters' : 'Add your first medication to get started'}
           </p>
       </div>
     ) : (
@@ -171,19 +171,7 @@ export default function PharmacyInventoryPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {[
-                  t('extras.branch.medicationName'),
-                  t('extras.inventory.tableCategory'),
-                  t('extras.inventory.tableDosage'),
-                  t('extras.inventory.tableManufacturer'),
-                  t('extras.inventory.tableUnitPrice'),
-                  t('extras.inventory.tableQuantity'),
-                  t('extras.inventory.tableThreshold'),
-                  t('extras.inventory.tablePrescription'),
-                  t('extras.inventory.tableExpiry'),
-                  t('extras.inventory.tableStatus'),
-                  t('extras.inventory.tableActions'),
-                ].map(h => (
+                {['Medication Name','Category','Dosage','Manufacturer','Unit Price','Qty in Stock','Threshold','Prescription','Expiry','Status','Actions'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
                 </tr>
@@ -210,11 +198,11 @@ export default function PharmacyInventoryPage() {
                         </span>
                       <span className="text-gray-400 text-xs ml-1">{t('inventory.units')}</span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} {t('inventory.units')}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
                     <td className="px-4 py-3">
                       {med.requiresPrescription
                           ? <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">{t('inventory.required')}</span>
-                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">{t('extras.inventory.no')}</span>}
+                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">No</span>}
                       </td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                       {med.expiryDate ? new Date(med.expiryDate).toLocaleDateString() : '—'}
@@ -223,7 +211,7 @@ export default function PharmacyInventoryPage() {
                     <td className="px-4 py-3">
                       <button onClick={() => router.push(`/pharmacy/inventory/${med.id}`)}
                           className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-xs font-medium transition-all">
-                        <PencilIcon className="w-3.5 h-3.5" /> {t('common.edit')}
+                        <PencilIcon className="w-3.5 h-3.5" /> Edit
                         </button>
                     </td>
                   </tr>
@@ -236,7 +224,7 @@ export default function PharmacyInventoryPage() {
         {/* Table footer */}
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            {t('extras.inventory.showing')} <span className="font-semibold">{filtered.length}</span> {t('extras.inventory.of')} <span className="font-semibold">{medications.length}</span> {t('extras.inventory.medicationsCount')}
+            Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
             </p>
           <p className="text-xs text-gray-400">{t('inventory.categoriesFootnote')}</p>
         </div>

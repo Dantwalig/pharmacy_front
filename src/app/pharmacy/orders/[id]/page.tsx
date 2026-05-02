@@ -17,20 +17,20 @@ const DELIVERY_STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIV
 
 type NextAction = { label: string; status: string; color: string } | null;
 
-function getNextAction(status: string, type: string): NextAction {
+function getNextAction(status: string, type: string, t: (k: string) => string): NextAction {
   const flow = type === 'DELIVERY' ? DELIVERY_STATUS_FLOW : STATUS_FLOW;
   const idx = flow.indexOf(status);
   if (idx === -1 || idx >= flow.length - 1) return null;
   const next = flow[idx + 1];
   const labels: Record<string, { label: string; color: string }> = {
-    ACCEPTED: { label: 'Accept Order', color: 'bg-green-500 hover:bg-green-600' },
-    PREPARING: { label: 'Start Preparing', color: 'bg-blue-500 hover:bg-blue-600' },
-    READY_FOR_PICKUP: { label: 'Mark Ready for Pickup', color: 'bg-teal-500 hover:bg-teal-600' },
-    OUT_FOR_DELIVERY: { label: 'Dispatch for Delivery', color: 'bg-purple-500 hover:bg-purple-600' },
-    COMPLETED: { label: 'Mark Completed', color: 'bg-green-600 hover:bg-green-700' },
-    DELIVERED: { label: 'Mark Delivered', color: 'bg-green-600 hover:bg-green-700' },
+    ACCEPTED:         { label: t('pharmacyOwner.acceptOrder'),         color: 'bg-green-500 hover:bg-green-600' },
+    PREPARING:        { label: t('pharmacyOwner.startPreparing'),      color: 'bg-blue-500 hover:bg-blue-600' },
+    READY_FOR_PICKUP: { label: t('pharmacyOwner.markReadyForPickup'),  color: 'bg-teal-500 hover:bg-teal-600' },
+    OUT_FOR_DELIVERY: { label: t('pharmacyOwner.dispatchForDelivery'), color: 'bg-purple-500 hover:bg-purple-600' },
+    COMPLETED:        { label: t('pharmacyOwner.markCompleted'),       color: 'bg-green-600 hover:bg-green-700' },
+    DELIVERED:        { label: t('pharmacyOwner.markDelivered'),       color: 'bg-green-600 hover:bg-green-700' },
   };
-  return { label: labels[next]?.label || `Move to ${next}`, status: next, color: labels[next]?.color || 'bg-teal-500' };
+  return { label: labels[next]?.label || `→ ${next}`, status: next, color: labels[next]?.color || 'bg-teal-500' };
 }
 
 const statusColor: Record<string, string> = {
@@ -70,7 +70,7 @@ export default function PharmacyOrderDetailPage() {
       await api.patch(`/orders/${params.id}/status`, { status });
       toast.success(`Order updated to ${status}`);
       fetchOrder();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Update failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || t('common.updateFailed')); }
     finally { setActionLoading(false); }
   };
 
@@ -82,7 +82,7 @@ export default function PharmacyOrderDetailPage() {
       toast.success(t('success.orderCancelled2'));
       setShowReject(false);
       fetchOrder();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || t('common.failed')); }
     finally { setActionLoading(false); }
   };
 
@@ -97,7 +97,7 @@ export default function PharmacyOrderDetailPage() {
 
   if (!order) return null;
 
-  const nextAction = getNextAction(order.status, order.type);
+  const nextAction = getNextAction(order.status, order.type, t);
   const flow = order.type === 'DELIVERY' ? DELIVERY_STATUS_FLOW : STATUS_FLOW;
   const currentIdx = flow.indexOf(order.status);
 

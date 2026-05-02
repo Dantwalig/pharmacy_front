@@ -80,7 +80,7 @@ export default function PharmacyAnalyticsPage() {
   return (
     <div className="space-y-6">
     {/* Header */}
-      <div className="bg-gradient-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
+      <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
       <h1 className="text-2xl lg:text-3xl font-bold mb-1">{t('analytics.analyticsTitle')}</h1>
       <p className="text-blue-100 text-sm">{t('analytics.trackPerformance')}</p>
     </div>
