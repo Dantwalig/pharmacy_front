@@ -48,7 +48,7 @@ export default function PatientSidebar({ open = false, onClose, onOpenSupport }:
 
   return (
     <aside className={`
-      w-64 bg-gradient-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white min-h-screen
+      w-64 bg-linear-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white min-h-screen
       fixed left-0 top-0 shadow-2xl z-40 flex flex-col
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}

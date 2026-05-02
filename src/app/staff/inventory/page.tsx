@@ -181,7 +181,7 @@ export default function StaffInventoryPage() {
                   <tr key={med.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-gray-900">{med.name}</p>
-                      {med.description && <p className="text-xs text-gray-400 truncate max-w-[160px]">{med.description}</p>}
+                      {med.description && <p className="text-xs text-gray-400 truncate max-w-40">{med.description}</p>}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>

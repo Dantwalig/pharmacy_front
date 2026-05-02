@@ -246,7 +246,7 @@ export default function BaseMap({
 
       {/* Legend */}
       {ready && markers.length > 0 && (
-        <div className="absolute bottom-10 left-3 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3 py-2 space-y-1.5">
+        <div className="absolute bottom-10 left-3 z-1000 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3 py-2 space-y-1.5">
           {Object.entries(MARKER_COLORS).map(([type, color]) => {
             const hasType = markers.some(m => m.type === type);
             if (!hasType) return null;
