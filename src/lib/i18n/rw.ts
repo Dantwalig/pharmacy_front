@@ -375,7 +375,7 @@ export const rw = {
     searchEmployees: 'Shakisha izina...',
     allRoles: 'Inshingano Zose',
     addManager: 'Ongeraho Umunyamashami',
-    role: 'Inshingano',
+    role: 'Nyiri Pharmacy',
     assignedBranch: 'Ishami Ryahawe',
     profileTitle: 'Umwirondoro',
     profileSubtitle: 'Amakuru yawe bwite n\'ay\'iduka',
@@ -555,7 +555,7 @@ export const rw = {
     dashboard: 'Ikibaho',
     attendance: 'Amazina Yanjye',
     changePassword: 'Hindura Ijambo Ryibanga',
-    profile: 'Umwirondoro Wanjye',
+    profile: 'Imyirondoro',
     welcomeTitle: 'Murakaza Neza',
     welcomeSubtitle: 'Ikibaho cy\'umukozi',
     clockIn: 'Kwinjira',
@@ -728,6 +728,7 @@ export const rw = {
     inventoryAccessPending: 'Kugera ku bubiko bitegerezwa',
     seeAbove: 'Reba ikimenyetso hejuru kugirango ubone ibisobanuro',
     selectBranch: 'Hitamo ishami',
+    lowStock: 'Ububiko Buke', // [REVIEW RW]
   },
   analytics: {
     branchAnalytics: 'Isesengura ry\'Ishami',
@@ -852,6 +853,11 @@ export const rw = {
     noPatientsYet: 'Nta barwayi arabonetse',
     tryDifferentSearch: 'Gerageza ijambo rindi ryo gushakisha',
     patientsAfterFirstOrder: 'Abarwayi bazagaragara hano nyuma y\'itumiza rya mbere',
+    pageTitle: 'Abarwayi n\'Abakiriya', // [REVIEW RW]
+    pageSubtitle: 'Guhuza amatumiza n\'abarwayi', // [REVIEW RW]
+    patientsTitle: 'Abarwayi',
+    viewPatientsDesc: 'Reba abarwayi bose batumije muri farumasi yawe', // [REVIEW RW]
+    orderHistory: 'Amateka y\'Amatumiza', // [REVIEW RW]
   },
   notifications2: {
     notifications: 'Ubutumwa',
@@ -1349,6 +1355,9 @@ export const rw = {
       tableActions: 'Ibikorwa',
       tableStockLevel: 'Urwego rw\'Ububiko',
       tableUnitPrice: 'Igiciro cy\'Igice',
+      tableDosage: 'Ubunini', // [REVIEW RW]
+      tableManufacturer: 'Uwagize', // [REVIEW RW]
+      tableExpiry: 'Itariki yo Kurangira', // [REVIEW RW]
       tableBranch: 'Ishami',
       medicationNamePlaceholder: 'Urugero: Amoxicillin 500mg',
       medicationNamePlaceholderAlt: 'Urugero: Paracetamol',

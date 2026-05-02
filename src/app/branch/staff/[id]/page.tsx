@@ -167,9 +167,9 @@ export default function StaffDetailPage() {
       {/* Attendance summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Total Shifts',      value: attendance.length },
-          { label: 'Completed Shifts',  value: completedShifts   },
-          { label: 'Total Hours',       value: `${totalHours.toFixed(1)}h` },
+          { label: t('branch.totalShifts'),     value: attendance.length },
+          { label: t('branch.completedShifts'), value: completedShifts   },
+          { label: t('branch.totalHours'),      value: `${totalHours.toFixed(1)}h` },
         ].map((s, i) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
