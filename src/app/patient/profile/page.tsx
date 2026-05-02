@@ -50,6 +50,7 @@ export default function PatientProfilePage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!passwords.currentPassword || !passwords.newPassword || !passwords.confirmPassword) { toast.error(t('form.fieldRequired')); return; }
     if (passwords.newPassword !== passwords.confirmPassword) { toast.error(t('form.passwordsDoNotMatch')); return; }
     if (passwords.newPassword.length < 8) { toast.error(t('form.passwordTooShort')); return; }
     setSaving(true);
@@ -57,7 +58,7 @@ export default function PatientProfilePage() {
       await api.put('/auth/change-password', passwords);
       toast.success(t('form.passwordChanged'));
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || t('errors.failedToChangePassword')); }
     finally { setSaving(false); }
   };
 
@@ -151,7 +152,7 @@ export default function PatientProfilePage() {
               {[t('extras.profile.currentPassword'), t('extras.profile.newPassword'), t('extras.profile.confirmNewPassword')][i]}
               </label>
             <div className="relative">
-              <input type={showPwd ? 'text' : 'password'} required minLength={field !== 'currentPassword' ? 8 : 1}
+              <input type={showPwd ? 'text' : 'password'}
                   value={(passwords as any)[field]}
                   onChange={e => setPasswords({...passwords, [field]: e.target.value})}
                   className={`${inputCls} pr-10`} />

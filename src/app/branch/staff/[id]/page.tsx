@@ -58,6 +58,8 @@ interface AttendanceRecord {
   clockOutApprover?: { firstName: string; lastName: string };
 }
 
+const GENDER_KEYS: Record<string, string> = { male: 'form.male', female: 'form.female', other: 'form.other' };
+
 export default function StaffDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -188,7 +190,7 @@ export default function StaffDetailPage() {
             { icon: EnvelopeIcon,      label: t('common.email'),             value: staff.user.email },
             { icon: PhoneIcon,         label: t('common.phone'),             value: staff.phone || '—' },
             { icon: IdentificationIcon,label: t('form.nationalId'),          value: staff.nationalId || '—' },
-            { icon: UserCircleIcon,    label: t('form.gender'),              value: staff.gender || '—' },
+            { icon: UserCircleIcon,    label: t('form.gender'),              value: staff.gender ? (t(GENDER_KEYS[staff.gender.toLowerCase()] ?? '') || staff.gender) : '—' },
             { icon: ClockIcon,         label: t('form.dateOfBirth'),         value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
             { icon: ClockIcon,         label: t('extras.staff.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
@@ -212,7 +214,7 @@ export default function StaffDetailPage() {
             <div className="flex flex-wrap gap-2">
               {staff.permissions.permissions.map(p => (
                 <span key={p} className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  {p.replace(/_/g, ' ')}
+                  {t(`permissions.${p}`, { defaultValue: p.replace(/_/g, ' ') })}
                 </span>
               ))}
             </div>

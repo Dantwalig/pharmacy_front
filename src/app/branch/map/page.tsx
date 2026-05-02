@@ -369,7 +369,7 @@ export default function BranchMapPage() {
                       : { backgroundColor: `${TEAL}22`, color: TEAL }
                   }
                 >
-                  {t(`branchStatusLabels.${selectedMarker.status.toLowerCase()}`)}
+                  {selectedMarker.status ? t(`branchStatusLabels.${selectedMarker.status.toLowerCase()}`) : null}
                 </span>
                 <p className="text-[11px] font-mono text-gray-400">
                   {selectedMarker.lat.toFixed(5)}, {selectedMarker.lng.toFixed(5)}

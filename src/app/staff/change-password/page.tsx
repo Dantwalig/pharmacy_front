@@ -23,6 +23,10 @@ export default function StaffChangePasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.tempPassword || !form.newPassword || !form.confirmPassword) {
+      toast.error(t('form.fieldRequired'));
+      return;
+    }
     if (form.newPassword !== form.confirmPassword) {
       toast.error(t('form.passwordsDoNotMatch'));
       return;
@@ -41,7 +45,7 @@ export default function StaffChangePasswordPage() {
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to change password');
+      toast.error(err.response?.data?.message || t('errors.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -61,26 +65,25 @@ export default function StaffChangePasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">{t('staff.welcomeTitle')}</h1>
             <p className="text-sm text-gray-500 mt-2">
-              Please set a permanent password before accessing your account.
+              {t('extras.staff.setPasswordNotice')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {[
-              { field: 'temp' as const,    label: 'Temporary Password',    key: 'tempPassword',    placeholder: 'Enter the password from your email' },
-              { field: 'new' as const,     label: 'New Password',          key: 'newPassword',     placeholder: 'At least 8 characters' },
-              { field: 'confirm' as const, label: 'Confirm New Password',  key: 'confirmPassword', placeholder: 'Re-enter new password' },
-            ].map(({ field, label, key, placeholder }) => (
+            {([
+              { field: 'temp' as const,    labelKey: 'staff.tempPassword',    key: 'tempPassword',    placeholderKey: 'extras.staff.tempPasswordPlaceholder' },
+              { field: 'new' as const,     labelKey: 'staff.newPassword',     key: 'newPassword',     placeholderKey: 'extras.staff.newPasswordPlaceholder' },
+              { field: 'confirm' as const, labelKey: 'staff.confirmPassword', key: 'confirmPassword', placeholderKey: 'extras.staff.confirmPasswordPlaceholder' },
+            ] as const).map(({ field, labelKey, key, placeholderKey }) => (
               <div key={key}>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t(labelKey)}</label>
                 <div className="relative">
                   <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type={showPass[field] ? 'text' : 'password'}
-                    required
                     value={form[key as keyof typeof form]}
                     onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                    placeholder={placeholder}
+                    placeholder={t(placeholderKey)}
                     className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-lg text-sm outline-none"
                     style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
                     onFocus={e => (e.target.style.borderColor = TEAL)}
@@ -101,9 +104,9 @@ export default function StaffChangePasswordPage() {
               style={{ backgroundColor: TEAL }}
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.saving')}</>
               ) : (
-                'Set Password & Continue'
+                t('extras.staff.setPasswordContinue')
               )}
             </button>
           </form>

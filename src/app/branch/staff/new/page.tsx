@@ -157,9 +157,9 @@ export default function NewStaffPage() {
             <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               <option value="">{t('form.select')}</option>
-              <option>{t('form.male')}</option>
-              <option>{t('form.female')}</option>
-              <option>{t('form.other')}</option>
+              <option value="MALE">{t('form.male')}</option>
+              <option value="FEMALE">{t('form.female')}</option>
+              <option value="OTHER">{t('form.other')}</option>
             </select>
           </div>
           <div className="col-span-2">
@@ -214,7 +214,7 @@ export default function NewStaffPage() {
                           : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       }`}
                     >
-                    {perm.replace(/_/g, ' ')}
+                    {t(`permissions.${perm}`, { defaultValue: perm.replace(/_/g, ' ') })}
                     </button>
                 ))}
                 </div>

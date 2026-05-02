@@ -26,6 +26,11 @@ export default function SuperAdminProfilePage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!passwords.currentPassword || !passwords.newPassword || !passwords.confirmPassword) {
+      toast.error(t('form.fieldRequired'));
+      return;
+    }
+
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast.error(t('profile2.newPasswordsMismatch'));
       return;
@@ -51,7 +56,7 @@ export default function SuperAdminProfilePage() {
         confirmPassword: '',
       });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to change password');
+      toast.error(error.response?.data?.message || t('errors.failedToChangePassword'));
     } finally {
       setChangingPassword(false);
     }
@@ -65,7 +70,7 @@ export default function SuperAdminProfilePage() {
                {t('common.profile')}
               </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage your super admin account
+              {t('extras.superAdmin.manageAccount')}
               </p>
           </div>
 
@@ -73,7 +78,7 @@ export default function SuperAdminProfilePage() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
               <UserCircleIcon className="w-6 h-6" />
-              Account Information
+              {t('extras.superAdmin.accountInformation')}
               </h2>
 
             <div className="flex items-center gap-6 mb-6">
@@ -82,13 +87,13 @@ export default function SuperAdminProfilePage() {
                 </div>
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Super Admin
+                  {t('roles.superAdmin')}
                   </h3>
                 <p className="text-gray-600 dark:text-gray-400">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <ShieldCheckIcon className="w-4 h-4 text-green-500" />
                   <span className="text-sm text-green-600 dark:text-green-400">
-                    Administrator Access
+                    {t('extras.superAdmin.administratorAccess')}
                     </span>
                 </div>
               </div>
@@ -98,7 +103,7 @@ export default function SuperAdminProfilePage() {
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('form.role')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
-                  Super Administrator
+                  {t('roles.superAdministrator')}
                   </p>
               </div>
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
@@ -114,47 +119,42 @@ export default function SuperAdminProfilePage() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
               <LockClosedIcon className="w-6 h-6" />
-              Change Password
+              {t('profile2.changePassword')}
               </h2>
 
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Current Password
+                  {t('extras.profile.currentPassword')}
                   </label>
                 <input
                     type="password"
                     value={passwords.currentPassword}
                     onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-                    required
                     className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  New Password
+                  {t('extras.profile.newPassword')}
                   </label>
                 <input
                     type="password"
                     value={passwords.newPassword}
                     onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                    required
-                    minLength={8}
                     className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Confirm New Password
+                  {t('extras.profile.confirmNewPassword')}
                   </label>
                 <input
                     type="password"
                     value={passwords.confirmPassword}
                     onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
-                    required
-                    minLength={8}
                     className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                   />
               </div>
@@ -170,7 +170,7 @@ export default function SuperAdminProfilePage() {
                     <span>{t('profile2.changingPassword')}</span>
                   </div>
                 ) : (
-                    'Change Password'
+                    t('profile2.changePassword')
                   )}
                 </button>
             </form>
@@ -182,11 +182,10 @@ export default function SuperAdminProfilePage() {
               <ShieldCheckIcon className="w-6 h-6 text-blue-600 shrink-0" />
               <div>
                 <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-2">
-                  Security Recommendation
+                  {t('extras.superAdmin.securityRecommendation')}
                   </h3>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  As a super administrator, it's recommended to change your password regularly
-                    and use a strong password with a combination of letters, numbers, and symbols.
+                  {t('extras.superAdmin.securityRecommendationText')}
                   </p>
               </div>
             </div>

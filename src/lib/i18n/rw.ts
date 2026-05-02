@@ -596,6 +596,7 @@ export const rw = {
     provideReason: 'Nyamuneka tanga impamvu',
     provideRejectionReason: 'Tanga impamvu yo kwanga',
     assignPermission: 'Nyamuneka ha nibura uruhushya rumwe',
+    fieldRequired: 'Iri gasanduku rigomba kuzuzwa', // [REVIEW RW]
     selectBranch: 'Nyamuneka hitamo ishami',
     fillAllDocuments: 'Nyamuneka uzuza nimero zose z\'inyandiko zikenewe',
     selectPrescriptionFirst: 'Nyamuneka banza uhitemo dosiye y\'urwandiko',
@@ -647,6 +648,7 @@ export const rw = {
     failedToDeleteStaff: 'Gukuraho umukozi byananiranye',
     failedToResendCredentials: 'Kohereza nimero z\'umutungo byananiranye',
     uploadFailed: 'Kohereza inyandiko byananiranye',
+    failedToChangePassword: 'Guhindura ijambobanga byananiranye', // [REVIEW RW]
   },
   success: {
     clockInApproved: 'Kwinjira kwemejwe',
@@ -1516,6 +1518,9 @@ export const rw = {
       pendingPharmaciesTitle: 'Farumasi Zitegerejwe',
       pendingVerifications: 'Kugenzura Bitegerejwe',
       locationReviews: 'Isuzuma ry\'Ahantu',
+      manageAccount: 'Gucunga konti yawe y\'umuyobozi mukuru', // [REVIEW RW]
+      securityRecommendation: 'Inama yo Umutekano', // [REVIEW RW]
+      securityRecommendationText: 'Nka umuyobozi mukuru, birasabwa guhindura ijambobanga buri gihe no gukoresha ijambobanga rikomeye rifite inyuguti, imibare, n\'ibimenyetso.', // [REVIEW RW]
     },
     cashier: {
       insurancePlaceholder: 'Urugero: RSSB, MMI',
@@ -1635,5 +1640,30 @@ export const rw = {
       completedSubtitle: 'Reba amateka y\'itumiza ryawe rishaje',
       shoppingCart: 'Agasanduku ko Kugura',
     },
+  },
+  permissions: {
+    VIEW_ORDERS: 'Reba Itumiza', // [REVIEW RW]
+    ACCEPT_ORDERS: 'Emeza Itumiza', // [REVIEW RW]
+    UPDATE_ORDER_STATUS: 'Vugurura Imimerere y\'Itumiza', // [REVIEW RW]
+    CANCEL_ORDERS: 'Kureka Itumiza', // [REVIEW RW]
+    VIEW_INVENTORY: 'Reba Ububiko', // [REVIEW RW]
+    ADD_MEDICATION: 'Ongeraho Umuti', // [REVIEW RW]
+    EDIT_MEDICATION: 'Hindura Umuti', // [REVIEW RW]
+    DELETE_MEDICATION: 'Siba Umuti', // [REVIEW RW]
+    MANAGE_STOCK_TRANSFERS: 'Gucunga Imigendanyo y\'Ububiko', // [REVIEW RW]
+    VIEW_PAYMENTS: 'Reba Ibihano', // [REVIEW RW]
+    PROCESS_PAYMENTS: 'Gutunganya Ibihano', // [REVIEW RW]
+    ISSUE_REFUNDS: 'Gusubiza Amafaranga', // [REVIEW RW]
+    VIEW_PRESCRIPTIONS: 'Reba Indondeko', // [REVIEW RW]
+    APPROVE_PRESCRIPTIONS: 'Emeza Indondeko', // [REVIEW RW]
+    REJECT_PRESCRIPTIONS: 'Kanga Indondeko', // [REVIEW RW]
+    VIEW_ANALYTICS: 'Reba Isesengura', // [REVIEW RW]
+    VIEW_REPORTS: 'Reba Raporo', // [REVIEW RW]
+    EXPORT_DATA: 'Kohereza Amakuru', // [REVIEW RW]
+    VIEW_CUSTOMERS: 'Reba Abakiriya', // [REVIEW RW]
+    MANAGE_CUSTOMER_INFO: 'Gucunga Amakuru y\'Abakiriya', // [REVIEW RW]
+    VIEW_STAFF: 'Reba Abakozi', // [REVIEW RW]
+    MANAGE_STAFF: 'Gucunga Abakozi', // [REVIEW RW]
+    MANAGE_BRANCH_SETTINGS: 'Gucunga Igenamigambi ry\'Ishami', // [REVIEW RW]
   },
 };
