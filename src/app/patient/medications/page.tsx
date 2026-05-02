@@ -122,7 +122,7 @@ export default function SearchMedications() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md p-12 text-center mt-6">
             <MagnifyingGlassIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <p className="text-gray-800 dark:text-gray-200 text-xl font-semibold mb-2">{t('medications.noMedications')}</p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Try using different keywords or checking your spelling.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{t('extras.medications.tryDifferentKeywords')}</p>
           </div>
         )}
         </>
@@ -132,7 +132,7 @@ export default function SearchMedications() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md p-12 text-center mt-6">
         <ShoppingCartIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
         <p className="text-gray-800 dark:text-gray-200 text-xl font-semibold mb-2">{t('search.enterMedicationName')}</p>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">Search across all registered pharmacies instantly.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">{t('extras.medications.searchHint')}</p>
       </div>
     )}
     </div>

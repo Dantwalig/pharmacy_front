@@ -207,15 +207,15 @@ export default function BranchTransfersPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex bg-gray-100 rounded-xl p-1 w-fit">
           {([
-            { key: 'outgoing', label: `Outgoing (${outgoing.length})` },
-            { key: 'incoming', label: `Incoming (${incoming.length})` },
-          ] as { key: Tab; label: string }[]).map(t => (
+            { key: 'outgoing', label: `${t('branch.outgoing')} (${outgoing.length})` },
+            { key: 'incoming', label: `${t('branch.incoming')} (${incoming.length})` },
+          ] as { key: Tab; label: string }[]).map(tab_ => (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              key={tab_.key}
+              onClick={() => setTab(tab_.key)}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === tab_.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              {t.label}
+              {tab_.label}
             </button>
           ))}
         </div>
@@ -225,7 +225,7 @@ export default function BranchTransfersPage() {
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-medium"
           style={{ backgroundColor: TEAL }}
         >
-          <PlusIcon className="w-4 h-4" /> Request Transfer
+          <PlusIcon className="w-4 h-4" /> {t('transfers.requestTransfer')}
         </button>
       </div>
 
@@ -294,7 +294,7 @@ export default function BranchTransfersPage() {
                   )}
                   <input type="number" required min="1" value={item.quantity}
                     onChange={e => updateItem(i, 'quantity', e.target.value)}
-                    placeholder="Qty"
+                    placeholder={t('extras.branch.qtyPlaceholder')}
                     className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400" />
                   {form.items.length > 1 && (
                     <button type="button" onClick={() => removeItem(i)}
@@ -343,33 +343,33 @@ export default function BranchTransfersPage() {
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
           <ArrowsRightLeftIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-500 font-medium">
-            No {tab} transfers yet
+            {t('common.noData')}
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            {tab === 'outgoing' ? 'Click "Request Transfer" above to start a new request' : 'Transfers sent to your branch will appear here'}
+            {tab === 'outgoing' ? t('transfers.requestManage') : t('transfers.requestManage')}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {displayed.map(t => (
-            <div key={t.id} className="bg-white rounded-2xl border border-gray-100 p-5">
+          {displayed.map(tr => (
+            <div key={tr.id} className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-3 flex-wrap">
                     <p className="font-semibold text-gray-900 text-sm">
                       {tab === 'outgoing'
-                        ? `To: ${t.toBranch?.name ?? t.toBranchId}`
-                        : `From: ${t.fromBranch?.name ?? t.fromBranchId}`}
+                        ? `${t('extras.branch.transferToBranch')}: ${tr.toBranch?.name ?? tr.toBranchId}`
+                        : `${t('extras.branch.transferFromBranch')}: ${tr.fromBranch?.name ?? tr.fromBranchId}`}
                     </p>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[t.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {t.status}
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[tr.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {t(`transferStatus.${tr.status.toLowerCase()}`)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">Requested: {formatDate(t.createdAt)}</p>
-                  {t.notes && <p className="text-xs text-gray-500 italic">{t.notes}</p>}
-                  {t.items && t.items.length > 0 && (
+                  <p className="text-xs text-gray-500">{tr.createdAt ? formatDate(tr.createdAt) : ''}</p>
+                  {tr.notes && <p className="text-xs text-gray-500 italic">{tr.notes}</p>}
+                  {tr.items && tr.items.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {t.items.map((item: any, i: number) => (
+                      {tr.items.map((item: any, i: number) => (
                         <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">
                           {item.medication?.name ?? item.medicationId} x{item.quantity}
                         </span>

@@ -22,6 +22,10 @@ export default function BranchChangePasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.tempPassword || !form.newPassword || !form.confirmPassword) {
+      toast.error(t('form.fieldRequired'));
+      return;
+    }
     if (form.newPassword !== form.confirmPassword) {
       toast.error(t('form.passwordsDoNotMatch'));
       return;
@@ -41,7 +45,7 @@ export default function BranchChangePasswordPage() {
       toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to change password');
+      toast.error(err.response?.data?.message || t('errors.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +65,7 @@ export default function BranchChangePasswordPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.changePasswordTitle')}</h1>
           <p className="text-sm text-gray-500 mt-2">
-            You're logging in for the first time. Please set a permanent password to continue.
+            {t('extras.branch.firstTimeLoginNotice')}
             </p>
         </div>
 
@@ -69,13 +73,12 @@ export default function BranchChangePasswordPage() {
           {/* Current (temp) password */}
             <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              Temporary Password
+              {t('branch.tempPassword')}
               </label>
             <div className="relative">
               <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                   type={showPass.current ? 'text' : 'password'}
-                  required
                   value={form.tempPassword}
                   onChange={e => setForm(p => ({...p, tempPassword: e.target.value}))}
                   placeholder={t('branch.tempPassword')}
@@ -90,14 +93,12 @@ export default function BranchChangePasswordPage() {
           {/* New password */}
             <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              New Password
+              {t('branch.newPassword')}
               </label>
             <div className="relative">
               <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                   type={showPass.new ? 'text' : 'password'}
-                  required
-                  minLength={8}
                   value={form.newPassword}
                   onChange={e => setForm(p => ({...p, newPassword: e.target.value}))}
                   placeholder={t('signup.minChars')}
@@ -112,13 +113,12 @@ export default function BranchChangePasswordPage() {
           {/* Confirm password */}
             <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              Confirm New Password
+              {t('branch.confirmPassword')}
               </label>
             <div className="relative">
               <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                   type={showPass.confirm ? 'text' : 'password'}
-                  required
                   value={form.confirmPassword}
                   onChange={e => setForm(p => ({...p, confirmPassword: e.target.value}))}
                   placeholder={t('branch.confirmPassword')}
@@ -136,9 +136,9 @@ export default function BranchChangePasswordPage() {
               className="w-full bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
             {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.saving')}</>
             ) : (
-                'Set Password & Continue'
+                t('extras.branch.setPasswordContinue')
               )}
             </button>
         </form>

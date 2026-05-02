@@ -30,12 +30,12 @@ interface StaffProfile {
   status: string;
 }
 
-const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
-  PENDING:     { label: 'Waiting for approval',          color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
-  APPROVED:    { label: 'Active shift, clocked in',       color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
-  CLOCKED_OUT: { label: 'Clock-out pending approval',     color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400'  },
-  COMPLETED:   { label: 'Shift completed',                color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
-  REJECTED:    { label: 'Request rejected',               color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
+const STATUS_INFO: Record<string, { labelKey: string; color: string; dot: string }> = {
+  PENDING:     { labelKey: 'extras.staff.statusWaitingApproval',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
+  APPROVED:    { labelKey: 'extras.staff.statusActiveShift',      color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
+  CLOCKED_OUT: { labelKey: 'extras.staff.statusClockOutPending',  color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-400'  },
+  COMPLETED:   { labelKey: 'extras.staff.statusShiftCompleted',   color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
+  REJECTED:    { labelKey: 'extras.staff.statusRequestRejected',  color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
 };
 
 export default function StaffDashboardPage() {
@@ -84,10 +84,10 @@ export default function StaffDashboardPage() {
 
           return {
             id: o.id.slice(0, 8).toUpperCase(),
-            type: o.prescription ? 'Prescription' : o.type || 'Order',
+            type: o.prescription ? t('extras.staff.activityPrescription') : o.type || t('extras.staff.activityOrder'),
             amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
             time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            status: o.status.replace(/_/g, ' '),
+            status: t(`orderStatus.${o.status.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`),
             color: statusColor
           };
         });
@@ -107,7 +107,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to clock in');
+      toast.error(err.response?.data?.message || t('errors.failedToClockIn'));
     } finally { setActionLoading(false); }
   };
 
@@ -118,7 +118,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to clock out');
+      toast.error(err.response?.data?.message || t('errors.failedToClockOut'));
     } finally { setActionLoading(false); }
   };
 
@@ -237,7 +237,7 @@ export default function StaffDashboardPage() {
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 : <ClockIcon className="w-5 h-5" />}
-              Clock In
+              {t('staff.clockIn')}
             </button>
           </div>
         ) : (
@@ -245,7 +245,7 @@ export default function StaffDashboardPage() {
             {shiftInfo && (
               <div className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${shiftInfo.color}`}>
                 <span className={`w-3 h-3 rounded-full shrink-0 ${shiftInfo.dot}`} />
-                <span className="font-medium text-sm">{shiftInfo.label}</span>
+                <span className="font-medium text-sm">{t(shiftInfo.labelKey)}</span>
               </div>
             )}
 
@@ -255,7 +255,7 @@ export default function StaffDashboardPage() {
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
                 {todayShift.clockInApprover && (
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
-                    Approved by {todayShift.clockInApprover.firstName}
+                    {t('extras.staff.approvedByName', { name: todayShift.clockInApprover.firstName })}
                   </p>
                 )}
               </div>
@@ -263,14 +263,14 @@ export default function StaffDashboardPage() {
                 <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
                 {todayShift.totalHours && (
-                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
+                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} {t('extras.staff.hoursWorked')}</p>
                 )}
               </div>
             </div>
 
             {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
+                <p className="text-xs text-red-600 font-medium">{t('extras.staff.rejectionReasonLabel')} {todayShift.rejectionReason}</p>
               </div>
             )}
 
@@ -283,7 +283,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Clock Out
+                {t('staff.clockOut')}
               </button>
             )}
 
@@ -297,7 +297,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Try Again
+                {t('extras.staff.tryAgain')}
               </button>
             )}
           </div>

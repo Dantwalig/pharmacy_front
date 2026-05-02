@@ -12,31 +12,31 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 // All permissions grouped by category
 const PERMISSION_GROUPS = [
   {
-    label: 'Orders',
+    labelKey: 'staff.orders',
     perms: ['VIEW_ORDERS', 'ACCEPT_ORDERS', 'UPDATE_ORDER_STATUS', 'CANCEL_ORDERS'],
   },
   {
-    label: 'Inventory',
+    labelKey: 'staff.inventory',
     perms: ['VIEW_INVENTORY', 'ADD_MEDICATION', 'EDIT_MEDICATION', 'DELETE_MEDICATION', 'MANAGE_STOCK_TRANSFERS'],
   },
   {
-    label: 'Payments',
+    labelKey: 'cashier.paymentsNav',
     perms: ['VIEW_PAYMENTS', 'PROCESS_PAYMENTS', 'ISSUE_REFUNDS'],
   },
   {
-    label: 'Prescriptions',
+    labelKey: 'staff.prescriptions',
     perms: ['VIEW_PRESCRIPTIONS', 'APPROVE_PRESCRIPTIONS', 'REJECT_PRESCRIPTIONS'],
   },
   {
-    label: 'Analytics',
+    labelKey: 'pharmacyOwner.analytics',
     perms: ['VIEW_ANALYTICS', 'VIEW_REPORTS', 'EXPORT_DATA'],
   },
   {
-    label: 'Customers',
+    labelKey: 'staffMgmt.permCustomers',
     perms: ['VIEW_CUSTOMERS', 'MANAGE_CUSTOMER_INFO'],
   },
   {
-    label: 'Staff & Settings',
+    labelKey: 'staffMgmt.permStaffSettings',
     perms: ['VIEW_STAFF', 'MANAGE_STAFF', 'MANAGE_BRANCH_SETTINGS'],
   },
 ];
@@ -157,9 +157,9 @@ export default function NewStaffPage() {
             <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               <option value="">{t('form.select')}</option>
-              <option>{t('form.male')}</option>
-              <option>{t('form.female')}</option>
-              <option>{t('form.other')}</option>
+              <option value="MALE">{t('form.male')}</option>
+              <option value="FEMALE">{t('form.female')}</option>
+              <option value="OTHER">{t('form.other')}</option>
             </select>
           </div>
           <div className="col-span-2">
@@ -195,13 +195,13 @@ export default function NewStaffPage() {
       {/* Permissions */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Permissions
+          {t('staffMgmt.permissions')}
             <span className="ml-2 text-sm font-normal text-gray-500">({form.permissions.length} selected)</span>
         </h2>
         <div className="space-y-4">
           {PERMISSION_GROUPS.map(group => (
-              <div key={group.label}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{group.label}</p>
+              <div key={group.labelKey}>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t(group.labelKey)}</p>
               <div className="flex flex-wrap gap-2">
                 {group.perms.map(perm => (
                     <button
@@ -214,7 +214,7 @@ export default function NewStaffPage() {
                           : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       }`}
                     >
-                    {perm.replace(/_/g, ' ')}
+                    {t(`permissions.${perm}`, { defaultValue: perm.replace(/_/g, ' ') })}
                     </button>
                 ))}
                 </div>

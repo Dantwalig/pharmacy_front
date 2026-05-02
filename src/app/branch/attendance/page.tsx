@@ -69,7 +69,7 @@ export default function BranchAttendancePage() {
     try {
       // PUT /attendance/:id/{action}
       await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
-      toast.success(isReject ? 'Rejected' : 'Approved');
+      toast.success(isReject ? t('attendanceStatus.rejected') : t('attendanceStatus.approved'));
       await fetchAttendance(); // Refresh
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Action failed');
@@ -109,7 +109,7 @@ export default function BranchAttendancePage() {
               }`}
               style={filter === status ? { backgroundColor: '#2D9B8A' } : {}}
             >
-            {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
+            {status === 'all' ? t('common.all') : status.replace(/_/g, ' ')}
             </button>
         ))}
         </div>
@@ -142,7 +142,7 @@ export default function BranchAttendancePage() {
                     <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
                       {record.staff.firstName} {record.staff.lastName}
                       </p>
-                    <p className="text-xs text-gray-500">{record.staff.user.role}</p>
+                    <p className="text-xs text-gray-500">{t(`roles.${record.staff.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}</p>
                   </td>
                   <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(record.clockInTime)}

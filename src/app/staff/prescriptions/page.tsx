@@ -150,7 +150,7 @@ export default function StaffPrescriptionsPage() {
                         : `Prescription #${p.id.slice(0, 8)}`}
                     </p>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {p.status}
+                      {t(`prescriptionStatus.${p.status.toLowerCase()}`)}
                     </span>
                   </div>
 
@@ -210,13 +210,13 @@ export default function StaffPrescriptionsPage() {
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50"
                           style={{ backgroundColor: TEAL }}>
                           <CheckCircleIcon className="w-4 h-4" />
-                          {actionId === p.id ? 'Verifying...' : 'Verify'}
+                          {actionId === p.id ? t('extras.prescriptions.verifying') : t('staff.verify')}
                         </button>
                         <button onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
                           disabled={!!actionId}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50">
                           <XCircleIcon className="w-4 h-4" />
-                          Reject
+                          {t('staff.reject')}
                         </button>
                       </>
                     )}

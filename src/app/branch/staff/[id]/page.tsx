@@ -58,6 +58,8 @@ interface AttendanceRecord {
   clockOutApprover?: { firstName: string; lastName: string };
 }
 
+const GENDER_KEYS: Record<string, string> = { male: 'form.male', female: 'form.female', other: 'form.other' };
+
 export default function StaffDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -90,14 +92,14 @@ export default function StaffDetailPage() {
   const handleDeactivate = async () => {
     if (!staff) return;
     const name = `${staff.firstName} ${staff.lastName}`;
-    if (!confirm(`Remove ${name} from the branch? This cannot be undone.`)) return;
+    if (!confirm(t('extras.branch.confirmRemoveStaff', { name }))) return;
     setDeactivating(true);
     try {
       await api.delete(`/staff/${staffId}`);
-      toast.success(`${name} has been removed`);
+      toast.success(t('extras.branch.staffRemovedToast', { name }));
       router.push('/branch/staff');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to remove staff member');
+      toast.error(err.response?.data?.message || t('errors.failedToDeleteStaff'));
     } finally { setDeactivating(false); }
   };
 
@@ -117,10 +119,10 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> Back to Staff
+        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
       </button>
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
-        Staff member not found.
+        {t('staffMgmt.noStaffYet')}
       </div>
     </div>
   );
@@ -131,7 +133,7 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> Back to Staff
+        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
       </button>
 
       {/* Hero */}
@@ -145,10 +147,10 @@ export default function StaffDetailPage() {
             <h1 className="text-2xl font-bold">{staff.firstName} {staff.lastName}</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white`}>
-                {staff.user.role}
+                {t(`roles.${staff.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${staff.status === 'ACTIVE' ? 'bg-green-400/30 text-green-100' : 'bg-gray-400/30 text-gray-200'}`}>
-                {staff.status}
+                {t(`staffStatus.${staff.status.toLowerCase()}`)}
               </span>
             </div>
           </div>
@@ -165,9 +167,9 @@ export default function StaffDetailPage() {
       {/* Attendance summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Total Shifts',      value: attendance.length },
-          { label: 'Completed Shifts',  value: completedShifts   },
-          { label: 'Total Hours',       value: `${totalHours.toFixed(1)}h` },
+          { label: t('branch.totalShifts'),     value: attendance.length },
+          { label: t('branch.completedShifts'), value: completedShifts   },
+          { label: t('branch.totalHours'),      value: `${totalHours.toFixed(1)}h` },
         ].map((s, i) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -185,12 +187,12 @@ export default function StaffDetailPage() {
         <h2 className="font-semibold text-gray-800 mb-4">{t('staffMgmt.profileInformation')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { icon: EnvelopeIcon,      label: 'Email',       value: staff.user.email },
-            { icon: PhoneIcon,         label: 'Phone',       value: staff.phone || '—' },
-            { icon: IdentificationIcon,label: 'National ID', value: staff.nationalId || '—' },
-            { icon: UserCircleIcon,    label: 'Gender',      value: staff.gender || '—' },
-            { icon: ClockIcon,         label: 'Date of Birth', value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
-            { icon: ClockIcon,         label: 'Member Since', value: formatDate(staff.createdAt) },
+            { icon: EnvelopeIcon,      label: t('common.email'),             value: staff.user.email },
+            { icon: PhoneIcon,         label: t('common.phone'),             value: staff.phone || '—' },
+            { icon: IdentificationIcon,label: t('form.nationalId'),          value: staff.nationalId || '—' },
+            { icon: UserCircleIcon,    label: t('form.gender'),              value: staff.gender ? (t(GENDER_KEYS[staff.gender.toLowerCase()] ?? '') || staff.gender) : '—' },
+            { icon: ClockIcon,         label: t('form.dateOfBirth'),         value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
+            { icon: ClockIcon,         label: t('extras.staff.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
@@ -212,7 +214,7 @@ export default function StaffDetailPage() {
             <div className="flex flex-wrap gap-2">
               {staff.permissions.permissions.map(p => (
                 <span key={p} className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  {p.replace(/_/g, ' ')}
+                  {t(`permissions.${p}`, { defaultValue: p.replace(/_/g, ' ') })}
                 </span>
               ))}
             </div>
@@ -230,14 +232,14 @@ export default function StaffDetailPage() {
         {attendance.length === 0 ? (
           <div className="p-10 text-center text-gray-400 text-sm">
             <ClockIcon className="w-10 h-10 mx-auto mb-3 text-gray-200" />
-            No attendance records yet
+            {t('attendance.noRecordsYet')}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Date', 'Clock In', 'Clock Out', 'Hours', 'Status'].map(h => (
+                  {[t('common.date'), t('attendance.clockIn'), t('attendance.clockOut'), t('attendance.hours'), t('common.status')].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       {h}
                     </th>

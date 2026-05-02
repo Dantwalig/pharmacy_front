@@ -64,7 +64,7 @@ export default function SearchPage() {
       setAllPharmacies(data);
       setMapPharmacies(data);
     } catch {
-      toast.error('Failed to load pharmacies.');
+      toast.error(t('errors.failedToLoadPharmacies'));
     } finally {
       setMapLoading(false);
     }
@@ -95,7 +95,7 @@ export default function SearchPage() {
           p.address.toLowerCase().includes(q.toLowerCase())
       );
       setMapPharmacies(filtered.length ? filtered : allPharmacies);
-      if (!filtered.length) toast('No pharmacies matched.', { icon: '🔍' });
+      if (!filtered.length) toast(t('search.noPharmaciesFound'), { icon: '🔍' });
       return;
     }
 
@@ -133,14 +133,14 @@ export default function SearchPage() {
       requiresPrescription: med.requiresPrescription,
       imageUrl: med.imageUrl,
     });
-    toast.success(`${med.name} added to cart!`);
+    toast.success(t('cart2.addedToCartName', { name: med.name }));
   };
 
   // ── Header slot for MapLayout ──
   const mapHeader = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-        {geoStatus === 'success' ? 'Pharmacies Near You' : 'All Pharmacies'}
+        {geoStatus === 'success' ? t('extras.search.nearYou') : t('extras.search.allPharmaciesTab')}
         <span
           className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full"
           style={{ background: `${NAVY}15`, color: NAVY }}
@@ -152,7 +152,7 @@ export default function SearchPage() {
       <div className="flex gap-2">
         <button
           onClick={() => setViewMode('map')}
-          title="Map view"
+          title={t('extras.search.mapView')}
           className="p-2.5 rounded-xl transition-all"
           style={viewMode === 'map' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
         >
@@ -160,7 +160,7 @@ export default function SearchPage() {
         </button>
         <button
           onClick={() => setViewMode('list')}
-          title="List view"
+          title={t('extras.search.listView')}
           className="p-2.5 rounded-xl transition-all"
           style={viewMode === 'list' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
         >
@@ -177,7 +177,7 @@ export default function SearchPage() {
         className="rounded-2xl shadow-xl p-8 text-white"
         style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
       >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Find Pharmacy & Medicine</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('extras.search.findTagline')}</h1>
         <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
       </div>
 
@@ -190,7 +190,7 @@ export default function SearchPage() {
               type="text"
               placeholder={
                 activeTab === 'pharmacies'
-                  ? 'Search pharmacies by name or area…'
+                  ? t('pharmacies.searchPlaceholder')
                   : t('search.searchPlaceholder')
               }
               value={searchQuery}
@@ -204,7 +204,7 @@ export default function SearchPage() {
             className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap"
             style={{ background: TEAL }}
           >
-            Search
+            {t('common.search')}
           </button>
         </div>
       </form>
@@ -222,7 +222,7 @@ export default function SearchPage() {
                 : { background: '#e5e7eb', color: '#374151' }
             }
           >
-            {tab}
+            {tab === 'pharmacies' ? t('pharmacies.pharmacies') : t('medications.medications')}
           </button>
         ))}
       </div>
@@ -245,9 +245,9 @@ export default function SearchPage() {
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-8 h-8 shrink-0" />
                 <div>
-                  <p className="font-bold text-lg">Find Pharmacies Near Me</p>
+                  <p className="font-bold text-lg">{t('extras.search.findNearMe')}</p>
                   <p className="text-sm opacity-90">
-                    Allow location access to see pharmacies sorted by distance.
+                    {t('extras.search.allowLocation')}
                   </p>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function SearchPage() {
                 className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60"
                 style={{ color: TEAL }}
               >
-                {geoStatus === 'loading' ? 'Locating…' : 'Use My Location'}
+                {geoStatus === 'loading' ? t('extras.search.locating') : t('extras.search.useMyLocation')}
               </button>
             </div>
           )}
@@ -333,7 +333,7 @@ export default function SearchPage() {
                         RWF {med.price?.toLocaleString()}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                        {med.quantity > 0 ? `In Stock (${med.quantity})` : 'Out of Stock'}
+                        {med.quantity > 0 ? `${t('inventory.inStock')} (${med.quantity})` : t('inventory.outOfStock')}
                       </span>
                     </div>
                     <button
@@ -342,7 +342,7 @@ export default function SearchPage() {
                       className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40"
                       style={{ background: TEAL }}
                     >
-                      Add to Cart
+                      {t('medications.addToCart')}
                     </button>
                   </div>
                 </div>

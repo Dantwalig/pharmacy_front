@@ -43,7 +43,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
         <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
       </button>
       <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">
-        Evuze Healthcare Platform
+        {t('topbar.eVuzeHealthcare')}
         </h1>
     </div>
 
@@ -73,7 +73,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
             className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 lg:px-3 py-2 rounded-lg transition-colors"
           >
           <span className="font-medium text-gray-800 dark:text-gray-200 text-sm hidden sm:block">
-            {user?.email?.split('@')[0] || 'Patient'}
+            {user?.email?.split('@')[0] || t('roles.patient')}
             </span>
           <ChevronDownIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
         </button>
@@ -86,14 +86,14 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
                   onClick={() => setShowDropdown(false)}
                   className="block w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                My Profile
+                {t('extras.profile.myProfile')}
                 </Link>
               <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
               <button
                   onClick={() => { logout(); setShowDropdown(false); router.push('/login'); }}
                   className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
-                Logout
+                {t('common.logout')}
                 </button>
             </div>
           </div>

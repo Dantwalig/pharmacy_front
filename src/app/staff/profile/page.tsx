@@ -35,6 +35,8 @@ const ROLE_COLORS: Record<string, string> = {
   NURSE:      'bg-blue-100 text-blue-800',
 };
 
+const GENDER_KEYS: Record<string, string> = { male: 'form.male', female: 'form.female', other: 'form.other' };
+
 export default function StaffProfilePage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -79,12 +81,12 @@ export default function StaffProfilePage() {
             </h2>
           <div className="flex items-center gap-2 mt-1">
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[profile.user.role] || 'bg-gray-100 text-gray-700'}`}>
-              {profile.user.role}
+              {t(`roles.${profile.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
               </span>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                 profile.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
               }`}>
-              {profile.status}
+              {t(`staffStatus.${profile.status.toLowerCase()}`)}
               </span>
           </div>
         </div>
@@ -92,12 +94,12 @@ export default function StaffProfilePage() {
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         {[
-            { label: 'Email', value: profile.user.email },
-            { label: 'Phone', value: profile.phone || '—' },
-            { label: 'National ID', value: profile.nationalId || '—' },
-            { label: 'Gender', value: profile.gender || '—' },
-            { label: 'Date of Birth', value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
-            { label: 'Member Since', value: new Date(profile.createdAt).toLocaleDateString() },
+            { label: t('common.email'),             value: profile.user.email },
+            { label: t('common.phone'),             value: profile.phone || '—' },
+            { label: t('form.nationalId'),          value: profile.nationalId || '—' },
+            { label: t('form.gender'),              value: profile.gender ? (t(GENDER_KEYS[profile.gender.toLowerCase()] ?? '') || profile.gender) : '—' },
+            { label: t('form.dateOfBirth'),         value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
+            { label: t('extras.staff.memberSince'), value: new Date(profile.createdAt).toLocaleDateString() },
           ].map(({ label, value }) => (
             <div key={label}>
             <p className="text-xs text-gray-500">{label}</p>
@@ -129,8 +131,8 @@ export default function StaffProfilePage() {
     {/* Permissions */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-        My Permissions
-          <span className="ml-2 text-sm font-normal text-gray-500">({permissions.length} granted)</span>
+        {t('extras.staff.myPermissions')}
+          <span className="ml-2 text-sm font-normal text-gray-500">({permissions.length} {t('extras.staff.granted')})</span>
       </h3>
       {permissions.length === 0 ? (
           <p className="text-gray-400 text-sm">{t('profile2.noPermissionsAssigned')}</p>
@@ -138,7 +140,7 @@ export default function StaffProfilePage() {
           <div className="flex flex-wrap gap-2">
           {permissions.map((perm) => (
               <span key={perm} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ backgroundColor: '#F0F7F6', color: '#2D9B8A' }}>
-              {perm.replace(/_/g, ' ')}
+              {t(`permissions.${perm}`, { defaultValue: perm.replace(/_/g, ' ') })}
               </span>
           ))}
           </div>
@@ -151,7 +153,7 @@ export default function StaffProfilePage() {
         className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-medium text-sm transition-all"
       >
       <LockClosedIcon className="w-4 h-4" />
-      Change Password
+      {t('profile2.changePassword')}
       </button>
   </div>
 );
