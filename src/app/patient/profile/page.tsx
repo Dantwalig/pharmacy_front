@@ -75,9 +75,9 @@ export default function PatientProfilePage() {
     {/* Tab Nav */}
       <div className="flex gap-2 flex-wrap">
       {([
-          { id: 'profile', label: 'Profile Info', icon: UserCircleIcon },
-          { id: 'security', label: 'Security', icon: LockClosedIcon },
-          { id: 'notifications', label: 'Notifications', icon: BellIcon },
+          { id: 'profile', label: t('extras.profile.tabInfo'), icon: UserCircleIcon },
+          { id: 'security', label: t('extras.profile.tabSecurity'), icon: LockClosedIcon },
+          { id: 'notifications', label: t('extras.profile.tabNotifications'), icon: BellIcon },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'bg-[#2D9B8A] text-white shadow' : 'bg-white text-gray-700 hover:shadow-md'}`}>
@@ -135,7 +135,7 @@ export default function PatientProfilePage() {
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
-            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : 'Save Changes'}
+            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : t('common.saveChanges')}
             </button>
         </div>
       </form>
@@ -148,7 +148,7 @@ export default function PatientProfilePage() {
         {['currentPassword', 'newPassword', 'confirmPassword'].map((field, i) => (
             <div key={field}>
             <label className="block text-xs font-semibold text-gray-600 mb-1">
-              {['Current Password','New Password','Confirm New Password'][i]}
+              {[t('extras.profile.currentPassword'), t('extras.profile.newPassword'), t('extras.profile.confirmNewPassword')][i]}
               </label>
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} required minLength={field !== 'currentPassword' ? 8 : 1}
@@ -165,7 +165,7 @@ export default function PatientProfilePage() {
           <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50">
-            {saving ? 'Changing...' : 'Change Password'}
+            {saving ? t('extras.profile.changingPassword') : t('extras.profile.changePassword')}
             </button>
         </div>
       </form>
@@ -176,10 +176,10 @@ export default function PatientProfilePage() {
         <div className="bg-white rounded-2xl shadow p-6 space-y-4">
         <h2 className="text-base font-bold text-gray-900 border-b pb-3">{t('profile2.notificationPreferences')}</h2>
         {[
-            { label: 'Order status updates', desc: 'Get notified when your order status changes' },
-            { label: 'Prescription verification', desc: 'Alerts when your prescription is reviewed' },
-            { label: 'Auto-refill reminders', desc: '3 days before your next refill is due' },
-            { label: 'Promotions & offers', desc: 'Special deals from pharmacies near you' },
+            { label: t('extras.profile.prefOrderStatus'), desc: t('extras.profile.prefOrderStatusDesc') },
+            { label: t('extras.profile.prefPrescriptionVerified'), desc: t('extras.profile.prefPrescriptionVerifiedDesc') },
+            { label: t('extras.profile.prefAutoRefill'), desc: t('extras.profile.prefAutoRefillDesc') },
+            { label: t('extras.profile.prefPromotions'), desc: t('extras.profile.prefPromotionsDesc') },
           ].map(item => (
             <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>

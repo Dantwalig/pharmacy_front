@@ -30,11 +30,11 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const getGreeting = () => {
+const getGreetingKey = () => {
   const h = new Date().getHours();
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  return 'Good Evening';
+  if (h < 12) return 'dashboard.goodMorning';
+  if (h < 17) return 'dashboard.goodAfternoon';
+  return 'dashboard.goodEvening';
 };
 
 export default function PatientDashboard() {
@@ -93,8 +93,8 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: 'Shopping Cart',
-      description: 'Review your pending medical items and proceed to checkout.',
+      title: t('extras.patient.shoppingCart'),
+      description: t('extras.patient.cartCardSubtitle'),
       icon: ShoppingCartIcon,
       href: '/patient/cart',
       color: '#1E4D8C',
@@ -102,7 +102,7 @@ export default function PatientDashboard() {
       iconBg: '#BFDBFE',
     },
     {
-      title: 'Active Orders',
+      title: t('extras.patient.activeOrders'),
       description: `You have ${stats.pendingOrders} pending order${stats.pendingOrders !== 1 ? 's' : ''} out for delivery.`,
       icon: BoltIcon,
       href: '/patient/orders',
@@ -111,8 +111,8 @@ export default function PatientDashboard() {
       iconBg: '#FDE68A',
     },
     {
-      title: 'Completed',
-      description: `View history of your past ${stats.completedOrders} completed orders.`,
+      title: t('orders.completed'),
+      description: `${t('extras.patient.completedSubtitle')} ${stats.completedOrders}.`,
       icon: CheckCircleIcon,
       href: '/patient/orders?status=completed',
       color: '#059669',
@@ -148,7 +148,7 @@ export default function PatientDashboard() {
 
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-bold mb-3" style={{ color: NAVY }}>
-            {getGreeting()},<br />{firstName}.
+            {t(getGreetingKey())},<br />{firstName}.
           </h1>
           <p className="text-gray-500 text-lg mb-7">Your health metrics are looking excellent today.</p>
           <Link
@@ -157,7 +157,7 @@ export default function PatientDashboard() {
             style={{ background: TEAL }}
           >
             <MapPinIcon className="w-5 h-5" />
-            Browse Nearby Pharmacies
+            {t('extras.patient.browseNearby')}
           </Link>
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function PatientDashboard() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                Nearby Pharmacies
+                {t('extras.patient.nearbyPharmacies')}
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
                 {mapPharmacies.length} pharmacies on the map
@@ -215,7 +215,7 @@ export default function PatientDashboard() {
             className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
             style={{ background: NAVY }}
           >
-            View All →
+            {t('common.viewAll')} →
           </Link>
         </div>
 
@@ -260,14 +260,14 @@ export default function PatientDashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
-            Recent Medical Orders
+            {t('extras.patient.recentOrders')}
           </h2>
           <Link
             href="/patient/orders"
             className="font-semibold text-sm flex items-center gap-1 hover:underline"
             style={{ color: NAVY }}
           >
-            View All <span className="text-base">›</span>
+            {t('common.viewAll')} <span className="text-base">›</span>
           </Link>
         </div>
 
@@ -324,7 +324,7 @@ export default function PatientDashboard() {
                         style={{ background: s.bg, color: s.color }}
                       >
                         <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
-                        {order.status}
+                        {t(`orderStatus.${order.status.toLowerCase()}`)}
                       </span>
                     </div>
                   </div>

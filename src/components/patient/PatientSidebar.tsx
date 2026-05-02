@@ -19,7 +19,7 @@ import {
 
 const menuItems = [
   { id: 'dashboard', nameKey: 'patient.dashboard', href: '/patient/dashboard', icon: HomeIcon },
-  { id: 'search', nameKey: 'Find Pharmacy & Medicine', href: '/patient/search', icon: MagnifyingGlassIcon },
+  { id: 'search', nameKey: 'extras.search.findTagline', href: '/patient/search', icon: MagnifyingGlassIcon },
   // { id: 'pharmacies-map', nameKey: 'Pharmacy Map', href: '/patient/search', icon: MapPinIcon },
   // commenting out for now since it's the same as search, but can be added back with a different href if needed
   { id: 'cart', nameKey: 'cart.title', href: '/patient/cart', icon: ShoppingCartIcon },
@@ -102,7 +102,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
     <div className="p-4 border-t border-white/10">
       <p className="text-xs text-blue-200 text-center">
-        &copy; 2026 Evuze Platform
+        {t('landing.copyrightShort')}
         </p>
     </div>
   </aside>
