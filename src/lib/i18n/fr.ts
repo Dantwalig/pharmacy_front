@@ -858,7 +858,6 @@ export const fr = {
     selectBranch: 'Sélectionner une agence',
     totalItems: 'Total des articles',
     lowStock: 'Stock faible',
-    outOfStock: 'Rupture de stock',
     categories: 'Catégories',
     allCategories: 'Toutes les catégories',
     all: 'Tous',

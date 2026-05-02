@@ -858,7 +858,6 @@ export const rw = {
     selectBranch: 'Hitamo ishami',
     totalItems: 'Ibintu Byose',
     lowStock: 'Ububiko Buke',
-    outOfStock: 'Nta Bubiko',
     categories: 'Inzego',
     allCategories: 'Inzego Zose',
     all: 'Byose',
