@@ -107,7 +107,7 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('extras.branch.medicationName')} <span className="text-red-500">*</span></label>
             <input type="text" required value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Amoxicillin 500mg" className={inputCls} />
@@ -121,7 +121,7 @@ export default function StaffAddMedicationPage() {
           </div>
 
           <div>
-            <label className={labelCls}>Category <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('extras.inventory.tableCategory')} <span className="text-red-500">*</span></label>
             <select required value={form.category}
               onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={inputCls}>
               {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}

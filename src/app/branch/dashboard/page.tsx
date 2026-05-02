@@ -119,10 +119,10 @@ export default function BranchDashboardPage() {
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   const statCards = [
-    { label: 'Total Staff',       value: staffCount,                                          icon: UserGroupIcon,            dark: false },
-    { label: 'Pending Approvals', value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                dark: false },
-    { label: 'Active Today',      value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
-    { label: 'Hours Worked',      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,  icon: CheckCircleIcon,          dark: true  },
+    { label: t('extras.branch.totalStaff'),         value: staffCount,                                          icon: UserGroupIcon,              dark: false },
+    { label: t('extras.branch.pendingApprovals'),   value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                  dark: false },
+    { label: t('extras.branch.activeToday'),        value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
+    { label: t('extras.branch.hoursWorked'),        value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,   icon: CheckCircleIcon,            dark: true  },
   ];
 
   return (

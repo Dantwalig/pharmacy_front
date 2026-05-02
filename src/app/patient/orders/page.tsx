@@ -315,12 +315,12 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('extras.orders.prescriptionLabel')}</h3>
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Status:{' '}
+                  {t('orders2.status')}{' '}
                   <span
                     className="font-semibold"
                     style={{ color: order.prescription.status === 'APPROVED' ? '#10B981' : '#F59E0B' }}
                   >
-                    {order.prescription.status}
+                    {t(`prescriptionStatus.${order.prescription.status.toLowerCase()}`)}
                   </span>
                 </span>
                 {order.prescription.fileUrl && (

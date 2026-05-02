@@ -180,10 +180,10 @@ export default function BranchMapPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Navigation size={18} className="text-white/70" />
-            <p className="text-white/70 text-sm font-medium">Branch Location</p>
+            <p className="text-white/70 text-sm font-medium">{t('extras.branch.branchLocationLabel')}</p>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Network Map</h1>
-          <p className="mt-1 text-white/60 text-sm">Your branch and nearby network locations</p>
+          <h1 className="text-2xl lg:text-3xl font-bold">{t('extras.branch.networkMapTitle')}</h1>
+          <p className="mt-1 text-white/60 text-sm">{t('extras.branch.networkMapSubtitle')}</p>
         </div>
         <button
           onClick={load}
@@ -208,7 +208,7 @@ export default function BranchMapPage() {
           <div className="text-center space-y-2">
             <AlertCircle size={28} className="mx-auto text-gray-300" />
             <p className="text-sm text-gray-400">Failed to load map data.</p>
-            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>Try again</button>
+            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>{t('extras.common.tryAgain')}</button>
           </div>
         </div>
       ) : (
@@ -218,7 +218,7 @@ export default function BranchMapPage() {
           <div className="lg:col-span-2 space-y-3">
             {/* Layer toggles */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">Layers</span>
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">{t('extras.branch.layers')}</span>
 
               <button
                 onClick={() => setShowSiblings(v => !v)}
@@ -288,20 +288,20 @@ export default function BranchMapPage() {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{myBranch.name}</p>
-                    <p className="text-xs text-gray-400">My Branch</p>
+                    <p className="text-xs text-gray-400">{t('extras.branch.myBranch')}</p>
                   </div>
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <div className="flex gap-2">
-                    <span className="text-gray-400 w-14 shrink-0">Address</span>
+                    <span className="text-gray-400 w-14 shrink-0">{t('common.address')}</span>
                     <span className="text-gray-700 font-medium">{myBranch.address || '—'}</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-gray-400 w-14 shrink-0">Coords</span>
+                    <span className="text-gray-400 w-14 shrink-0">{t('extras.branch.coords')}</span>
                     <span className="font-mono text-[11px] text-gray-500">
                       {myBranch.latitude != null
                         ? `${myBranch.latitude.toFixed(4)}, ${myBranch.longitude.toFixed(4)}`
-                        : <span className="text-amber-500">Not set</span>
+                        : <span className="text-amber-500">{t('common.notSet')}</span>
                       }
                     </span>
                   </div>
@@ -369,7 +369,7 @@ export default function BranchMapPage() {
                       : { backgroundColor: `${TEAL}22`, color: TEAL }
                   }
                 >
-                  {selectedMarker.status}
+                  {t(`branchStatusLabels.${selectedMarker.status.toLowerCase()}`)}
                 </span>
                 <p className="text-[11px] font-mono text-gray-400">
                   {selectedMarker.lat.toFixed(5)}, {selectedMarker.lng.toFixed(5)}

@@ -90,14 +90,14 @@ export default function StaffDetailPage() {
   const handleDeactivate = async () => {
     if (!staff) return;
     const name = `${staff.firstName} ${staff.lastName}`;
-    if (!confirm(`Remove ${name} from the branch? This cannot be undone.`)) return;
+    if (!confirm(t('extras.branch.confirmRemoveStaff', { name }))) return;
     setDeactivating(true);
     try {
       await api.delete(`/staff/${staffId}`);
-      toast.success(`${name} has been removed`);
+      toast.success(t('extras.branch.staffRemovedToast', { name }));
       router.push('/branch/staff');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to remove staff member');
+      toast.error(err.response?.data?.message || t('errors.failedToDeleteStaff'));
     } finally { setDeactivating(false); }
   };
 
@@ -117,10 +117,10 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> Back to Staff
+        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
       </button>
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
-        Staff member not found.
+        {t('staffMgmt.noStaffYet')}
       </div>
     </div>
   );
@@ -131,7 +131,7 @@ export default function StaffDetailPage() {
       <button onClick={() => router.push('/branch/staff')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
         style={{ color: NAVY }}>
-        <ArrowLeftIcon className="w-4 h-4" /> Back to Staff
+        <ArrowLeftIcon className="w-4 h-4" /> {t('common.back')}
       </button>
 
       {/* Hero */}
@@ -145,10 +145,10 @@ export default function StaffDetailPage() {
             <h1 className="text-2xl font-bold">{staff.firstName} {staff.lastName}</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white`}>
-                {staff.user.role}
+                {t(`roles.${staff.user.role.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`)}
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${staff.status === 'ACTIVE' ? 'bg-green-400/30 text-green-100' : 'bg-gray-400/30 text-gray-200'}`}>
-                {staff.status}
+                {t(`staffStatus.${staff.status.toLowerCase()}`)}
               </span>
             </div>
           </div>

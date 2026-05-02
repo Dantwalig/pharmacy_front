@@ -150,7 +150,7 @@ export default function StaffPrescriptionsPage() {
                         : `Prescription #${p.id.slice(0, 8)}`}
                     </p>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {p.status}
+                      {t(`prescriptionStatus.${p.status.toLowerCase()}`)}
                     </span>
                   </div>
 

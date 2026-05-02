@@ -64,7 +64,7 @@ export default function SearchPage() {
       setAllPharmacies(data);
       setMapPharmacies(data);
     } catch {
-      toast.error('Failed to load pharmacies.');
+      toast.error(t('errors.failedToLoadPharmacies'));
     } finally {
       setMapLoading(false);
     }
@@ -95,7 +95,7 @@ export default function SearchPage() {
           p.address.toLowerCase().includes(q.toLowerCase())
       );
       setMapPharmacies(filtered.length ? filtered : allPharmacies);
-      if (!filtered.length) toast('No pharmacies matched.', { icon: '🔍' });
+      if (!filtered.length) toast(t('search.noPharmaciesFound'), { icon: '🔍' });
       return;
     }
 
@@ -133,7 +133,7 @@ export default function SearchPage() {
       requiresPrescription: med.requiresPrescription,
       imageUrl: med.imageUrl,
     });
-    toast.success(`${med.name} added to cart!`);
+    toast.success(t('cart2.addedToCartName', { name: med.name }));
   };
 
   // ── Header slot for MapLayout ──
