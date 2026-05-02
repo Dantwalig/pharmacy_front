@@ -15,6 +15,7 @@ import {
   BuildingStorefrontIcon,
   XMarkIcon,
   MapPinIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
@@ -31,9 +32,10 @@ const menuItems = [
 interface PatientSidebarProps {
   open?: boolean;
   onClose?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function PatientSidebar({ open = false, onClose }: PatientSidebarProps) {
+export default function PatientSidebar({ open = false, onClose, onOpenSupport }: PatientSidebarProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
@@ -90,7 +92,21 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
         })}
       </nav>
 
-    <div className="p-4 border-t border-white/10">
+    <div className="p-4 border-t border-white/10 space-y-2">
+      <div className="rounded-xl p-4 bg-white/10">
+        <div className="flex items-center gap-2 mb-1">
+          <QuestionMarkCircleIcon className="w-4 h-4 text-white/70" />
+          <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
+        </div>
+        <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
+        <button
+          onClick={onOpenSupport}
+          className="w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
+          style={{ backgroundColor: '#2D9B8A' }}
+        >
+          {t('common.getSupport')}
+        </button>
+      </div>
       <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-white/10 w-full text-left"
