@@ -809,7 +809,6 @@ export const en = {
     selectBranch: 'Select a branch',
     totalItems: 'Total Items',
     lowStock: 'Low Stock',
-    outOfStock: 'Out of Stock',
     categories: 'Categories',
     allCategories: 'All Categories',
     all: 'All',
