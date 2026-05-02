@@ -11,14 +11,16 @@ import {
   ShieldCheckIcon,
   XMarkIcon,
   MapPinIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 
 interface SuperAdminSidebarProps {
   open?: boolean;
   onClose?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminSidebarProps) {
+export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport }: SuperAdminSidebarProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
 
@@ -70,7 +72,20 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
         </nav>
       </div>
 
-      <div className="mt-auto p-6">
+      <div className="mt-auto p-6 space-y-3">
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+          <div className="flex items-center gap-2 mb-1">
+            <QuestionMarkCircleIcon className="w-4 h-4 text-slate-400" />
+            <p className="text-sm font-semibold">{t('common.needHelp')}</p>
+          </div>
+          <p className="text-xs text-slate-400 mb-3">{t('common.contactSupport')}</p>
+          <button
+            onClick={onOpenSupport}
+            className="w-full py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition-colors"
+          >
+            {t('common.getSupport')}
+          </button>
+        </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

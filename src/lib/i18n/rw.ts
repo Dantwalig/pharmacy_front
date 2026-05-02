@@ -946,6 +946,7 @@ export const rw = {
     getBackSoon: 'Tuzakugarukaho vuba.',
     fullName: 'Amazina Yuzuye',
     emailAddress: 'Aderesi ya Imeli',
+    phoneNumber: "Nimero ya telefoni",
     describeIssue: 'Sobanura Ikibazo Cyawe',
     describeIssuePlaceholder: 'Tubwire icyo ukeneye ubufasha...',
   },

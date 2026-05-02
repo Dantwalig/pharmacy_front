@@ -7,9 +7,10 @@ import { LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut, X, BarChart2, 
 interface BranchSidebarProps {
   open?: boolean;
   onClose?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function BranchSidebar({ open = false, onClose }: BranchSidebarProps) {
+export default function BranchSidebar({ open = false, onClose, onOpenSupport }: BranchSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
@@ -66,7 +67,7 @@ export default function BranchSidebar({ open = false, onClose }: BranchSidebarPr
             <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
           </div>
           <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
-          <button className="w-full py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: '#2D9B8A' }}>
+          <button onClick={onOpenSupport} className="w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90" style={{ backgroundColor: '#2D9B8A' }}>
             {t('common.getSupport')}
           </button>
         </div>
