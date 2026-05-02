@@ -116,7 +116,7 @@ export default function StaffPrescriptionsPage() {
       </div>
 
       <div className="flex bg-gray-100 rounded-xl p-1 w-fit">
-        {([\
+        {([
           { key: 'queue',   label: `${t('prescriptions.pendingQueue')} (${queue.length})` },
           { key: 'history', label: `${t('prescriptions.history')} (${history.length})` },
         ] as { key: Tab; label: string }[]).map(tabItem => (
