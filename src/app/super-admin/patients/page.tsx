@@ -84,7 +84,7 @@ export default function SuperAdminPatientsPage() {
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
               <p className="text-6xl mb-4"></p>
               <p className="text-gray-500 dark:text-gray-400 text-lg">
-                {searchTerm ? 'No patients found' : 'No patients registered yet'}
+                {searchTerm ? t('patients.noPatientsFound') : t('extras.superAdmin.noPatientsRegistered')}
                 </p>
             </div>
           ) : (

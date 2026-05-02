@@ -92,12 +92,12 @@ export default function StaffProfilePage() {
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         {[
-            { label: 'Email', value: profile.user.email },
-            { label: 'Phone', value: profile.phone || '—' },
-            { label: 'National ID', value: profile.nationalId || '—' },
-            { label: 'Gender', value: profile.gender || '—' },
-            { label: 'Date of Birth', value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
-            { label: 'Member Since', value: new Date(profile.createdAt).toLocaleDateString() },
+            { label: t('common.email'),             value: profile.user.email },
+            { label: t('common.phone'),             value: profile.phone || '—' },
+            { label: t('form.nationalId'),          value: profile.nationalId || '—' },
+            { label: t('form.gender'),              value: profile.gender || '—' },
+            { label: t('form.dateOfBirth'),         value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
+            { label: t('extras.staff.memberSince'), value: new Date(profile.createdAt).toLocaleDateString() },
           ].map(({ label, value }) => (
             <div key={label}>
             <p className="text-xs text-gray-500">{label}</p>

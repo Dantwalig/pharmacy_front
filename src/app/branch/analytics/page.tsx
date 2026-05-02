@@ -132,10 +132,10 @@ export default function BranchAnalyticsPage() {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Attendance — Today</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: 'Active Shifts',  value: attendanceSummary.approved  ?? 0 },
-              { label: 'Pending',        value: attendanceSummary.pending   ?? 0 },
-              { label: 'Completed',      value: attendanceSummary.completed ?? 0 },
-              { label: 'Hours Worked',   value: `${(attendanceSummary.totalHoursWorked ?? 0).toFixed(1)}h` },
+              { label: t('extras.analytics.activeShifts'), value: attendanceSummary.approved  ?? 0 },
+              { label: t('orderStatus.pending'),          value: attendanceSummary.pending   ?? 0 },
+              { label: t('dashboard.completed'),          value: attendanceSummary.completed ?? 0 },
+              { label: t('extras.branch.hoursWorked'),    value: `${(attendanceSummary.totalHoursWorked ?? 0).toFixed(1)}h` },
             ].map(s => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: '#F0F7F6' }}>

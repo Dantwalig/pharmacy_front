@@ -203,7 +203,7 @@ export default function PharmacyMapPage() {
                       : { color: '#6B7280' }
                     }
                   >
-                    {s === 'ALL' ? 'All' : s === 'APPROVED' ? 'Active' : s === 'INVITED' ? 'Invited' : 'Pending'}
+                    {s === 'ALL' ? t('common.all') : s === 'APPROVED' ? t('common.active') : s === 'INVITED' ? t('branchStatusLabels.invited') : t('orderStatus.pending')}
                   </button>
                 ))}
               </div>
@@ -307,7 +307,7 @@ export default function PharmacyMapPage() {
                     <span className="text-gray-500 font-mono text-[11px]">
                       {selectedBranch.latitude != null
                         ? `${selectedBranch.latitude.toFixed(4)}, ${selectedBranch.longitude.toFixed(4)}`
-                        : 'Not set'}
+                        : t('common.notSet')}
                     </span>
                   </div>
                 </div>

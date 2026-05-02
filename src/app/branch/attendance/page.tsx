@@ -109,7 +109,7 @@ export default function BranchAttendancePage() {
               }`}
               style={filter === status ? { backgroundColor: '#2D9B8A' } : {}}
             >
-            {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
+            {status === 'all' ? t('common.all') : status.replace(/_/g, ' ')}
             </button>
         ))}
         </div>

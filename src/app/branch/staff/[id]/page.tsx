@@ -185,12 +185,12 @@ export default function StaffDetailPage() {
         <h2 className="font-semibold text-gray-800 mb-4">{t('staffMgmt.profileInformation')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { icon: EnvelopeIcon,      label: 'Email',       value: staff.user.email },
-            { icon: PhoneIcon,         label: 'Phone',       value: staff.phone || '—' },
-            { icon: IdentificationIcon,label: 'National ID', value: staff.nationalId || '—' },
-            { icon: UserCircleIcon,    label: 'Gender',      value: staff.gender || '—' },
-            { icon: ClockIcon,         label: 'Date of Birth', value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
-            { icon: ClockIcon,         label: 'Member Since', value: formatDate(staff.createdAt) },
+            { icon: EnvelopeIcon,      label: t('common.email'),             value: staff.user.email },
+            { icon: PhoneIcon,         label: t('common.phone'),             value: staff.phone || '—' },
+            { icon: IdentificationIcon,label: t('form.nationalId'),          value: staff.nationalId || '—' },
+            { icon: UserCircleIcon,    label: t('form.gender'),              value: staff.gender || '—' },
+            { icon: ClockIcon,         label: t('form.dateOfBirth'),         value: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : '—' },
+            { icon: ClockIcon,         label: t('extras.staff.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
@@ -230,14 +230,14 @@ export default function StaffDetailPage() {
         {attendance.length === 0 ? (
           <div className="p-10 text-center text-gray-400 text-sm">
             <ClockIcon className="w-10 h-10 mx-auto mb-3 text-gray-200" />
-            No attendance records yet
+            {t('attendance.noRecordsYet')}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Date', 'Clock In', 'Clock Out', 'Hours', 'Status'].map(h => (
+                  {[t('common.date'), t('attendance.clockIn'), t('attendance.clockOut'), t('attendance.hours'), t('common.status')].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       {h}
                     </th>

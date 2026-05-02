@@ -240,7 +240,7 @@ function PharmaciesContent() {
           <BuildingStorefrontIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-500 font-medium">{t('superAdminPages.noPharmaciesFound')}</p>
           <p className="text-gray-400 text-sm mt-1">
-            {hasActiveSearch ? 'Try adjusting your search terms' : 'No applications in this category yet'}
+            {hasActiveSearch ? t('superAdminPages.tryAdjustSearch') : t('superAdminPages.noApplicationsInCategory')}
           </p>
         </div>
       ) : (
@@ -249,7 +249,7 @@ function PharmaciesContent() {
             <table className="w-full text-sm">
               <thead style={{ backgroundColor: '#F8FAFC' }} className="border-b border-gray-100">
                 <tr>
-                  {['Pharmacy', 'Representative', 'RDB Certificate', 'License No.', 'Business Reg.', 'Status', 'Submitted', 'Actions'].map(h => (
+                  {[t('form.pharmacy'), t('superAdminPages.colRepresentative'), t('superAdminPages.colRdbCertificate'), t('superAdminPages.colLicenseNo'), t('superAdminPages.colBusinessReg'), t('common.status'), t('superAdminPages.colSubmitted'), t('common.actions')].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>

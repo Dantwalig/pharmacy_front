@@ -141,7 +141,7 @@ export default function StaffOrdersPage() {
             }`}
             style={filter === s ? { backgroundColor: TEAL } : {}}
           >
-            {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
+            {s === 'all' ? t('common.all') : s.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
