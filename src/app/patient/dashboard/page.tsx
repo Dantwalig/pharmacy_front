@@ -132,7 +132,7 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome hero banner */}
-      <div className="rounded-2xl px-12 py-30 relative overflow-hidden" style={{ background: '#EBF5FF' }}>
+      <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
         {/* Decorative heartbeat watermark */}
         <svg
           className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]"
@@ -147,14 +147,14 @@ export default function PatientDashboard() {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3" style={{ color: NAVY }}>
+          <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
             {getGreeting()},<br />{firstName}.
           </h1>
           <p className="text-gray-500 text-lg mb-7">Your health metrics are looking excellent today.</p>
           <Link
             href="/patient/search"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90"
-            style={{ background: TEAL }}
+            className="inline-flex items-center text-white font-semibold text-base transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
           >
             <MapPinIcon className="w-5 h-5" />
             Browse Nearby Pharmacies
@@ -307,8 +307,8 @@ export default function PatientDashboard() {
 
                     {/* Order info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}</p>
-                      <p className="font-semibold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="font-extrabold text-gray-900">Order #{order.id.slice(0, 8)}</p>
+                      <p className="font-extrabold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {pharmacyName}{branchName ? ` • ${branchName}` : ''}
                       </p>
