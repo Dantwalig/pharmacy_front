@@ -15,11 +15,12 @@ import {
   BuildingStorefrontIcon,
   XMarkIcon,
   MapPinIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
   { id: 'dashboard', nameKey: 'patient.dashboard', href: '/patient/dashboard', icon: HomeIcon },
-  { id: 'search', nameKey: 'Find Pharmacy & Medicine', href: '/patient/search', icon: MagnifyingGlassIcon },
+  { id: 'search', nameKey: 'extras.search.findTagline', href: '/patient/search', icon: MagnifyingGlassIcon },
   // { id: 'pharmacies-map', nameKey: 'Pharmacy Map', href: '/patient/search', icon: MapPinIcon },
   // commenting out for now since it's the same as search, but can be added back with a different href if needed
   { id: 'cart', nameKey: 'cart.title', href: '/patient/cart', icon: ShoppingCartIcon },
@@ -31,9 +32,10 @@ const menuItems = [
 interface PatientSidebarProps {
   open?: boolean;
   onClose?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function PatientSidebar({ open = false, onClose }: PatientSidebarProps) {
+export default function PatientSidebar({ open = false, onClose, onOpenSupport }: PatientSidebarProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
@@ -46,7 +48,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
   return (
     <aside className={`
-      w-64 bg-gradient-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white min-h-screen
+      w-64 bg-linear-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white min-h-screen
       fixed left-0 top-0 shadow-2xl z-40 flex flex-col
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -90,7 +92,21 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
         })}
       </nav>
 
-    <div className="p-4 border-t border-white/10">
+    <div className="p-4 border-t border-white/10 space-y-2">
+      <div className="rounded-xl p-4 bg-white/10">
+        <div className="flex items-center gap-2 mb-1">
+          <QuestionMarkCircleIcon className="w-4 h-4 text-white/70" />
+          <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
+        </div>
+        <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
+        <button
+          onClick={onOpenSupport}
+          className="w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
+          style={{ backgroundColor: '#2D9B8A' }}
+        >
+          {t('common.getSupport')}
+        </button>
+      </div>
       <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-white/10 w-full text-left"
@@ -102,7 +118,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
     <div className="p-4 border-t border-white/10">
       <p className="text-xs text-blue-200 text-center">
-        &copy; 2026 Evuze Platform
+        {t('landing.copyrightShort')}
         </p>
     </div>
   </aside>

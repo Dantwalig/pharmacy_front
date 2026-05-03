@@ -126,7 +126,7 @@ export default function BranchTransfersPage() {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabledTransfers'));
       } else {
-        toast.error(err.response?.data?.message || 'Failed to submit transfer');
+        toast.error(err.response?.data?.message || t('transfers.failedToSubmit'));
       }
     } finally {
       setSubmitting(false);
@@ -181,10 +181,10 @@ export default function BranchTransfersPage() {
       {backendReady && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Transfers',   value: transfers.length,                                           dark: false },
-            { label: 'Pending',           value: transfers.filter(t => t.status === 'PENDING').length,       dark: false },
-            { label: 'In Transit',        value: transfers.filter(t => t.status === 'SHIPPED').length,       dark: false },
-            { label: 'Completed',         value: transfers.filter(t => t.status === 'COMPLETED').length,     dark: true  },
+            { label: t('transfers.totalTransfers'), value: transfers.length,                                           dark: false },
+            { label: t('transfers.pending'),         value: transfers.filter(t => t.status === 'PENDING').length,       dark: false },
+            { label: t('transfers.inTransit'),       value: transfers.filter(t => t.status === 'SHIPPED').length,       dark: false },
+            { label: t('transfers.completed'),       value: transfers.filter(t => t.status === 'COMPLETED').length,     dark: true  },
           ].map(s => (
             <div
               key={s.label}
@@ -324,7 +324,7 @@ export default function BranchTransfersPage() {
             <button type="submit" disabled={submitting}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
               style={{ backgroundColor: TEAL }}>
-              {submitting ? 'Submitting...' : 'Submit Request'}
+              {submitting ? t('transfers.submitting') : t('transfers.submitRequest')}
             </button>
           </div>
         </form>
@@ -346,7 +346,7 @@ export default function BranchTransfersPage() {
             No {tab} transfers yet
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            {tab === 'outgoing' ? 'Click "Request Transfer" above to start a new request' : 'Transfers sent to your branch will appear here'}
+            {tab === 'outgoing' ? t('transfers.startNewRequest') : t('transfers.incomingWillAppear')}
           </p>
         </div>
       ) : (

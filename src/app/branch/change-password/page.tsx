@@ -41,7 +41,7 @@ export default function BranchChangePasswordPage() {
       toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to change password');
+      toast.error(err.response?.data?.message || t('branch.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -136,9 +136,9 @@ export default function BranchChangePasswordPage() {
               className="w-full bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
             {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('branch.saving')}</>
             ) : (
-                'Set Password & Continue'
+                t('branch.setPasswordAndContinue')
               )}
             </button>
         </form>

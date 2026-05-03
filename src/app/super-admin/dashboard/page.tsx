@@ -299,14 +299,14 @@ export default function SuperAdminDashboard() {
                   >
                     {branchAction === branch.id ? (
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : 'Approve'}
+                    ) : t('superAdmin.approve')}
                   </button>
                   <button
                     onClick={() => setRejectModal(branch)}
                     disabled={branchAction === branch.id}
                     className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 bg-red-500 hover:bg-red-600"
                   >
-                    Reject
+                    {t('superAdmin.reject')}
                   </button>
                 </div>
               </div>

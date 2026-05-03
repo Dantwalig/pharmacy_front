@@ -69,10 +69,10 @@ export default function BranchAttendancePage() {
     try {
       // PUT /attendance/:id/{action}
       await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
-      toast.success(isReject ? 'Rejected' : 'Approved');
+      toast.success(isReject ? t('attendance.rejected') : t('attendance.approved'));
       await fetchAttendance(); // Refresh
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Action failed');
+      toast.error(err.response?.data?.message || t('attendance.actionFailed'));
     } finally {
       setActionId(null);
     }
@@ -94,7 +94,7 @@ export default function BranchAttendancePage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('attendance.attendance')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{records.length} records total</p>
+        <p className="text-sm text-gray-500 mt-1">{records.length} {t('staffMgmt.records')}</p>
       </div>
       {/* Filter */}
         <div className="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ export default function BranchAttendancePage() {
               }`}
               style={filter === status ? { backgroundColor: '#2D9B8A' } : {}}
             >
-            {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
+            {status === 'all' ? t('attendance.all') : status.replace(/_/g, ' ')}
             </button>
         ))}
         </div>

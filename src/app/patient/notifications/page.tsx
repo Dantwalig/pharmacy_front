@@ -111,7 +111,7 @@ export default function PatientNotificationsPage() {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-    if (diffMins < 1) return 'Just now';
+    if (diffMins < 1) return t('common.justNow');
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
@@ -140,10 +140,10 @@ export default function PatientNotificationsPage() {
       {/* Category Tabs */}
         <div className="flex flex-wrap gap-3 mt-6">
         {([
-            { id: 'all', label: 'All', icon: BellIcon },
-            { id: 'orders', label: 'Orders', icon: ClipboardDocumentListIcon },
-            { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardDocumentListIcon },
-            { id: 'alerts', label: 'Alerts', icon: ExclamationTriangleIcon },
+            { id: 'all',           label: t('notifications2.allNotifications').split(' ')[0], icon: BellIcon },
+            { id: 'orders',        label: t('common.orders'),                                  icon: ClipboardDocumentListIcon },
+            { id: 'prescriptions', label: t('prescriptions.prescriptionsTitle'),               icon: ClipboardDocumentListIcon },
+            { id: 'alerts',        label: t('notifications2.alerts'),                          icon: ExclamationTriangleIcon },
           ] as const).map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveCategory(id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
@@ -162,7 +162,7 @@ export default function PatientNotificationsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          {activeCategory === 'all' ? 'All Notifications' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Notifications`}
+          {activeCategory === 'all' ? t('notifications2.allNotifications') : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} ${t('notifications2.notifications').toLowerCase()}`}
           </h2>
       </div>
 
@@ -170,7 +170,7 @@ export default function PatientNotificationsPage() {
           <div className="p-12 text-center">
           <p className="text-6xl mb-4"></p>
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {notifications.length === 0 ? 'No notifications yet' : 'No notifications in this category'}
+            {notifications.length === 0 ? t('notifications2.noNotificationsYet') : t('notifications2.noNotificationsInCategory')}
             </p>
         </div>
       ) : (

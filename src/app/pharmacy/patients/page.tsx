@@ -171,10 +171,10 @@ export default function PharmacyPatientsPage() {
               <div className="bg-white rounded-xl shadow-md p-16 text-center">
               <UserGroupIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-2">
-                {searchTerm ? 'No patients found' : 'No patients yet'}
+                {searchTerm ? t('inventory.noPatientsFound') : t('inventory.noPatients')}
                 </p>
               <p className="text-gray-400 text-sm">
-                {searchTerm ? 'Try a different search term' : 'Patients will appear here after their first order'}
+                {searchTerm ? t('inventory.tryDifferentSearch') : t('inventory.patientsWillAppear')}
                 </p>
             </div>
           ) : (

@@ -199,7 +199,7 @@ export default function PharmacyNotificationsPage() {
                 }`}
               >
               <BellIcon className="w-4 h-4" />
-              All ({notifications.length})
+              {t('notifications2.allNotifications').split(' ')[0]} ({notifications.length})
               </button>
             <button
                 onClick={() => setFilter('ORDERS')}
@@ -210,7 +210,7 @@ export default function PharmacyNotificationsPage() {
                 }`}
               >
               <ShoppingCartIcon className="w-4 h-4" />
-              Orders ({orderCount})
+              {t('common.orders')} ({orderCount})
               </button>
             <button
                 onClick={() => setFilter('INVENTORY')}
@@ -221,7 +221,7 @@ export default function PharmacyNotificationsPage() {
                 }`}
               >
               <CubeIcon className="w-4 h-4" />
-              Inventory ({inventoryCount})
+              {t('branch.inventory')} ({inventoryCount})
               </button>
             <button
                 onClick={() => setFilter('OTHER')}
@@ -232,7 +232,7 @@ export default function PharmacyNotificationsPage() {
                 }`}
               >
               <UserGroupIcon className="w-4 h-4" />
-              Other ({otherCount})
+              {t('common.other') ?? 'Other'} ({otherCount})
               </button>
           </div>
 

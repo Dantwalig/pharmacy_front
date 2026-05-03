@@ -87,7 +87,7 @@ export default function AddMedicationPage() {
         </button>
     </div>
 
-    <div className="bg-gradient-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
+    <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
       <h1 className="text-2xl font-bold mb-1">{t('pharmacy.addMedication')}</h1>
       <p className="text-blue-100 text-sm">{t('inventory.addMedicationSubtitle')}</p>
     </div>

@@ -84,7 +84,7 @@ export default function StaffOrdersPage() {
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update order');
+      toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
     } finally {
       setUpdatingId(null); }
   };
@@ -112,10 +112,10 @@ export default function StaffOrdersPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total',     value: orders.length,                                               dark: false },
-          { label: 'Pending',   value: orders.filter(o => o.status === 'PENDING').length,           dark: false },
-          { label: 'Active',    value: orders.filter(o => ['ACCEPTED','PREPARING','READY_FOR_PICKUP','OUT_FOR_DELIVERY'].includes(o.status)).length, dark: false },
-          { label: 'Completed', value: orders.filter(o => ['COMPLETED','DELIVERED'].includes(o.status)).length, dark: true },
+          { label: t('orders2.orderTotal'),     value: orders.length,                                               dark: false },
+          { label: t('orders2.orderPending'),   value: orders.filter(o => o.status === 'PENDING').length,           dark: false },
+          { label: t('orders2.orderActive'),    value: orders.filter(o => ['ACCEPTED','PREPARING','READY_FOR_PICKUP','OUT_FOR_DELIVERY'].includes(o.status)).length, dark: false },
+          { label: t('orders2.orderCompleted'), value: orders.filter(o => ['COMPLETED','DELIVERED'].includes(o.status)).length, dark: true },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-5 flex items-center justify-between"
             style={{ backgroundColor: s.dark ? NAVY : TEAL }}>
@@ -141,7 +141,7 @@ export default function StaffOrdersPage() {
             }`}
             style={filter === s ? { backgroundColor: TEAL } : {}}
           >
-            {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
+            {s === 'all' ? t('orders2.orderAll') : s.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
@@ -246,7 +246,7 @@ export default function StaffOrdersPage() {
                               className="px-4 py-2 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50"
                               style={{ backgroundColor: TEAL }}
                             >
-                              {isUpdating ? 'Updating...' : `Mark as ${s.replace(/_/g, ' ').toLowerCase()}`}
+                              {isUpdating ? t('orders2.updating') : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
                             </button>
                           ))}
                         </div>

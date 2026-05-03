@@ -30,18 +30,26 @@ interface StaffProfile {
   status: string;
 }
 
-const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
-  PENDING:     { label: 'Waiting for approval',          color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
-  APPROVED:    { label: 'Active shift, clocked in',       color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
-  CLOCKED_OUT: { label: 'Clock-out pending approval',     color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400'  },
-  COMPLETED:   { label: 'Shift completed',                color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
-  REJECTED:    { label: 'Request rejected',               color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
+const STATUS_INFO_COLORS: Record<string, { color: string; dot: string }> = {
+  PENDING:     { color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
+  APPROVED:    { color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
+  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-400'  },
+  COMPLETED:   { color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
+  REJECTED:    { color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
 };
 
 export default function StaffDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isCashier = user?.role === 'CASHIER';
+
+  const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
+    PENDING:     { label: t('staff.statusWaitingApproval'),   ...STATUS_INFO_COLORS.PENDING     },
+    APPROVED:    { label: t('staff.statusActiveShift'),       ...STATUS_INFO_COLORS.APPROVED    },
+    CLOCKED_OUT: { label: t('staff.statusClockOutPending'),   ...STATUS_INFO_COLORS.CLOCKED_OUT },
+    COMPLETED:   { label: t('dashboard.completed') ?? 'Shift completed', ...STATUS_INFO_COLORS.COMPLETED  },
+    REJECTED:    { label: t('staff.statusRejected'),          ...STATUS_INFO_COLORS.REJECTED    },
+  };
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +92,7 @@ export default function StaffDashboardPage() {
 
           return {
             id: o.id.slice(0, 8).toUpperCase(),
-            type: o.prescription ? 'Prescription' : o.type || 'Order',
+            type: o.prescription ? t('staff.prescription') : t('staff.order'),
             amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
             time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             status: o.status.replace(/_/g, ' '),
@@ -107,7 +115,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to clock in');
+      toast.error(err.response?.data?.message || t('dashboard.failedToClockIn'));
     } finally { setActionLoading(false); }
   };
 
@@ -118,7 +126,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to clock out');
+      toast.error(err.response?.data?.message || t('dashboard.failedToClockOut'));
     } finally { setActionLoading(false); }
   };
 

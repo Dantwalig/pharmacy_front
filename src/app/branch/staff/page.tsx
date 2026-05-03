@@ -67,7 +67,7 @@ export default function BranchStaffPage() {
       await api.post(`/staff/${staffId}/resend-credentials`); // POST /staff/:id/resend-credentials
       toast.success(`Credentials resent to ${email}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to resend credentials');
+      toast.error(err.response?.data?.message || t('staffMgmt.failedToResend'));
     } finally {
       setActionId(null);
     }

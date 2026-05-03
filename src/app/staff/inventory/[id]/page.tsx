@@ -83,7 +83,7 @@ export default function StaffEditMedicationPage() {
       toast.success(t('success.medicationUpdated'));
       router.push('/staff/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update medication');
+      toast.error(err.response?.data?.message || t('errors.failedToLoad'));
     } finally {
       setSaving(false);
     }
@@ -128,7 +128,7 @@ export default function StaffEditMedicationPage() {
           <select required value={form.category}
             onChange={e => setForm((f: any) => ({ ...f, category: e.target.value }))}
             className={inputCls}>
-            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
           </select>
         </div>
 
@@ -176,7 +176,7 @@ export default function StaffEditMedicationPage() {
           <button type="submit" disabled={saving}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
             style={{ backgroundColor: TEAL }}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('common.saving') : t('common.saveChanges')}
           </button>
         </div>
       </form>

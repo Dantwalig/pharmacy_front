@@ -51,6 +51,30 @@ export const fr = {
     monthly_revenue: 'Revenu mensuel',
     revenue: 'Revenu',
     currency: 'RWF',
+    yes: 'Oui',
+    no: 'Non',
+  
+    free: 'Gratuit',
+  
+    notProvided: 'Non fourni',
+  
+    notSet: 'Non défini',
+  
+    justNow: 'À l\'instant',
+  
+    failed: 'Échec',
+  
+    updateFailed: 'Échec de la mise à jour',
+  
+    deleteFailed: 'Échec de la suppression',
+  
+    changing: 'Modification...',
+  
+    currentPassword: 'Mot de passe actuel',
+  
+    profileInfo: 'Informations du profil',
+  
+    security: 'Sécurité',
   },
   verify: {
     title: 'Vérifiez votre email',
@@ -220,6 +244,13 @@ export const fr = {
       title: 'Plateforme de santé E-Vuze',
       subtitle: 'Votre santé, notre priorité',
     },
+    findPharmaciesNearYou: 'Trouvez des pharmacies près de chez vous',
+    searchPharmacies: 'Rechercher par nom ou localisation...',
+    pharmaciesFound: 'pharmacies trouvées',
+    noPharmaciesAvailable: 'Aucune pharmacie disponible',
+    noPharmaciesMatch: 'Aucune pharmacie ne correspond à votre recherche',
+    medicationsAvailable: 'médicaments disponibles',
+    viewMedications: 'Voir les médicaments',
   },
   pharmacies: {
     title: 'Parcourir les pharmacies',
@@ -312,6 +343,17 @@ export const fr = {
     cancelling: 'Annulation...',
     cancelOrder: 'Annuler la commande',
     notFound: 'Commande introuvable',
+    failedToCancel: 'Échec de l\'annulation de la commande',
+    enterMobileNumber: 'Veuillez entrer votre numéro mobile money',
+    enterOtpSent: 'Veuillez entrer l\'OTP envoyé à votre téléphone',
+    redirectingPayment: 'Redirection vers la page de paiement sécurisée...',
+    popupBlocked: 'Popup bloquée — veuillez autoriser les popups pour ce site',
+    failedToInitiatePayment: 'Échec du démarrage du paiement',
+    invalidOtp: 'OTP invalide',
+    processing: 'Traitement...',
+    verifying: 'Vérification...',
+    submitOtp: 'Soumettre l\'OTP',
+    payNow: 'Payer {amount} RWF maintenant',
   },
   profile: {
     title: 'Mon profil',
@@ -413,6 +455,51 @@ export const fr = {
     analytics: 'Analytique',
     patients: 'Patients',
     notifications: 'Notifications',
+  
+    acceptOrder: 'Accepter la commande',
+  
+    startPreparing: 'Commencer la préparation',
+  
+    markDelivered: 'Marquer comme livré',
+    markReadyForPickup: 'Marquer prêt pour le retrait',
+    dispatchForDelivery: 'Envoyer en livraison',
+    markCompleted: 'Marquer comme terminé',
+  
+    approveBranch: 'Approuver l\'agence',
+  
+    rejectBranch: 'Rejeter l\'agence',
+  
+    sendCredentialsFirst: 'Envoyer d\'abord les identifiants',
+  
+    noPatientsRegistered: 'Aucun patient enregistré pour l\'instant',
+  
+    failedToApprove: 'Échec de l\'approbation de l\'agence',
+  
+    failedToReject: 'Échec du rejet de l\'agence',
+  
+    failedToDeleteStaff: 'Échec de la suppression du personnel',
+  
+    failedToResubmit: 'Échec de la resoumission de la candidature',
+  
+    resubmitApplication: 'Resoumettre la candidature',
+  
+    useMyLocation: 'Utiliser ma position',
+  
+    verifyLocation: 'Vérifier la position',
+  
+    locating: 'Localisation…',
+  
+    myLocation: 'Ma position',
+  
+    allPharmacies: 'Toutes les pharmacies',
+  
+    nearYou: 'Pharmacies près de vous',
+  
+    openNow: 'Ouvert maintenant',
+  
+    onMap: 'Sur la carte',
+  
+    networkBranch: 'Agence du réseau',
   },
   pharmacy: {
     dashboard: 'Tableau de bord pharmacie',
@@ -547,6 +634,12 @@ export const fr = {
     outgoing: 'Sortant',
     incoming: 'Entrant',
     backendPending: 'Acces backend en attente',
+    failedToChangePassword: 'Échec du changement de mot de passe',
+    failedToUploadLicense: 'Échec du téléchargement de la licence',
+    adding: 'Ajout en cours...',
+    addMedicationAction: 'Ajouter un médicament',
+    saving: 'Enregistrement...',
+    setPasswordAndContinue: 'Définir le mot de passe et continuer',
   },
   staff: {
     portal: 'Portail du personnel',
@@ -583,6 +676,14 @@ export const fr = {
     verify: 'Verifier',
     reject: 'Rejeter',
     backendPending: 'Acces backend en attente',
+    failedToChangePassword: 'Échec du changement de mot de passe',
+    statusWaitingApproval: 'En attente d\'approbation',
+    statusActiveShift: 'Quart actif, pointé en entrée',
+    statusClockOutPending: 'Pointage de sortie en attente',
+    statusRejected: 'Demande rejetée',
+    prescription: 'Ordonnance',
+    order: 'Commande',
+    failedToLoad: 'Échec du chargement du tableau de bord',
   },
   form: {
     passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
@@ -639,6 +740,30 @@ export const fr = {
     backendNotEnabledTransfers: 'Accès backend non encore activé. Voir la bannière ci-dessus.',
     searchFailed: 'Échec de la recherche',
     noMedicationsFound: 'Aucun médicament trouvé',
+  
+    failedToPlaceOrder: 'Échec de la commande',
+  
+    failedToUploadPrescription: 'Échec du téléchargement de l\'ordonnance',
+  
+    failedToApproveBranch: 'Échec de l\'approbation de l\'agence',
+  
+    failedToRejectBranch: 'Échec du rejet de l\'agence',
+  
+    failedToDeleteStaff: 'Échec de la suppression du membre du personnel',
+  
+    failedToResubmitApplication: 'Échec de la resoumission de la candidature',
+  
+    failedToAddMedication: 'Échec de l\'ajout du médicament',
+  
+    invalidSecretKey: 'Clé secrète invalide',
+  
+    managerAccountExists: 'Un compte gestionnaire existe déjà',
+  
+    cannotApproveLicense: 'Impossible d\'approuver : licence non téléchargée',
+  
+    branchAlreadyApproved: 'L\'agence est déjà approuvée',
+  
+    pleaseProvideRejectionReason: 'Veuillez fournir une raison de rejet',
   },
   success: {
     clockInApproved: 'Pointage d\'entrée approuvé',
@@ -666,6 +791,20 @@ export const fr = {
     notificationsReadFailed: 'Échec du marquage des notifications',
     profileUpdated: 'Profil mis à jour !',
     allNotificationsRead: 'Toutes les notifications marquées comme lues',
+  
+    branchApproved: 'Agence approuvée avec succès',
+  
+    branchRejected: 'Agence rejetée',
+  
+    orderAccepted: 'Commande acceptée',
+  
+    orderStartedPreparing: 'Préparation de la commande démarrée',
+  
+    orderMarkedDelivered: 'Commande marquée comme livrée',
+  
+    staffDeleted: 'Membre du personnel supprimé',
+  
+    applicationResubmitted2: 'Candidature resoumise',
   },
   auth2: {
     welcomeBack: 'Bon retour !',
@@ -717,6 +856,59 @@ export const fr = {
     inventoryAccessPending: 'L\'accès à l\'inventaire est en attente',
     seeAbove: 'Voir la bannière ci-dessus pour les détails',
     selectBranch: 'Sélectionner une agence',
+    totalItems: 'Total des articles',
+    lowStock: 'Stock faible',
+    categories: 'Catégories',
+    allCategories: 'Toutes les catégories',
+    all: 'Tous',
+    stockAll: 'Tous',
+    stockLow: 'Stock faible',
+    stockOut: 'Rupture de stock',
+    colMedication: 'Médicament',
+    colCategory: 'Catégorie',
+    colPrice: 'Prix',
+    colQuantity: 'Quantité',
+    colThreshold: 'Seuil',
+    colPrescription: 'Ordonnance',
+    colStatus: 'Statut',
+    colActions: 'Actions',
+    adjustFilters: 'Essayez d\'ajuster votre recherche ou vos filtres',
+    addFirstMedication: 'Ajoutez votre premier médicament pour commencer',
+    noPatients: 'Aucun patient pour l\'instant',
+    noPatientsFound: 'Aucun patient trouvé',
+    patientsWillAppear: 'Les patients apparaîtront ici après leur première commande',
+    tryDifferentSearch: 'Essayez un terme de recherche différent',
+  },
+  medicationCategories: {
+    'Analgesics & Antipyretics': 'Analgésiques et antipyrétiques',
+    'Antibiotics & Antimicrobials': 'Antibiotiques et antimicrobiens',
+    'Antifungals': 'Antifongiques',
+    'Antivirals & Antiretrovirals': 'Antiviraux et antirétroviraux',
+    'Antimalaria': 'Antipaludiques',
+    'Antituberculosis': 'Antituberculeux',
+    'Antiparasitics & Anthelmintics': 'Antiparasitaires et anthelminthiques',
+    'Cardiovascular & Antihypertensives': 'Cardiovasculaires et antihypertenseurs',
+    'Antidiabetics': 'Antidiabétiques',
+    'Gastrointestinal': 'Gastro-intestinaux',
+    'Respiratory & Bronchodilators': 'Respiratoires et bronchodilatateurs',
+    'Central Nervous System': 'Système nerveux central',
+    'Vitamins, Minerals & Supplements': 'Vitamines, minéraux et compléments',
+    'Dermatologicals': 'Dermatologiques',
+    'Ophthalmologicals': 'Ophtalmologiques',
+    'ENT (Ear, Nose & Throat)': 'ORL (Oreille, Nez et Gorge)',
+    'Hormones & Endocrine': 'Hormones et endocrinologie',
+    'Vaccines & Biologicals': 'Vaccins et biologiques',
+    'Oncologicals': 'Oncologiques',
+    'Immunosuppressants': 'Immunosuppresseurs',
+    'Contraceptives': 'Contraceptifs',
+    'Haematologicals': 'Hématologiques',
+    'Musculoskeletal & Anti-inflammatories': 'Musculo-squelettiques et anti-inflammatoires',
+    'Urological': 'Urologiques',
+    'Psychiatric & Psychotropic': 'Psychiatriques et psychotropes',
+    'Anesthetics': 'Anesthésiques',
+    'Diagnostics & Contrast Media': 'Diagnostiques et produits de contraste',
+    'Traditional & Herbal Medicines': 'Médecines traditionnelles et phytothérapie',
+    'Other': 'Autre',
   },
   analytics: {
     branchAnalytics: 'Analyses de l\'agence',
@@ -741,6 +933,15 @@ export const fr = {
     monthlyFeePerPharmacy: 'Frais mensuels par pharmacie',
     activeOrders: 'Commandes actives',
     completionRate: 'Taux de complétion',
+    totalOrders: 'Total des commandes',
+    completedOrders: 'Commandes terminées',
+    totalRevenue: 'Revenu total',
+    avgOrderValue2: 'Valeur moyenne des commandes',
+    activeShifts: 'Quarts actifs',
+    pendingShifts: 'En attente',
+    completedShifts: 'Terminés',
+    hoursWorked: 'Heures travaillées',
+    attendanceSummary: 'Résumé des présences',
   },
   dashboard: {
     welcomeBack: 'Bon retour',
@@ -757,6 +958,9 @@ export const fr = {
     clickToStart: 'Cliquez ci-dessous pour commencer votre quart',
     clockInRequest: 'Demande de pointage d\'entrée soumise. En attente d\'approbation du responsable.',
     clockOutRequest: 'Demande de pointage de sortie soumise. En attente d\'approbation du responsable.',
+    failedToClockIn: 'Échec du pointage d\'entrée',
+    failedToClockOut: 'Échec du pointage de sortie',
+    failedToLoad: 'Échec du chargement du tableau de bord',
     viewBranchOrders: 'Voir les commandes de l\'agence',
     viewAllRecords: 'Voir tous vos enregistrements',
     viewYourDetails: 'Voir vos détails',
@@ -791,6 +995,13 @@ export const fr = {
     goodMorning: 'Bonjour',
     goodAfternoon: 'Bon après-midi',
     goodEvening: 'Bonsoir',
+    totalStaff: 'Total du personnel',
+    pendingApprovals: 'Approbations en attente',
+    activeToday: 'Actifs aujourd\'hui',
+    hoursWorked: 'Heures travaillées',
+    failedToApprove: 'Échec de l\'approbation',
+    failedToReject: 'Échec du rejet',
+    rejectedByManager: 'Rejeté par le responsable',
   },
   orders2: {
     myOrders: 'Mes commandes',
@@ -813,6 +1024,29 @@ export const fr = {
     patientInfo: 'Informations du patient',
     noPrescriptionAttached: 'Aucune ordonnance jointe',
     updateStatus: 'Mettre à jour le statut',
+    orderTotal: 'Total',
+    orderPending: 'En attente',
+    orderActive: 'Actif',
+    orderCompleted: 'Terminé',
+    orderAll: 'Tous',
+    updating: 'Mise à jour...',
+    markAs: 'Marquer comme',
+    failedToUpdate: 'Échec de la mise à jour de la commande',
+    statusPending: 'En attente',
+    statusAccepted: 'Acceptée',
+    statusPreparing: 'En préparation',
+    statusOutForDelivery: 'En cours de livraison',
+    statusReadyForPickup: 'Prête pour le retrait',
+    statusDelivered: 'Livrée',
+    statusCancelled: 'Annulée',
+    typeDelivery: 'Livraison',
+    typePickup: 'Retrait',
+    allOrders: 'Toutes les commandes',
+    inProgressOrders: 'Commandes en cours',
+    completedOrders: 'Commandes terminées',
+    noActiveOrders: 'Vous n\'avez aucune commande active pour le moment.',
+    noCompletedOrders: 'Aucune commande terminée pour l\'instant.',
+    ordersWillAppearOnce: 'Vos commandes apparaîtront ici une fois passées.',
   },
   checkout2: {
     cartEmpty: 'Votre panier est vide',
@@ -826,6 +1060,20 @@ export const fr = {
     delivery: 'Livraison',
     rejectReasonPlaceholder: 'Raison du rejet (obligatoire)...',
     deliveryAddressPlaceholder: 'Entrez votre adresse de livraison complète...',
+  
+    free: 'Gratuit',
+  
+    failedToPlaceOrder: 'Échec de la commande',
+  
+    failedToUploadPrescription: 'Échec du téléchargement de l\'ordonnance',
+  
+    mtnMobileMoney: 'MTN Mobile Money',
+  
+    airtelMoney: 'Airtel Money',
+  
+    debitCreditCard: 'Carte de débit / crédit',
+  
+    insurancePayment: 'Assurance',
   },
   patients: {
     totalPatients: 'Total des patients',
@@ -845,6 +1093,22 @@ export const fr = {
     unread: 'Non lu',
     allNotifications: 'Toutes les notifications',
     noNotificationsYet: 'Aucune notification pour l\'instant',
+  
+    alerts: 'Alertes',
+  
+    noNotificationsInCategory: 'Aucune notification dans cette catégorie',
+  
+    orderStatusUpdates: 'Mises à jour du statut des commandes',
+  
+    prescriptionVerification: 'Vérification des ordonnances',
+  
+    promotionsOffers: 'Promotions et offres',
+  
+    orderStatusDesc: 'Soyez notifié lorsque le statut de votre commande change',
+  
+    prescriptionDesc: 'Alertes lorsque votre ordonnance est examinée',
+  
+    promotionsDesc: 'Offres spéciales des pharmacies près de chez vous',
   },
   profile2: {
     myProfile: 'Mon profil',
@@ -884,6 +1148,16 @@ export const fr = {
     rejectClockIn: 'Rejeter le pointage d\'entrée',
     approveClockOut: 'Approuver le pointage de sortie',
     rejectClockOut: 'Rejeter le pointage de sortie',
+    all: 'Tous',
+    approved: 'Approuvé',
+    rejected: 'Rejeté',
+    pending: 'En attente',
+    actionSuccess: 'Action effectuée',
+    actionFailed: 'Échec de l\'action',
+    waitingForApproval: 'En attente d\'approbation',
+    activeShiftClockedIn: 'Quart actif, pointé en entrée',
+    clockOutPendingApproval: 'Pointage de sortie en attente d\'approbation',
+    requestRejected: 'Demande rejetée',
   },
   staffMgmt: {
     addStaffMember: 'Ajouter un membre du personnel',
@@ -898,6 +1172,29 @@ export const fr = {
     viewDetails: 'Voir les détails',
     resendCredentials: 'Renvoyer les identifiants',
     removeStaffMember: 'Supprimer le membre du personnel',
+    totalShifts: 'Total des quarts',
+    completedShifts: 'Quarts terminés',
+    totalHours: 'Heures totales',
+    memberSince: 'Membre depuis',
+    backToStaff: 'Retour au personnel',
+    staffNotFound: 'Membre du personnel introuvable.',
+    noAttendanceRecords: 'Aucun enregistrement de présence pour l\'instant',
+    records: 'enregistrements au total',
+    totalRecords: 'Total des enregistrements',
+    removing: 'Suppression...',
+    removeFromBranch: 'Retirer de l\'agence',
+    failedToRemove: 'Échec de la suppression du membre du personnel',
+    failedToResend: 'Échec du renvoi des identifiants',
+    failedToCreate: 'Échec de la création du membre du personnel',
+    createStaffAndSend: 'Créer un membre du personnel & Envoyer les identifiants',
+    permGroupOrders: 'Commandes',
+    permGroupInventory: 'Inventaire',
+    permGroupPayments: 'Paiements',
+    permGroupPrescriptions: 'Ordonnances',
+    permGroupAnalytics: 'Analyses',
+    permGroupCustomers: 'Clients',
+    permGroupStaffSettings: 'Personnel & Paramètres',
+    selected: 'sélectionné(s)',
   },
   transfers: {
     stockTransfers: 'Transferts de stock',
@@ -912,10 +1209,23 @@ export const fr = {
     noFrontendChanges: 'Aucun changement frontend ne sera nécessaire une fois déployés.',
     branchIdPlaceholder: 'ID de l\'agence (UUID)',
     medicationIdPlaceholder: 'ID du médicament (UUID)',
+    totalTransfers: 'Total des transferts',
+    pending: 'En attente',
+    inTransit: 'En transit',
+    completed: 'Terminé',
+    submitting: 'Envoi en cours...',
+    submitRequest: 'Soumettre la demande',
+    failedToSubmit: 'Échec de la soumission du transfert',
+    startNewRequest: 'Cliquez sur "Demander un transfert" ci-dessus pour commencer',
+    incomingWillAppear: 'Les transferts envoyés à votre agence apparaîtront ici',
   },
   pendingApproval: {
     clickToSelectFile: 'Cliquez pour sélectionner votre fichier de licence',
     fileTypes: 'PDF, PNG, JPG jusqu\'à 10 Mo',
+    underReview: 'En cours d\'examen',
+    uploadBranchLicense: 'Télécharger la licence de l\'agence',
+    uploadFailed: 'Échec du téléchargement',
+    uploading: 'Téléchargement...',
   },
   superAdminPages: {
     pharmacyApplications: 'Candidatures de pharmacies',
@@ -939,6 +1249,23 @@ export const fr = {
     rejectionReasonPlaceholder: 'Raison du rejet (obligatoire)',
     prescriptionsTitle: 'Ordonnances',
     prescriptionsSubtitle: 'Examiner, vérifier et rejeter les ordonnances des patients',
+    pendingReview: 'En attente d\'examen',
+    verified: 'Vérifié',
+    rejected: 'Rejeté',
+    pendingQueue: 'File d\'attente',
+    history: 'Historique',
+    noPendingReview: 'Aucune ordonnance en attente d\'examen',
+    noHistory: 'Aucun historique d\'ordonnances',
+    submitted: 'Soumis :',
+    reviewed: 'Examiné :',
+    file: 'Fichier :',
+    reason: 'Raison :',
+    viewFile: 'Voir le fichier d\'ordonnance',
+    failedToVerify: 'Échec de la vérification de l\'ordonnance',
+    failedToReject: 'Échec du rejet de l\'ordonnance',
+    rejecting: 'Rejet en cours...',
+    confirmReject: 'Confirmer le rejet',
+    verifying: 'Vérification...',
   },
   supportBot: {
     contactSupport: 'Contacter le support',

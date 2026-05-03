@@ -85,7 +85,7 @@ export default function SupportBot({
             </div>
             <h2 className="text-2xl font-bold text-gray-900">{t('supportBot.contactSupport')}</h2>
             <p className="text-gray-600 text-sm mt-1">
-              We're here to help! Fill out the form below and we'll get back to you soon.
+              {t('supportBot.hereToHelp')}
               </p>
           </div>
 
@@ -133,7 +133,7 @@ export default function SupportBot({
                   type="submit" disabled={isSubmitting}
                   className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white font-medium py-3 rounded-lg transition-colors"
                 >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? t('common.saving') : t('supportBot.sendMessage')}
                 </button>
             </form>
           )}
@@ -143,3 +143,4 @@ export default function SupportBot({
     </>
 );
 }
+

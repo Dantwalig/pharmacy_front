@@ -75,18 +75,18 @@ export default function BranchDashboardPage() {
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, pending: prev.pending - 1, approved: prev.approved + 1 } : prev);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve');
+      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
     } finally { setActionLoading(null); }
   };
 
   const rejectClockIn = async (id: string) => {
     setActionLoading(id + '-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-in`, { reason: 'Rejected by manager' });
+      await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockInRejected'));
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject');
+      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
     } finally { setActionLoading(null); }
   };
 
@@ -98,18 +98,18 @@ export default function BranchDashboardPage() {
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, completed: prev.completed + 1 } : prev);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve');
+      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
     } finally { setActionLoading(null); }
   };
 
   const rejectClockOut = async (id: string) => {
     setActionLoading(id + '-out-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-out`, { reason: 'Rejected by manager' });
+      await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockOutRejected'));
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject');
+      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
     } finally { setActionLoading(null); }
   };
 
@@ -119,10 +119,10 @@ export default function BranchDashboardPage() {
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   const statCards = [
-    { label: 'Total Staff',       value: staffCount,                                          icon: UserGroupIcon,            dark: false },
-    { label: 'Pending Approvals', value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                dark: false },
-    { label: 'Active Today',      value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
-    { label: 'Hours Worked',      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,  icon: CheckCircleIcon,          dark: true  },
+    { label: t('dashboard.totalStaff'),       value: staffCount,                                          icon: UserGroupIcon,            dark: false },
+    { label: t('dashboard.pendingApprovals'), value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                dark: false },
+    { label: t('dashboard.activeToday'),      value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
+    { label: t('dashboard.hoursWorked'),      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,  icon: CheckCircleIcon,          dark: true  },
   ];
 
   return (

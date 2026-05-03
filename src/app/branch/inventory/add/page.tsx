@@ -96,7 +96,7 @@ export default function BranchAddMedicationPage() {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabled'));
       } else {
-        toast.error(err.response?.data?.message || 'Failed to add medication');
+        toast.error(err.response?.data?.message || t('errors.failedToLoad'));
       }
     } finally {
       setLoading(false);
@@ -159,7 +159,7 @@ export default function BranchAddMedicationPage() {
           <select required value={form.category}
             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
             className={inputCls}>
-            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
           </select>
         </div>
 
@@ -209,7 +209,7 @@ export default function BranchAddMedicationPage() {
           <button type="submit" disabled={loading}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ backgroundColor: TEAL }}>
-            {loading ? 'Adding...' : 'Add Medication'}
+            {loading ? t('branch.adding') : t('branch.addMedicationAction')}
           </button>
         </div>
       </form>

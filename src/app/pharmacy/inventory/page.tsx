@@ -103,10 +103,10 @@ export default function PharmacyInventoryPage() {
     {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {[
-          { label: 'Total Items', value: summaryStats.total, color: 'text-blue-600' },
-          { label: 'Categories', value: summaryStats.categories, color: 'text-teal-600' },
-          { label: 'Low Stock', value: summaryStats.lowStock, color: 'text-yellow-600' },
-          { label: 'Out of Stock', value: summaryStats.outOfStock, color: 'text-red-600' },
+          { label: t('inventory.totalItems'),  value: summaryStats.total,       color: 'text-blue-600' },
+          { label: t('inventory.categories'),  value: summaryStats.categories,  color: 'text-teal-600' },
+          { label: t('inventory.lowStock'),    value: summaryStats.lowStock,    color: 'text-yellow-600' },
+          { label: t('inventory.outOfStock'), value: summaryStats.outOfStock,  color: 'text-red-600' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
           <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>

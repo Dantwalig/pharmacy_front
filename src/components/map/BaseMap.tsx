@@ -246,21 +246,21 @@ export default function BaseMap({
 
       {/* Legend */}
       {ready && markers.length > 0 && (
-        <div className="absolute bottom-10 left-3 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3 py-2 space-y-1.5">
+        <div className="absolute bottom-10 left-3 z-1000 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3 py-2 space-y-1.5">
           {Object.entries(MARKER_COLORS).map(([type, color]) => {
             const hasType = markers.some(m => m.type === type);
             if (!hasType) return null;
             const labels: Record<string, string> = { own: 'This branch', hq: 'HQ', sibling: 'Sibling branch', competitor: 'Competitor' };
             return (
               <div key={type} className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                 <span className="text-xs text-gray-600">{labels[type]}</span>
               </div>
             );
           })}
           {triangulate && (
             <div className="flex items-center gap-2 pt-0.5 border-t border-gray-100 mt-0.5">
-              <span className="w-5 border-t border-dashed flex-shrink-0" style={{ borderColor: NAVY, opacity: 0.5 }} />
+              <span className="w-5 border-t border-dashed shrink-0" style={{ borderColor: NAVY, opacity: 0.5 }} />
               <span className="text-xs text-gray-500">Triangulation</span>
             </div>
           )}

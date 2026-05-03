@@ -276,7 +276,7 @@ export default function SuperAdminPharmacyDetailPage() {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{item.label}</p>
                 <div className="flex items-center justify-between gap-2">
                   <p className={`text-sm font-mono ${item.value ? 'text-gray-800 font-semibold' : 'text-gray-300 italic'}`}>
-                    {item.value || 'Not provided'}
+                    {item.value || t('common.notProvided')}
                   </p>
                   {item.value && item.docType && (
                     <button

@@ -49,7 +49,7 @@ export default function BranchPendingApprovalPage() {
       toast.success(t('success.licenseUploaded'));
       setBranchStatus('PENDING');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Upload failed');
+      toast.error(err.response?.data?.message || t('pendingApproval.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -72,7 +72,7 @@ export default function BranchPendingApprovalPage() {
             }
             </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {isPending ? 'Under Review' : 'Upload Branch License'}
+            {isPending ? t('pendingApproval.underReview') : t('pendingApproval.uploadBranchLicense')}
             </h1>
           <p className="text-sm text-gray-500 mt-2">
             {isPending
@@ -135,7 +135,7 @@ export default function BranchPendingApprovalPage() {
                 className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: "#2D9B8A" }}
               >
               {uploading ? (
-                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('pendingApproval.uploading')}</>
               ) : (
                   <><CheckCircleIcon className="w-5 h-5" /> Submit License</>
               )}

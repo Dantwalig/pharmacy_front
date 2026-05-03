@@ -41,7 +41,7 @@ export default function StaffChangePasswordPage() {
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to change password');
+      toast.error(err.response?.data?.message || t('staff.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -101,9 +101,9 @@ export default function StaffChangePasswordPage() {
               style={{ backgroundColor: TEAL }}
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('branch.saving')}</>
               ) : (
-                'Set Password & Continue'
+                t('branch.setPasswordAndContinue')
               )}
             </button>
           </form>

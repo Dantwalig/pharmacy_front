@@ -67,7 +67,7 @@ export default function CheckoutPage() {
       setPrescriptionUploaded(true);
       toast.success(t('success.prescriptionUploaded'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to upload prescription');
+      toast.error(err.response?.data?.message || t('errors.failedToUploadPrescription'));
     } finally {
       setUploadingPrescription(false);
     }
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
       toast.success(t('success.orderPlaced'));
       router.push(`/patient/orders/${res.data.id}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to place order');
+      toast.error(err.response?.data?.message || t('errors.failedToPlaceOrder'));
     } finally {
       setLoading(false);
     }
@@ -241,7 +241,7 @@ export default function CheckoutPage() {
                 { value: 'MTN_MOMO', label: 'MTN Mobile Money', emoji: '' },
                 { value: 'AIRTEL_MONEY', label: 'Airtel Money', emoji: '' },
                 { value: 'CARD', label: 'Debit / Credit Card', emoji: '' },
-                { value: 'INSURANCE', label: 'Insurance', emoji: '' },
+                { value: 'INSURANCE', label: t('checkout2.insurancePayment'), emoji: '' },
               ].map(opt => (
                 <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
                 <input
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
               <span>{t('cart.subtotal')}</span><span>{subtotal.toLocaleString()} RWF</span>
             </div>
             <div className="flex justify-between text-gray-600">
-              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : 'Free'}</span>
+              <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : t('checkout2.free')}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span>{t('cart.total')}</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>

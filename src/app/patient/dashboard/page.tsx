@@ -30,18 +30,18 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  return 'Good Evening';
-};
-
 export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   const firstName = (user as any)?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
+
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return t('dashboard.goodMorning');
+    if (h < 17) return t('dashboard.goodAfternoon');
+    return t('dashboard.goodEvening');
+  };
 
   const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
@@ -93,8 +93,8 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: 'Shopping Cart',
-      description: 'Review your pending medical items and proceed to checkout.',
+      title: t('checkout2.cartEmpty').replace('Your cart is empty', '') || t('common.profileInfo').replace('Profile Info', '') || 'Shopping Cart',
+      description: t('patient.browsePharmacies'),
       icon: ShoppingCartIcon,
       href: '/patient/cart',
       color: '#1E4D8C',
@@ -102,8 +102,8 @@ export default function PatientDashboard() {
       iconBg: '#BFDBFE',
     },
     {
-      title: 'Active Orders',
-      description: `You have ${stats.pendingOrders} pending order${stats.pendingOrders !== 1 ? 's' : ''} out for delivery.`,
+      title: t('analytics.activeOrders'),
+      description: `${stats.pendingOrders} ${t('orders.pending').toLowerCase()}`,
       icon: BoltIcon,
       href: '/patient/orders',
       color: '#D97706',
@@ -111,8 +111,8 @@ export default function PatientDashboard() {
       iconBg: '#FDE68A',
     },
     {
-      title: 'Completed',
-      description: `View history of your past ${stats.completedOrders} completed orders.`,
+      title: t('orders2.orderCompleted'),
+      description: `${stats.completedOrders} ${t('orders2.completedOrders').toLowerCase()}`,
       icon: CheckCircleIcon,
       href: '/patient/orders?status=completed',
       color: '#059669',

@@ -51,6 +51,30 @@ export const rw = {
     monthly_revenue: 'Amafaranga Yinjiye Buri Kwezi',
     revenue: 'Amafaranga Yinjiye',
     currency: 'RWF',
+    yes: 'Yego',
+    no: 'Oya',
+  
+    free: 'Ubuntu',
+  
+    notProvided: 'Ntibyatanzwe',
+  
+    notSet: 'Ntibyashyizweho',
+  
+    justNow: 'Nonaha',
+  
+    failed: 'Ntibyakunze',
+  
+    updateFailed: 'Kuvugurura ntibyakunze',
+  
+    deleteFailed: 'Gusiba ntibyakunze',
+  
+    changing: 'Birimo Guhindurwa...',
+  
+    currentPassword: 'Ijambo Ryibanga Ry\'Ubu',
+  
+    profileInfo: 'Amakuru y\'Umwirondoro',
+  
+    security: 'Umutekano',
   },
   verify: {
     title: 'Emeza Imeli Yawe',
@@ -220,6 +244,13 @@ export const rw = {
       title: 'Urubuga rwa E-Vuze',
       subtitle: 'Ubuzima Bwawe, Inshingano Yacu',
     },
+    findPharmaciesNearYou: 'Shakisha amaduka hafi yawe',
+    searchPharmacies: 'Shakisha izina cyangwa ahantu...',
+    pharmaciesFound: 'amaduka yabonetse',
+    noPharmaciesAvailable: 'Nta maduka arabonetse',
+    noPharmaciesMatch: 'Nta maduka ahuye n\'ubuguzi bwawe',
+    medicationsAvailable: 'imiti ihari',
+    viewMedications: 'Reba Imiti',
   },
   pharmacies: {
     title: 'Shakisha Amaduka',
@@ -312,6 +343,17 @@ export const rw = {
     cancelling: 'Birahagaritswe...',
     cancelOrder: 'Hagarika Icyatumijwe',
     notFound: 'Icyatumijwe ntibagibonetse',
+    failedToCancel: 'Guhagarika icyatumijwe ntibyakunze',
+    enterMobileNumber: 'Nyamuneka injiza nimero yawe ya mobile money',
+    enterOtpSent: 'Nyamuneka injiza OTP yoherejwe kuri telefoni yawe',
+    redirectingPayment: 'Birimo kujya ku rupapuro rwa kwishyura rwizewe...',
+    popupBlocked: 'Popup ihagaritswe — nyamuneka emeza ko popup zemewe kuri urubuga rwa',
+    failedToInitiatePayment: 'Gutangira kwishyura ntibyakunze',
+    invalidOtp: 'OTP ntiyemewe',
+    processing: 'Biratunganywa...',
+    verifying: 'Biragenzurwa...',
+    submitOtp: 'Ohereza OTP',
+    payNow: 'Ishyura {amount} RWF Nonaha',
   },
   profile: {
     title: 'Umwirondoro Wanjye',
@@ -413,6 +455,51 @@ export const rw = {
     analytics: 'Isesengura',
     patients: 'Abarwayi',
     notifications: 'Menyesha',
+  
+    acceptOrder: 'Emera Icyatumijwe',
+  
+    startPreparing: 'Tangira Gutegura',
+  
+    markDelivered: 'Shyiraho ko Byagezwe',
+    markReadyForPickup: 'Shyiraho ko Bigitegerejwe',
+    dispatchForDelivery: 'Kohereza mu Kugeza',
+    markCompleted: 'Shyiraho ko Byarangiye',
+  
+    approveBranch: 'Emeza Ishami',
+  
+    rejectBranch: 'Anga Ishami',
+  
+    sendCredentialsFirst: 'Banza Wohereze Amakuru',
+  
+    noPatientsRegistered: 'Nta barwayi banditswe ubu',
+  
+    failedToApprove: 'Kwemeza ishami ntibyakunze',
+  
+    failedToReject: 'Kwanga ishami ntibyakunze',
+  
+    failedToDeleteStaff: 'Gusiba umukozi ntibyakunze',
+  
+    failedToResubmit: 'Kohereza ubusabe nanone ntibyakunze',
+  
+    resubmitApplication: 'Ohereza Ubusabe Nanone',
+  
+    useMyLocation: 'Koresha Aho Ndi',
+  
+    verifyLocation: 'Emeza Aho Ndi',
+  
+    locating: 'Birabyezwa...',
+  
+    myLocation: 'Aho Ndi',
+  
+    allPharmacies: 'Amaduka Yose',
+  
+    nearYou: 'Amaduka Hafi Yawe',
+  
+    openNow: 'Afunguye Ubu',
+  
+    onMap: 'Ku Karita',
+  
+    networkBranch: 'Ishami rya Reseau',
   },
   pharmacy: {
     dashboard: 'Ikibaho cya Iduka',
@@ -547,6 +634,12 @@ export const rw = {
     outgoing: 'Igifite',
     incoming: 'Ikigerwa',
     backendPending: 'Gutegereza ingufu za Backend',
+    failedToChangePassword: 'Guhindura ijambo ryibanga ntibyakunze',
+    failedToUploadLicense: 'Kohereza lisansi ntibyakunze',
+    adding: 'Birimo Kongeraho...',
+    addMedicationAction: 'Ongeraho Umuti',
+    saving: 'Birimo Kubikwa...',
+    setPasswordAndContinue: 'Shyiraho Ijambo Ryibanga & Komeza',
   },
   staff: {
     portal: 'Urubuga rw\'Umukozi',
@@ -583,6 +676,14 @@ export const rw = {
     verify: 'Emeza',
     reject: 'Anga',
     backendPending: 'Gutegereza ingufu za Backend',
+    failedToChangePassword: 'Guhindura ijambo ryibanga ntibyakunze',
+    statusWaitingApproval: 'Bitegereje kwemezwa',
+    statusActiveShift: 'Akazi gakora, winjiye',
+    statusClockOutPending: 'Kuva bitegereje kwemezwa',
+    statusRejected: 'Ubusabe bwanzwe',
+    prescription: 'Urwandiko',
+    order: 'Icyatumijwe',
+    failedToLoad: 'Gupakira ikibaho ntibyakunze',
   },
   form: {
     passwordsDoNotMatch: 'Amagambo y\'ibanga ntavugana',
@@ -639,6 +740,30 @@ export const rw = {
     backendNotEnabledTransfers: 'Kwinjira backend ntibirakorwa. Reba ikimenyetso hejuru.',
     searchFailed: 'Gushakisha byananiranye',
     noMedicationsFound: 'Nta miti yabonetse',
+  
+    failedToPlaceOrder: 'Gutumiza ntibyakunze',
+  
+    failedToUploadPrescription: 'Kohereza urwandiko ntibyakunze',
+  
+    failedToApproveBranch: 'Kwemeza ishami ntibyakunze',
+  
+    failedToRejectBranch: 'Kwanga ishami ntibyakunze',
+  
+    failedToDeleteStaff: 'Gusiba umukozi ntibyakunze',
+  
+    failedToResubmitApplication: 'Kohereza ubusabe nanone ntibyakunze',
+  
+    failedToAddMedication: 'Kongeraho umuti ntibyakunze',
+  
+    invalidSecretKey: 'Ikirego ntikwiye',
+  
+    managerAccountExists: 'Konti y\'umuyobozi irabariho',
+  
+    cannotApproveLicense: 'Ntibishoboka kwemeza: lisansi ntiyaroherejwe',
+  
+    branchAlreadyApproved: 'Ishami ryaremejwe kera',
+  
+    pleaseProvideRejectionReason: 'Nyamuneka tanga impamvu yo kwanga',
   },
   success: {
     clockInApproved: 'Kwinjira kwemejwe',
@@ -666,6 +791,20 @@ export const rw = {
     notificationsReadFailed: 'Gufunga ubutumwa byananiranye',
     profileUpdated: 'Umwirondoro wavuguruwe!',
     allNotificationsRead: 'Ubutumwa bwose bumenyeshejwe nk\'ibisomwe',
+  
+    branchApproved: 'Ishami ryemejwe neza',
+  
+    branchRejected: 'Ishami ryanzwe',
+  
+    orderAccepted: 'Icyatumijwe cyemewe',
+  
+    orderStartedPreparing: 'Gutegura icyatumijwe byatangiye',
+  
+    orderMarkedDelivered: 'Icyatumijwe cashyizweho ko cyagezwe',
+  
+    staffDeleted: 'Umukozi yasibwe',
+  
+    applicationResubmitted2: 'Ubusabe bwoherejwe nanone',
   },
   auth2: {
     welcomeBack: 'Murakaza neza!',
@@ -717,6 +856,59 @@ export const rw = {
     inventoryAccessPending: 'Kugera ku bubiko bitegerezwa',
     seeAbove: 'Reba ikimenyetso hejuru kugirango ubone ibisobanuro',
     selectBranch: 'Hitamo ishami',
+    totalItems: 'Ibintu Byose',
+    lowStock: 'Ububiko Buke',
+    categories: 'Inzego',
+    allCategories: 'Inzego Zose',
+    all: 'Byose',
+    stockAll: 'Byose',
+    stockLow: 'Ububiko Buke',
+    stockOut: 'Nta Bubiko',
+    colMedication: 'Umuti',
+    colCategory: 'Inzego',
+    colPrice: 'Igiciro',
+    colQuantity: 'Umubare',
+    colThreshold: 'Umupaka',
+    colPrescription: 'Urwandiko',
+    colStatus: 'Imimerere',
+    colActions: 'Ibikorwa',
+    adjustFilters: 'Gerageza guhindura ubuguzi cyangwa filters',
+    addFirstMedication: 'Ongeraho umuti wa mbere',
+    noPatients: 'Nta barwayi bararabonetse',
+    noPatientsFound: 'Nta barwayi babonetse',
+    patientsWillAppear: 'Abarwayi bazaboneka hano nyuma yo gutumiza bwa mbere',
+    tryDifferentSearch: 'Gerageza amagambo ashya yo gushakisha',
+  },
+  medicationCategories: {
+    'Analgesics & Antipyretics': 'Imiti yo Kuvura Ububabare & Umuriro',
+    'Antibiotics & Antimicrobials': 'Antibiyotike & Imiti Irwanya Udukoko',
+    'Antifungals': 'Imiti Irwanya Ubuhumyi',
+    'Antivirals & Antiretrovirals': 'Imiti Irwanya Virusi & Antiretroviral',
+    'Antimalaria': 'Imiti Irwanya Malariya',
+    'Antituberculosis': 'Imiti Irwanya Igituntu',
+    'Antiparasitics & Anthelmintics': 'Imiti Irwanya Paraziti & Inzoka',
+    'Cardiovascular & Antihypertensives': 'Imiti y\'Umutima & Kongerera amaraso',
+    'Antidiabetics': 'Imiti Irwanya Diyabete',
+    'Gastrointestinal': 'Imiti y\'Isukari & Igifu',
+    'Respiratory & Bronchodilators': 'Imiti y\'Ubuhumekero',
+    'Central Nervous System': 'Imiti y\'Ubwonko',
+    'Vitamins, Minerals & Supplements': 'Vitamine, Minerali & Inyongera',
+    'Dermatologicals': 'Imiti y\'Uruhu',
+    'Ophthalmologicals': 'Imiti y\'Amaso',
+    'ENT (Ear, Nose & Throat)': 'Imiti y\'Amatwi, Izuru & Umuhogo',
+    'Hormones & Endocrine': 'Imiti y\'Imikorere y\'Umubiri',
+    'Vaccines & Biologicals': 'Inkinge & Imiti Biologike',
+    'Oncologicals': 'Imiti y\'Kanseri',
+    'Immunosuppressants': 'Imiti Ivanaho Ingabo z\'Umubiri',
+    'Contraceptives': 'Imiti y\'Igenga Urubyaro',
+    'Haematologicals': 'Imiti y\'Amaraso',
+    'Musculoskeletal & Anti-inflammatories': 'Imiti y\'Amagufwa & Ibibazo by\'Imitsi',
+    'Urological': 'Imiti y\'Indwara z\'Inkari',
+    'Psychiatric & Psychotropic': 'Imiti y\'Indwara z\'Ubwonko',
+    'Anesthetics': 'Imiti yo Kutinya Ububabare',
+    'Diagnostics & Contrast Media': 'Imiti y\'Isuzuma',
+    'Traditional & Herbal Medicines': 'Imiti y\'Gakondo',
+    'Other': 'Ibindi',
   },
   analytics: {
     branchAnalytics: 'Isesengura ry\'Ishami',
@@ -741,6 +933,15 @@ export const rw = {
     monthlyFeePerPharmacy: 'Amafaranga ya Buri Kwezi ku Duka',
     activeOrders: 'Amaporosi Akora',
     completionRate: 'Igipimo cy\'Irangira',
+    totalOrders: 'Amaporosi Yose',
+    completedOrders: 'Amaporosi Yarangiye',
+    totalRevenue: 'Inyungu Yose',
+    avgOrderValue2: 'Umubare w\'Icyatumijwe',
+    activeShifts: 'Imirimo Ikora',
+    pendingShifts: 'Bitegereje',
+    completedShifts: 'Byarangiye',
+    hoursWorked: 'Amasaha Akozwe',
+    attendanceSummary: 'Incamake y\'Ubuhari',
   },
   dashboard: {
     welcomeBack: 'Murakaza Neza',
@@ -757,6 +958,9 @@ export const rw = {
     clickToStart: 'Kanda hepfo gutangira akazi kawe',
     clockInRequest: 'Ubusabe bwo kwinjira bwoherejwe. Bitegereje kwemezwa n\'umuyobozi.',
     clockOutRequest: 'Ubusabe bwo kuva bwoherejwe. Bitegereje kwemezwa n\'umuyobozi.',
+    failedToClockIn: 'Kwinjira ntibyakunze',
+    failedToClockOut: 'Kuva ntibyakunze',
+    failedToLoad: 'Gupakira ikibaho ntibyakunze',
     viewBranchOrders: 'Reba amaporosi y\'ishami',
     viewAllRecords: 'Reba inyandiko zawe zose',
     viewYourDetails: 'Reba amakuru yawe',
@@ -791,6 +995,13 @@ export const rw = {
     goodMorning: 'Mwaramutse',
     goodAfternoon: 'Mwiriwe',
     goodEvening: 'Mwiriwe',
+    totalStaff: 'Abakozi Bose',
+    pendingApprovals: 'Bitegereje Kwemezwa',
+    activeToday: 'Bakora Uyu Munsi',
+    hoursWorked: 'Amasaha Akozwe',
+    failedToApprove: 'Kwemeza ntibyakunze',
+    failedToReject: 'Kwanga ntibyakunze',
+    rejectedByManager: 'Byanzwe na Umuyobozi',
   },
   orders2: {
     myOrders: 'Ibyo Natumije',
@@ -813,6 +1024,29 @@ export const rw = {
     patientInfo: 'Amakuru y\'Umurwayi',
     noPrescriptionAttached: 'Nta rwandiko rwahujwe',
     updateStatus: 'Vugurura Imimerere',
+    orderTotal: 'Yose',
+    orderPending: 'Bitegereje',
+    orderActive: 'Bikora',
+    orderCompleted: 'Byarangiye',
+    orderAll: 'Byose',
+    updating: 'Birimo Kuvugururwa...',
+    markAs: 'Shyiraho nka',
+    failedToUpdate: 'Kuvugurura icyatumijwe ntibyakunze',
+    statusPending: 'Bitegereje',
+    statusAccepted: 'Byemewe',
+    statusPreparing: 'Birategurwa',
+    statusOutForDelivery: 'Birageza',
+    statusReadyForPickup: 'Bigitegerejwe',
+    statusDelivered: 'Byagezwe',
+    statusCancelled: 'Byahagaritswe',
+    typeDelivery: 'Kugeza',
+    typePickup: 'Kwikuraho',
+    allOrders: 'Ibyo Byose Byatumijwe',
+    inProgressOrders: 'Ibyo Bitunganywa',
+    completedOrders: 'Ibyarangiye',
+    noActiveOrders: 'Nta cyatumijwe gikora ubu.',
+    noCompletedOrders: 'Nta cyatumijwe cyarangiye.',
+    ordersWillAppearOnce: 'Ibyo watumije bizaboneka hano nyuma yo gutumiza.',
   },
   checkout2: {
     cartEmpty: 'Agasanduku kawe kari ubusa',
@@ -826,6 +1060,20 @@ export const rw = {
     delivery: 'Gutwarwa',
     rejectReasonPlaceholder: 'Impamvu yo kwanga (bisabwa)...',
     deliveryAddressPlaceholder: 'Injiza aderesi yawe yuzuye yo gutwarirwa...',
+  
+    free: 'Ubuntu',
+  
+    failedToPlaceOrder: 'Gutumiza ntibyakunze',
+  
+    failedToUploadPrescription: 'Kohereza urwandiko ntibyakunze',
+  
+    mtnMobileMoney: 'MTN Mobile Money',
+  
+    airtelMoney: 'Airtel Money',
+  
+    debitCreditCard: 'Karita ya Banki',
+  
+    insurancePayment: 'Ubwishingizi',
   },
   patients: {
     totalPatients: 'Abarwayi Bose',
@@ -845,6 +1093,22 @@ export const rw = {
     unread: 'Ntisomwe',
     allNotifications: 'Ubutumwa Bwose',
     noNotificationsYet: 'Nta butumwa arabonetse',
+  
+    alerts: 'Amatangazo',
+  
+    noNotificationsInCategory: 'Nta makuru muri iyi nzego',
+  
+    orderStatusUpdates: 'Kuvugurura imimerere y\'ibyo watumije',
+  
+    prescriptionVerification: 'Kwemeza inzandiko',
+  
+    promotionsOffers: 'Inyungu n\'amasezerano',
+  
+    orderStatusDesc: 'Menya iyo imimerere y\'icyatumijwe yahinduwe',
+  
+    prescriptionDesc: 'Amatangazo iyo urwandiko rwawe rwasuzumwe',
+  
+    promotionsDesc: 'Amasezerano yihariye ava ku maduka hafi yawe',
   },
   profile2: {
     myProfile: 'Umwirondoro Wanjye',
@@ -884,6 +1148,16 @@ export const rw = {
     rejectClockIn: 'Anga kwinjira',
     approveClockOut: 'Emeza kuva',
     rejectClockOut: 'Anga kuva',
+    all: 'Byose',
+    approved: 'Byemejwe',
+    rejected: 'Byanzwe',
+    pending: 'Bitegereje',
+    actionSuccess: 'Igikorwa cyarangiye',
+    actionFailed: 'Igikorwa ntibyakunze',
+    waitingForApproval: 'Bitegereje kwemezwa',
+    activeShiftClockedIn: 'Akazi gakora, winjiye',
+    clockOutPendingApproval: 'Kuva bitegereje kwemezwa',
+    requestRejected: 'Ubusabe bwanzwe',
   },
   staffMgmt: {
     addStaffMember: 'Ongeraho Umukozi',
@@ -898,6 +1172,29 @@ export const rw = {
     viewDetails: 'Reba ibisobanuro',
     resendCredentials: 'Ongera Ohereza Amakuru',
     removeStaffMember: 'Kureka Umukozi',
+    totalShifts: 'Ibikorwa Byose',
+    completedShifts: 'Ibikorwa Byarangiye',
+    totalHours: 'Amasaha Yose',
+    memberSince: 'Umunyamuryango Kuva',
+    backToStaff: 'Subira ku Bakozi',
+    staffNotFound: 'Umukozi ntibagibonetse.',
+    noAttendanceRecords: 'Nta nyandiko z\'amazina zirabonetse',
+    records: 'inyandiko yose',
+    totalRecords: 'Inyandiko Zose',
+    removing: 'Gukuraho...',
+    removeFromBranch: 'Kureka Umukozi',
+    failedToRemove: 'Gukuraho umukozi ntibyakunze',
+    failedToResend: 'Kohereza amakuru nanone ntibyakunze',
+    failedToCreate: 'Gukora umukozi mushya ntibyakunze',
+    createStaffAndSend: 'Kora Umukozi & Ohereza Amakuru',
+    permGroupOrders: 'Amaporosi',
+    permGroupInventory: 'Ububiko',
+    permGroupPayments: 'Kwishyura',
+    permGroupPrescriptions: 'Inzandiko',
+    permGroupAnalytics: 'Isesengura',
+    permGroupCustomers: 'Abakiriya',
+    permGroupStaffSettings: 'Abakozi & Igenamiterere',
+    selected: 'byatowe',
   },
   transfers: {
     stockTransfers: 'Guhereza Imiti',
@@ -912,10 +1209,23 @@ export const rw = {
     noFrontendChanges: 'Nta hinduka ya frontend izakenwa imara bashyizweho.',
     branchIdPlaceholder: 'ID y\'Ishami (UUID)',
     medicationIdPlaceholder: 'ID y\'Umuti (UUID)',
+    totalTransfers: 'Guhereza Kwose',
+    pending: 'Bitegereje',
+    inTransit: 'Birimo Kugenda',
+    completed: 'Byarangiye',
+    submitting: 'Biratumwa...',
+    submitRequest: 'Ohereza Ubusabe',
+    failedToSubmit: 'Kohereza guhereza ntibyakunze',
+    startNewRequest: 'Kanda "Saba Guhereza" hejuru gutangira ubusabe bushya',
+    incomingWillAppear: 'Guhereza kwatumwe ku ishami ryawe bizaboneka hano',
   },
   pendingApproval: {
     clickToSelectFile: 'Kanda kugirango uhitemo dosiye ya lisansi yawe',
     fileTypes: 'PDF, PNG, JPG kugeza 10MB',
+    underReview: 'Birasuzumwa',
+    uploadBranchLicense: 'Kohereza Lisansi y\'Ishami',
+    uploadFailed: 'Kohereza ntibyakunze',
+    uploading: 'Biratumwa...',
   },
   superAdminPages: {
     pharmacyApplications: 'Inzandiko z\'Amaduka',
@@ -939,6 +1249,23 @@ export const rw = {
     rejectionReasonPlaceholder: 'Impamvu yo kwanga (bisabwa)',
     prescriptionsTitle: 'Inzandiko z\'Umuganga',
     prescriptionsSubtitle: 'Suzuma, emeza no kwanga inzandiko z\'abarwayi',
+    pendingReview: 'Bitegereje Isuzuma',
+    verified: 'Byemejwe',
+    rejected: 'Byanzwe',
+    pendingQueue: 'Abo Bategereje',
+    history: 'Amateka',
+    noPendingReview: 'Nta nzandiko zitegereje isuzuma',
+    noHistory: 'Nta mateka y\'inzandiko arabonetse',
+    submitted: 'Byoherejwe:',
+    reviewed: 'Byasuzumwe:',
+    file: 'Dosiye:',
+    reason: 'Impamvu:',
+    viewFile: 'Reba dosiye y\'urwandiko',
+    failedToVerify: 'Kwemeza urwandiko ntibyakunze',
+    failedToReject: 'Kwanga urwandiko ntibyakunze',
+    rejecting: 'Birimo Kwangwa...',
+    confirmReject: 'Emeza Kwanga',
+    verifying: 'Biragenzurwa...',
   },
   supportBot: {
     contactSupport: 'Hamagara Basupport',

@@ -44,7 +44,7 @@ export default function PatientProfilePage() {
       // Correct endpoint: PUT /patients/profile
       await api.put('/patients/profile', profile);
       toast.success(t('success.profileUpdated'));
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Update failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || t('common.updateFailed')); }
     finally { setSaving(false); }
   };
 
@@ -57,7 +57,7 @@ export default function PatientProfilePage() {
       await api.put('/auth/change-password', passwords);
       toast.success(t('form.passwordChanged'));
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || t('common.failed')); }
     finally { setSaving(false); }
   };
 
@@ -75,9 +75,9 @@ export default function PatientProfilePage() {
     {/* Tab Nav */}
       <div className="flex gap-2 flex-wrap">
       {([
-          { id: 'profile', label: 'Profile Info', icon: UserCircleIcon },
-          { id: 'security', label: 'Security', icon: LockClosedIcon },
-          { id: 'notifications', label: 'Notifications', icon: BellIcon },
+          { id: 'profile', label: t('common.profileInfo'), icon: UserCircleIcon },
+          { id: 'security', label: t('common.security'), icon: LockClosedIcon },
+          { id: 'notifications', label: t('notifications2.notifications'), icon: BellIcon },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'bg-[#2D9B8A] text-white shadow' : 'bg-white text-gray-700 hover:shadow-md'}`}>
@@ -148,7 +148,7 @@ export default function PatientProfilePage() {
         {['currentPassword', 'newPassword', 'confirmPassword'].map((field, i) => (
             <div key={field}>
             <label className="block text-xs font-semibold text-gray-600 mb-1">
-              {['Current Password','New Password','Confirm New Password'][i]}
+              {[t('common.currentPassword'), t('form.newPassword'), t('form.confirmPassword')][i]}
               </label>
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} required minLength={field !== 'currentPassword' ? 8 : 1}
@@ -165,7 +165,7 @@ export default function PatientProfilePage() {
           <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50">
-            {saving ? 'Changing...' : 'Change Password'}
+            {saving ? t('common.changing') : t('common.changePassword')}
             </button>
         </div>
       </form>
@@ -176,10 +176,10 @@ export default function PatientProfilePage() {
         <div className="bg-white rounded-2xl shadow p-6 space-y-4">
         <h2 className="text-base font-bold text-gray-900 border-b pb-3">{t('profile2.notificationPreferences')}</h2>
         {[
-            { label: 'Order status updates', desc: 'Get notified when your order status changes' },
-            { label: 'Prescription verification', desc: 'Alerts when your prescription is reviewed' },
-            { label: 'Auto-refill reminders', desc: '3 days before your next refill is due' },
-            { label: 'Promotions & offers', desc: 'Special deals from pharmacies near you' },
+            { label: t('notifications2.orderStatusUpdates'),      desc: t('notifications2.orderStatusDesc')     },
+            { label: t('notifications2.prescriptionVerification'), desc: t('notifications2.prescriptionDesc')   },
+            { label: 'Auto-refill reminders',                      desc: '3 days before your next refill is due' },
+            { label: t('notifications2.promotionsOffers'),         desc: t('notifications2.promotionsDesc')     },
           ].map(item => (
             <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>

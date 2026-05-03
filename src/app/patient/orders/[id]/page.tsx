@@ -49,13 +49,13 @@ export default function OrderDetailsPage() {
       toast.success(t('success.orderCancelled'));
       fetchOrderDetails();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to cancel order');
+      toast.error(error.response?.data?.message || t('orders.failedToCancel'));
     } finally { setCancelling(false); }
   };
 
   const handlePayment = async () => {
     if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && !phoneNumber) {
-      toast.error('Please enter your mobile money number');
+      toast.error(t('orders.enterMobileNumber'));
       return;
     }
     setProcessingPayment(true);
@@ -68,18 +68,18 @@ export default function OrderDetailsPage() {
       if (res.data.meta?.authorization?.mode === 'otp') {
         setShowOtpInput(true);
         setPaymentId(res.data.paymentId);
-        toast.success('Please enter the OTP sent to your phone');
+        toast.success(t('orders.enterOtpSent'));
       } else if (res.data?.data?.link) {
         // Card payment standard link
         window.open(res.data.data.link, '_blank');
-        toast.success('Redirecting to secure payment page...');
+        toast.success(t('orders.redirectingPayment'));
       } else {
         toast.success(t('Payment initiated. Check your phone to approve.'));
         // We can poll here or have user click a verify button.
         // In the interest of simplicity we let the user await the prompt.
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to initiate payment');
+      toast.error(err.response?.data?.message || t('orders.failedToInitiatePayment'));
     } finally {
       setProcessingPayment(false);
     }
@@ -97,7 +97,7 @@ export default function OrderDetailsPage() {
       setShowOtpInput(false);
       fetchOrderDetails();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Invalid OTP');
+      toast.error(err.response?.data?.message || t('orders.invalidOtp'));
     } finally {
       setProcessingPayment(false);
     }
@@ -118,13 +118,13 @@ export default function OrderDetailsPage() {
       </button>
 
     {/* Order Header */}
-      <div className="bg-linear-to-r from-blue-600 to-cyan-600 rounded-2xl shadow-xl p-8 text-white">
+      <div className="bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] rounded-2xl shadow-xl p-8 text-white">
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">
             {t('orders.orderNumber')}: #{order.orderNumber || order.id.slice(0, 8)}
             </h1>
-          <p className="text-blue-100">{new Date(order.createdAt).toLocaleString()}</p>
+          <p className="text-teal-100">{new Date(order.createdAt).toLocaleString()}</p>
         </div>
         <span className={`inline-block px-6 py-3 rounded-xl text-sm font-bold shadow-lg ${
             order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
@@ -142,7 +142,7 @@ export default function OrderDetailsPage() {
                 const isCurrent = order.status === status;
                 return (
                   <div key={status} className="flex flex-col items-center flex-1">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-blue-600 shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-[#1E4D8C] shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
                     {isComplete ? '' : index + 1}
                     </div>
                   <p className="text-xs mt-2 text-center text-white/90 font-medium">{status}</p>
@@ -166,7 +166,7 @@ export default function OrderDetailsPage() {
       <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.pharmacyInfo')}</h2>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"></div>
+          <div className="w-10 h-10 bg-[#1E4D8C]/10 dark:bg-[#1E4D8C]/30 rounded-xl flex items-center justify-center"></div>
           <p className="font-semibold text-gray-800 dark:text-gray-100">{order.pharmacy.name}</p>
         </div>
         <div className="flex items-start gap-3 text-gray-600 dark:text-gray-400">
@@ -192,7 +192,7 @@ export default function OrderDetailsPage() {
                 {t('orders.quantity')}: {item.quantity} × {item.price.toLocaleString()} RWF
                 </p>
             </div>
-            <p className="font-bold text-lg bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <p className="font-bold text-lg bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
               {(item.price * item.quantity).toLocaleString()} RWF
               </p>
           </div>
@@ -213,7 +213,7 @@ export default function OrderDetailsPage() {
     )}
 
       {/* Payment Summary */}
-      <div className="bg-linear-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl shadow-lg p-6">
+      <div className="bg-linear-to-br from-[#1E4D8C]/5 to-[#2D9B8A]/5 dark:from-[#1E4D8C]/20 dark:to-[#2D9B8A]/20 rounded-2xl shadow-lg p-6">
       <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.paymentSummary')}</h2>
       <div className="space-y-3">
         <div className="flex justify-between text-gray-700 dark:text-gray-300">
@@ -231,7 +231,7 @@ export default function OrderDetailsPage() {
         )}
           <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-xl">
           <span className="text-gray-800 dark:text-gray-100">{t('orders.total')}</span>
-          <span className="bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
             {order.total.toLocaleString()} RWF
             </span>
         </div>
@@ -243,7 +243,7 @@ export default function OrderDetailsPage() {
         </p>
 
         {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
-          <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-900/30">
+          <div className="mt-4 pt-4 border-t border-[#2D9B8A]/20 dark:border-[#2D9B8A]/20">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
               <span className="text-xl">💳</span> Complete your payment
             </h3>
@@ -268,7 +268,7 @@ export default function OrderDetailsPage() {
                   disabled={processingPayment}
                   className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] hover:from-[#1a3d6f] hover:to-[#0f2444] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
                 >
-                  {processingPayment ? 'Processing...' : `Pay ${order.total.toLocaleString()} RWF Now`}
+                  {processingPayment ? t('orders.processing') : `${t('orders.payNow').replace('{amount}', order.total.toLocaleString())}`}
                 </button>
               </div>
             ) : (
@@ -288,7 +288,7 @@ export default function OrderDetailsPage() {
                   disabled={processingPayment || !otp}
                   className="w-full bg-linear-to-r from-[#2D9B8A] to-[#207a6c] hover:from-[#207a6c] hover:to-[#185e53] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
                 >
-                  {processingPayment ? 'Verifying...' : 'Submit OTP'}
+                  {processingPayment ? t('orders.verifying') : t('orders.submitOtp')}
                 </button>
               </div>
             )}
@@ -304,7 +304,7 @@ export default function OrderDetailsPage() {
         <div className="space-y-2 text-gray-700 dark:text-gray-300">
           <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
           {order.prescription.fileUrl && (
-              <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:text-blue-700 underline">
+              <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[#1E4D8C] hover:text-[#2D9B8A] underline">
               View Prescription
               </a>
           )}
