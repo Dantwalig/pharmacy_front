@@ -1269,12 +1269,16 @@ export const fr = {
   },
   supportBot: {
     contactSupport: 'Contacter le support',
+    hereToHelp: "Nous sommes là pour vous aider ! Remplissez le formulaire ci-dessous et nous vous répondrons bientôt.",
     messageSent: 'Message envoyé !',
     getBackSoon: 'Nous vous répondrons dès que possible.',
     fullName: 'Nom complet',
     emailAddress: 'Adresse email',
+    phoneNumber: 'Numéro de téléphone',
     describeIssue: 'Décrivez votre problème',
     describeIssuePlaceholder: 'Dites-nous comment nous pouvons vous aider...',
+    sendMessage: 'Envoyer le message',
+    sending: 'Envoi en cours...',
   },
   search: {
     searchNearby: 'Rechercher des pharmacies et médicaments disponibles à proximité',

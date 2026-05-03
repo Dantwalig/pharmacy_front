@@ -1269,12 +1269,16 @@ export const rw = {
   },
   supportBot: {
     contactSupport: 'Hamagara Basupport',
+    hereToHelp: "Turi hano kugufasha! Uzuza ifishi hepfo kandi tubasubiza vuba.",
     messageSent: 'Ubutumwa Bwoherejwe!',
     getBackSoon: 'Tuzakugarukaho vuba.',
     fullName: 'Amazina Yuzuye',
     emailAddress: 'Aderesi ya Imeli',
+    phoneNumber: 'Nomero ya Telefoni',
     describeIssue: 'Sobanura Ikibazo Cyawe',
     describeIssuePlaceholder: 'Tubwire icyo ukeneye ubufasha...',
+    sendMessage: 'Ohereza Ubutumwa',
+    sending: 'Birimo Koherezwa...',
   },
   search: {
     searchNearby: 'Shakisha amaduka y\'imiti hafi yawe n\'imiti iboneka',

@@ -1205,12 +1205,16 @@ export const en = {
   },
   supportBot: {
     contactSupport: 'Contact Support',
+    hereToHelp: "We're here to help! Fill out the form below and we'll get back to you soon.",
     messageSent: 'Message Sent!',
     getBackSoon: "We'll get back to you as soon as possible.",
     fullName: 'Full Name',
     emailAddress: 'Email Address',
+    phoneNumber: 'Phone Number',
     describeIssue: 'Describe Your Issue',
     describeIssuePlaceholder: 'Tell us what you need help with...',
+    sendMessage: 'Send Message',
+    sending: 'Sending...',
   },
   search: {
     searchNearby: 'Search for nearby pharmacies and available medications',
