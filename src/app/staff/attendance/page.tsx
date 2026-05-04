@@ -72,9 +72,9 @@ export default function StaffAttendancePage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Records',   value: records.length,           dark: false },
-          { label: 'Completed',       value: completedCount,           dark: false },
-          { label: 'Total Hours',     value: `${totalHours.toFixed(1)}h`, dark: true },
+          { label: t('staffMgmt.totalRecords'),    value: records.length,              dark: false },
+          { label: t('staffMgmt.completedShifts'), value: completedCount,              dark: false },
+          { label: t('staffMgmt.totalHours'),      value: `${totalHours.toFixed(1)}h`, dark: true },
         ].map(s => (
           <div
             key={s.label}

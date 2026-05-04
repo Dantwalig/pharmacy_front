@@ -30,18 +30,18 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const getGreetingKey = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'dashboard.goodMorning';
-  if (h < 17) return 'dashboard.goodAfternoon';
-  return 'dashboard.goodEvening';
-};
-
 export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   const firstName = (user as any)?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
+
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return t('dashboard.goodMorning');
+    if (h < 17) return t('dashboard.goodAfternoon');
+    return t('dashboard.goodEvening');
+  };
 
   const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
@@ -93,8 +93,8 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: t('extras.patient.shoppingCart'),
-      description: t('extras.patient.cartCardSubtitle'),
+      title: t('checkout2.cartEmpty').replace('Your cart is empty', '') || t('common.profileInfo').replace('Profile Info', '') || 'Shopping Cart',
+      description: t('patient.browsePharmacies'),
       icon: ShoppingCartIcon,
       href: '/patient/cart',
       color: '#1E4D8C',
@@ -102,8 +102,8 @@ export default function PatientDashboard() {
       iconBg: '#BFDBFE',
     },
     {
-      title: t('extras.patient.activeOrders'),
-      description: `You have ${stats.pendingOrders} pending order${stats.pendingOrders !== 1 ? 's' : ''} out for delivery.`,
+      title: t('analytics.activeOrders'),
+      description: `${stats.pendingOrders} ${t('orders.pending').toLowerCase()}`,
       icon: BoltIcon,
       href: '/patient/orders',
       color: '#D97706',
@@ -111,8 +111,8 @@ export default function PatientDashboard() {
       iconBg: '#FDE68A',
     },
     {
-      title: t('orders.completed'),
-      description: `${t('extras.patient.completedSubtitle')} ${stats.completedOrders}.`,
+      title: t('orders2.orderCompleted'),
+      description: `${stats.completedOrders} ${t('orders2.completedOrders').toLowerCase()}`,
       icon: CheckCircleIcon,
       href: '/patient/orders?status=completed',
       color: '#059669',
@@ -132,7 +132,7 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome hero banner */}
-      <div className="rounded-2xl px-12 py-30 relative overflow-hidden" style={{ background: '#EBF5FF' }}>
+      <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
         {/* Decorative heartbeat watermark */}
         <svg
           className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]"
@@ -147,17 +147,17 @@ export default function PatientDashboard() {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3" style={{ color: NAVY }}>
-            {t(getGreetingKey())},<br />{firstName}.
+          <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
+            {getGreeting()},<br />{firstName}.
           </h1>
           <p className="text-gray-500 text-lg mb-7">Your health metrics are looking excellent today.</p>
           <Link
             href="/patient/search"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90"
-            style={{ background: TEAL }}
+            className="inline-flex items-center text-white font-semibold text-base transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
           >
             <MapPinIcon className="w-5 h-5" />
-            {t('extras.patient.browseNearby')}
+            Browse Nearby Pharmacies
           </Link>
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function PatientDashboard() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                {t('extras.patient.nearbyPharmacies')}
+                Nearby Pharmacies
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
                 {mapPharmacies.length} pharmacies on the map
@@ -215,7 +215,7 @@ export default function PatientDashboard() {
             className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
             style={{ background: NAVY }}
           >
-            {t('common.viewAll')} →
+            View All →
           </Link>
         </div>
 
@@ -260,14 +260,14 @@ export default function PatientDashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
-            {t('extras.patient.recentOrders')}
+            Recent Medical Orders
           </h2>
           <Link
             href="/patient/orders"
             className="font-semibold text-sm flex items-center gap-1 hover:underline"
             style={{ color: NAVY }}
           >
-            {t('common.viewAll')} <span className="text-base">›</span>
+            View All <span className="text-base">›</span>
           </Link>
         </div>
 
@@ -307,8 +307,8 @@ export default function PatientDashboard() {
 
                     {/* Order info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}</p>
-                      <p className="font-semibold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="font-extrabold text-gray-900">Order #{order.id.slice(0, 8)}</p>
+                      <p className="font-extrabold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {pharmacyName}{branchName ? ` • ${branchName}` : ''}
                       </p>
@@ -324,7 +324,7 @@ export default function PatientDashboard() {
                         style={{ background: s.bg, color: s.color }}
                       >
                         <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
-                        {t(`orderStatus.${order.status.toLowerCase()}`)}
+                        {order.status}
                       </span>
                     </div>
                   </div>

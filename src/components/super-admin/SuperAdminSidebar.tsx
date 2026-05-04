@@ -38,7 +38,7 @@ export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport
       bg-slate-900 text-slate-300
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      lg:static lg:translate-x-0 lg:min-h-screen lg:sticky lg:top-0 lg:self-start
+      lg:translate-x-0 lg:min-h-screen lg:sticky lg:top-0 lg:self-start
     `}>
       <div className="p-6">
         <div className="flex items-center justify-between mb-8">

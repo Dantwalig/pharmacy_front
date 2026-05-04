@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import SupportBot from '@/components/shared/SupportBot';
+import SupportBot from '@/components/pharmacy/SupportBot';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function PharmacyLayout({ children }: { children: React.ReactNode }) {

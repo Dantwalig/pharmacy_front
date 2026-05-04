@@ -120,7 +120,7 @@ export default function BranchDetailPage() {
     },
     {
       icon: Package,
-      label: t('medications.medications'),
+      label: 'Medications',
       value: `${branch.medicationCount ?? 0} SKUs`,
     },
   ];

@@ -30,18 +30,26 @@ interface StaffProfile {
   status: string;
 }
 
-const STATUS_INFO: Record<string, { labelKey: string; color: string; dot: string }> = {
-  PENDING:     { labelKey: 'extras.staff.statusWaitingApproval',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
-  APPROVED:    { labelKey: 'extras.staff.statusActiveShift',      color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
-  CLOCKED_OUT: { labelKey: 'extras.staff.statusClockOutPending',  color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-400'  },
-  COMPLETED:   { labelKey: 'extras.staff.statusShiftCompleted',   color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
-  REJECTED:    { labelKey: 'extras.staff.statusRequestRejected',  color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
+const STATUS_INFO_COLORS: Record<string, { color: string; dot: string }> = {
+  PENDING:     { color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
+  APPROVED:    { color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
+  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-400'  },
+  COMPLETED:   { color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
+  REJECTED:    { color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
 };
 
 export default function StaffDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isCashier = user?.role === 'CASHIER';
+
+  const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
+    PENDING:     { label: t('staff.statusWaitingApproval'),   ...STATUS_INFO_COLORS.PENDING     },
+    APPROVED:    { label: t('staff.statusActiveShift'),       ...STATUS_INFO_COLORS.APPROVED    },
+    CLOCKED_OUT: { label: t('staff.statusClockOutPending'),   ...STATUS_INFO_COLORS.CLOCKED_OUT },
+    COMPLETED:   { label: t('dashboard.completed') ?? 'Shift completed', ...STATUS_INFO_COLORS.COMPLETED  },
+    REJECTED:    { label: t('staff.statusRejected'),          ...STATUS_INFO_COLORS.REJECTED    },
+  };
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,10 +92,10 @@ export default function StaffDashboardPage() {
 
           return {
             id: o.id.slice(0, 8).toUpperCase(),
-            type: o.prescription ? t('extras.staff.activityPrescription') : o.type || t('extras.staff.activityOrder'),
+            type: o.prescription ? t('staff.prescription') : t('staff.order'),
             amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
             time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            status: t(`orderStatus.${o.status.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())}`),
+            status: o.status.replace(/_/g, ' '),
             color: statusColor
           };
         });
@@ -107,7 +115,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToClockIn'));
+      toast.error(err.response?.data?.message || t('dashboard.failedToClockIn'));
     } finally { setActionLoading(false); }
   };
 
@@ -118,7 +126,7 @@ export default function StaffDashboardPage() {
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToClockOut'));
+      toast.error(err.response?.data?.message || t('dashboard.failedToClockOut'));
     } finally { setActionLoading(false); }
   };
 
@@ -237,7 +245,7 @@ export default function StaffDashboardPage() {
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 : <ClockIcon className="w-5 h-5" />}
-              {t('staff.clockIn')}
+              Clock In
             </button>
           </div>
         ) : (
@@ -245,7 +253,7 @@ export default function StaffDashboardPage() {
             {shiftInfo && (
               <div className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${shiftInfo.color}`}>
                 <span className={`w-3 h-3 rounded-full shrink-0 ${shiftInfo.dot}`} />
-                <span className="font-medium text-sm">{t(shiftInfo.labelKey)}</span>
+                <span className="font-medium text-sm">{shiftInfo.label}</span>
               </div>
             )}
 
@@ -255,7 +263,7 @@ export default function StaffDashboardPage() {
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
                 {todayShift.clockInApprover && (
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
-                    {t('extras.staff.approvedByName', { name: todayShift.clockInApprover.firstName })}
+                    Approved by {todayShift.clockInApprover.firstName}
                   </p>
                 )}
               </div>
@@ -263,14 +271,14 @@ export default function StaffDashboardPage() {
                 <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
                 {todayShift.totalHours && (
-                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} {t('extras.staff.hoursWorked')}</p>
+                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
                 )}
               </div>
             </div>
 
             {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                <p className="text-xs text-red-600 font-medium">{t('extras.staff.rejectionReasonLabel')} {todayShift.rejectionReason}</p>
+                <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
               </div>
             )}
 
@@ -283,7 +291,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                {t('staff.clockOut')}
+                Clock Out
               </button>
             )}
 
@@ -297,7 +305,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                {t('extras.staff.tryAgain')}
+                Try Again
               </button>
             )}
           </div>

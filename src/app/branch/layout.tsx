@@ -50,11 +50,7 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
         <BranchTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="p-4 lg:p-6">{children}</main>
       </div>
-      <SupportBot
-        open={supportOpen}
-        onOpen={() => setSupportOpen(true)}
-        onClose={() => setSupportOpen(false)}
-      />
+      <SupportBot open={supportOpen} onClose={() => setSupportOpen(false)} />
     </div>
   );
 }

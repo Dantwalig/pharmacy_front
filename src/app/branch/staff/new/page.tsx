@@ -9,34 +9,44 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
+const PERM_GROUP_KEY: Record<string, string> = {
+  'Orders': 'permGroupOrders',
+  'Inventory': 'permGroupInventory',
+  'Payments': 'permGroupPayments',
+  'Prescriptions': 'permGroupPrescriptions',
+  'Analytics': 'permGroupAnalytics',
+  'Customers': 'permGroupCustomers',
+  'Staff & Settings': 'permGroupStaffSettings',
+};
+
 // All permissions grouped by category
 const PERMISSION_GROUPS = [
   {
-    labelKey: 'staff.orders',
+    label: 'Orders',
     perms: ['VIEW_ORDERS', 'ACCEPT_ORDERS', 'UPDATE_ORDER_STATUS', 'CANCEL_ORDERS'],
   },
   {
-    labelKey: 'staff.inventory',
+    label: 'Inventory',
     perms: ['VIEW_INVENTORY', 'ADD_MEDICATION', 'EDIT_MEDICATION', 'DELETE_MEDICATION', 'MANAGE_STOCK_TRANSFERS'],
   },
   {
-    labelKey: 'cashier.paymentsNav',
+    label: 'Payments',
     perms: ['VIEW_PAYMENTS', 'PROCESS_PAYMENTS', 'ISSUE_REFUNDS'],
   },
   {
-    labelKey: 'staff.prescriptions',
+    label: 'Prescriptions',
     perms: ['VIEW_PRESCRIPTIONS', 'APPROVE_PRESCRIPTIONS', 'REJECT_PRESCRIPTIONS'],
   },
   {
-    labelKey: 'pharmacyOwner.analytics',
+    label: 'Analytics',
     perms: ['VIEW_ANALYTICS', 'VIEW_REPORTS', 'EXPORT_DATA'],
   },
   {
-    labelKey: 'staffMgmt.permCustomers',
+    label: 'Customers',
     perms: ['VIEW_CUSTOMERS', 'MANAGE_CUSTOMER_INFO'],
   },
   {
-    labelKey: 'staffMgmt.permStaffSettings',
+    label: 'Staff & Settings',
     perms: ['VIEW_STAFF', 'MANAGE_STAFF', 'MANAGE_BRANCH_SETTINGS'],
   },
 ];
@@ -100,7 +110,7 @@ export default function NewStaffPage() {
       toast.success(t('success.staffCredentialsSent'));
       router.push('/branch/staff');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to create staff member');
+      toast.error(err.response?.data?.message || t('staffMgmt.failedToCreate'));
     } finally {
       setLoading(false);
     }
@@ -128,17 +138,17 @@ export default function NewStaffPage() {
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('staffMgmt.personalInformation')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.firstName')} *</label>
             <input required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.lastName')} *</label>
             <input required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.email')} *</label>
             <input required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
@@ -157,9 +167,9 @@ export default function NewStaffPage() {
             <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               <option value="">{t('form.select')}</option>
-              <option value="MALE">{t('form.male')}</option>
-              <option value="FEMALE">{t('form.female')}</option>
-              <option value="OTHER">{t('form.other')}</option>
+              <option>{t('form.male')}</option>
+              <option>{t('form.female')}</option>
+              <option>{t('form.other')}</option>
             </select>
           </div>
           <div className="col-span-2">
@@ -172,7 +182,7 @@ export default function NewStaffPage() {
 
       {/* Role */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">Role *</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('form.role')} *</h2>
         <div className="grid grid-cols-3 gap-3">
           {(['PHARMACIST', 'CASHIER', 'NURSE'] as const).map(role => (
               <button
@@ -196,12 +206,14 @@ export default function NewStaffPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
           {t('staffMgmt.permissions')}
-            <span className="ml-2 text-sm font-normal text-gray-500">({form.permissions.length} selected)</span>
+            <span className="ml-2 text-sm font-normal text-gray-500">({form.permissions.length} {t('staffMgmt.selected')})</span>
         </h2>
         <div className="space-y-4">
           {PERMISSION_GROUPS.map(group => (
-              <div key={group.labelKey}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t(group.labelKey)}</p>
+              <div key={group.label}>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                {t(`staffMgmt.${PERM_GROUP_KEY[group.label]}`) || group.label}
+              </p>
               <div className="flex flex-wrap gap-2">
                 {group.perms.map(perm => (
                     <button
@@ -214,7 +226,7 @@ export default function NewStaffPage() {
                           : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       }`}
                     >
-                    {t(`permissions.${perm}`, { defaultValue: perm.replace(/_/g, ' ') })}
+                    {perm.replace(/_/g, ' ')}
                     </button>
                 ))}
                 </div>
@@ -230,9 +242,9 @@ export default function NewStaffPage() {
           className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: '#2D9B8A' }}
         >
         {loading ? (
-            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Creating...</>
+            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.loading')}</>
         ) : (
-            'Create Staff Member & Send Credentials'
+            t('staffMgmt.createStaffAndSend')
           )}
         </button>
     </form>

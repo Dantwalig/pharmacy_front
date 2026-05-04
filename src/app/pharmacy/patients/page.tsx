@@ -80,22 +80,22 @@ export default function PharmacyPatientsPage() {
     return (
       <div className="space-y-6">
         <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">{t('patients.pageTitle')}</h1>
-          <p className="text-blue-100 text-sm lg:text-base">{t('patients.pageSubtitle')}</p>
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Patients & Customers</h1>
+          <p className="text-blue-100 text-sm lg:text-base">Order integration with patients</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-12 lg:p-20 text-center">
           <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <LockClosedIcon className="w-10 h-10 text-[#1E4D8C]" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('extras.pharmacy.featureArrivingSoon')}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Feature Arriving Soon</h2>
           <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
-            Real-time patient tracking and automated order connectivity are currently awaiting regulatory approval.
+            Real-time patient tracking and automated order connectivity are currently awaiting regulatory approval. 
             Once authorized, you will be able to see all customers who interact with your pharmacy via the Evuze mobile app.
           </p>
           <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-xs font-semibold text-gray-500 border border-gray-200">
             <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-            {t('extras.pharmacy.awaitingRfdaApproval')}
+            Status: Awaiting R-FDA Connectivity Approval
           </div>
         </div>
       </div>
@@ -108,10 +108,10 @@ export default function PharmacyPatientsPage() {
           {/* Header */}
             <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
             <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-              {t('patients.patientsTitle')}
+              Patients
               </h1>
             <p className="text-blue-100 text-sm lg:text-base">
-              {t('patients.viewPatientsDesc')}
+              View all patients who have ordered from your pharmacy
               </p>
           </div>
 
@@ -171,10 +171,10 @@ export default function PharmacyPatientsPage() {
               <div className="bg-white rounded-xl shadow-md p-16 text-center">
               <UserGroupIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-2">
-                {searchTerm ? t('patients.noPatientsFound') : t('patients.noPatientsYet')}
+                {searchTerm ? t('inventory.noPatientsFound') : t('inventory.noPatients')}
                 </p>
               <p className="text-gray-400 text-sm">
-                {searchTerm ? t('patients.tryDifferentSearch') : t('patients.patientsAfterFirstOrder')}
+                {searchTerm ? t('inventory.tryDifferentSearch') : t('inventory.patientsWillAppear')}
                 </p>
             </div>
           ) : (
@@ -229,7 +229,7 @@ export default function PharmacyPatientsPage() {
                         onClick={() => setSelectedPatient(selectedPatient?.id === patient.id ? null : patient)}
                         className="w-full text-left flex items-center justify-between text-gray-900 font-medium mb-4"
                       >
-                      <span>{t('patients.orderHistory')} ({patient.orders.length})</span>
+                      <span>Order History ({patient.orders.length})</span>
                       <span className="text-teal-600">
                         {selectedPatient?.id === patient.id ? '' : ''}
                         </span>

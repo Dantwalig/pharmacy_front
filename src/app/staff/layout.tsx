@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import StaffSidebar from '@/components/staff/StaffSidebar';
 import StaffTopbar from '@/components/staff/Stafftopbar';
-import SupportBot from '@/components/shared/SupportBot';
+import SupportBot from '@/components/pharmacy/SupportBot';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 const STAFF_ROLES = ['PHARMACIST', 'CASHIER', 'NURSE'];
