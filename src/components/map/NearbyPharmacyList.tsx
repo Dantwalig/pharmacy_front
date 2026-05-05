@@ -84,7 +84,7 @@ export default function NearbyPharmacyList({
                 ? 'ring-2 ring-offset-1 dark:ring-offset-gray-900'
                 : 'hover:scale-[1.01]'}
             `}
-            style={isSelected ? { ringColor: NAVY } as any : {}}
+            style={isSelected ? { ringColor: NAVY } as React.CSSProperties : {}}
           >
             {/* Inner ring via border when selected */}
             <div

@@ -11,7 +11,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { CloudArrowUpIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
-type BranchStatus = 'INVITED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+import { BranchStatus } from '@/types';
 
 export default function BranchPendingApprovalPage() {
   const { t } = useTranslation();
@@ -22,8 +22,8 @@ export default function BranchPendingApprovalPage() {
 
   // Read branchStatus from user object (set during login)
   useEffect(() => {
-    if ((user as any)?.branchStatus) {
-      setBranchStatus((user as any).branchStatus);
+    if (user?.branchStatus) {
+      setBranchStatus(user.branchStatus);
     }
   }, [user]);
 

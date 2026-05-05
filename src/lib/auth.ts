@@ -4,24 +4,13 @@
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 
-export interface User {
-  id: string;
-  email: string;
-  role: 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE';
-  isVerified: boolean;
-  // Pharmacy owner specific
-  pharmacyStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
-  rejectionReason?: string | null;
-  // Branch manager / staff specific
-  requiresPasswordChange?: boolean;
-  profile?: any;
-}
+import { User, DecodedToken } from '@/types';
 
 export const setAuthTokens = (accessToken: string, refreshToken: string) => {
   Cookies.set('accessToken', accessToken, { expires: 1/48 }); // 30 min
   Cookies.set('refreshToken', refreshToken, { expires: 7 }); // 7 days
 
-  const decoded: any = jwtDecode(accessToken);
+  const decoded = jwtDecode<DecodedToken>(accessToken);
   Cookies.set('userRole', decoded.role, { expires: 7, sameSite: 'lax' });
 };
 
@@ -63,7 +52,7 @@ export const getUserFromToken = (): User | null => {
   if (!token) return null;
 
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded = jwtDecode<DecodedToken>(token);
     return {
       id: decoded.sub,
       email: decoded.email,

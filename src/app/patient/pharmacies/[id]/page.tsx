@@ -11,26 +11,7 @@ import toast from 'react-hot-toast';
 import { useCart } from '@/context/CartContext';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, ShoppingCartIcon, BeakerIcon } from '@heroicons/react/24/outline';
 
-interface Medication {
-  id: string;
-  name: string;
-  description?: string;
-  category: string;
-  price: number;
-  quantity: number;
-  requiresPrescription: boolean;
-  imageUrl?: string;
-}
-
-interface Pharmacy {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  latitude?: number;
-  longitude?: number;
-  medications: Medication[];
-}
+import { Medication, Pharmacy, Branch } from '@/types';
 
 export default function PharmacyDetailsPage() {
   const { t } = useTranslation();
@@ -49,13 +30,13 @@ export default function PharmacyDetailsPage() {
     try {
       setLoading(true);
       const [pharmacyRes, branchesRes] = await Promise.all([
-        api.get(`/pharmacies/${params.id}`),
-        api.get(`/branches/pharmacy/${params.id}`).catch(() => ({ data: [] })),
+        api.get<Pharmacy>(`/pharmacies/${params.id}`),
+        api.get<Branch[]>(`/branches/pharmacy/${params.id}`).catch(() => ({ data: [] })),
       ]);
       setPharmacy(pharmacyRes.data);
       // Use the first approved branch ID for ordering
-      const approvedBranch = (branchesRes.data as any[]).find(
-        (b: any) => b.branchStatus === 'APPROVED'
+      const approvedBranch = branchesRes.data.find(
+        (b) => b.branchStatus === 'APPROVED'
       ) || branchesRes.data[0];
       if (approvedBranch) setBranchId(approvedBranch.id);
     } catch (error) {

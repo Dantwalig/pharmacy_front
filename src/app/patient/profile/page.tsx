@@ -152,7 +152,7 @@ export default function PatientProfilePage() {
               </label>
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} required minLength={field !== 'currentPassword' ? 8 : 1}
-                  value={(passwords as any)[field]}
+                  value={passwords[field as keyof typeof passwords]}
                   onChange={e => setPasswords({...passwords, [field]: e.target.value})}
                   className={`${inputCls} pr-10`} />
               <button type="button" onClick={() => setShowPwd(!showPwd)}

@@ -21,6 +21,7 @@ import { LocationDeniedState, OfflineState, MapSkeleton } from '@/components/map
 import { fetchNearbyPharmacies, fetchPharmacyLocations } from '@/services/pharmacies';
 import { PharmacyLocation, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/features/map/pharmacyData';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { Medication } from '@/types';
 
 // Leaflet must never touch SSR – dynamic import is mandatory
 const MapView = dynamic(() => import('@/components/map/MapView'), {
@@ -39,7 +40,7 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<'pharmacies' | 'medications'>('pharmacies');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [searchQuery, setSearchQuery] = useState('');
-  const [medications, setMedications] = useState([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [medLoading, setMedLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -121,7 +122,7 @@ export default function SearchPage() {
     [router]
   );
 
-  const handleAddToCart = (med: any) => {
+  const handleAddToCart = (med: Medication) => {
     addToCart({
       medicationId: med.id,
       name: med.name,
@@ -196,7 +197,7 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2 transition-all"
-              style={{ '--tw-ring-color': TEAL } as any}
+              style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
             />
           </div>
           <button
@@ -321,7 +322,7 @@ export default function SearchPage() {
           )}
           {!medLoading && searched && medications.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {medications.map((med: any) => (
+              {medications.map((med) => (
                 <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
                   <div className="p-6 space-y-4">
                     <div>
