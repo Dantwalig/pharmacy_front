@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
+import { Order } from '@/types';
 import {
   ShoppingCartIcon,
   MapPinIcon,
@@ -34,7 +35,7 @@ export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
-  const firstName = (user as any)?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
+  const firstName = user?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -44,7 +45,7 @@ export default function PatientDashboard() {
   };
 
   const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Map state
@@ -59,14 +60,14 @@ export default function PatientDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const ordersRes = await api.get('/orders/my-orders');
+      const ordersRes = await api.get<Order[]>('/orders/my-orders');
       const orders = ordersRes.data;
       setStats({
         totalOrders: orders.length,
-        completedOrders: orders.filter((o: any) =>
+        completedOrders: orders.filter((o) =>
           ['COMPLETED', 'DELIVERED'].includes(o.status)
         ).length,
-        pendingOrders: orders.filter((o: any) =>
+        pendingOrders: orders.filter((o) =>
           ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)
         ).length,
       });
@@ -273,7 +274,7 @@ export default function PatientDashboard() {
 
         {recentOrders.length > 0 ? (
           <div className="flex flex-col" style={{ gap: '20px' }}>
-            {recentOrders.map((order: any) => {
+            {recentOrders.map((order) => {
               const firstItem = order.items?.[0] ?? order.orderItems?.[0];
               const medName = firstItem?.medication?.name ?? 'Medication';
               const medImage = firstItem?.medication?.imageUrl;

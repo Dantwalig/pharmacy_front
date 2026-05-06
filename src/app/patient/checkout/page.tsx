@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { PaymentMethod } from '@/types';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export default function CheckoutPage() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
   // Payment method - matches backend enum exactly
-  const [paymentMethod, setPaymentMethod] = useState<'MTN_MOMO' | 'AIRTEL_MONEY' | 'CARD' | 'INSURANCE'>('MTN_MOMO');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('MTN_MOMO');
 
   // Prescription state - separate upload flow via /upload/prescription + /prescriptions
   const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
@@ -90,9 +91,17 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       // POST /orders — JSON body matching CreateOrderDto exactly
-      const orderPayload: any = {
-        pharmacyId,
-        branchId,
+      const orderPayload: {
+        pharmacyId: string;
+        branchId: string;
+        type: 'DELIVERY' | 'PICKUP';
+        paymentMethod: PaymentMethod;
+        items: { medicationId: string; quantity: number }[];
+        deliveryAddress?: string;
+        prescriptionId?: string;
+      } = {
+        pharmacyId: pharmacyId!,
+        branchId: branchId!,
         type: orderType,                // matches DTO field name: 'type'
         paymentMethod,
         items: items.map(i => ({
@@ -248,8 +257,8 @@ export default function CheckoutPage() {
                     type="radio"
                     name="payment"
                     value={opt.value}
-                    checked={paymentMethod === (opt.value as any)}
-                    onChange={() => setPaymentMethod(opt.value as any)}
+                    checked={paymentMethod === opt.value}
+                    onChange={() => setPaymentMethod(opt.value as PaymentMethod)}
                     className="text-teal-500"
                   />
                 <span className="text-xl">{opt.emoji}</span>
