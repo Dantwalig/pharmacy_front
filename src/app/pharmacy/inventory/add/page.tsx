@@ -45,7 +45,7 @@ export default function AddMedicationPage() {
   useEffect(() => {
     api.get('/branches/my-branches')
       .then(res => {
-        const list = unwrapData(res.data);
+        const list = unwrapData<any>(res.data);
         setBranches(list);
         if (list.length === 1) setForm(f => ({ ...f, branchId: list[0].id }));
       })
