@@ -112,9 +112,9 @@ export default function PatientNotificationsPage() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
     if (diffMins < 1) return t('common.justNow');
-    if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMins < 60) return `${diffMins} ${t('notifications2.minAgo')}`;
+    if (diffHours < 24) return `${diffHours} ${diffHours > 1 ? t('notifications2.hoursAgo') : t('notifications2.hourAgo')}`;
+    return `${diffDays} ${diffDays > 1 ? t('notifications2.daysAgo') : t('notifications2.dayAgo')}`;
   };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
@@ -127,12 +127,12 @@ export default function PatientNotificationsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('notifications2.notifications')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+            {t('notifications2.youHave')} {unreadCount} {unreadCount !== 1 ? t('notifications2.unreadNotifications') : t('notifications2.unreadNotification')}
             </p>
         </div>
         {unreadCount > 0 && (
             <button onClick={handleMarkAllAsRead} className="text-[#1E4D8C] dark:text-blue-400 hover:underline font-medium text-sm">
-            Mark all as read
+            {t('notifications2.markAllAsRead')}
             </button>
         )}
         </div>
@@ -162,7 +162,13 @@ export default function PatientNotificationsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          {activeCategory === 'all' ? t('notifications2.allNotifications') : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} ${t('notifications2.notifications').toLowerCase()}`}
+          {activeCategory === 'all'
+            ? t('notifications2.allNotifications')
+            : activeCategory === 'orders'
+            ? t('notifications2.ordersNotifications')
+            : activeCategory === 'prescriptions'
+            ? t('notifications2.prescriptionsNotifications')
+            : t('notifications2.alertsNotifications')}
           </h2>
       </div>
 
@@ -195,14 +201,14 @@ export default function PatientNotificationsPage() {
                     </div>
                     {!notification.isRead && (
                         <span className="px-3 py-1 bg-[#2D9B8A] text-white text-xs font-semibold rounded-full shrink-0">
-                        New
+                        {t('notifications2.new')}
                         </span>
                     )}
                     </div>
                   <div className="flex items-center gap-3 mt-2">
                     <p className="text-xs text-gray-500 dark:text-gray-500">{formatTime(notification.createdAt)}</p>
                     {notification.orderId && (
-                        <span className="text-xs text-[#1E4D8C] dark:text-blue-400 font-medium">View order →</span>
+                        <span className="text-xs text-[#1E4D8C] dark:text-blue-400 font-medium">{t('notifications2.viewOrder')}</span>
                     )}
                     </div>
                 </div>

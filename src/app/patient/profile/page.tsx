@@ -135,7 +135,7 @@ export default function PatientProfilePage() {
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
-            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : 'Save Changes'}
+            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : t('common.saveChanges')}
             </button>
         </div>
       </form>
