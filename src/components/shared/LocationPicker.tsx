@@ -17,6 +17,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import type { Map as LeafletMap, Marker as LeafletMarker } from 'leaflet';
 
 interface LocationPickerProps {
   latitude?: number;
@@ -42,10 +43,8 @@ export default function LocationPicker({
 }: LocationPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   // Store Leaflet map + marker instances in refs so React doesn't re-create them
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const leafletMapRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const markerRef = useRef<any>(null);
+  const leafletMapRef = useRef<LeafletMap | null>(null);
+  const markerRef = useRef<LeafletMarker | null>(null);
 
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
@@ -58,8 +57,8 @@ export default function LocationPicker({
     // Dynamic import keeps Leaflet out of the SSR bundle
     import('leaflet').then((L) => {
       // Fix default marker icon paths broken by bundlers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      // @ts-ignore
+      delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
@@ -94,7 +93,7 @@ export default function LocationPicker({
       }
 
       // Click to place / move pin
-      map.on('click', (e: any) => {
+      map.on('click', (e) => {
         const { lat, lng } = e.latlng;
         const roundedLat = parseFloat(lat.toFixed(6));
         const roundedLng = parseFloat(lng.toFixed(6));

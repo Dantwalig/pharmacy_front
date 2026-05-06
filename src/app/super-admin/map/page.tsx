@@ -201,7 +201,7 @@ export default function SuperAdminMapPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2"
-            style={{ '--tw-ring-color': TEAL } as any}
+            style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
           />
         </div>
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
