@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, X } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, unwrapData } from '@/lib/api';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
@@ -30,7 +30,7 @@ export default function BranchManagementPage() {
     setFetchError(false);
     try {
       const res = await api.get('/branches/my-branches');
-      setBranches(res.data?.data ?? res.data ?? []);
+      setBranches(unwrapData(res.data));
     } catch {
       setFetchError(true);
     }
