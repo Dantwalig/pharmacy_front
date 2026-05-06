@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 import {
@@ -74,6 +75,7 @@ export default function PatientDashboard() {
     } catch {
       setStats({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
       setRecentOrders([]);
+      toast.error(t('errors.failedToLoadOrders'));
     } finally {
       setLoading(false);
     }
@@ -82,10 +84,10 @@ export default function PatientDashboard() {
   const loadMapPharmacies = async () => {
     try {
       const data = await fetchPharmacyLocations();
-      // Show only first 6 on dashboard preview
       setMapPharmacies(data.slice(0, 6));
     } catch {
       setMapPharmacies([]);
+      toast.error(t('errors.failedToLoadPharmacies'));
     } finally {
       setMapLoading(false);
     }
