@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -66,7 +66,7 @@ export default function StaffOrdersPage() {
   const fetchOrders = async () => {
     try {
       const res = await api.get('/orders/pharmacy-orders'); // GET /orders/pharmacy-orders
-      setOrders(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setOrders(unwrapData(res.data));
     } catch (error) {
       console.error('Failed to load orders:', error);
       toast.error(t('errors.failedToLoadOrders'));
