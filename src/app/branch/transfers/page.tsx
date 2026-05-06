@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';// This is a placeholder import. The backend team needs to create the necessary endpoints for stock transfers as described in the comments below.
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { LockClosedIcon, PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
@@ -60,7 +60,7 @@ export default function BranchTransfersPage() {
       //   const res = await api.get('/stock-transfers/branch');
 
       const res = await api.get('/stock-transfers/branch'); // endpoint to be created by backend team
-      setTransfers(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setTransfers(unwrapData(res.data));
       setBackendReady(true);
     } catch (err: any) {
       if (err?.response?.status === 403 || err?.response?.status === 404) {
