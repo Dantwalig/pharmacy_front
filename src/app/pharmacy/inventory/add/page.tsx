@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, PlusIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
@@ -45,7 +45,7 @@ export default function AddMedicationPage() {
   useEffect(() => {
     api.get('/branches/my-branches')
       .then(res => {
-        const list = res.data?.data ?? res.data ?? [];
+        const list = unwrapData(res.data);
         setBranches(list);
         if (list.length === 1) setForm(f => ({ ...f, branchId: list[0].id }));
       })
