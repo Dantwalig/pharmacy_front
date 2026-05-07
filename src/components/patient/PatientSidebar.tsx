@@ -11,12 +11,14 @@ import {
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
-  { id: 'dashboard',     nameKey: 'patient.dashboard',           href: '/patient/dashboard',      icon: HomeIcon },
-  { id: 'search',        nameKey: 'Find Pharmacy and Medicine',  href: '/patient/search',          icon: MagnifyingGlassIcon },
-  { id: 'cart',          nameKey: 'cart.title',                  href: '/patient/cart',            icon: ShoppingCartIcon },
-  { id: 'orders',        nameKey: 'patient.myOrders',            href: '/patient/orders',          icon: ClipboardDocumentListIcon },
-  { id: 'notifications', nameKey: 'common.notifications',        href: '/patient/notifications',   icon: BellIcon },
-  { id: 'profile',       nameKey: 'patient.myProfile',           href: '/patient/profile',         icon: UserCircleIcon },
+  { id: 'dashboard', nameKey: 'patient.dashboard', href: '/patient/dashboard', icon: HomeIcon },
+  { id: 'search', nameKey: 'patient.findPharmacyAndMedicine', href: '/patient/search', icon: MagnifyingGlassIcon },
+  // { id: 'pharmacies-map', nameKey: 'Pharmacy Map', href: '/patient/search', icon: MapPinIcon },
+  // commenting out for now since it's the same as search, but can be added back with a different href if needed
+  { id: 'cart', nameKey: 'cart.title', href: '/patient/cart', icon: ShoppingCartIcon },
+  { id: 'orders', nameKey: 'patient.myOrders', href: '/patient/orders', icon: ClipboardDocumentListIcon },
+  { id: 'notifications', nameKey: 'common.notifications', href: '/patient/notifications', icon: BellIcon },
+  { id: 'profile', nameKey: 'patient.myProfile', href: '/patient/profile', icon: UserCircleIcon },
 ];
 
 interface PatientSidebarProps {

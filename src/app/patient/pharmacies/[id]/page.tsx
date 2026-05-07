@@ -74,9 +74,9 @@ export default function PharmacyDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 dark:text-gray-400 mb-4">Pharmacy Not Found</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('pharmacies.notFound')}</p>
         <button onClick={() => router.back()} className="bg-[#1E4D8C] text-white px-6 py-2 rounded-xl hover:bg-[#1a3d6f]">
-          Go Back
+          {t('pharmacies.goBack')}
           </button>
       </div>
     </div>
@@ -98,7 +98,7 @@ export default function PharmacyDetailsPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
         <ArrowLeftIcon className="w-5 h-5" />
-        Back
+        {t('common.back')}
         </button>
 
       {/* Pharmacy Header */}
@@ -123,7 +123,7 @@ export default function PharmacyDetailsPage() {
         <div className="relative">
           <input
               type="text"
-              placeholder="Search medications..."
+              placeholder={t('pharmacies.searchMedicationsPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#2D9B8A] dark:focus:border-[#2D9B8A] transition-colors"
@@ -148,14 +148,14 @@ export default function PharmacyDetailsPage() {
       </div>
 
       <div className="text-gray-600 dark:text-gray-400 text-sm">
-        {filteredMedications.length} Medications Found
+        {filteredMedications.length} {t('pharmacies.medicationsFound')}
         </div>
 
       {filteredMedications.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
           <BeakerIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            No medications available matching your search
+            {t('pharmacies.noMedicationsMatch')}
             </p>
         </div>
       ) : (
@@ -183,19 +183,19 @@ export default function PharmacyDetailsPage() {
                 )}
                   <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">In Stock:</span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-100">{medication.quantity} Units</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('inventory.inStock')}:</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">{medication.quantity} {t('pharmacy.units')}</span>
                   </div>
                   {medication.requiresPrescription && (
                       <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
                       <span></span>
-                      <span className="text-xs font-medium">Prescription Required</span>
+                      <span className="text-xs font-medium">{t('medications.prescriptionRequired')}</span>
                     </div>
                   )}
                   </div>
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Price</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('pharmacy.price')}</p>
                     <p className="text-2xl font-bold bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
                       {medication.price.toLocaleString()} RWF
                       </p>
@@ -205,7 +205,7 @@ export default function PharmacyDetailsPage() {
                       className="bg-linear-to-r from-[#2D9B8A] to-[#207a6c] text-white px-4 py-3 rounded-xl font-semibold hover:from-[#207a6c] hover:to-[#185e53] transition-all shadow-lg flex items-center gap-2"
                     >
                     <ShoppingCartIcon className="w-5 h-5" />
-                    Add to Cart
+                    {t('medications.addToCart')}
                     </button>
                 </div>
               </div>

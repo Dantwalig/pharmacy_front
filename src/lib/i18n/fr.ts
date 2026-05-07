@@ -53,28 +53,19 @@ export const fr = {
     currency: 'RWF',
     yes: 'Oui',
     no: 'Non',
-  
-    free: 'Gratuit',
-  
+    free: 'Gratuit', 
     notProvided: 'Non fourni',
-  
     notSet: 'Non défini',
-  
     justNow: 'À l\'instant',
-  
     failed: 'Échec',
-  
     updateFailed: 'Échec de la mise à jour',
-  
     deleteFailed: 'Échec de la suppression',
-  
     changing: 'Modification...',
-  
     currentPassword: 'Mot de passe actuel',
-  
     profileInfo: 'Informations du profil',
-  
     security: 'Sécurité',
+    orders: 'Commandes',
+    changePassword: 'Changer le mot de passe',
   },
   verify: {
     title: 'Vérifiez votre email',
@@ -244,6 +235,7 @@ export const fr = {
       title: 'Plateforme de santé E-Vuze',
       subtitle: 'Votre santé, notre priorité',
     },
+    findPharmacyAndMedicine: 'Trouver une pharmacie et des médicaments',
     findPharmaciesNearYou: 'Trouvez des pharmacies près de chez vous',
     searchPharmacies: 'Rechercher par nom ou localisation...',
     pharmaciesFound: 'pharmacies trouvées',
@@ -266,6 +258,10 @@ export const fr = {
     noPharmacies: 'Aucune pharmacie trouvée',
     notFound: 'Pharmacie introuvable',
     loadFailed: 'Échec du chargement des détails de la pharmacie',
+    searchMedicationsPlaceholder: 'Rechercher des médicaments...',
+    medicationsFound: 'Médicaments trouvés',
+    noMedicationsMatch: 'Aucun médicament disponible correspondant à votre recherche',
+    goBack: 'Retour',
   },
   cart: {
     title: 'Panier',
@@ -292,6 +288,8 @@ export const fr = {
     prescriptionRequired: 'Ordonnance requise',
     stock: 'Stock',
     noMedications: 'Aucun médicament trouvé',
+    tryDifferentKeywords: 'Essayez d\'utiliser des mots-clés différents ou vérifiez votre orthographe.',
+    searchInstantly: 'Recherchez instantanément dans toutes les pharmacies enregistrées.',
   },
   checkout: {
     title: 'Paiement',
@@ -313,7 +311,7 @@ export const fr = {
     verifyInsurance: 'Vérifier l\'assurance',
     insuranceVerified: 'Assurance vérifiée',
     coverage: 'couverture',
-    orderSummary: 'Récapitulatif de la commande',
+    orderSummary: 'Résumé de la commande',
     placeOrder: 'Passer la commande et payer',
   },
   orders: {
@@ -334,12 +332,19 @@ export const fr = {
     address: 'Adresse',
     zone: 'Zone',
     fee: 'Frais',
-    paymentSummary: 'Récapitulatif du paiement',
+    paymentSummary: 'Résumé du paiement',
     subtotal: 'Sous-total',
     deliveryFee: 'Frais de livraison',
     insuranceCoverage: 'Couverture d\'assurance',
     paymentMethod: 'Mode de paiement',
     confirmCancel: 'Êtes-vous sûr de vouloir annuler cette commande ?',
+    cancellationReason: 'Raison d\'annulation',
+    orderDetails: 'Détails de la commande',
+    orderProgress: 'Progression de la commande',
+    deliveryDetails: 'Détails de livraison',
+    qty: 'Qté',
+    moreItems: 'de plus',
+    inProgress: 'En cours',
     cancelling: 'Annulation...',
     cancelOrder: 'Annuler la commande',
     notFound: 'Commande introuvable',
@@ -455,50 +460,29 @@ export const fr = {
     analytics: 'Analytique',
     patients: 'Patients',
     notifications: 'Notifications',
-  
     acceptOrder: 'Accepter la commande',
-  
     startPreparing: 'Commencer la préparation',
-  
     markDelivered: 'Marquer comme livré',
     markReadyForPickup: 'Marquer prêt pour le retrait',
     dispatchForDelivery: 'Envoyer en livraison',
     markCompleted: 'Marquer comme terminé',
-  
     approveBranch: 'Approuver l\'agence',
-  
     rejectBranch: 'Rejeter l\'agence',
-  
     sendCredentialsFirst: 'Envoyer d\'abord les identifiants',
-  
     noPatientsRegistered: 'Aucun patient enregistré pour l\'instant',
-  
     failedToApprove: 'Échec de l\'approbation de l\'agence',
-  
     failedToReject: 'Échec du rejet de l\'agence',
-  
     failedToDeleteStaff: 'Échec de la suppression du personnel',
-  
     failedToResubmit: 'Échec de la resoumission de la candidature',
-  
     resubmitApplication: 'Resoumettre la candidature',
-  
     useMyLocation: 'Utiliser ma position',
-  
     verifyLocation: 'Vérifier la position',
-  
     locating: 'Localisation…',
-  
     myLocation: 'Ma position',
-  
     allPharmacies: 'Toutes les pharmacies',
-  
     nearYou: 'Pharmacies près de vous',
-  
     openNow: 'Ouvert maintenant',
-  
     onMap: 'Sur la carte',
-  
     networkBranch: 'Agence du réseau',
   },
   pharmacy: {
@@ -719,6 +703,8 @@ export const fr = {
     role: 'Rôle',
     email: 'Email',
     name: 'Nom',
+    newPassword: 'Nouveau mot de passe',
+    confirmPassword: 'Confirmer le mot de passe',
   },
   errors: {
     failedToLoad: 'Échec du chargement',
@@ -740,29 +726,17 @@ export const fr = {
     backendNotEnabledTransfers: 'Accès backend non encore activé. Voir la bannière ci-dessus.',
     searchFailed: 'Échec de la recherche',
     noMedicationsFound: 'Aucun médicament trouvé',
-  
     failedToPlaceOrder: 'Échec de la commande',
-  
     failedToUploadPrescription: 'Échec du téléchargement de l\'ordonnance',
-  
     failedToApproveBranch: 'Échec de l\'approbation de l\'agence',
-  
     failedToRejectBranch: 'Échec du rejet de l\'agence',
-  
     failedToDeleteStaff: 'Échec de la suppression du membre du personnel',
-  
     failedToResubmitApplication: 'Échec de la resoumission de la candidature',
-  
     failedToAddMedication: 'Échec de l\'ajout du médicament',
-  
     invalidSecretKey: 'Clé secrète invalide',
-  
     managerAccountExists: 'Un compte gestionnaire existe déjà',
-  
     cannotApproveLicense: 'Impossible d\'approuver : licence non téléchargée',
-  
     branchAlreadyApproved: 'L\'agence est déjà approuvée',
-  
     pleaseProvideRejectionReason: 'Veuillez fournir une raison de rejet',
   },
   success: {
@@ -791,19 +765,12 @@ export const fr = {
     notificationsReadFailed: 'Échec du marquage des notifications',
     profileUpdated: 'Profil mis à jour !',
     allNotificationsRead: 'Toutes les notifications marquées comme lues',
-  
     branchApproved: 'Agence approuvée avec succès',
-  
     branchRejected: 'Agence rejetée',
-  
     orderAccepted: 'Commande acceptée',
-  
     orderStartedPreparing: 'Préparation de la commande démarrée',
-  
     orderMarkedDelivered: 'Commande marquée comme livrée',
-  
     staffDeleted: 'Membre du personnel supprimé',
-  
     applicationResubmitted2: 'Candidature resoumise',
   },
   auth2: {
@@ -1002,6 +969,11 @@ export const fr = {
     failedToApprove: 'Échec de l\'approbation',
     failedToReject: 'Échec du rejet',
     rejectedByManager: 'Rejeté par le responsable',
+    healthMetrics: 'Vos paramètres de santé sont excellents aujourd\'hui.',
+    browseNearbyPharmacies: 'Parcourir les pharmacies à proximité',
+    nearbyPharmacies: 'Pharmacies à proximité',
+    pharmaciesOnMap: 'pharmacies sur la carte',
+    recentMedicalOrders: 'Commandes médicales récentes',
   },
   orders2: {
     myOrders: 'Mes commandes',
@@ -1047,6 +1019,17 @@ export const fr = {
     noActiveOrders: 'Vous n\'avez aucune commande active pour le moment.',
     noCompletedOrders: 'Aucune commande terminée pour l\'instant.',
     ordersWillAppearOnce: 'Vos commandes apparaîtront ici une fois passées.',
+    paymentStatus: 'Statut du paiement',
+    paymentStatusCompleted: 'Terminé',
+    paymentStatusPaid: 'Payé',
+    paymentStatusPending: 'En attente',
+    paymentStatusFailed: 'Échoué',
+    completeYourPayment: 'Complétez votre paiement',
+    mobileMoneyNumber: 'Numéro Mobile Money',
+    enterOtp: 'Entrer l\'OTP',
+    paymentCompleted: 'Paiement effectué avec succès !',
+    viewPrescription: 'Voir l\'ordonnance',
+    prescriptionInfo: 'Informations sur l\'ordonnance',
   },
   checkout2: {
     cartEmpty: 'Votre panier est vide',
@@ -1056,24 +1039,24 @@ export const fr = {
     selectPrescriptionFile: 'Sélectionner le fichier d\'ordonnance',
     prescriptionUploaded: 'Ordonnance téléchargée',
     paymentMethod: 'Mode de paiement',
-    orderSummary: 'Récapitulatif de la commande',
+    orderSummary: 'Résumé de la commande',
     delivery: 'Livraison',
     rejectReasonPlaceholder: 'Raison du rejet (obligatoire)...',
     deliveryAddressPlaceholder: 'Entrez votre adresse de livraison complète...',
-  
     free: 'Gratuit',
-  
     failedToPlaceOrder: 'Échec de la commande',
-  
     failedToUploadPrescription: 'Échec du téléchargement de l\'ordonnance',
-  
     mtnMobileMoney: 'MTN Mobile Money',
-  
     airtelMoney: 'Airtel Money',
-  
     debitCreditCard: 'Carte de débit / crédit',
-  
     insurancePayment: 'Assurance',
+    backToCart: 'Retour au panier',
+    prescriptionRequiredDesc: 'Un ou plusieurs articles nécessitent une ordonnance valide. Veuillez la télécharger avant de passer votre commande.',
+    uploadPrescription: 'Télécharger l\'ordonnance',
+    changePrescription: 'Modifier',
+    placingOrder: 'Commande en cours...',
+    placeOrder: 'Passer la commande',
+    uploadPrescriptionToContinue: 'Téléchargez votre ordonnance pour continuer',
   },
   patients: {
     totalPatients: 'Total des patients',
@@ -1093,22 +1076,29 @@ export const fr = {
     unread: 'Non lu',
     allNotifications: 'Toutes les notifications',
     noNotificationsYet: 'Aucune notification pour l\'instant',
-  
     alerts: 'Alertes',
-  
     noNotificationsInCategory: 'Aucune notification dans cette catégorie',
-  
     orderStatusUpdates: 'Mises à jour du statut des commandes',
-  
     prescriptionVerification: 'Vérification des ordonnances',
-  
     promotionsOffers: 'Promotions et offres',
-  
     orderStatusDesc: 'Soyez notifié lorsque le statut de votre commande change',
-  
     prescriptionDesc: 'Alertes lorsque votre ordonnance est examinée',
-  
     promotionsDesc: 'Offres spéciales des pharmacies près de chez vous',
+    all: 'Tout',
+    markAllAsRead: 'Tout marquer comme lu',
+    youHave: 'Vous avez',
+    unreadNotification: 'notification non lue',
+    unreadNotifications: 'notifications non lues',
+    new: 'Nouveau',
+    viewOrder: 'Voir la commande →',
+    ordersNotifications: 'Notifications de commandes',
+    prescriptionsNotifications: 'Notifications d\'ordonnances',
+    alertsNotifications: 'Notifications d\'alertes',
+    minAgo: 'min',
+    hourAgo: 'heure',
+    hoursAgo: 'heures',
+    dayAgo: 'jour',
+    daysAgo: 'jours',
   },
   profile2: {
     myProfile: 'Mon profil',
@@ -1286,6 +1276,33 @@ export const fr = {
     noPharmaciesFound: 'Aucune pharmacie trouvée',
     noMedicationsFound: 'Aucun médicament trouvé',
     enterMedicationName: 'Entrez un nom de médicament pour rechercher',
+    pharmaciesNearYou: 'Pharmacies près de vous',
+    allPharmacies: 'Toutes les pharmacies',
+    searchPharmaciesPlaceholder: 'Rechercher par nom ou zone…',
+    findNearMe: 'Trouver des pharmacies près de moi',
+    locationAccessDesc: 'Autorisez l\'accès à votre localisation pour voir les pharmacies triées par distance.',
+    locating: 'Localisation…',
+    useMyLocation: 'Utiliser ma position',
+    availableAt: 'Disponible chez :',
+    noPharmaciesNearby: 'Aucune pharmacie trouvée à proximité.',
+    openStatus: 'Ouvert',
+    closedStatus: 'Fermé',
+    details: 'Détails',
+  },
+  map: {
+    loadingMap: 'Chargement de la carte…',
+    noPharmaciesFound: 'Aucune pharmacie trouvée',
+    noPharmaciesDesc: 'Aucune pharmacie trouvée dans cette zone. Essayez de dézoomer ou d\'ajuster votre recherche.',
+    resetSearch: 'Réinitialiser la recherche',
+    locationDenied: 'Accès à la localisation refusé',
+    locationDeniedDesc: 'Veuillez activer l\'accès à la localisation dans les paramètres de votre navigateur, ou recherchez manuellement.',
+    searchByName: 'Rechercher par nom',
+    offline: 'Hors ligne',
+    offlineDesc: 'Les données de la carte nécessitent une connexion Internet. Veuillez vous reconnecter et réessayer.',
+    retry: 'Réessayer',
+    mapError: 'Erreur de carte',
+    mapErrorDesc: 'Une erreur s\'est produite lors du chargement de la carte. Veuillez réessayer.',
+    missingCoords: 'Les coordonnées de localisation ne sont pas disponibles pour cette pharmacie.',
   },
   pharmacyRejected: {
     resubmitting: 'Resoumission...',

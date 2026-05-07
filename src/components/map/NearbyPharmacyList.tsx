@@ -4,6 +4,7 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import { PharmacyLocation } from '@/features/map/pharmacyData';
 import {
   MapPinIcon,
@@ -46,6 +47,7 @@ export default function NearbyPharmacyList({
   onViewDetails,
   loading = false,
 }: Props) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="space-y-3">
@@ -61,7 +63,7 @@ export default function NearbyPharmacyList({
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow">
         <p className="text-4xl mb-3">🔍</p>
         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-          No pharmacies found nearby.
+          {t('search.noPharmaciesNearby')}
         </p>
       </div>
     );
@@ -114,7 +116,7 @@ export default function NearbyPharmacyList({
                             : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
                         }`}
                       >
-                        {isOpen ? 'Open' : 'Closed'}
+                        {isOpen ? t('search.openStatus') : t('search.closedStatus')}
                       </span>
                     </div>
 
@@ -164,7 +166,7 @@ export default function NearbyPharmacyList({
                           className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90"
                           style={{ background: NAVY }}
                         >
-                          Details
+                          {t('search.details')}
                           <ChevronRightIcon className="w-3 h-3" />
                         </button>
                       )}
