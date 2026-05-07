@@ -165,12 +165,13 @@ export default function CheckoutPage() {
               </button>
             ))}
             </div>
+            {/* delivery address form field*/}
           {orderType === 'DELIVERY' && (
               <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.deliveryAddress')}</label>
+              <label  htmlFor="deliveryAddress" className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout2.deliveryAddress')}</label>
               <div className="relative">
                 <MapPinIcon className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <textarea value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}
+                <textarea id="deliveryAddress" value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm resize-none" rows={2}
                     placeholder={t('checkout2.deliveryAddressPlaceholder')} />
               </div>
