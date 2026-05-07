@@ -4,23 +4,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
-  HomeIcon,
-  BuildingStorefrontIcon,
-  UserGroupIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
-  XMarkIcon,
-  MapPinIcon,
-  QuestionMarkCircleIcon,
+  HomeIcon, BuildingStorefrontIcon, UserGroupIcon,
+  ChartBarIcon, ShieldCheckIcon, XMarkIcon, MapPinIcon,
 } from '@heroicons/react/24/outline';
 
 interface SuperAdminSidebarProps {
   open?: boolean;
   onClose?: () => void;
-  onOpenSupport?: () => void;
+  onOpenSupport?: () => void; // kept for layout compat
 }
 
-export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport }: SuperAdminSidebarProps) {
+export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminSidebarProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
 
@@ -40,7 +34,8 @@ export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       lg:translate-x-0 lg:min-h-screen lg:sticky lg:top-0 lg:self-start
     `}>
-      <div className="p-6">
+      {/* Header */}
+      <div className="p-6 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -57,7 +52,7 @@ export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport
         </div>
 
         <nav className="space-y-2">
-          {navigation.map((item) => {
+          {navigation.map(item => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
             return (
@@ -72,20 +67,8 @@ export default function SuperAdminSidebar({ open = false, onClose, onOpenSupport
         </nav>
       </div>
 
-      <div className="mt-auto p-6 space-y-3">
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-          <div className="flex items-center gap-2 mb-1">
-            <QuestionMarkCircleIcon className="w-4 h-4 text-slate-400" />
-            <p className="text-sm font-semibold">{t('common.needHelp')}</p>
-          </div>
-          <p className="text-xs text-slate-400 mb-3">{t('common.contactSupport')}</p>
-          <button
-            onClick={onOpenSupport}
-            className="w-full py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition-colors"
-          >
-            {t('common.getSupport')}
-          </button>
-        </div>
+      {/* Footer — system status only, no "Need Help" */}
+      <div className="mt-auto p-6 shrink-0">
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
