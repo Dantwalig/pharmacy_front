@@ -140,27 +140,30 @@ export default function NewStaffPage() {
           <div>
             <label htmlFor="firstName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.firstName')} *</label>
             <input id="firstName" required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+              placeholder= "e.g. John"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
             <label htmlFor="lastName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.lastName')} *</label>
             <input id="lastName" required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
+              placeholder= "e.g. Doe"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
             <label htmlFor="email" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.email')} *</label>
             <input id="email" required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
+              placeholder= "e.g. john.doe@example.com"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
             <label htmlFor="phone" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.phone')}</label>
             <input id="phone" value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
-                placeholder="+250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                placeholder= "e.g. +250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
             <label htmlFor="nationalId" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.nationalId')}</label>
             <input id="nationalId" value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                placeholder= "e.g. PP123456789" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
             <label htmlFor="gender" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.gender')}</label>

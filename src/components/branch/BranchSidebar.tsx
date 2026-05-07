@@ -2,15 +2,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, Clock, Lock, HelpCircle, LogOut, X, BarChart2, Package, ArrowLeftRight, Map } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, Lock, LogOut, X, BarChart2, Package, ArrowLeftRight, Map } from 'lucide-react';
 
 interface BranchSidebarProps {
   open?: boolean;
   onClose?: () => void;
-  onOpenSupport?: () => void;
+  onOpenSupport?: () => void; // kept for layout compat, no longer renders a button
 }
 
-export default function BranchSidebar({ open = false, onClose, onOpenSupport }: BranchSidebarProps) {
+export default function BranchSidebar({ open = false, onClose }: BranchSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
@@ -32,7 +32,8 @@ export default function BranchSidebar({ open = false, onClose, onOpenSupport }: 
       className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       style={{ backgroundColor: '#1E4D8C' }}
     >
-      <div className="px-6 py-7 border-b border-white/10 flex items-center justify-between">
+      {/* Header */}
+      <div className="px-6 py-7 border-b border-white/10 flex items-center justify-between shrink-0">
         <div>
           <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
           <p className="text-white/60 text-sm mt-0.5">{t('branch.portal')}</p>
@@ -42,14 +43,12 @@ export default function BranchSidebar({ open = false, onClose, onOpenSupport }: 
         </button>
       </div>
 
-      <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+      {/* Nav — no overflow-y-auto so sidebar never scrolls */}
+      <nav className="flex-1 px-4 py-5 space-y-1">
         {nav.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onClose}
+            <Link key={href} href={href} onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
               style={active ? { backgroundColor: '#2D9B8A' } : {}}
             >
@@ -60,17 +59,8 @@ export default function BranchSidebar({ open = false, onClose, onOpenSupport }: 
         })}
       </nav>
 
-      <div className="px-4 pb-4 space-y-2">
-        <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <HelpCircle size={16} className="text-white/70" />
-            <p className="text-white text-sm font-semibold">{t('common.needHelp')}</p>
-          </div>
-          <p className="text-white/60 text-xs mb-3">{t('common.contactSupport')}</p>
-          <button onClick={onOpenSupport} className="w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90" style={{ backgroundColor: '#2D9B8A' }}>
-            {t('common.getSupport')}
-          </button>
-        </div>
+      {/* Footer — just logout */}
+      <div className="px-4 pb-5 shrink-0">
         <button
           onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"

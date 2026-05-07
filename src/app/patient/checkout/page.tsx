@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { PaymentMethod } from '@/types';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export default function CheckoutPage() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
   // Payment method - matches backend enum exactly
-  const [paymentMethod, setPaymentMethod] = useState<'MTN_MOMO' | 'AIRTEL_MONEY' | 'CARD' | 'INSURANCE'>('MTN_MOMO');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('MTN_MOMO');
 
   // Prescription state - separate upload flow via /upload/prescription + /prescriptions
   const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
@@ -90,9 +91,17 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       // POST /orders — JSON body matching CreateOrderDto exactly
-      const orderPayload: any = {
-        pharmacyId,
-        branchId,
+      const orderPayload: {
+        pharmacyId: string;
+        branchId: string;
+        type: 'DELIVERY' | 'PICKUP';
+        paymentMethod: PaymentMethod;
+        items: { medicationId: string; quantity: number }[];
+        deliveryAddress?: string;
+        prescriptionId?: string;
+      } = {
+        pharmacyId: pharmacyId!,
+        branchId: branchId!,
         type: orderType,                // matches DTO field name: 'type'
         paymentMethod,
         items: items.map(i => ({
@@ -140,7 +149,7 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
     <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-      <ArrowLeftIcon className="w-4 h-4" /> Back to Cart
+      <ArrowLeftIcon className="w-4 h-4" /> {t('checkout2.backToCart')}
       </button>
 
     <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
@@ -160,8 +169,8 @@ export default function CheckoutPage() {
                 <button key={type} onClick={() => setOrderType(type)}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
                 <span className="text-3xl">{type === 'PICKUP' ? '' : ''}</span>
-                <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? 'Pickup' : 'Delivery'}</span>
-                <span className="text-xs text-gray-500">{type === 'PICKUP' ? 'Free' : '+1,000 RWF'}</span>
+                <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? t('checkout.pickup') : t('checkout.delivery')}</span>
+                <span className="text-xs text-gray-500">{type === 'PICKUP' ? t('checkout2.free') : '+1,000 RWF'}</span>
               </button>
             ))}
             </div>
@@ -184,10 +193,10 @@ export default function CheckoutPage() {
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-6">
             <h2 className="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
               <DocumentTextIcon className="w-5 h-5 text-yellow-600" />
-              Prescription Required
+              {t('medications.prescriptionRequired')}
               </h2>
             <p className="text-sm text-gray-600 mb-4">
-              One or more items require a valid prescription. Please upload it before placing your order.
+              {t('checkout2.prescriptionRequiredDesc')}
               </p>
 
             {!prescriptionUploaded ? (
@@ -211,8 +220,8 @@ export default function CheckoutPage() {
                     className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
                   >
                   {uploadingPrescription
-                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading...</>
-                    : ' Upload Prescription'}
+                      ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('pendingApproval.uploading')}</>
+                    : t('checkout2.uploadPrescription')}
                   </button>
               </div>
             ) : (
@@ -227,7 +236,7 @@ export default function CheckoutPage() {
                     onClick={() => { setPrescriptionUploaded(false); setPrescriptionId(null); setPrescriptionFile(null); }}
                     className="ml-auto text-xs text-gray-500 hover:text-red-500 underline"
                   >
-                  Change
+                  {t('checkout2.changePrescription')}
                   </button>
               </div>
             )}
@@ -249,8 +258,8 @@ export default function CheckoutPage() {
                     type="radio"
                     name="payment"
                     value={opt.value}
-                    checked={paymentMethod === (opt.value as any)}
-                    onChange={() => setPaymentMethod(opt.value as any)}
+                    checked={paymentMethod === opt.value}
+                    onChange={() => setPaymentMethod(opt.value as PaymentMethod)}
                     className="text-teal-500"
                   />
                 <span className="text-xl">{opt.emoji}</span>
@@ -290,11 +299,11 @@ export default function CheckoutPage() {
               className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
             {loading
-                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Placing Order...</>
-              : ' Place Order'}
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('checkout2.placingOrder')}</>
+              : t('checkout2.placeOrder')}
             </button>
           {hasPrescription && !prescriptionId && (
-              <p className="text-xs text-yellow-600 mt-2 text-center"> Upload prescription to continue</p>
+              <p className="text-xs text-yellow-600 mt-2 text-center">{t('checkout2.uploadPrescriptionToContinue')}</p>
           )}
           </div>
       </div>

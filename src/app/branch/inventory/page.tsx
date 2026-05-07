@@ -155,6 +155,7 @@ export default function BranchInventoryPage() {
         <div className="relative w-full sm:w-72">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
+            id="searchInventory"
             type="text"
             placeholder={t('inventory.searchBranchPlaceholder')}
             value={searchTerm}
