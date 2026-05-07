@@ -5,19 +5,21 @@
  * Route: /branch/map
  *
  * Shows this branch's own location plus all sibling branches
- * from the same pharmacy network. Competitors can be toggled
- * (populated from a future /map/competitors endpoint — gracefully
- * degrades to empty array if not yet implemented).
+ * from the same pharmacy network. The "Competitors" layer is
+ * visually disabled until GET /map/competitors is implemented.
  *
  * APIs:
- *   GET /branches/pharmacy-branches  → sibling branches (same pharmacy)
- *   GET /auth/me or AuthContext      → current branch lat/lng
- *   GET /map/competitors (future)    → nearby competitors (optional)
+ *   GET /branches/pharmacy-branches     → sibling branches (same pharmacy)
+ *   GET /branches/my-branch-details     → own branch lat/lng (optional)
+ *   GET /map/competitors (not yet live) → nearby competitors
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Navigation, GitBranch, RefreshCw, AlertCircle, Building2, Eye, EyeOff } from 'lucide-react';
+import {
+  MapPin, Navigation, GitBranch, RefreshCw,
+  AlertCircle, Building2, Eye, EyeOff, Lock,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +30,41 @@ const TEAL = '#2D9B8A';
 const RED  = '#EF4444';
 
 const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false });
+
+// ── Coming Soon Tooltip wrapper ────────────────────────────────────────────
+
+function ComingSoonTooltip({ children }: { children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      ref={ref}
+      className="relative inline-block"
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onFocus={() => setVisible(true)}
+      onBlur={() => setVisible(false)}
+    >
+      {children}
+      {visible && (
+        <div
+          role="tooltip"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none"
+        >
+          <div className="bg-gray-900 text-white text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">
+            <div className="flex items-center gap-1.5">
+              <Lock size={10} />
+              Coming Soon — backend endpoint pending
+            </div>
+            {/* Arrow */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Sibling Branch Card ────────────────────────────────────────────────────
 
@@ -42,7 +79,10 @@ function SiblingCard({ branch, active, onClick }: { branch: any; active: boolean
       }}
     >
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: active ? '#6366F133' : '#F3F4F6' }}>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: active ? '#6366F133' : '#F3F4F6' }}
+        >
           <GitBranch size={14} style={{ color: active ? '#6366F1' : '#9CA3AF' }} />
         </div>
         <div className="min-w-0">
@@ -69,18 +109,16 @@ function StatPill({ label, value, color }: { label: string; value: string | numb
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function BranchMapPage() {
-  const { t } = useTranslation();
+  const { t }    = useTranslation();
   const { user } = useAuth();
 
-  const [siblings, setSiblings]           = useState<any[]>([]);
-  const [competitors, setCompetitors]     = useState<any[]>([]);
-  const [myBranch, setMyBranch]           = useState<any | null>(null);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState(false);
-  const [showSiblings, setShowSiblings]   = useState(true);
-  const [showCompetitors, setShowCompetitors] = useState(false);
+  const [siblings, setSiblings]             = useState<any[]>([]);
+  const [myBranch, setMyBranch]             = useState<any | null>(null);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState(false);
+  const [showSiblings, setShowSiblings]     = useState(true);
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
-  const [activeCard, setActiveCard]       = useState<string | null>(null);
+  const [activeCard, setActiveCard]         = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -88,7 +126,7 @@ export default function BranchMapPage() {
     try {
       const [sibRes, branchRes] = await Promise.allSettled([
         api.get('/branches/pharmacy-branches'),
-        api.get('/branches/my-branch-details'), // optional endpoint; may not exist yet
+        api.get('/branches/my-branch-details'),
       ]);
 
       if (sibRes.status === 'fulfilled') {
@@ -99,16 +137,6 @@ export default function BranchMapPage() {
       if (branchRes.status === 'fulfilled') {
         setMyBranch(branchRes.value.data?.data ?? branchRes.value.data);
       }
-
-      // Try to fetch competitors — gracefully handle 404
-      try {
-        const compRes = await api.get('/map/competitors');
-        const comp = compRes.data?.data ?? compRes.data ?? [];
-        setCompetitors(Array.isArray(comp) ? comp : []);
-      } catch {
-        // Endpoint not yet implemented — continue without competitors
-        setCompetitors([]);
-      }
     } catch {
       setError(true);
     } finally {
@@ -118,11 +146,9 @@ export default function BranchMapPage() {
 
   useEffect(() => { load(); }, []);
 
-  // Build markers ── ────────────────────────────────────────────────────────
+  // ── Build markers ────────────────────────────────────────────────────────
   const markers: MapMarker[] = [];
 
-  // Own branch — use myBranch data if available, otherwise derive from user/context
-  // (Pharmacy owner stores lat/lng on the Branch model)
   if (myBranch?.latitude != null) {
     markers.push({
       id:       myBranch.id ?? 'my-branch',
@@ -135,11 +161,10 @@ export default function BranchMapPage() {
     });
   }
 
-  // Sibling branches
   if (showSiblings) {
     siblings
       .filter(b => b.latitude != null && b.longitude != null)
-      .forEach(b => {
+      .forEach(b =>
         markers.push({
           id:       b.id,
           lat:      b.latitude,
@@ -148,25 +173,8 @@ export default function BranchMapPage() {
           sublabel: b.address,
           type:     'sibling',
           status:   'Network Branch',
-        });
-      });
-  }
-
-  // Competitors
-  if (showCompetitors) {
-    competitors
-      .filter(c => c.latitude != null && c.longitude != null)
-      .forEach(c => {
-        markers.push({
-          id:       c.id,
-          lat:      c.latitude,
-          lng:      c.longitude,
-          label:    c.name,
-          sublabel: c.address,
-          type:     'competitor',
-          status:   'Competitor',
-        });
-      });
+        })
+      );
   }
 
   const siblingsWithCoords = siblings.filter(b => b.latitude != null);
@@ -176,7 +184,10 @@ export default function BranchMapPage() {
     <div className="space-y-5">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 text-white flex items-start justify-between gap-4" style={{ backgroundColor: NAVY }}>
+      <div
+        className="rounded-2xl p-6 text-white flex items-start justify-between gap-4"
+        style={{ backgroundColor: NAVY }}
+      >
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Navigation size={18} className="text-white/70" />
@@ -196,11 +207,8 @@ export default function BranchMapPage() {
 
       {/* Stats */}
       <div className="flex flex-wrap gap-2">
-        <StatPill label="Sibling branches"    value={siblings.length}         color="#6366F1" />
-        <StatPill label="On map"              value={siblingsWithCoords.length} color={TEAL}  />
-        {competitors.length > 0 && (
-          <StatPill label="Competitors nearby" value={competitors.length}      color={RED}    />
-        )}
+        <StatPill label="Sibling branches" value={siblings.length}          color="#6366F1" />
+        <StatPill label="On map"           value={siblingsWithCoords.length} color={TEAL}   />
       </div>
 
       {error ? (
@@ -208,47 +216,60 @@ export default function BranchMapPage() {
           <div className="text-center space-y-2">
             <AlertCircle size={28} className="mx-auto text-gray-300" />
             <p className="text-sm text-gray-400">Failed to load map data.</p>
-            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>Try again</button>
+            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>
+              Try again
+            </button>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-          {/* Map */}
+          {/* Map column */}
           <div className="lg:col-span-2 space-y-3">
+
             {/* Layer toggles */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">Layers</span>
 
+              {/* Sibling branches — fully functional */}
               <button
                 onClick={() => setShowSiblings(v => !v)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
-                style={showSiblings
-                  ? { backgroundColor: '#EEF2FF', borderColor: '#6366F1', color: '#6366F1' }
-                  : { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#9CA3AF' }
+                style={
+                  showSiblings
+                    ? { backgroundColor: '#EEF2FF', borderColor: '#6366F1', color: '#6366F1' }
+                    : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
                 }
               >
                 {showSiblings ? <Eye size={12} /> : <EyeOff size={12} />}
                 Sibling Branches
               </button>
 
-              <button
-                onClick={() => setShowCompetitors(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
-                style={showCompetitors
-                  ? { backgroundColor: '#FEE2E2', borderColor: RED, color: RED }
-                  : { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#9CA3AF' }
-                }
-              >
-                {showCompetitors ? <Eye size={12} /> : <EyeOff size={12} />}
-                Competitors
-                {competitors.length === 0 && (
-                  <span className="ml-0.5 text-[10px] opacity-60">(coming soon)</span>
-                )}
-              </button>
+              {/* Competitors — DISABLED until GET /map/competitors is live */}
+              <ComingSoonTooltip>
+                <button
+                  disabled
+                  aria-disabled="true"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium cursor-not-allowed select-none"
+                  style={{
+                    backgroundColor: '#F9FAFB',
+                    borderColor:     '#E5E7EB',
+                    color:           '#D1D5DB',
+                  }}
+                >
+                  <Lock size={11} className="text-gray-300" />
+                  Competitors
+                  <span
+                    className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                    style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
+                  >
+                    Soon
+                  </span>
+                </button>
+              </ComingSoonTooltip>
             </div>
 
-            {/* Map */}
+            {/* Map canvas */}
             {loading ? (
               <div className="rounded-2xl bg-gray-100 animate-pulse" style={{ height: '480px' }} />
             ) : markers.length === 0 ? (
@@ -267,7 +288,7 @@ export default function BranchMapPage() {
                 markers={markers}
                 triangulate={showSiblings && siblingsWithCoords.length > 0}
                 height="480px"
-                onMarkerClick={(m) => {
+                onMarkerClick={m => {
                   setSelectedMarker(m);
                   setActiveCard(m.id);
                 }}
@@ -281,9 +302,15 @@ export default function BranchMapPage() {
 
             {/* My branch info */}
             {myBranch && (
-              <div className="rounded-2xl border p-4 space-y-3" style={{ borderColor: TEAL, backgroundColor: '#F0FAFA' }}>
+              <div
+                className="rounded-2xl border p-4 space-y-3"
+                style={{ borderColor: TEAL, backgroundColor: '#F0FAFA' }}
+              >
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: TEAL }}>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: TEAL }}
+                  >
                     <Navigation size={14} className="text-white" />
                   </div>
                   <div>
@@ -334,13 +361,15 @@ export default function BranchMapPage() {
               </div>
             </div>
 
-            {/* No-coords warning */}
+            {/* Missing coords warning */}
             {siblingsNoCoords.length > 0 && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs font-semibold text-amber-700">{siblingsNoCoords.length} branch{siblingsNoCoords.length > 1 ? 'es' : ''} missing coordinates</p>
+                    <p className="text-xs font-semibold text-amber-700">
+                      {siblingsNoCoords.length} branch{siblingsNoCoords.length > 1 ? 'es' : ''} missing coordinates
+                    </p>
                     <p className="text-xs text-amber-600 mt-0.5">
                       {siblingsNoCoords.map(b => b.name).join(', ')} — ask the pharmacy owner to update them.
                     </p>
@@ -353,7 +382,10 @@ export default function BranchMapPage() {
             {selectedMarker && (
               <div className="rounded-2xl bg-white border border-gray-100 p-4 shadow-sm space-y-2">
                 <div className="flex items-center gap-2">
-                  <Building2 size={14} style={{ color: selectedMarker.type === 'competitor' ? RED : selectedMarker.type === 'sibling' ? '#6366F1' : TEAL }} />
+                  <Building2
+                    size={14}
+                    style={{ color: selectedMarker.type === 'competitor' ? RED : selectedMarker.type === 'sibling' ? '#6366F1' : TEAL }}
+                  />
                   <p className="font-bold text-gray-900 text-sm">{selectedMarker.label}</p>
                 </div>
                 {selectedMarker.sublabel && (
@@ -376,6 +408,21 @@ export default function BranchMapPage() {
                 </p>
               </div>
             )}
+
+            {/* Competitors pending notice */}
+            <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+              <div className="flex items-start gap-2">
+                <Lock size={13} className="text-gray-300 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-500">Competitor layer coming soon</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    The nearby competitor map requires a backend endpoint that is currently being built.
+                    It will activate automatically once deployed.
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
