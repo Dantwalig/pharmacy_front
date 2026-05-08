@@ -334,7 +334,7 @@ export default function PatientNotificationsPage() {
                             <EllipsisVerticalIcon className="w-5 h-5" />
                           </button>
                           {openMenuId === notification.id && (
-                            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 min-w-[160px]">
+                            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 min-w-40">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
