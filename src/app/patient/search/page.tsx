@@ -141,7 +141,7 @@ export default function SearchPage() {
   const mapHeader = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-        {geoStatus === 'success' ? 'Pharmacies Near You' : 'All Pharmacies'}
+        {geoStatus === 'success' ? t('search.pharmaciesNearYou') : t('search.allPharmacies')}
         <span
           className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full"
           style={{ background: `${NAVY}15`, color: NAVY }}
@@ -178,7 +178,7 @@ export default function SearchPage() {
         className="rounded-2xl shadow-xl p-8 text-white"
         style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
       >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Find Pharmacy & Medicine</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('patient.findPharmacyAndMedicine')}</h1>
         <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
       </div>
 
@@ -191,7 +191,7 @@ export default function SearchPage() {
               type="text"
               placeholder={
                 activeTab === 'pharmacies'
-                  ? 'Search pharmacies by name or area…'
+                  ? t('search.searchPharmaciesPlaceholder')
                   : t('search.searchPlaceholder')
               }
               value={searchQuery}
@@ -205,7 +205,7 @@ export default function SearchPage() {
             className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap"
             style={{ background: TEAL }}
           >
-            Search
+            {t('common.search')}
           </button>
         </div>
       </form>
@@ -216,14 +216,14 @@ export default function SearchPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-6 py-3 rounded-xl font-semibold capitalize transition-all"
+            className="px-6 py-3 rounded-xl font-semibold transition-all"
             style={
               activeTab === tab
                 ? { background: NAVY, color: '#fff' }
                 : { background: '#e5e7eb', color: '#374151' }
             }
           >
-            {tab}
+            {tab === 'pharmacies' ? t('pharmacies.pharmacies') : t('medications.medications')}
           </button>
         ))}
       </div>
@@ -246,9 +246,9 @@ export default function SearchPage() {
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-8 h-8 shrink-0" />
                 <div>
-                  <p className="font-bold text-lg">Find Pharmacies Near Me</p>
+                  <p className="font-bold text-lg">{t('search.findNearMe')}</p>
                   <p className="text-sm opacity-90">
-                    Allow location access to see pharmacies sorted by distance.
+                    {t('search.locationAccessDesc')}
                   </p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default function SearchPage() {
                 className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60"
                 style={{ color: TEAL }}
               >
-                {geoStatus === 'loading' ? 'Locating…' : 'Use My Location'}
+                {geoStatus === 'loading' ? t('search.locating') : t('search.useMyLocation')}
               </button>
             </div>
           )}
@@ -327,14 +327,14 @@ export default function SearchPage() {
                   <div className="p-6 space-y-4">
                     <div>
                       <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-1">{med.name}</h3>
-                      <p className="text-sm text-gray-500">Available at: {med.pharmacy?.name}</p>
+                      <p className="text-sm text-gray-500">{t('search.availableAt')} {med.pharmacy?.name}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold" style={{ color: NAVY }}>
                         RWF {med.price?.toLocaleString()}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                        {med.quantity > 0 ? `In Stock (${med.quantity})` : 'Out of Stock'}
+                        {med.quantity > 0 ? `${t('inventory.inStock')} (${med.quantity})` : t('inventory.outOfStock')}
                       </span>
                     </div>
                     <button
@@ -343,7 +343,7 @@ export default function SearchPage() {
                       className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40"
                       style={{ background: TEAL }}
                     >
-                      Add to Cart
+                      {t('medications.addToCart')}
                     </button>
                   </div>
                 </div>
