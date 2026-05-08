@@ -29,8 +29,16 @@ const STATUS_STYLES: Record<string, string> = {
   REJECTED:    'bg-red-100 text-red-800',
 };
 
+const STATUS_KEYS: Record<string, string> = {
+  PENDING: 'attendance.statusPending',
+  APPROVED: 'attendance.statusApproved',
+  CLOCKED_OUT: 'attendance.statusClockedOut',
+  COMPLETED: 'attendance.statusCompleted',
+  REJECTED: 'attendance.statusRejected',
+};
+
 export default function StaffAttendancePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalHours, setTotalHours] = useState(0);
@@ -54,7 +62,7 @@ export default function StaffAttendancePage() {
     dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+    new Date(dateStr).toLocaleDateString(i18n.language || 'en', { weekday: 'short', month: 'short', day: 'numeric' });
 
   const completedCount = records.filter(r => r.status === 'COMPLETED').length;
 
@@ -103,13 +111,13 @@ export default function StaffAttendancePage() {
                   <div className="flex items-center gap-3 mb-2">
                     <p className="font-semibold text-gray-900 text-sm">{formatDate(record.clockInTime)}</p>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                      {record.status.replace(/_/g, ' ')}
+                      {t(STATUS_KEYS[record.status] || 'attendance.statusPending')}
                     </span>
                   </div>
 
                   <div className="flex gap-6 text-sm text-gray-600">
                     <div>
-                      <span className="text-xs text-gray-400">In:</span> {formatTime(record.clockInTime)}
+                      <span className="text-xs text-gray-400">{t('attendance.in')}</span> {formatTime(record.clockInTime)}
                       {record.clockInApprover && (
                         <span className="text-xs ml-1" style={{ color: TEAL }}>
                           {record.clockInApprover.firstName}
@@ -134,7 +142,7 @@ export default function StaffAttendancePage() {
                   </div>
 
                   {record.rejectionReason && (
-                    <p className="text-xs text-red-500 mt-1">Rejection: {record.rejectionReason}</p>
+                    <p className="text-xs text-red-500 mt-1">{t('attendance.rejectionLabel')} {record.rejectionReason}</p>
                   )}
                 </div>
               </div>

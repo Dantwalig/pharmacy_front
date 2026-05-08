@@ -218,7 +218,7 @@ export default function StaffInventoryPage() {
           </div>
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500">
-              Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
+              {t('inventory.showingMedications', { filtered: filtered.length, total: medications.length })}
             </p>
           </div>
         </div>
