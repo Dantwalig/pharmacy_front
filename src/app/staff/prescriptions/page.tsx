@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -40,7 +40,7 @@ export default function StaffPrescriptionsPage() {
       // GET /prescriptions/branch — Role.PHARMACIST now permitted
       // Supports optional ?status= query param
       const res = await api.get('/prescriptions/branch');
-      setPrescriptions(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setPrescriptions(unwrapData(res.data));
     } catch {
       toast.error(t('errors.failedToLoadPrescriptions'));
     } finally {

@@ -2,8 +2,8 @@
 // Placeholder API service for pharmacy location data
 // TODO: Replace mock data with real API calls when backend /api/pharmacies/locations is ready
 
-import { api } from '@/lib/api';
-import { Pharmacy, ApiResponse } from '@/types';
+import { api, unwrapData } from '@/lib/api';
+import { ApiResponse } from '@/types';
 import { PharmacyLocation } from '@/features/map/pharmacyData';
 
 export interface PharmacyLocationResponse {
@@ -21,7 +21,7 @@ export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
     return res.data.pharmacies;
   } catch (error) {
     console.error('Error fetching global locations:', error);
-    return []; // No more mock data
+    return [];
   }
 }
 
@@ -41,10 +41,10 @@ export async function fetchNearbyPharmacies(
   try {
     const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
     // Backend returns data in data array when successful
-    return res.data.data ?? [];
+    return unwrapData<PharmacyLocation>(res.data);
   } catch (error) {
     console.error('Error fetching nearby locations:', error);
-    return []; // Return empty array instead of mock data so the UI doesn't show fake pharmacies
+    return [];
   }
 }
 
@@ -58,6 +58,6 @@ export async function fetchPharmacyById(id: string): Promise<PharmacyLocation | 
     return res.data.data ?? null;
   } catch (error) {
     console.error('Error fetching pharmacy by ID:', error);
-    return null; // Don't fall back to mock data
+    return null;
   }
 }

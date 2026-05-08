@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import {
@@ -55,7 +55,7 @@ export default function BranchInventoryPage() {
       //   GET /medications/pharmacy/out-of-stock → add Role.BRANCH_MANAGER
       // When done, this page will work automatically with no frontend changes needed.
       const res = await api.get('/medications/pharmacy/my-medications');
-      setMedications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setMedications(unwrapData(res.data));
       setBackendReady(true);
     } catch (err: any) {
       if (err?.response?.status === 403) {

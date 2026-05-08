@@ -79,14 +79,15 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
       {/* Floating Support Button */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+        style={{ zIndex: 1200 }}
         aria-label={t('supportBot.contactSupport')}
       >
         <ChatBubbleLeftRightIcon className="w-6 h-6" />
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 1200 }}>
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleDismiss} />
 

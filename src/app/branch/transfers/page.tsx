@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';// This is a placeholder import. The backend team needs to create the necessary endpoints for stock transfers as described in the comments below.
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {

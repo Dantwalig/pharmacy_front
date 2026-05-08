@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -49,7 +49,7 @@ export default function StaffInventoryPage() {
     try {
       // GET /medications/pharmacy/my-medications — Role.PHARMACIST now permitted
       const res = await api.get('/medications/pharmacy/my-medications');
-      setMedications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setMedications(unwrapData(res.data));
     } catch {
       toast.error(t('errors.failedToLoadMedication'));
     } finally {
