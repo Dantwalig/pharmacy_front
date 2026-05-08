@@ -224,7 +224,7 @@ export default function PharmacyInventoryPage() {
         {/* Table footer */}
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
+            {t('inventory.showingMedications', { filtered: filtered.length, total: medications.length })}
             </p>
           <p className="text-xs text-gray-400">{t('inventory.categoriesFootnote')}</p>
         </div>
