@@ -170,6 +170,7 @@ export default function BranchStaffPage() {
                     <button
                         onClick={() => router.push(`/branch/staff/${member.id}`)}
                         className="p-1.5 rounded-lg transition-all"
+                        aria-label="View staff details"
                         style={{ color: TEAL }}
                         title={t('staffMgmt.viewDetails')}
                       >
@@ -179,6 +180,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleResendCredentials(member.id, member.user.email)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
+                        aria-label="Resend credentials"
                         title={t('staffMgmt.resendCredentials')}
                       >
                       <ArrowPathIcon className="w-4 h-4" />
@@ -187,6 +189,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                        // aria-label="Delete staff member"
                         title={t('staffMgmt.removeStaffMember')}
                       >
                       <TrashIcon className="w-4 h-4" />
