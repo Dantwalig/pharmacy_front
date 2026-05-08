@@ -76,8 +76,8 @@ export default function BranchPendingApprovalPage() {
             </h1>
           <p className="text-sm text-gray-500 mt-2">
             {isPending
-                ? 'Your branch license has been submitted. Our team will review it and approve your branch shortly.'
-                : 'To activate your branch, please upload your pharmacy license. This will be reviewed by our admin team.'
+                ? t('pendingApproval.submittedDescription')
+                : t('pendingApproval.uploadDescription')
               }
             </p>
         </div>
@@ -86,10 +86,10 @@ export default function BranchPendingApprovalPage() {
             // Waiting state
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-xl p-4 text-center">
             <p className="text-yellow-800 dark:text-yellow-400 font-medium text-sm">
-              Approval typically takes 1-2 business days
+              {t('pendingApproval.approvalTime')}
               </p>
             <p className="text-yellow-600 dark:text-yellow-500 text-xs mt-1">
-              You will be notified once your branch is approved
+              {t('pendingApproval.notifyOnApproval')}
               </p>
           </div>
         ) : (
@@ -97,7 +97,7 @@ export default function BranchPendingApprovalPage() {
             <form onSubmit={handleUpload} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Pharmacy License (PDF or image)
+                {t('pendingApproval.licenseLabel')}
                 </label>
               <div
                   className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
@@ -137,7 +137,7 @@ export default function BranchPendingApprovalPage() {
               {uploading ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('pendingApproval.uploading')}</>
               ) : (
-                  <><CheckCircleIcon className="w-5 h-5" /> Submit License</>
+                  <><CheckCircleIcon className="w-5 h-5" /> {t('pendingApproval.submitLicense')}</>
               )}
               </button>
           </form>
@@ -147,7 +147,7 @@ export default function BranchPendingApprovalPage() {
             onClick={logout}
             className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
-          Log out
+          {t('common.logout')}
           </button>
       </div>
     </div>
