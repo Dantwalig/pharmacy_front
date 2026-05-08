@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { XMarkIcon, ChatBubbleOvalLeftEllipsisIcon, PhoneIcon, DocumentTextIcon, ChevronRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/context/AuthContext';
+import { ChatBubbleLeftRightIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import api from '@/lib/api';
 
 interface SupportBotProps {
@@ -13,11 +11,11 @@ interface SupportBotProps {
 }
 
 const CATEGORIES = [
-  { value: 'order_issue',  labelKey: 'Order Issue' },
-  { value: 'billing',      labelKey: 'Billing' },
-  { value: 'technical',    labelKey: 'Technical Problem' },
-  { value: 'account',      labelKey: 'Account' },
-  { value: 'other',        labelKey: 'Other' },
+  { value: 'order_issue',   labelKey: 'supportBot.categoryOrder' },
+  { value: 'billing',       labelKey: 'supportBot.categoryBilling' },
+  { value: 'technical',     labelKey: 'supportBot.categoryTechnical' },
+  { value: 'account',       labelKey: 'supportBot.categoryAccount' },
+  { value: 'other',         labelKey: 'supportBot.categoryOther' },
 ] as const;
 
 type Category = typeof CATEGORIES[number]['value'];
@@ -32,8 +30,8 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
     name: '', email: '', phone: '', category: '' as Category | '', issue: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ticketRef,    setTicketRef]    = useState<string | null>(null);
-  const [error,        setError]        = useState<string | null>(null);
+  const [ticketRef, setTicketRef]       = useState<string | null>(null);
+  const [error, setError]               = useState<string | null>(null);
 
   const isOpen      = openProp !== undefined ? openProp : internalOpen;
   const handleOpen  = onOpen  ?? (() => setInternalOpen(true));
@@ -51,11 +49,13 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
         category: formData.category || 'other',
         message:  formData.issue,
       });
-      const ref: string | undefined = response.data?.ticketNumber ?? response.data?.id;
+      const ref: string | undefined =
+        response.data?.ticketNumber ?? response.data?.id;
       setTicketRef(ref ?? 'OK');
     } catch (err: any) {
       const status = err?.response?.status;
       if (!status || status >= 500 || status === 404) {
+        // Endpoint not yet deployed — show graceful pending confirmation
         setTicketRef('PENDING');
       } else {
         setError(err?.response?.data?.message ?? t('supportBot.submitError'));
