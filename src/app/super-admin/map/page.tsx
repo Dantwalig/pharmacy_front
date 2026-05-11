@@ -48,8 +48,8 @@ export default function SuperAdminMapPage() {
     (async () => {
       try {
         const data = await fetchPharmacyLocations();
-        setAllPharmacies(data);
-        setFiltered(data);
+        setAllPharmacies(data ?? []);
+        setFiltered(data ?? []);
       } catch {
         setAllPharmacies([]);
         setFiltered([]);
@@ -82,11 +82,12 @@ export default function SuperAdminMapPage() {
     setSelectedPharmacy(p);
   }, []);
 
+  const pharmacies = allPharmacies ?? [];
   const stats = {
-    total: allPharmacies.length,
-    active: allPharmacies.filter((p) => p.isActive).length,
-    inactive: allPharmacies.filter((p) => !p.isActive).length,
-    open: allPharmacies.filter((p) => p.status === 'OPEN').length,
+    total: pharmacies.length,
+    active: pharmacies.filter((p) => p.isActive).length,
+    inactive: pharmacies.filter((p) => !p.isActive).length,
+    open: pharmacies.filter((p) => p.status === 'OPEN').length,
   };
 
   // ── Sidebar content for MapLayout ──
