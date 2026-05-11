@@ -60,7 +60,8 @@ export default function SuperAdminMapPage() {
   }, []);
 
   useEffect(() => {
-    let result = allPharmacies;
+    if (!Array.isArray(allPharmacies)) return;
+    let result = [...allPharmacies];
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -83,10 +84,10 @@ export default function SuperAdminMapPage() {
   }, []);
 
   const stats = {
-    total: allPharmacies.length,
-    active: allPharmacies.filter((p) => p.isActive).length,
-    inactive: allPharmacies.filter((p) => !p.isActive).length,
-    open: allPharmacies.filter((p) => p.status === 'OPEN').length,
+    total: allPharmacies?.length ?? 0,
+    active: allPharmacies?.filter?.((p) => p.isActive)?.length ?? 0,
+    inactive: allPharmacies?.filter?.((p) => !p.isActive)?.length ?? 0,
+    open: allPharmacies?.filter?.((p) => p.status === 'OPEN')?.length ?? 0,
   };
 
   // ── Sidebar content for MapLayout ──
@@ -109,7 +110,7 @@ export default function SuperAdminMapPage() {
           <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm">
             Pharmacy Index
             <span className="ml-2 text-xs font-normal text-gray-400">
-              {filtered.length} shown
+              {(filtered || []).length} shown
             </span>
           </h3>
         </div>
@@ -124,7 +125,7 @@ export default function SuperAdminMapPage() {
                   </div>
                 </div>
               ))
-            : filtered.map((p) => (
+            : (filtered || []).map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handleSelectPharmacy(p)}
@@ -229,7 +230,7 @@ export default function SuperAdminMapPage() {
           ))}
         </div>
         <span className="text-xs text-gray-400 ml-auto">
-          Showing {filtered.length} / {allPharmacies.length}
+          Showing {(filtered || []).length} / {(allPharmacies || []).length}
         </span>
       </div>
 

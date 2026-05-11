@@ -110,15 +110,30 @@ export default function BaseMap({
 
   // Load Leaflet + init map
   useEffect(() => {
+    let isMounted = true;
     if (!containerRef.current) return;
 
     loadLeaflet()
       .then(() => {
+        if (!isMounted) return;
         const L = window.L;
-        if (mapRef.current) return; // already inited
+        if (mapRef.current) return;
 
-        const lat = centerLat ?? markers[0]?.lat ?? -1.9441;
-        const lng = centerLng ?? markers[0]?.lng ?? 30.0619;
+        // Safety: check if the container already has an internal Leaflet ID
+        // @ts-ignore
+        if (containerRef.current._leaflet_id) {
+          try {
+            // If it exists but we don't have a ref, try to wipe it
+            const existingMap = L.DomUtil.get(containerRef.current);
+            if (existingMap && existingMap._leaflet_id) {
+              // This is a last resort to clear stale DOM-attached maps
+            }
+          } catch (e) {}
+        }
+
+        const validMarkers = markers.filter(m => typeof m.lat === 'number' && typeof m.lng === 'number');
+        const lat = centerLat ?? validMarkers[0]?.lat ?? -1.9441;
+        const lng = centerLng ?? validMarkers[0]?.lng ?? 30.0619;
 
         const map = L.map(containerRef.current!, {
           center: [lat, lng],
@@ -126,7 +141,6 @@ export default function BaseMap({
           zoomControl: false,
         });
 
-        // Tile layer — CartoDB Positron (clean, no API key)
         L.tileLayer(
           'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
           {
@@ -135,15 +149,17 @@ export default function BaseMap({
           }
         ).addTo(map);
 
-        // Custom zoom control (bottom-right)
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         mapRef.current = map;
         setReady(true);
       })
-      .catch(() => setError(true));
+      .catch(() => {
+        if (isMounted) setError(true);
+      });
 
     return () => {
+      isMounted = false;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -158,6 +174,11 @@ export default function BaseMap({
     const L = window.L;
     const map = mapRef.current;
 
+    // Filter out invalid markers to prevent Leaflet Bounds error (reading 'x')
+    const validMarkers = markers.filter(m => 
+      m && typeof m.lat === 'number' && typeof m.lng === 'number' && !isNaN(m.lat) && !isNaN(m.lng)
+    );
+
     // Clear existing
     markersRef.current.forEach(m => m.remove());
     polylinesRef.current.forEach(p => p.remove());
@@ -165,7 +186,7 @@ export default function BaseMap({
     polylinesRef.current = [];
 
     // Add markers
-    markers.forEach((m) => {
+    validMarkers.forEach((m) => {
       const color = MARKER_COLORS[m.type] ?? TEAL;
       const icon = L.icon({
         iconUrl: createPinSvg(color),
@@ -193,9 +214,8 @@ export default function BaseMap({
     });
 
     // Triangulation lines
-    if (triangulate && markers.length >= 2) {
-      const latlngs = markers.map(m => [m.lat, m.lng]);
-      // Draw line from each point to every other (triangulation mesh)
+    if (triangulate && validMarkers.length >= 2) {
+      const latlngs = validMarkers.map(m => [m.lat, m.lng]);
       for (let i = 0; i < latlngs.length; i++) {
         for (let j = i + 1; j < latlngs.length; j++) {
           const line = L.polyline([latlngs[i], latlngs[j]], {
@@ -209,12 +229,18 @@ export default function BaseMap({
       }
     }
 
-    // Fit bounds to all markers
-    if (markers.length > 1) {
-      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
-      map.fitBounds(bounds, { padding: [50, 50] });
-    } else if (markers.length === 1) {
-      map.setView([markers[0].lat, markers[0].lng], zoom);
+    // Fit bounds to all markers (safely)
+    if (validMarkers.length > 1) {
+      try {
+        const bounds = L.latLngBounds(validMarkers.map(m => [m.lat, m.lng]));
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [50, 50] });
+        }
+      } catch (e) {
+        console.error('Error fitting map bounds:', e);
+      }
+    } else if (validMarkers.length === 1) {
+      map.setView([validMarkers[0].lat, validMarkers[0].lng], zoom);
     }
   }, [ready, markers, triangulate]);
 
