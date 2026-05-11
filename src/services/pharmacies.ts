@@ -17,8 +17,18 @@ export interface PharmacyLocationResponse {
  */
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
-    const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
-    return res.data.pharmacies;
+    const res = await api.get('/pharmacies/locations');
+    console.log('Pharmacy Locations Response:', res.data);
+    
+    // Use unwrapData to handle standard wrappers
+    let data = unwrapData<PharmacyLocation>(res.data);
+    
+    // If unwrapData didn't find it, check for .pharmacies (old format)
+    if (data.length === 0 && res.data?.pharmacies && Array.isArray(res.data.pharmacies)) {
+      data = res.data.pharmacies;
+    }
+    
+    return data;
   } catch (error) {
     console.error('Error fetching global locations:', error);
     return [];

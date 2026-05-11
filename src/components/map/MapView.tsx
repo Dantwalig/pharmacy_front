@@ -75,9 +75,16 @@ export default function MapView({
 
   // Init Leaflet map once library is available
   useEffect(() => {
+    let isMounted = true;
     if (!leafletLoaded || !mapContainerRef.current || leafletMap.current) return;
     const L = window.L;
+
+    // Safety: check if the container already has an internal Leaflet ID (prevents "Map container already initialized" error)
+    // @ts-ignore
+    if (mapContainerRef.current._leaflet_id) return;
+
     try {
+      if (!isMounted) return;
       const map = L.map(mapContainerRef.current, {
         center,
         zoom,
