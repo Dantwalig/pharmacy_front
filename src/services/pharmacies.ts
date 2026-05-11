@@ -17,10 +17,14 @@ export interface PharmacyLocationResponse {
  */
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
-    const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
-    return res.data.pharmacies;
+    const res = await api.get('/pharmacies/locations');
+    // Backend returns a flat array directly; guard against any wrapped shape
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.pharmacies)) return res.data.pharmacies;
+    if (Array.isArray(res.data?.data)) return res.data.data;
+    return [];
   } catch (error) {
-    console.error('Error fetching global locations:', error);
+    console.error('Error fetching global locations:', error);// Return empty array on error to avoid breaking the map
     return [];
   }
 }
