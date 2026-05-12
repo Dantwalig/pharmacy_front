@@ -1,22 +1,8 @@
 'use client';
 
-/**
- * BaseMap — shared reusable map component (coordinate with Daniel)
- *
- * Uses Leaflet loaded dynamically (no SSR) via a useEffect CDN injection.
- * Both PharmacyOwnerMap and BranchManagerMap extend this component via props.
- *
- * Props:
- *   markers        – array of MapMarker objects to render
- *   triangulate    – if true, draws lines connecting all markers
- *   centerLat/Lng  – initial map center (defaults to first marker)
- *   zoom           – initial zoom level
- *   onMarkerClick  – callback when a marker pin is clicked
- *   height         – CSS height string (default '500px')
- *   className      – extra Tailwind classes on the wrapper
- */
-
 import { useEffect, useRef, useState } from 'react';
+import { MapSkeleton } from './MapStates';
+import { MARKER_CSS } from './PharmacyMarker';
 
 export interface MapMarker {
   id: string;
@@ -42,14 +28,19 @@ interface BaseMapProps {
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
-const AMBER = '#F59E0B';
-const RED = '#EF4444';
 
 const MARKER_COLORS: Record<MapMarker['type'], string> = {
   own:        TEAL,
   hq:         NAVY,
   sibling:    '#6366F1',
-  competitor: RED,
+  competitor: '#EF4444',
+};
+
+const TYPE_LABELS: Record<MapMarker['type'], string> = {
+  own:        'This branch',
+  hq:         'HQ',
+  sibling:    'Sibling branch',
+  competitor: 'Competitor',
 };
 
 declare global {
@@ -61,34 +52,41 @@ declare global {
 
 function loadLeaflet(): Promise<void> {
   if (window._leafletLoaded) return Promise.resolve();
-  return new Promise((resolve) => {
-    // CSS
+  return new Promise((resolve, reject) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
     document.head.appendChild(link);
 
-    // JS
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => {
-      window._leafletLoaded = true;
-      resolve();
-    };
+    script.onload = () => { window._leafletLoaded = true; resolve(); };
+    script.onerror = () => reject(new Error('Failed to load Leaflet'));
     document.head.appendChild(script);
   });
 }
 
-function createPinSvg(color: string, size = 36): string {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size * 1.3}" viewBox="0 0 36 47">
-      <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/></filter>
-      <ellipse cx="18" cy="44" rx="6" ry="3" fill="rgba(0,0,0,0.18)"/>
-      <path d="M18 2C10.268 2 4 8.268 4 16c0 10 14 28 14 28S32 26 32 16C32 8.268 25.732 2 18 2z"
-        fill="${color}" filter="url(#s)"/>
-      <circle cx="18" cy="16" r="6" fill="white" fill-opacity="0.9"/>
-    </svg>`;
-  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+function buildDivMarkerHtml(color: string): string {
+  const size = 32;
+  return `
+    <div style="position:relative;width:${size}px;height:${size}px;">
+      <div style="
+        width:${size}px;height:${size}px;
+        background:${color};
+        border:3px solid ${NAVY};
+        border-radius:50% 50% 50% 0;
+        transform:rotate(-45deg);
+        box-shadow:0 2px 8px rgba(0,0,0,0.25);
+        transition:all 0.25s ease;
+      "></div>
+      <div style="
+        position:absolute;top:50%;left:50%;
+        transform:translate(-50%,-60%);
+        width:${size * 0.35}px;height:${size * 0.35}px;
+        background:white;border-radius:50%;opacity:0.9;
+      "></div>
+    </div>
+  `;
 }
 
 export default function BaseMap({
@@ -107,6 +105,7 @@ export default function BaseMap({
   const polylinesRef = useRef<any[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
+  const [popupMarker, setPopupMarker] = useState<MapMarker | null>(null);
 
   // Load Leaflet + init map
   useEffect(() => {
@@ -119,35 +118,16 @@ export default function BaseMap({
         const L = window.L;
         if (mapRef.current) return;
 
-        // Safety: check if the container already has an internal Leaflet ID
-        // @ts-ignore
-        if (containerRef.current._leaflet_id) {
-          try {
-            // If it exists but we don't have a ref, try to wipe it
-            const existingMap = L.DomUtil.get(containerRef.current);
-            if (existingMap && existingMap._leaflet_id) {
-              // This is a last resort to clear stale DOM-attached maps
-            }
-          } catch (e) {}
-        }
-
         const validMarkers = markers.filter(m => typeof m.lat === 'number' && typeof m.lng === 'number');
         const lat = centerLat ?? validMarkers[0]?.lat ?? -1.9441;
         const lng = centerLng ?? validMarkers[0]?.lng ?? 30.0619;
 
-        const map = L.map(containerRef.current!, {
-          center: [lat, lng],
-          zoom,
-          zoomControl: false,
-        });
+        const map = L.map(containerRef.current!, { center: [lat, lng], zoom, zoomControl: false });
 
-        L.tileLayer(
-          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-          {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-            maxZoom: 19,
-          }
-        ).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          maxZoom: 19,
+        }).addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -174,75 +154,69 @@ export default function BaseMap({
     const L = window.L;
     const map = mapRef.current;
 
-    // Filter out invalid markers to prevent Leaflet Bounds error (reading 'x')
-    const validMarkers = markers.filter(m => 
-      m && typeof m.lat === 'number' && typeof m.lng === 'number' && !isNaN(m.lat) && !isNaN(m.lng)
-    );
+    const validCoord = (v: any) => typeof v === 'number' && isFinite(v);
 
-    // Clear existing
-    markersRef.current.forEach(m => m.remove());
-    polylinesRef.current.forEach(p => p.remove());
-    markersRef.current = [];
-    polylinesRef.current = [];
+    const draw = () => {
+      markersRef.current.forEach(m => m.remove());
+      polylinesRef.current.forEach(p => p.remove());
+      markersRef.current = [];
+      polylinesRef.current = [];
 
-    // Add markers
-    validMarkers.forEach((m) => {
-      const color = MARKER_COLORS[m.type] ?? TEAL;
-      const icon = L.icon({
-        iconUrl: createPinSvg(color),
-        iconSize: [36, 47],
-        iconAnchor: [18, 44],
-        popupAnchor: [0, -44],
+      markers.forEach((m) => {
+        if (!validCoord(m.lat) || !validCoord(m.lng)) return;
+
+        const color = MARKER_COLORS[m.type] ?? TEAL;
+        const icon = L.divIcon({
+          html: buildDivMarkerHtml(color),
+          className: '',
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+        });
+
+        const leafletMarker = L.marker([m.lat, m.lng], { icon })
+          .addTo(map)
+          .on('click', () => {
+            setPopupMarker(m);
+            onMarkerClick?.(m);
+          });
+
+        markersRef.current.push(leafletMarker);
       });
 
-      const leafletMarker = L.marker([m.lat, m.lng], { icon })
-        .addTo(map)
-        .bindPopup(
-          `<div style="font-family:system-ui;min-width:160px">
-            <p style="font-weight:700;color:${color};margin:0 0 2px">${m.label}</p>
-            ${m.sublabel ? `<p style="font-size:12px;color:#6B7280;margin:0 0 4px">${m.sublabel}</p>` : ''}
-            ${m.status ? `<span style="font-size:11px;background:${color}22;color:${color};padding:2px 8px;border-radius:99px;font-weight:600">${m.status}</span>` : ''}
-          </div>`,
-          { maxWidth: 220, className: 'evuze-popup' }
-        );
-
-      if (onMarkerClick) {
-        leafletMarker.on('click', () => onMarkerClick(m));
-      }
-
-      markersRef.current.push(leafletMarker);
-    });
-
-    // Triangulation lines
-    if (triangulate && validMarkers.length >= 2) {
-      const latlngs = validMarkers.map(m => [m.lat, m.lng]);
-      for (let i = 0; i < latlngs.length; i++) {
-        for (let j = i + 1; j < latlngs.length; j++) {
-          const line = L.polyline([latlngs[i], latlngs[j]], {
-            color: NAVY,
-            weight: 1.5,
-            opacity: 0.35,
-            dashArray: '6 6',
-          }).addTo(map);
-          polylinesRef.current.push(line);
+      if (triangulate && markers.length >= 2) {
+        const valid = markers.filter(m => validCoord(m.lat) && validCoord(m.lng));
+        for (let i = 0; i < valid.length; i++) {
+          for (let j = i + 1; j < valid.length; j++) {
+            try {
+              const line = L.polyline(
+                [[valid[i].lat, valid[i].lng], [valid[j].lat, valid[j].lng]],
+                { color: NAVY, weight: 1.5, opacity: 0.35, dashArray: '6 6' }
+              ).addTo(map);
+              polylinesRef.current.push(line);
+            } catch { }
+          }
         }
       }
-    }
 
-    // Fit bounds to all markers (safely)
-    if (validMarkers.length > 1) {
-      try {
-        const bounds = L.latLngBounds(validMarkers.map(m => [m.lat, m.lng]));
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
-      } catch (e) {
-        console.error('Error fitting map bounds:', e);
+      const plotted = markers.filter(m => validCoord(m.lat) && validCoord(m.lng));
+      if (plotted.length > 1) {
+        try {
+          const bounds = L.latLngBounds(plotted.map(m => [m.lat, m.lng]));
+          if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+        } catch { }
+      } else if (plotted.length === 1) {
+        map.setView([plotted[0].lat, plotted[0].lng], zoom);
       }
-    } else if (validMarkers.length === 1) {
-      map.setView([validMarkers[0].lat, validMarkers[0].lng], zoom);
-    }
+    };
+
+    map.invalidateSize();
+    const t = setTimeout(draw, 50);
+    return () => clearTimeout(t);
   }, [ready, markers, triangulate]);
+
+  const validMarkers = markers.filter(
+    m => typeof m.lat === 'number' && isFinite(m.lat) && typeof m.lng === 'number' && isFinite(m.lng)
+  );
 
   if (error) {
     return (
@@ -260,27 +234,48 @@ export default function BaseMap({
       {/* Leaflet container */}
       <div ref={containerRef} className="w-full h-full" />
 
+      {/* Marker animation CSS */}
+      <style>{MARKER_CSS}{`
+        .leaflet-control-zoom a {
+          border-radius: 8px !important;
+          border: 1px solid #E5E7EB !important;
+          color: #374151 !important;
+          font-weight: 600 !important;
+        }
+        .leaflet-control-zoom {
+          border: none !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
+          border-radius: 10px !important;
+          overflow: hidden;
+        }
+      `}</style>
+
       {/* Loading overlay */}
       {!ready && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-2xl z-10">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: TEAL, borderTopColor: 'transparent' }} />
-            <p className="text-xs text-gray-400 font-medium">Loading map…</p>
-          </div>
+        <div className="absolute inset-0 z-10">
+          <MapSkeleton />
+        </div>
+      )}
+
+      {/* Count badge */}
+      {ready && validMarkers.length > 0 && (
+        <div
+          className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-lg pointer-events-none"
+          style={{ background: NAVY }}
+        >
+          {validMarkers.length} {validMarkers.length === 1 ? 'Location' : 'Locations'}
         </div>
       )}
 
       {/* Legend */}
       {ready && markers.length > 0 && (
         <div className="absolute bottom-10 left-3 z-1000 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3 py-2 space-y-1.5">
-          {Object.entries(MARKER_COLORS).map(([type, color]) => {
-            const hasType = markers.some(m => m.type === type);
-            if (!hasType) return null;
-            const labels: Record<string, string> = { own: 'This branch', hq: 'HQ', sibling: 'Sibling branch', competitor: 'Competitor' };
+          {(Object.keys(MARKER_COLORS) as MapMarker['type'][]).map((type) => {
+            if (!markers.some(m => m.type === type)) return null;
             return (
               <div key={type} className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-xs text-gray-600">{labels[type]}</span>
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: MARKER_COLORS[type] }} />
+                <span className="text-xs text-gray-600">{TYPE_LABELS[type]}</span>
               </div>
             );
           })}
@@ -293,26 +288,60 @@ export default function BaseMap({
         </div>
       )}
 
-      {/* Popup styling injected globally */}
-      <style>{`
-        .evuze-popup .leaflet-popup-content-wrapper {
-          border-radius: 12px !important;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-          border: 1px solid #F3F4F6 !important;
-          padding: 0 !important;
-        }
-        .evuze-popup .leaflet-popup-content {
-          margin: 12px 14px !important;
-        }
-        .evuze-popup .leaflet-popup-tip-container { display: none; }
-        .leaflet-control-zoom a {
-          border-radius: 8px !important;
-          border: 1px solid #E5E7EB !important;
-          color: #374151 !important;
-          font-weight: 600 !important;
-        }
-        .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important; border-radius: 10px !important; overflow: hidden; }
-      `}</style>
+      {/* Popup overlay */}
+      {popupMarker && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-64">
+            {/* Header — gradient with icon */}
+            <div
+              className="px-4 py-3 flex items-center justify-between text-white"
+              style={{ background: `linear-gradient(135deg, ${MARKER_COLORS[popupMarker.type] ?? TEAL}, ${NAVY})` }}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm truncate">{popupMarker.label}</p>
+                  <p className="text-white/60 text-xs">{TYPE_LABELS[popupMarker.type]}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPopupMarker(null)}
+                className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0"
+              >
+                &times;
+              </button>
+            </div>
+            {/* Body */}
+            <div className="p-3 space-y-2">
+              {popupMarker.sublabel && (
+                <div className="flex items-start gap-2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <p className="text-xs text-gray-500">{popupMarker.sublabel}</p>
+                </div>
+              )}
+              {popupMarker.status && (
+                <span
+                  className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
+                  style={{
+                    background: `${MARKER_COLORS[popupMarker.type] ?? TEAL}22`,
+                    color: MARKER_COLORS[popupMarker.type] ?? TEAL,
+                  }}
+                >
+                  {popupMarker.status}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
