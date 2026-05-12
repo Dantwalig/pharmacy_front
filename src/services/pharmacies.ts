@@ -16,11 +16,23 @@ export interface PharmacyLocationResponse {
  */
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
-    const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
-    return res.data.pharmacies;
+    const res = await api.get('/pharmacies');
+    // Map backend pharmacy object to frontend PharmacyLocation interface
+    return res.data.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      address: p.address || 'No Address',
+      latitude: p.latitude,
+      longitude: p.longitude,
+      phone: p.phone || 'N/A',
+      status: p.status === 'APPROVED' ? 'OPEN' : 'CLOSED', // Fallback mapping for UI
+      isActive: true,
+      region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown', // Extract region roughly from address
+      hours: p.operatingHours ? 'Various' : '08:00 - 20:00', // Mock hours if missing
+    }));
   } catch (error) {
     console.error('Error fetching global locations:', error);
-    return []; // No more mock data
+    return [];
   }
 }
 
