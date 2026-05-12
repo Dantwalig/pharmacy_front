@@ -20,12 +20,12 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
-  const [orders, setOrders]     = useState<any[]>([]);
-  const [filtered, setFiltered] = useState<any[]>([]);
+  const [orders, setOrders]     = useState<Record<string, unknown>[]>([]);
+  const [filtered, setFiltered] = useState<Record<string, unknown>[]>([]);
   const [tab, setTab]           = useState<TabKey>('PENDING');
   const [search, setSearch]     = useState('');
   const [branch, setBranch]     = useState('');
-  const [branches, setBranches] = useState<any[]>([]);
+  const [branches, setBranches] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
@@ -52,8 +52,8 @@ export default function PharmacyOrdersPage() {
     if (search) {
       const q = search.toLowerCase();
       res = res.filter(o =>
-      o.id?.toLowerCase().includes(q) ||
-        o.patientName?.toLowerCase().includes(q)
+      (o.id as string)?.toLowerCase().includes(q) ||
+        (o.patientName as string)?.toLowerCase().includes(q)
       );
     }
     setFiltered(res);
@@ -96,8 +96,8 @@ export default function PharmacyOrdersPage() {
             className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           >
           <option value="">{t('pharmacyOwner.allBranches')}</option>
-          {branches.map((b: any) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
+          {branches.map((b: Record<string, unknown>) => (
+              <option key={b.id as string} value={b.id as string}>{b.name as string}</option>
           ))}
           </select>
       </div>
@@ -159,33 +159,40 @@ export default function PharmacyOrdersPage() {
                 </td>
             </tr>
           ) : (
-              filtered.map((order: any) => {
-                const sc = STATUS_COLORS[order.status] ?? { bg: '#F3F4F6', text: '#374151' };
+              filtered.map((order: Record<string, unknown>) => {
+                const status = order.status as string;
+                const sc = STATUS_COLORS[status] ?? { bg: '#F3F4F6', text: '#374151' };
+                const id = order.id as string;
+                const patientName = order.patientName as string;
+                const total = order.total as number;
+                const staffName = order.staffName as string;
+                const createdAt = order.createdAt as string;
+
                 return (
-                  <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <tr key={id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-medium text-gray-800">
-                    #{order.id?.slice(0, 8)}
+                    #{id?.slice(0, 8)}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-700">
-                    {order.patientName ?? '—'}
+                    {patientName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm font-semibold" style={{ color: TEAL }}>
-                    {order.total?.toLocaleString()} RWF
+                    {total?.toLocaleString()} RWF
                     </td>
                   <td className="px-5 py-4">
                     <span
                         className="px-2.5 py-1 rounded-full text-xs font-semibold"
                         style={{ backgroundColor: sc.bg, color: sc.text }}
                       >
-                      {order.status}
+                      {status}
                       </span>
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {order.staffName ?? '—'}
+                    {staffName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {order.createdAt
-                        ? new Date(order.createdAt).toLocaleString()
+                    {createdAt
+                        ? new Date(createdAt).toLocaleString()
                         : '—'}
                     </td>
                   <td className="px-5 py-4">
