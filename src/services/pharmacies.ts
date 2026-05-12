@@ -1,4 +1,4 @@
-// src/services/pharmacies.ts
+﻿// src/services/pharmacies.ts
 // Placeholder API service for pharmacy location data
 // TODO: Replace mock data with real API calls when backend /api/pharmacies/locations is ready
 
@@ -18,13 +18,12 @@ export interface PharmacyLocationResponse {
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
     const res = await api.get('/pharmacies/locations');
-    // Backend returns a flat array directly; guard against any wrapped shape
-    if (Array.isArray(res.data)) return res.data;
-    if (Array.isArray(res.data?.pharmacies)) return res.data.pharmacies;
-    if (Array.isArray(res.data?.data)) return res.data.data;
-    return [];
+    // Handle flat array, { data: [] }, or legacy { pharmacies: [] } shapes
+    const data = unwrapData<PharmacyLocation>(res.data);
+    if (data.length === 0 && Array.isArray(res.data?.pharmacies)) return res.data.pharmacies;
+    return data;
   } catch (error) {
-    console.error('Error fetching global locations:', error);// Return empty array on error to avoid breaking the map
+    console.error('Error fetching global locations:', error);
     return [];
   }
 }
@@ -44,7 +43,6 @@ export async function fetchNearbyPharmacies(
   }
   try {
     const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
-    // Backend returns data in data array when successful
     return unwrapData<PharmacyLocation>(res.data);
   } catch (error) {
     console.error('Error fetching nearby locations:', error);

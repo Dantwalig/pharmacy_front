@@ -51,11 +51,19 @@ export default function LocationPicker({
 
   // ── Bootstrap Leaflet (client-side only) ─────────────────────────────────
   useEffect(() => {
+    let isMounted = true;
     if (typeof window === 'undefined') return;
     if (leafletMapRef.current) return; // already initialised
 
     // Dynamic import keeps Leaflet out of the SSR bundle
     import('leaflet').then((L) => {
+      // Guard against component being unmounted or map already initialized during async import
+      if (!isMounted || !mapRef.current || leafletMapRef.current) return;
+
+      // Check if the container already has an internal Leaflet ID (prevents "Map container already initialized" error)
+      // @ts-ignore
+      if (mapRef.current._leaflet_id) return;
+
       // Fix default marker icon paths broken by bundlers
       // @ts-ignore
       delete L.Icon.Default.prototype._getIconUrl;
@@ -64,8 +72,6 @@ export default function LocationPicker({
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
       });
-
-      if (!mapRef.current) return;
 
       const initialCenter: [number, number] =
         latitude !== undefined && longitude !== undefined
@@ -115,6 +121,7 @@ export default function LocationPicker({
     });
 
     return () => {
+      isMounted = false;
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
         leafletMapRef.current = null;

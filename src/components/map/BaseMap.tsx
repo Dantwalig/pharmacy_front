@@ -109,20 +109,23 @@ export default function BaseMap({
 
   // Load Leaflet + init map
   useEffect(() => {
+    let isMounted = true;
     if (!containerRef.current) return;
 
     loadLeaflet()
       .then(() => {
+        if (!isMounted) return;
         const L = window.L;
         if (mapRef.current) return;
 
-        const lat = centerLat ?? markers[0]?.lat ?? -1.9441;
-        const lng = centerLng ?? markers[0]?.lng ?? 30.0619;
+        const validMarkers = markers.filter(m => typeof m.lat === 'number' && typeof m.lng === 'number');
+        const lat = centerLat ?? validMarkers[0]?.lat ?? -1.9441;
+        const lng = centerLng ?? validMarkers[0]?.lng ?? 30.0619;
 
         const map = L.map(containerRef.current!, { center: [lat, lng], zoom, zoomControl: false });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
           maxZoom: 19,
         }).addTo(map);
 
@@ -131,10 +134,16 @@ export default function BaseMap({
         mapRef.current = map;
         setReady(true);
       })
-      .catch(() => setError(true));
+      .catch(() => {
+        if (isMounted) setError(true);
+      });
 
     return () => {
-      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
+      isMounted = false;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -282,22 +291,41 @@ export default function BaseMap({
       {/* Popup overlay */}
       {popupMarker && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-w-[200px] max-w-[260px]">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-64">
+            {/* Header — gradient with icon */}
             <div
               className="px-4 py-3 flex items-center justify-between text-white"
               style={{ background: `linear-gradient(135deg, ${MARKER_COLORS[popupMarker.type] ?? TEAL}, ${NAVY})` }}
             >
-              <p className="font-bold text-sm truncate">{popupMarker.label}</p>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm truncate">{popupMarker.label}</p>
+                  <p className="text-white/60 text-xs">{TYPE_LABELS[popupMarker.type]}</p>
+                </div>
+              </div>
               <button
                 onClick={() => setPopupMarker(null)}
                 className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0"
               >
-                ×
+                &times;
               </button>
             </div>
+            {/* Body */}
             <div className="p-3 space-y-2">
               {popupMarker.sublabel && (
-                <p className="text-xs text-gray-500">{popupMarker.sublabel}</p>
+                <div className="flex items-start gap-2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <p className="text-xs text-gray-500">{popupMarker.sublabel}</p>
+                </div>
               )}
               {popupMarker.status && (
                 <span
