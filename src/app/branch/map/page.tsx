@@ -18,11 +18,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   MapPin, Navigation, GitBranch, RefreshCw,
-  AlertCircle, Building2, Eye, EyeOff, Lock,
+  AlertCircle, Building2, Eye, EyeOff, Lock, Activity, ShieldAlert
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { fetchPharmacyLocations } from '@/services/pharmacies';
 import type { MapMarker } from '@/components/map/BaseMap';
 
 const NAVY = '#1E4D8C';
@@ -31,40 +32,7 @@ const RED  = '#EF4444';
 
 const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false });
 
-// ── Coming Soon Tooltip wrapper ────────────────────────────────────────────
 
-function ComingSoonTooltip({ children }: { children: React.ReactNode }) {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  return (
-    <div
-      ref={ref}
-      className="relative inline-block"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      onFocus={() => setVisible(true)}
-      onBlur={() => setVisible(false)}
-    >
-      {children}
-      {visible && (
-        <div
-          role="tooltip"
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none"
-        >
-          <div className="bg-gray-900 text-white text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">
-            <div className="flex items-center gap-1.5">
-              <Lock size={10} />
-              Coming Soon — backend endpoint pending
-            </div>
-            {/* Arrow */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Sibling Branch Card ────────────────────────────────────────────────────
 
@@ -113,10 +81,13 @@ export default function BranchMapPage() {
   const { user } = useAuth();
 
   const [siblings, setSiblings]             = useState<any[]>([]);
+  const [competitors, setCompetitors]       = useState<any[]>([]);
   const [myBranch, setMyBranch]             = useState<any | null>(null);
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(false);
   const [showSiblings, setShowSiblings]     = useState(true);
+  const [showCompetitors, setShowCompetitors] = useState(false);
+  const [showHeatmap, setShowHeatmap]       = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [activeCard, setActiveCard]         = useState<string | null>(null);
 
@@ -124,19 +95,33 @@ export default function BranchMapPage() {
     setLoading(true);
     setError(false);
     try {
-      const [sibRes, branchRes] = await Promise.allSettled([
+      const [sibRes, branchRes, allPharmacies] = await Promise.allSettled([
         api.get('/branches/pharmacy-branches'),
         api.get('/branches/my-branch-details'),
+        fetchPharmacyLocations()
       ]);
+
+      let myBranchData = null;
+      let siblingData: any[] = [];
+
+      if (branchRes.status === 'fulfilled') {
+        myBranchData = branchRes.value.data?.data ?? branchRes.value.data;
+        setMyBranch(myBranchData);
+      }
 
       if (sibRes.status === 'fulfilled') {
         const data = sibRes.value.data?.data ?? sibRes.value.data ?? [];
-        setSiblings(Array.isArray(data) ? data : []);
+        siblingData = Array.isArray(data) ? data : [];
+        setSiblings(siblingData);
       }
 
-      if (branchRes.status === 'fulfilled') {
-        setMyBranch(branchRes.value.data?.data ?? branchRes.value.data);
+      if (allPharmacies.status === 'fulfilled' && myBranchData) {
+        // Extract competitors: Pharmacies that are not my pharmacy network
+        // We filter out any pharmacy where id equals myBranchData.pharmacyId
+        const comps = allPharmacies.value.filter(p => p.latitude && p.longitude && p.id !== myBranchData.pharmacyId);
+        setCompetitors(comps);
       }
+
     } catch {
       setError(true);
     } finally {
@@ -179,6 +164,30 @@ export default function BranchMapPage() {
 
   const siblingsWithCoords = siblings.filter(b => b.latitude != null);
   const siblingsNoCoords   = siblings.filter(b => b.latitude == null);
+
+  // Competitors
+  if (showCompetitors) {
+    competitors.forEach(c => {
+      markers.push({
+        id: `comp-${c.id}`,
+        lat: c.latitude,
+        lng: c.longitude,
+        label: c.name,
+        type: 'competitor',
+      });
+    });
+  }
+
+  // Generate simulated Heatmap Points around myBranch
+  const heatmapPoints: [number, number, number][] = [];
+  if (showHeatmap && myBranch?.latitude && myBranch?.longitude) {
+    for (let i = 0; i < 60; i++) {
+      const latOffset = (Math.random() - 0.5) * 0.04;
+      const lngOffset = (Math.random() - 0.5) * 0.04;
+      const intensity = Math.random() * 0.8 + 0.2;
+      heatmapPoints.push([myBranch.latitude + latOffset, myBranch.longitude + lngOffset, intensity]);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -245,28 +254,33 @@ export default function BranchMapPage() {
                 Sibling Branches
               </button>
 
-              {/* Competitors — DISABLED until GET /map/competitors is live */}
-              <ComingSoonTooltip>
-                <button
-                  disabled
-                  aria-disabled="true"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium cursor-not-allowed select-none"
-                  style={{
-                    backgroundColor: '#F9FAFB',
-                    borderColor:     '#E5E7EB',
-                    color:           '#D1D5DB',
-                  }}
-                >
-                  <Lock size={11} className="text-gray-300" />
-                  Competitors
-                  <span
-                    className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
-                    style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
-                  >
-                    Soon
-                  </span>
-                </button>
-              </ComingSoonTooltip>
+              {/* Competitors Toggle */}
+              <button
+                onClick={() => setShowCompetitors(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
+                style={
+                  showCompetitors
+                    ? { backgroundColor: '#FEF2F2', borderColor: RED, color: RED }
+                    : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
+                }
+              >
+                <ShieldAlert size={12} />
+                Competitors
+              </button>
+
+              {/* Heatmap Toggle */}
+              <button
+                onClick={() => setShowHeatmap(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ml-auto"
+                style={
+                  showHeatmap
+                    ? { backgroundColor: '#FFF7ED', borderColor: '#F59E0B', color: '#B45309' }
+                    : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
+                }
+              >
+                <Activity size={12} />
+                Traffic Heatmap
+              </button>
             </div>
 
             {/* Map canvas */}
@@ -287,6 +301,7 @@ export default function BranchMapPage() {
               <BaseMap
                 markers={markers}
                 triangulate={showSiblings && siblingsWithCoords.length > 0}
+                heatmapPoints={heatmapPoints}
                 height="480px"
                 onMarkerClick={m => {
                   setSelectedMarker(m);

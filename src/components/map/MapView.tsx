@@ -23,6 +23,8 @@ interface MapViewProps {
   onSelectPharmacy?: (pharmacy: PharmacyLocation) => void;
   onViewDetails?: (id: string) => void;
   userLocation?: [number, number] | null;
+  routes?: { points: [number, number][]; color?: string; weight?: number; dashed?: boolean }[];
+  heatmapPoints?: [number, number, number][];
   className?: string;
   showZoomControls?: boolean;
 }
@@ -39,6 +41,8 @@ export default function MapView({
   onSelectPharmacy,
   onViewDetails,
   userLocation,
+  routes,
+  heatmapPoints,
   className = '',
   showZoomControls = true,
 }: MapViewProps) {
@@ -46,6 +50,8 @@ export default function MapView({
   const leafletMap = useRef<any>(null);
   const markersRef = useRef<Record<string, any>>({});
   const userMarkerRef = useRef<any>(null);
+  const polylinesRef = useRef<any[]>([]);
+  const heatmapLayerRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
@@ -68,7 +74,13 @@ export default function MapView({
 
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => setLeafletLoaded(true);
+    script.onload = () => {
+      // Load Leaflet Heat plugin
+      const heatScript = document.createElement('script');
+      heatScript.src = 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+      heatScript.onload = () => setLeafletLoaded(true);
+      document.head.appendChild(heatScript);
+    };
     script.onerror = () => setError('Failed to load map library. Check your connection.');
     document.head.appendChild(script);
   }, []);
@@ -115,9 +127,13 @@ export default function MapView({
     const L = window.L;
     const map = leafletMap.current;
 
-    // Remove stale markers
+    // Remove stale markers and polylines
     Object.values(markersRef.current).forEach((m: any) => m.remove());
+    polylinesRef.current.forEach(p => p.remove());
+    if (heatmapLayerRef.current) map.removeLayer(heatmapLayerRef.current);
     markersRef.current = {};
+    polylinesRef.current = [];
+    heatmapLayerRef.current = null;
 
     validPharmacies.forEach((pharmacy) => {
       const isSelected = pharmacy.id === selectedId;
@@ -144,7 +160,30 @@ export default function MapView({
 
       markersRef.current[pharmacy.id] = marker;
     });
-  }, [validPharmacies, loading, selectedId]);
+
+    // Draw routes if any
+    if (routes && routes.length > 0) {
+      routes.forEach(r => {
+        const line = L.polyline(r.points, {
+          color: r.color ?? NAVY,
+          weight: r.weight ?? 3,
+          opacity: 0.8,
+          dashArray: r.dashed ? '8 8' : undefined,
+        }).addTo(map);
+        polylinesRef.current.push(line);
+      });
+    }
+
+    // Draw Heatmap Layer
+    if (heatmapPoints && heatmapPoints.length > 0 && L.heatLayer) {
+      heatmapLayerRef.current = L.heatLayer(heatmapPoints, {
+        radius: 20,
+        blur: 15,
+        maxZoom: 12,
+        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
+      }).addTo(map);
+    }
+  }, [validPharmacies, loading, selectedId, routes, heatmapPoints]);
 
   // Pan to selected marker
   useEffect(() => {

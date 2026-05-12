@@ -32,6 +32,8 @@ export interface MapMarker {
 interface BaseMapProps {
   markers: MapMarker[];
   triangulate?: boolean;
+  heatmapPoints?: [number, number, number][]; // [lat, lng, intensity]
+  routes?: { points: [number, number][], color?: string, weight?: number, dashed?: boolean }[];
   centerLat?: number;
   centerLng?: number;
   zoom?: number;
@@ -72,8 +74,14 @@ function loadLeaflet(): Promise<void> {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.onload = () => {
-      window._leafletLoaded = true;
-      resolve();
+      // Load Leaflet Heat plugin
+      const heatScript = document.createElement('script');
+      heatScript.src = 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+      heatScript.onload = () => {
+        window._leafletLoaded = true;
+        resolve();
+      };
+      document.head.appendChild(heatScript);
     };
     document.head.appendChild(script);
   });
@@ -94,6 +102,8 @@ function createPinSvg(color: string, size = 36): string {
 export default function BaseMap({
   markers,
   triangulate = false,
+  heatmapPoints,
+  routes,
   centerLat,
   centerLng,
   zoom = 13,
@@ -105,6 +115,7 @@ export default function BaseMap({
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const polylinesRef = useRef<any[]>([]);
+  const heatmapLayerRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
 
@@ -126,14 +137,11 @@ export default function BaseMap({
           zoomControl: false,
         });
 
-        // Tile layer — CartoDB Positron (clean, no API key)
-        L.tileLayer(
-          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-          {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-            maxZoom: 19,
-          }
-        ).addTo(map);
+        // Tile layer — Standard OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          maxZoom: 19,
+        }).addTo(map);
 
         // Custom zoom control (bottom-right)
         L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -161,8 +169,12 @@ export default function BaseMap({
     // Clear existing
     markersRef.current.forEach(m => m.remove());
     polylinesRef.current.forEach(p => p.remove());
+    if (heatmapLayerRef.current) {
+      map.removeLayer(heatmapLayerRef.current);
+    }
     markersRef.current = [];
     polylinesRef.current = [];
+    heatmapLayerRef.current = null;
 
     // Add markers
     markers.forEach((m) => {
@@ -195,7 +207,6 @@ export default function BaseMap({
     // Triangulation lines
     if (triangulate && markers.length >= 2) {
       const latlngs = markers.map(m => [m.lat, m.lng]);
-      // Draw line from each point to every other (triangulation mesh)
       for (let i = 0; i < latlngs.length; i++) {
         for (let j = i + 1; j < latlngs.length; j++) {
           const line = L.polyline([latlngs[i], latlngs[j]], {
@@ -207,6 +218,29 @@ export default function BaseMap({
           polylinesRef.current.push(line);
         }
       }
+    }
+
+    // Custom Routes
+    if (routes && routes.length > 0) {
+      routes.forEach(r => {
+        const line = L.polyline(r.points, {
+          color: r.color ?? NAVY,
+          weight: r.weight ?? 3,
+          opacity: 0.8,
+          dashArray: r.dashed ? '8 8' : undefined,
+        }).addTo(map);
+        polylinesRef.current.push(line);
+      });
+    }
+
+    // Heatmap Layer
+    if (heatmapPoints && heatmapPoints.length > 0 && L.heatLayer) {
+      heatmapLayerRef.current = L.heatLayer(heatmapPoints, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 14,
+        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
+      }).addTo(map);
     }
 
     // Fit bounds to all markers

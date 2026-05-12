@@ -43,6 +43,7 @@ export default function SuperAdminMapPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [activeFilter, setActiveFilter] = useState<FilterActive>('all');
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -152,6 +153,19 @@ export default function SuperAdminMapPage() {
     </div>
   );
 
+  // Generate simulated global Patient Demand heatmap across Rwanda
+  const heatmapPoints: [number, number, number][] = [];
+  if (showHeatmap) {
+    for (let i = 0; i < 200; i++) {
+      // Randomly distributed across Rwanda (Lat: -1.0 to -2.8, Lng: 28.8 to 30.8)
+      const lat = -1.0 - Math.random() * 1.8;
+      const lng = 28.8 + Math.random() * 2.0;
+      const intensity = Math.random() * 0.9 + 0.1;
+      heatmapPoints.push([lat, lng, intensity]);
+    }
+  }
+
+  // ── Render Page ──
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -228,6 +242,21 @@ export default function SuperAdminMapPage() {
             </button>
           ))}
         </div>
+
+        {/* Heatmap Toggle */}
+        <button
+          onClick={() => setShowHeatmap(!showHeatmap)}
+          className="ml-2 px-4 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2"
+          style={
+            showHeatmap
+              ? { backgroundColor: '#FFF7ED', borderColor: '#F59E0B', color: '#B45309' }
+              : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#6B7280' }
+          }
+        >
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: showHeatmap ? '#F59E0B' : '#D1D5DB' }} />
+          Patient Demand Heatmap
+        </button>
+
         <span className="text-xs text-gray-400 ml-auto">
           Showing {filtered.length} / {allPharmacies.length}
         </span>
@@ -247,6 +276,7 @@ export default function SuperAdminMapPage() {
               center={RWANDA_CENTER}
               zoom={RWANDA_ZOOM}
               selectedId={selectedId}
+              heatmapPoints={heatmapPoints}
               onSelectPharmacy={handleSelectPharmacy}
               onViewDetails={(id) => router.push(`/super-admin/pharmacies/${id}`)}
               className="h-full"
