@@ -62,8 +62,8 @@ export default function SearchPage() {
     setMapLoading(true);
     try {
       const data = await fetchPharmacyLocations();
-      setAllPharmacies(data);
-      setMapPharmacies(data);
+      setAllPharmacies(data ?? []);
+      setMapPharmacies(data ?? []);
     } catch {
       toast.error('Failed to load pharmacies.');
     } finally {
@@ -78,7 +78,7 @@ export default function SearchPage() {
       (async () => {
         setMapLoading(true);
         const nearby = await fetchNearbyPharmacies(coords[0], coords[1]);
-        setMapPharmacies(nearby);
+        setMapPharmacies(nearby ?? []);
         setMapLoading(false);
       })();
     }

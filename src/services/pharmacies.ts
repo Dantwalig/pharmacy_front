@@ -17,8 +17,17 @@ export interface PharmacyLocationResponse {
  */
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
+    try {
+      const res = await api.get('/pharmacies/locations');
+      const data = unwrapData<PharmacyLocation>(res.data);
+      if (data.length > 0) return data;
+      if (Array.isArray(res.data?.pharmacies) && res.data.pharmacies.length > 0) return res.data.pharmacies;
+    } catch {
+      // Fallback for roles without access to /locations (e.g. Branch Managers)
+    }
+
+    // Fallback mapping directly to public /pharmacies endpoint
     const res = await api.get('/pharmacies');
-    // Map backend pharmacy object to frontend PharmacyLocation interface
     return res.data.map((p: any) => ({
       id: p.id,
       name: p.name,
@@ -26,10 +35,10 @@ export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
       latitude: p.latitude,
       longitude: p.longitude,
       phone: p.phone || 'N/A',
-      status: p.status === 'APPROVED' ? 'OPEN' : 'CLOSED', // Fallback mapping for UI
+      status: p.status === 'APPROVED' ? 'OPEN' : 'CLOSED',
       isActive: true,
-      region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown', // Extract region roughly from address
-      hours: p.operatingHours ? 'Various' : '08:00 - 20:00', // Mock hours if missing
+      region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown',
+      hours: p.operatingHours ? 'Various' : '08:00 - 20:00',
     }));
   } catch (error) {
     console.error('Error fetching global locations:', error);
@@ -52,7 +61,6 @@ export async function fetchNearbyPharmacies(
   }
   try {
     const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
-    // Backend returns data in data array when successful
     return unwrapData<PharmacyLocation>(res.data);
   } catch (error) {
     console.error('Error fetching nearby locations:', error);

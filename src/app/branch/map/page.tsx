@@ -25,6 +25,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { fetchPharmacyLocations } from '@/services/pharmacies';
 import type { MapMarker } from '@/components/map/BaseMap';
+import { MapSkeleton } from '@/components/map/MapStates';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -285,7 +286,7 @@ export default function BranchMapPage() {
 
             {/* Map canvas */}
             {loading ? (
-              <div className="rounded-2xl bg-gray-100 animate-pulse" style={{ height: '480px' }} />
+              <div style={{ height: '480px' }}><MapSkeleton /></div>
             ) : markers.length === 0 ? (
               <div
                 className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 gap-3"

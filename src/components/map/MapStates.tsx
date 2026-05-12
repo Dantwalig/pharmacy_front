@@ -41,7 +41,7 @@ export function MapSkeleton() {
 export function NoPharmaciesState({ onReset }: { onReset?: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center min-h-[320px] bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
+    <div className="flex flex-col items-center justify-center min-h-80 bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
         style={{ background: `${NAVY}15` }}
@@ -69,7 +69,7 @@ export function NoPharmaciesState({ onReset }: { onReset?: () => void }) {
 export function LocationDeniedState({ onManual }: { onManual?: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center min-h-[320px] bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
+    <div className="flex flex-col items-center justify-center min-h-80 bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
         style={{ background: '#FFF3CD' }}
@@ -97,7 +97,7 @@ export function LocationDeniedState({ onManual }: { onManual?: () => void }) {
 export function OfflineState() {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center min-h-[320px] bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
+    <div className="flex flex-col items-center justify-center min-h-80 bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
       <div className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-5">
         <WifiIcon className="w-10 h-10 text-red-500" />
       </div>
@@ -119,7 +119,7 @@ export function OfflineState() {
 export function MapErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center min-h-[320px] bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
+    <div className="flex flex-col items-center justify-center min-h-80 bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
       <div className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-5">
         <ExclamationTriangleIcon className="w-10 h-10 text-red-500" />
       </div>
