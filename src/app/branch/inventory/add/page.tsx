@@ -141,22 +141,22 @@ export default function BranchAddMedicationPage() {
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
 
         <div>
-          <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
-          <input type="text" required value={form.name}
+          <label className={labelCls} htmlFor="medicationName">Medication Name <span className="text-red-500">*</span></label>
+          <input id="medicationName" type="text" required value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             placeholder="e.g. Amoxicillin 500mg" className={inputCls} />
         </div>
 
         <div>
-          <label className={labelCls}>{t('inventory.chemicalName')}</label>
-          <input type="text" value={form.chemicalName}
+          <label className={labelCls} htmlFor="chemicalName">Chemical Name</label>
+          <input id="chemicalName" type="text" value={form.chemicalName}
             onChange={e => setForm(f => ({ ...f, chemicalName: e.target.value }))}
             placeholder="e.g. Amoxicillin trihydrate" className={inputCls} />
         </div>
 
         <div>
-          <label className={labelCls}>Category <span className="text-red-500">*</span></label>
-          <select required value={form.category}
+          <label className={labelCls} htmlFor="category">Category <span className="text-red-500">*</span></label>
+          <select id="category" required value={form.category}
             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
             className={inputCls}>
             {FDA_CATEGORIES.map(c => <option key={c} value={c}>{t('medicationCategories.' + c) || c}</option>)}
@@ -165,30 +165,30 @@ export default function BranchAddMedicationPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Price (RWF) <span className="text-red-500">*</span></label>
-            <input type="number" required min="0" step="any" value={form.price}
+            <label className={labelCls} htmlFor="price">Price (RWF) <span className="text-red-500">*</span></label>
+            <input id="price" type="number" required min="0" step="any" value={form.price}
               onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
               placeholder="e.g. 1500" className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Quantity (units) <span className="text-red-500">*</span></label>
-            <input type="number" required min="0" value={form.quantity}
+            <label className={labelCls} htmlFor="quantity">Quantity (units) <span className="text-red-500">*</span></label>
+            <input id="quantity" type="number" required min="0" value={form.quantity}
               onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
               placeholder="e.g. 100" className={inputCls} />
           </div>
         </div>
 
         <div>
-          <label className={labelCls}>{t('inventory.lowStockThresholdUnits')}</label>
-          <input type="number" min="1" value={form.lowStockThreshold}
+          <label className={labelCls} htmlFor="lowStockThreshold">{t('inventory.lowStockThresholdUnits')}</label>
+          <input id="lowStockThreshold" type="number" min="1" value={form.lowStockThreshold}
             onChange={e => setForm(f => ({ ...f, lowStockThreshold: e.target.value }))}
             className={inputCls} />
           <p className="text-xs text-gray-400 mt-1">{t('inventory.alertRaisedBelow')}</p>
         </div>
 
         <div>
-          <label className={labelCls}>{t('inventory.description')}</label>
-          <textarea rows={3} value={form.description}
+          <label className={labelCls} htmlFor="description">Description</label>
+          <textarea id="description" rows={3} value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder={t('inventory.searchBranchPlaceholder')}
             className={`${inputCls} resize-none`} />

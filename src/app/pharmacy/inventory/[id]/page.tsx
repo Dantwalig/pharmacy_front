@@ -73,19 +73,19 @@ export default function EditMedicationPage() {
       setEditing(false);
       fetchMedication();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Update failed');
+      toast.error(err.response?.data?.message || t('common.updateFailed'));
     } finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to remove "${med?.name}" from inventory?`)) return;
+    if (!confirm(t('inventory.confirmRemove', { name: med?.name }))) return;
     setDeleting(true);
     try {
       await api.delete(`/medications/${params.id}`);
       toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Delete failed');
+      toast.error(err.response?.data?.message || t('common.deleteFailed'));
     } finally { setDeleting(false); }
   };
 
@@ -115,7 +115,7 @@ export default function EditMedicationPage() {
         <div className="max-w-3xl mx-auto space-y-6">
 
           <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-            <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
+            <ArrowLeftIcon className="w-4 h-4" /> {t('inventory.backToInventory')}
             </button>
 
           {/* Header card */}
@@ -129,7 +129,7 @@ export default function EditMedicationPage() {
                 stockStatus === 'low' ? 'bg-yellow-400 text-yellow-900' :
                 'bg-green-400 text-green-900'
               }`}>
-              {stockStatus === 'out' ? 'Out of Stock' : stockStatus === 'low' ? 'Low Stock' : 'In Stock'}
+              {stockStatus === 'out' ? t('inventory.outOfStock') : stockStatus === 'low' ? t('inventory.lowStock') : t('inventory.inStock')}
               </span>
           </div>
 
@@ -139,22 +139,22 @@ export default function EditMedicationPage() {
                 <>
                 <button onClick={() => setEditing(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
-                  <PencilIcon className="w-4 h-4" /> Edit Medication
+                  <PencilIcon className="w-4 h-4" /> {t('pharmacy.editMedication')}
                   </button>
                 <button onClick={handleDelete} disabled={deleting}
                     className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                  <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
+                  <TrashIcon className="w-4 h-4" /> {deleting ? t('inventory.removing') : t('inventory.remove')}
                   </button>
               </>
             ) : (
                 <>
                 <button onClick={handleSave} disabled={saving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                  <CheckIcon className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
+                  <CheckIcon className="w-4 h-4" /> {saving ? t('common.saving') : t('common.saveChanges')}
                   </button>
                 <button onClick={() => { setEditing(false); fetchMedication(); }}
                     className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-                  <XMarkIcon className="w-4 h-4" /> Cancel
+                  <XMarkIcon className="w-4 h-4" /> {t('common.cancel')}
                   </button>
               </>
             )}
@@ -229,7 +229,7 @@ export default function EditMedicationPage() {
                   ? <input type="checkbox" checked={form.requiresPrescription} onChange={e => setForm({...form, requiresPrescription: e.target.checked})} className="w-4 h-4 text-teal-500 rounded" />
                 : <span>{form.requiresPrescription ? '' : ''}</span>}
                 <span className="text-sm font-medium text-gray-700">
-                {form.requiresPrescription ? 'Requires Prescription' : 'No Prescription Required'}
+                {form.requiresPrescription ? t('inventory.requiresPrescription') : t('inventory.noPrescriptionRequired')}
                 </span>
             </div>
           </div>

@@ -20,7 +20,7 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (loading) return;
     if (!user || user.role !== 'BRANCH_MANAGER') { router.push('/login'); return; }
-    const branchStatus = (user as any).branchStatus;
+    const branchStatus = user.branchStatus;
     const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
     if ((branchStatus === 'INVITED' || branchStatus === 'PENDING') && !isStandalone) {
       router.push('/branch/pending-approval');

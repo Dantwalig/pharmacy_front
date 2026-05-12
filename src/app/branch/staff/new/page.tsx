@@ -138,33 +138,36 @@ export default function NewStaffPage() {
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('staffMgmt.personalInformation')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.firstName')} *</label>
-            <input required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
+            <label htmlFor="firstName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.firstName')} *</label>
+            <input id="firstName" required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
+              placeholder= "e.g. John"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label htmlFor="lastName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.lastName')} *</label>
+            <input id="lastName" required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
+              placeholder= "e.g. Doe"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.lastName')} *</label>
-            <input required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
+            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.email')} *</label>
+            <input id="email" required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
+              placeholder= "e.g. john.doe@example.com"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.email')} *</label>
-            <input required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <label htmlFor="phone" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.phone')}</label>
+            <input id="phone" value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
+                placeholder= "e.g. +250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.phone')}</label>
-            <input value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
-                placeholder="+250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <label htmlFor="nationalId" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.nationalId')}</label>
+            <input id="nationalId" value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
+                placeholder= "e.g. PP123456789" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.nationalId')}</label>
-            <input value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.gender')}</label>
-            <select value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
+            <label htmlFor="gender" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.gender')}</label>
+            <select id="gender" value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               <option value="">{t('form.select')}</option>
               <option>{t('form.male')}</option>
@@ -173,8 +176,8 @@ export default function NewStaffPage() {
             </select>
           </div>
           <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.dateOfBirth')}</label>
-            <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
+            <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.dateOfBirth')}</label>
+            <input id="dateOfBirth" type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
         </div>

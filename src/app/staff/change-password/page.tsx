@@ -61,15 +61,15 @@ export default function StaffChangePasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">{t('staff.welcomeTitle')}</h1>
             <p className="text-sm text-gray-500 mt-2">
-              Please set a permanent password before accessing your account.
+              {t('staff.permanentPasswordDesc')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
-              { field: 'temp' as const,    label: 'Temporary Password',    key: 'tempPassword',    placeholder: 'Enter the password from your email' },
-              { field: 'new' as const,     label: 'New Password',          key: 'newPassword',     placeholder: 'At least 8 characters' },
-              { field: 'confirm' as const, label: 'Confirm New Password',  key: 'confirmPassword', placeholder: 'Re-enter new password' },
+              { field: 'temp' as const,    label: t('staff.tempPassword'),    key: 'tempPassword',    placeholder: t('staff.tempPasswordPlaceholder') },
+              { field: 'new' as const,     label: t('staff.newPassword'),     key: 'newPassword',     placeholder: t('staff.newPasswordPlaceholder') },
+              { field: 'confirm' as const, label: t('staff.confirmPassword'), key: 'confirmPassword', placeholder: t('staff.confirmPasswordPlaceholder') },
             ].map(({ field, label, key, placeholder }) => (
               <div key={key}>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>

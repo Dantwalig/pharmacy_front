@@ -245,7 +245,7 @@ export default function StaffDashboardPage() {
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 : <ClockIcon className="w-5 h-5" />}
-              Clock In
+              {t('staff.clockIn')}
             </button>
           </div>
         ) : (
@@ -263,7 +263,7 @@ export default function StaffDashboardPage() {
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
                 {todayShift.clockInApprover && (
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
-                    Approved by {todayShift.clockInApprover.firstName}
+                    {t('dashboard.approvedBy', { name: todayShift.clockInApprover.firstName })}
                   </p>
                 )}
               </div>
@@ -271,14 +271,14 @@ export default function StaffDashboardPage() {
                 <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
                 {todayShift.totalHours && (
-                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
+                  <p className="text-xs text-blue-600 mt-1">{t('dashboard.hoursWorkedLabel', { hours: todayShift.totalHours.toFixed(1) })}</p>
                 )}
               </div>
             </div>
 
             {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
+                <p className="text-xs text-red-600 font-medium">{t('dashboard.rejectionReason', { reason: todayShift.rejectionReason })}</p>
               </div>
             )}
 
@@ -291,7 +291,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Clock Out
+                {t('staff.clockOut')}
               </button>
             )}
 
@@ -305,7 +305,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Try Again
+                {t('dashboard.tryAgain')}
               </button>
             )}
           </div>

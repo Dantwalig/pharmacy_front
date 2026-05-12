@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -50,7 +50,7 @@ function PharmaciesContent() {
         ? '/super-admin/pharmacies'
         : `/super-admin/pharmacies?status=${filter}`;
       const res = await api.get(url);
-      setPharmacies(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setPharmacies(unwrapData(res.data));
     } catch {
       toast.error(t('errors.failedToLoadPharmacies'));
     } finally {

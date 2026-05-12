@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, PlusIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
@@ -45,7 +45,7 @@ export default function AddMedicationPage() {
   useEffect(() => {
     api.get('/branches/my-branches')
       .then(res => {
-        const list = res.data?.data ?? res.data ?? [];
+        const list = unwrapData<any>(res.data);
         setBranches(list);
         if (list.length === 1) setForm(f => ({ ...f, branchId: list[0].id }));
       })
@@ -72,7 +72,7 @@ export default function AddMedicationPage() {
       toast.success(t('success.medicationAdded'));
       router.push('/pharmacy/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to add medication');
+      toast.error(err.response?.data?.message || t('inventory.failedToAdd'));
     } finally { setLoading(false); }
   };
 
@@ -83,7 +83,7 @@ export default function AddMedicationPage() {
     <div className="space-y-6">
     <div className="flex items-center gap-4">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-        <ArrowLeftIcon className="w-5 h-5" /> Back
+        <ArrowLeftIcon className="w-5 h-5" /> {t('common.back')}
         </button>
     </div>
 
@@ -96,11 +96,11 @@ export default function AddMedicationPage() {
       <div className="flex bg-white rounded-xl shadow-sm border border-gray-200 p-1 w-fit">
       <button onClick={() => setMode('manual')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'manual' ? 'bg-teal-500 text-white shadow' : 'text-gray-600 hover:text-gray-900'}`}>
-        <PlusIcon className="w-4 h-4" /> Add Manually
+        <PlusIcon className="w-4 h-4" /> {t('inventory.addManually')}
         </button>
       <button onClick={() => setMode('upload')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'upload' ? 'bg-teal-500 text-white shadow' : 'text-gray-600 hover:text-gray-900'}`}>
-        <ArrowUpTrayIcon className="w-4 h-4" /> Upload File
+        <ArrowUpTrayIcon className="w-4 h-4" /> {t('inventory.uploadFile')}
         </button>
     </div>
 
@@ -111,7 +111,7 @@ export default function AddMedicationPage() {
 
         {/* Branch selector — required */}
           <div>
-          <label className={labelCls}>Branch <span className="text-red-500">*</span></label>
+          <label className={labelCls}>{t('inventory.branchLabel')} <span className="text-red-500">*</span></label>
           {branchesLoading ? (
               <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
           ) : (
@@ -132,7 +132,7 @@ export default function AddMedicationPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('inventory.medicationNameLabel')} <span className="text-red-500">*</span></label>
             <input type="text" required value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 className={inputCls} placeholder="e.g. Paracetamol 500mg" />
@@ -144,7 +144,7 @@ export default function AddMedicationPage() {
                 className={inputCls} placeholder="e.g. Acetaminophen" />
           </div>
           <div>
-            <label className={labelCls}>Category <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('pharmacy.category')} <span className="text-red-500">*</span></label>
             <select required value={form.category}
                 onChange={e => setForm({ ...form, category: e.target.value })}
                 className={inputCls}>
@@ -153,13 +153,13 @@ export default function AddMedicationPage() {
             <p className="text-xs text-gray-500 mt-1">{t('inventory.rwandaFdaCategories')}</p>
           </div>
           <div>
-            <label className={labelCls}>Unit Price (RWF) <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('inventory.unitPriceRwf')} <span className="text-red-500">*</span></label>
             <input type="number" required min="0" step="0.01" value={form.price}
                 onChange={e => setForm({ ...form, price: e.target.value })}
                 className={inputCls} placeholder="e.g. 500" />
           </div>
           <div>
-            <label className={labelCls}>Quantity In Stock <span className="text-red-500">*</span></label>
+            <label className={labelCls}>{t('inventory.quantityInStock')} <span className="text-red-500">*</span></label>
             <input type="number" required min="0" value={form.quantity}
                 onChange={e => setForm({ ...form, quantity: e.target.value })}
                 className={inputCls} placeholder="e.g. 100" />
@@ -186,18 +186,18 @@ export default function AddMedicationPage() {
               onChange={e => setForm({ ...form, requiresPrescription: e.target.checked })}
               className="w-4 h-4 text-teal-500 rounded" />
           <label htmlFor="prescription" className="text-sm font-medium text-gray-700">
-            Requires Prescription — this medication will only be dispensed with a valid prescription
+            {t('inventory.requiresPrescriptionLabel')}
             </label>
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" onClick={() => router.back()}
               className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50">
-            Cancel
+            {t('common.cancel')}
             </button>
           <button type="submit" disabled={loading}
               className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium text-sm disabled:opacity-50 flex items-center gap-2">
-            {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</> : 'Add Medication'}
+            {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.saving')}</> : t('pharmacy.addMedication')}
             </button>
         </div>
       </form>
@@ -213,7 +213,7 @@ export default function AddMedicationPage() {
         </div>
         <button onClick={() => setMode('manual')}
             className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
-          Switch to Manual Entry
+          {t('inventory.switchToManual')}
           </button>
       </div>
     )}

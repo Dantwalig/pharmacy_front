@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import CashierOrdersView from '@/components/staff/CashierOrdersView';
+import { Order, OrderStatus } from '@/types';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -24,7 +25,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 // Statuses a pharmacist can move an order to from its current status
-const NEXT_STATUSES: Record<string, string[]> = {
+const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
   PENDING:          ['ACCEPTED'],
   ACCEPTED:         ['PREPARING'],
   PREPARING:        ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
@@ -33,16 +34,7 @@ const NEXT_STATUSES: Record<string, string[]> = {
   DELIVERED:        ['COMPLETED'],
 };
 
-interface Order {
-  id: string;
-  status: string;
-  total: number;
-  type: string;
-  createdAt: string;
-  patient: { firstName: string; lastName: string; phone?: string };
-  orderItems: { quantity: number; price: number; medication: { name: string } }[];
-  prescription?: { id: string; status: string } | null;
-}
+
 
 function fmt(n: number) {
   return `RWF ${Number(n ?? 0).toLocaleString()}`;
@@ -66,7 +58,7 @@ export default function StaffOrdersPage() {
   const fetchOrders = async () => {
     try {
       const res = await api.get('/orders/pharmacy-orders'); // GET /orders/pharmacy-orders
-      setOrders(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setOrders(unwrapData(res.data));
     } catch (error) {
       console.error('Failed to load orders:', error);
       toast.error(t('errors.failedToLoadOrders'));
@@ -75,12 +67,12 @@ export default function StaffOrdersPage() {
     }
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus }); // PATCH /orders/:id/status
       setOrders(prev =>
-        prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
+        prev.map(o => o.id === orderId ? ({ ...o, status: newStatus } as Order) : o)
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
     } catch (err: any) {
@@ -96,7 +88,7 @@ export default function StaffOrdersPage() {
 
   const statusFilters = ['all', 'PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'];
 
-  if (isCashier) return <CashierOrdersView orders={orders as any} loading={loading} />;
+  if (isCashier) return <CashierOrdersView orders={orders} loading={loading} />;
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
