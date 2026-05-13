@@ -11,17 +11,8 @@ import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
 import SupportBot from '@/components/pharmacy/SupportBot';
 import { ArrowLeftIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { FDA_CATEGORIES } from '@/lib/constants';
 
-const FDA_CATEGORIES = [
-  'Analgesics & Antipyretics','Antibiotics & Antimicrobials','Antifungals','Antivirals & Antiretrovirals',
-  'Antimalaria','Antituberculosis','Antiparasitics & Anthelmintics','Cardiovascular & Antihypertensives',
-  'Antidiabetics','Gastrointestinal','Respiratory & Bronchodilators','Central Nervous System',
-  'Vitamins, Minerals & Supplements','Dermatologicals','Ophthalmologicals','ENT (Ear, Nose & Throat)',
-  'Hormones & Endocrine','Vaccines & Biologicals','Oncologicals','Immunosuppressants',
-  'Contraceptives','Haematologicals','Musculoskeletal & Anti-inflammatories','Urological',
-  'Psychiatric & Psychotropic','Anesthetics','Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines','Other',
-];
 
 export default function EditMedicationPage() {
   const { t } = useTranslation();
@@ -73,19 +64,19 @@ export default function EditMedicationPage() {
       setEditing(false);
       fetchMedication();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('common.updateFailed'));
+      toast.error(err.response?.data?.message || 'Update failed');
     } finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
-    if (!confirm(t('inventory.confirmRemove', { name: med?.name }))) return;
+    if (!confirm(`Are you sure you want to remove "${med?.name}" from inventory?`)) return;
     setDeleting(true);
     try {
       await api.delete(`/medications/${params.id}`);
       toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('common.deleteFailed'));
+      toast.error(err.response?.data?.message || 'Delete failed');
     } finally { setDeleting(false); }
   };
 
@@ -115,7 +106,7 @@ export default function EditMedicationPage() {
         <div className="max-w-3xl mx-auto space-y-6">
 
           <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-            <ArrowLeftIcon className="w-4 h-4" /> {t('inventory.backToInventory')}
+            <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
             </button>
 
           {/* Header card */}
@@ -129,7 +120,7 @@ export default function EditMedicationPage() {
                 stockStatus === 'low' ? 'bg-yellow-400 text-yellow-900' :
                 'bg-green-400 text-green-900'
               }`}>
-              {stockStatus === 'out' ? t('inventory.outOfStock') : stockStatus === 'low' ? t('inventory.lowStock') : t('inventory.inStock')}
+              {stockStatus === 'out' ? 'Out of Stock' : stockStatus === 'low' ? 'Low Stock' : 'In Stock'}
               </span>
           </div>
 
@@ -139,22 +130,22 @@ export default function EditMedicationPage() {
                 <>
                 <button onClick={() => setEditing(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
-                  <PencilIcon className="w-4 h-4" /> {t('pharmacy.editMedication')}
+                  <PencilIcon className="w-4 h-4" /> Edit Medication
                   </button>
                 <button onClick={handleDelete} disabled={deleting}
                     className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                  <TrashIcon className="w-4 h-4" /> {deleting ? t('inventory.removing') : t('inventory.remove')}
+                  <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
                   </button>
               </>
             ) : (
                 <>
                 <button onClick={handleSave} disabled={saving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                  <CheckIcon className="w-4 h-4" /> {saving ? t('common.saving') : t('common.saveChanges')}
+                  <CheckIcon className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
                   </button>
                 <button onClick={() => { setEditing(false); fetchMedication(); }}
                     className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-                  <XMarkIcon className="w-4 h-4" /> {t('common.cancel')}
+                  <XMarkIcon className="w-4 h-4" /> Cancel
                   </button>
               </>
             )}
@@ -229,7 +220,7 @@ export default function EditMedicationPage() {
                   ? <input type="checkbox" checked={form.requiresPrescription} onChange={e => setForm({...form, requiresPrescription: e.target.checked})} className="w-4 h-4 text-teal-500 rounded" />
                 : <span>{form.requiresPrescription ? '' : ''}</span>}
                 <span className="text-sm font-medium text-gray-700">
-                {form.requiresPrescription ? t('inventory.requiresPrescription') : t('inventory.noPrescriptionRequired')}
+                {form.requiresPrescription ? 'Requires Prescription' : 'No Prescription Required'}
                 </span>
             </div>
           </div>
