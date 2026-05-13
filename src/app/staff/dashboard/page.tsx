@@ -324,11 +324,11 @@ export default function StaffDashboardPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
-                  <th className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
-                  <th className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">

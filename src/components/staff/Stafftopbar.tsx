@@ -31,6 +31,7 @@ export default function StaffTopbar({
           <button
             onClick={onMenuClick}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Open sidebar"
           >
             <Bars3Icon className="w-5 h-5 text-gray-600" />
           </button>

@@ -86,7 +86,7 @@ export default function PharmacyPatientsPage() {
   const getFilteredSortedOrders = () => {
     if (!selectedPatient) return [];
     
-    let filtered = selectedPatient.orders.filter(order => {
+    const filtered = selectedPatient.orders.filter(order => {
       const searchLower = orderSearchTerm.toLowerCase();
       const matchesSearch = order.orderNumber.toLowerCase().includes(searchLower) || 
                             order.itemsSummary.toLowerCase().includes(searchLower);

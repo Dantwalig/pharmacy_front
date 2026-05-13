@@ -43,7 +43,7 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
           <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
           <p className="text-white/60 text-sm mt-0.5">{t('pharmacyOwner.portal')}</p>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors">
+        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close sidebar">
           <X size={18} className="text-white/70" />
         </button>
       </div>
