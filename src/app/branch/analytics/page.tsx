@@ -24,13 +24,13 @@ import {
   AreaChart,
 } from 'recharts';
 
-// ── Colour tokens ──
+// ── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY   = '#1E3A5F';
 const BLUE   = '#1E4D8C';
 const LBLUE  = '#29ABE2';
 const TEAL   = '#2D9B8A';
 
-// ── Helpers ──
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(0)}k`;
@@ -43,7 +43,7 @@ function fmtRwf(n: number) {
   return `${n} Rwf`;
 }
 
-// ── Custom tooltip ──
+// ── Custom tooltip ────────────────────────────────────────────────────────────
 function RevenueTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -54,7 +54,7 @@ function RevenueTooltip({ active, payload, label }: any) {
   );
 }
 
-// ── Speedometer / Gauge component ──
+// ── Speedometer / Gauge component ─────────────────────────────────────────────
 function GaugeChart({ value }: { value: number }) {
   // SVG half-circle gauge. value: 0-100
   const pct    = Math.min(Math.max(value, 0), 100) / 100;
@@ -156,7 +156,7 @@ function GaugeChart({ value }: { value: number }) {
   );
 }
 
-// ── Funnel component ──
+// ── Funnel component ──────────────────────────────────────────────────────────
 const FUNNEL_STEPS = [
   { label: 'Created',   pct: 90 },
   { label: 'Confirmed', pct: 80 },
@@ -189,7 +189,7 @@ function FunnelChart() {
   );
 }
 
-// ── Main page ──
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function BranchAnalyticsPage() {
   const { t } = useTranslation();
   const [orders, setOrders]               = useState<any[]>([]);
@@ -213,7 +213,7 @@ export default function BranchAnalyticsPage() {
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  // ── Derived metrics ──
+  // ── Derived metrics ─────────────────────────────────────────────────────────
   const completedOrders = orders.filter(o => o.status === 'COMPLETED' || o.status === 'DELIVERED');
   const pendingOrders   = orders.filter(o => o.status === 'PENDING');
   const inProgressOrders = orders.filter(o =>
@@ -225,7 +225,7 @@ export default function BranchAnalyticsPage() {
     ? Math.round((completedOrders.length / orders.length) * 100)
     : 0;
 
-  // ── Stat cards ──
+  // ── Stat cards ──────────────────────────────────────────────────────────────
   const statCards = [
     {
       icon: ShoppingCartIcon,
@@ -265,7 +265,7 @@ export default function BranchAnalyticsPage() {
     },
   ];
 
-  // ── Monthly revenue (Jan → current month) ──
+  // ── Monthly revenue (Jan → current month) ────────────────────────────────
   const currentMonth = new Date().getMonth(); // 0-based
   const monthNames   = ['Jan','Feb','March','April','May','June','July','Aug','Sep','Oct','Nov','Dec'];
   const monthlyRevenue = monthNames.slice(0, currentMonth + 1).map((month, idx) => {
@@ -278,7 +278,7 @@ export default function BranchAnalyticsPage() {
     return { month, revenue };
   });
 
-  // ── Orders by status (3 groups: Pending / In Progress / Completed) ──
+  // ── Orders by status (3 groups: Pending / In Progress / Completed) ─────────
   const statusData = [
     { status: 'Pending',     count: pendingOrders.length },
     { status: 'In Progress', count: inProgressOrders.length },
@@ -288,7 +288,7 @@ export default function BranchAnalyticsPage() {
   return (
     <div className="space-y-5">
 
-      {/* ── Hero banner ── */}
+      {/* ── Hero banner ─────────────────────────────────────────────────── */}
       <div
         className="rounded-2xl p-6 lg:p-8 text-white"
         style={{ background: `linear-gradient(135deg, ${NAVY} 0%, ${BLUE} 60%, ${LBLUE} 100%)` }}
@@ -310,7 +310,7 @@ export default function BranchAnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Stat cards ── */}
+      {/* ── Stat cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(card => {
           const Icon = card.icon;
@@ -327,7 +327,7 @@ export default function BranchAnalyticsPage() {
         })}
       </div>
 
-      {/* ── Charts row 1: Revenue Trend + Orders By Status ── */}
+      {/* ── Charts row 1: Revenue Trend + Orders By Status ──────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Revenue Trend */}
@@ -415,7 +415,7 @@ export default function BranchAnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Charts row 2: Gauge + Funnel ── */}
+      {/* ── Charts row 2: Gauge + Funnel ─────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Order Completion Rate — Gauge */}
