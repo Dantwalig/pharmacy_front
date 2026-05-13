@@ -135,7 +135,7 @@ export default function PharmacyOrdersPage() {
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 font-medium hover:bg-gray-50 transition-colors"
           >
             <GitBranch size={15} className="text-gray-500 shrink-0" />
-            <span>{branch ? (branches.find((b: any) => b.id === branch)?.name ?? t('pharmacyOwner.allBranches')) : t('pharmacyOwner.allBranches')}</span>
+            <span>{branch ? ((branches.find((b: Record<string, unknown>) => b.id === branch)?.name as string) ?? t('pharmacyOwner.allBranches')) : t('pharmacyOwner.allBranches')}</span>
             <ChevronDown size={14} className="text-gray-400 shrink-0" />
           </button>
           {branchOpen && (
