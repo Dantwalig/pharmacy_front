@@ -24,11 +24,11 @@ const PAGE_SIZE = 10;
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Record<string, unknown>[]>([]);
   const [tab, setTab] = useState<TabKey>('ALL');
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
-  const [branches, setBranches] = useState<any[]>([]);
+  const [branches, setBranches] = useState<Record<string, unknown>[]>([]);
   const [branchOpen, setBranchOpen] = useState(false);
   const branchRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
@@ -55,9 +55,9 @@ export default function PharmacyOrdersPage() {
     if (search) {
       const q = search.toLowerCase();
       return (
-        o.id?.toLowerCase().includes(q) ||
-        o.patientName?.toLowerCase().includes(q) ||
-        o.branchName?.toLowerCase().includes(q)
+        (o.id as string)?.toLowerCase().includes(q) ||
+        (o.patientName as string)?.toLowerCase().includes(q) ||
+        (o.branchName as string)?.toLowerCase().includes(q)
       );
     }
     return true;

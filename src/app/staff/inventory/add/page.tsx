@@ -37,8 +37,6 @@ export default function StaffAddMedicationPage() {
   useEffect(() => {
     if (user?.role === 'CASHIER') router.replace('/staff/inventory');
   }, [user, router]);
-  if (user?.role === 'CASHIER') return null;
-
   const [form, setForm] = useState({
     name: '', category: FDA_CATEGORIES[0], chemicalName: '', description: '',
     price: '', quantity: '', lowStockThreshold: '10', requiresPrescription: false,
@@ -54,6 +52,10 @@ export default function StaffAddMedicationPage() {
       .catch(() => toast.error(t('errors.failedLoadBranchInfo')))
       .finally(() => setProfileLoading(false));
   }, []);
+
+  if (user?.role === 'CASHIER') return null;
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

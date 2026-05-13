@@ -1,4 +1,4 @@
-// src/app/super-admin/map/page.tsx
+﻿// src/app/super-admin/map/page.tsx
 // Super Admin Global Pharmacy Triangulation Map
 'use client';
 
@@ -48,8 +48,8 @@ export default function SuperAdminMapPage() {
     (async () => {
       try {
         const data = await fetchPharmacyLocations();
-        setAllPharmacies(data);
-        setFiltered(data);
+        setAllPharmacies(data ?? []);
+        setFiltered(data ?? []);
       } catch {
         setAllPharmacies([]);
         setFiltered([]);
@@ -60,7 +60,8 @@ export default function SuperAdminMapPage() {
   }, []);
 
   useEffect(() => {
-    let result = allPharmacies;
+    if (!Array.isArray(allPharmacies)) return;
+    let result = [...allPharmacies];
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -82,11 +83,12 @@ export default function SuperAdminMapPage() {
     setSelectedPharmacy(p);
   }, []);
 
+  const pharmacies = allPharmacies ?? [];
   const stats = {
-    total: allPharmacies.length,
-    active: allPharmacies.filter((p) => p.isActive).length,
-    inactive: allPharmacies.filter((p) => !p.isActive).length,
-    open: allPharmacies.filter((p) => p.status === 'OPEN').length,
+    total: pharmacies.length,
+    active: pharmacies.filter((p) => p.isActive).length,
+    inactive: pharmacies.filter((p) => !p.isActive).length,
+    open: pharmacies.filter((p) => p.status === 'OPEN').length,
   };
 
   // ── Sidebar content for MapLayout ──
@@ -109,7 +111,7 @@ export default function SuperAdminMapPage() {
           <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm">
             Pharmacy Index
             <span className="ml-2 text-xs font-normal text-gray-400">
-              {filtered.length} shown
+              {(filtered || []).length} shown
             </span>
           </h3>
         </div>
@@ -124,7 +126,7 @@ export default function SuperAdminMapPage() {
                   </div>
                 </div>
               ))
-            : filtered.map((p) => (
+            : (filtered || []).map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handleSelectPharmacy(p)}
@@ -173,10 +175,10 @@ export default function SuperAdminMapPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Pharmacies', value: stats.total, icon: BuildingStorefrontIcon, color: NAVY, bg: `${NAVY}12` },
-          { label: 'Active',           value: stats.active,   icon: CheckCircleIcon,        color: TEAL,    bg: `${TEAL}12` },
-          { label: 'Inactive',         value: stats.inactive, icon: XCircleIcon,            color: '#ef4444', bg: '#fef2f2' },
-          { label: 'Open Now',         value: stats.open,     icon: MapPinIcon,             color: '#f59e0b', bg: '#fffbeb' },
+          { label: 'Total Pharmacies', value: stats.total,    icon: BuildingStorefrontIcon, color: NAVY,       bg: `${NAVY}12` },
+          { label: 'Active',           value: stats.active,   icon: CheckCircleIcon,        color: TEAL,       bg: `${TEAL}12` },
+          { label: 'Inactive',         value: stats.inactive, icon: XCircleIcon,            color: '#ef4444',  bg: '#fef2f2'   },
+          { label: 'Open Now',         value: stats.open,     icon: MapPinIcon,             color: '#f59e0b',  bg: '#fffbeb'   },
         ].map((s) => (
           <div key={s.label} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-3">
@@ -229,7 +231,7 @@ export default function SuperAdminMapPage() {
           ))}
         </div>
         <span className="text-xs text-gray-400 ml-auto">
-          Showing {filtered.length} / {allPharmacies.length}
+          Showing {(filtered || []).length} / {(allPharmacies || []).length}
         </span>
       </div>
 
@@ -288,7 +290,7 @@ function DetailsPanel({
         style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
       >
         <p className="font-bold text-sm truncate">{pharmacy.name}</p>
-        <button onClick={onClose} className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0">×</button>
+        <button onClick={onClose} className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0">&times;</button>
       </div>
       <div className="p-4 space-y-3 text-sm">
         <span
@@ -297,7 +299,7 @@ function DetailsPanel({
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-400' : 'bg-red-400'}`} />
-          {isOpen ? 'Open Now' : 'Closed'} · {pharmacy.isActive ? 'Active' : 'Inactive'}
+          {isOpen ? 'Open Now' : 'Closed'} &middot; {pharmacy.isActive ? 'Active' : 'Inactive'}
         </span>
         {[
           ['Address',     pharmacy.address],
@@ -317,7 +319,7 @@ function DetailsPanel({
           className="w-full mt-1 py-2.5 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90"
           style={{ background: `linear-gradient(135deg, ${TEAL}, #207a6c)` }}
         >
-          Open Full Profile →
+          Open Full Profile &rarr;
         </button>
       </div>
     </div>
