@@ -1,19 +1,27 @@
 'use client';
-// src/app/(pharmacy)/profile/page.tsx
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera, FileText, CheckCircle } from 'lucide-react';
+import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 
+const BLUE = '#1B72C8';
 const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
+
+function getInitials(name: string = '') {
+  return name
+    .split(/\s+/)
+    .filter(w => !/^(dr|mr|mrs|ms|prof)\.?$/i.test(w))
+    .slice(0, 2)
+    .map(w => w[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 export default function PharmacyProfilePage() {
   const { t } = useTranslation();
   const [profile, setProfile] = useState<any>(null);
   const [ownerName, setOwnerName] = useState('');
+  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +31,7 @@ export default function PharmacyProfilePage() {
         setProfile(d);
         setOwnerName(d?.representativeName ?? d?.ownerName ?? d?.name ?? '');
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -31,150 +39,264 @@ export default function PharmacyProfilePage() {
     setSaving(true);
     try {
       await api.put('/pharmacies/profile/me', { representativeName: ownerName });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch {}
+      setEditing(false);
+    } catch { /* silently fail */ }
     setSaving(false);
   };
-
-  const docs = [
-    { label: t('pharmacyOwner.pharmacyLicense'), file: 'pharmacy_license_2025.pdf', date: 'Jan 10, 2025' },
-    { label: t('pharmacyOwner.nationalId'),       file: 'national_id_scan.pdf',      date: 'Jan 10, 2025' },
-    { label: t('pharmacyOwner.taxRegistration'),  file: 'tax_cert_2025.pdf',         date: 'Jan 10, 2025' },
-  ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-400">
-      {t('common.loading')}
+        {t('common.loading')}
       </div>
-  );
+    );
   }
+
+  const initials = getInitials(ownerName);
+  const licenseDate = profile?.dateOfIncorporation ? new Date(profile.dateOfIncorporation) : null;
+  const isExpired = licenseDate ? licenseDate < new Date() : false;
+
+  const registrationRows = [
+    { label: t('pharmacyOwner.pharmacyName'), value: profile?.name ?? '—' },
+    { label: t('pharmacyOwner.registrationNumber'), value: profile?.rdbCertificate ? 'On file' : '—' },
+    {
+      label: t('pharmacyOwner.approvalDate'),
+      value: profile?.approvedAt
+        ? new Date(profile.approvedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : '—',
+    },
+    {
+      label: t('pharmacyOwner.licenseExpiry'),
+      value: licenseDate
+        ? licenseDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+        (isExpired ? ` — ${t('pharmacyOwner.expired')}` : '')
+        : '—',
+      expired: isExpired,
+    },
+    { label: t('common.address'), value: profile?.address ?? '—' },
+    { label: t('common.phone'), value: profile?.phone ?? '—' },
+  ];
+
+  const docs = [
+    { label: t('pharmacyOwner.pharmacyLicense'), date: 'January 10, 2025' },
+    { label: t('pharmacyOwner.nationalId'), date: 'January 6, 2018' },
+    { label: t('pharmacyOwner.taxRegistration'), date: 'January 6, 2018' },
+  ];
 
   return (
     <div className="space-y-6">
-    {/* Hero */}
-      <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
-      <h1 className="text-3xl font-bold">{t('pharmacyOwner.profileTitle')}</h1>
-      <p className="mt-1 text-white/70">{t('pharmacyOwner.profileSubtitle')}</p>
-    </div>
 
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      {/* Personal Information */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-5">{t('pharmacyOwner.personalInformation')}</h3>
+      {/* Hero */}
+      <div
+        className="rounded-2xl p-6 lg:p-8"
+        style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }}
+      >
+        <h1 className="text-3xl lg:text-4xl font-bold" style={{ color: NAVY }}>
+          {t('pharmacyOwner.myProfileTitle')}
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
+      </div>
 
-        {/* Avatar */}
-          <div className="flex flex-col items-center mb-6">
-          <div className="relative">
+      {/* Section header (below hero) */}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">{t('pharmacyOwner.myProfileTitle')}</h2>
+        <p className="text-sm text-gray-500 mt-0.5">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Left: User card */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center">
+          {/* Avatar */}
+          <div className="relative mb-3">
             <div
-                className="w-24 h-24 rounded-full flex items-center justify-center text-white"
-                style={{ backgroundColor: '#E5E7EB' }}
-              >
-              <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-bold select-none"
+              style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
+            >
+              {initials || '?'}
             </div>
             <button
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white"
-                style={{ backgroundColor: TEAL }}
-              >
-              <Camera size={14} />
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md"
+              style={{ backgroundColor: NAVY }}
+              aria-label={t('pharmacyOwner.clickToUpdatePhoto')}
+            >
+              <Camera size={13} />
             </button>
           </div>
-          <p className="text-xs text-gray-400 mt-2">{t('pharmacyOwner.clickToUpdatePhoto')}</p>
-        </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('pharmacyOwner.ownerName')}
-              </label>
-            <input
-                value={ownerName}
-                onChange={e => setOwnerName(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-              />
-          </div>
-        </div>
+          <h3 className="font-bold text-gray-900 text-base leading-snug">{ownerName || '—'}</h3>
+          <p className="text-sm text-gray-500 mt-0.5">{t('pharmacyOwner.role')}</p>
 
-        <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full mt-5 py-3 rounded-xl text-white font-medium text-sm disabled:opacity-60"
-            style={{ backgroundColor: TEAL }}
-          >
-          {saving ? t('common.saving') : t('common.saveChanges')}
-          </button>
-        {saved && (
-            <p className="text-center text-sm mt-2" style={{ color: TEAL }}>
-             Saved successfully
-            </p>
-        )}
-        </div>
-
-      {/* Registration Details */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-gray-800">{t('pharmacyOwner.registrationDetails')}</h3>
           <span
-              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border"
-              style={{ borderColor: TEAL, color: TEAL }}
-            >
-            <CheckCircle size={12} />
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
             {t('pharmacyOwner.approved')}
-            </span>
+          </span>
+
+          {/* Pharmacy details */}
+          <div className="w-full mt-5 pt-4 border-t border-gray-100 space-y-3 text-left">
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Pharmacy</p>
+              <p className="text-sm font-medium text-gray-800">{profile?.name ?? '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">{t('common.phone')}</p>
+              <p className="text-sm font-medium text-gray-800">{profile?.phone ?? '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">{t('common.address')}</p>
+              <p className="text-sm font-medium text-gray-800">{profile?.address ?? '—'}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-5">
-          {[
-              { label: t('pharmacyOwner.pharmacyName'),       value: profile?.name ?? '—' },
-              { label: t('pharmacyOwner.registrationNumber'), value: profile?.rdbCertificate ? 'On file' : '—' },
-              { label: t('pharmacyOwner.approvalDate'),        value: profile?.approvedAt ? new Date(profile.approvedAt).toLocaleDateString() : '—' },
-              { label: t('pharmacyOwner.licenseExpiry'),       value: profile?.dateOfIncorporation ? new Date(profile.dateOfIncorporation).toLocaleDateString() : '—' },
-              { label: t('common.address'),                    value: profile?.address ?? '—' },
-              { label: t('common.phone'),                      value: profile?.phone ?? '—' },
-            ].map(({ label, value }) => (
-              <div key={label}>
-              <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-              <p className="text-sm font-semibold text-gray-800">{value}</p>
+        {/* Right: Info cards */}
+        <div className="lg:col-span-2 space-y-5">
+
+          {/* Personal Information */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold text-gray-900">{t('pharmacyOwner.personalInformation')}</h3>
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
+                >
+                  <Pencil size={13} />
+                  {t('pharmacyOwner.editProfile')}
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="px-3 py-1.5 rounded-lg text-white text-sm font-medium disabled:opacity-60 transition-opacity"
+                    style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
+                  >
+                    {saving ? t('common.saving') : t('common.saveChanges')}
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  {t('pharmacyOwner.ownerName')}
+                </p>
+                {editing ? (
+                  <input
+                    value={ownerName}
+                    onChange={e => setOwnerName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': BLUE } as React.CSSProperties}
+                  />
+                ) : (
+                  <p className="text-sm font-medium text-gray-800">{ownerName || '—'}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  {t('pharmacyOwner.emailAddress')}
+                </p>
+                <p className="text-sm font-medium text-gray-800">{profile?.email ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  {t('common.phone')}
+                </p>
+                <p className="text-sm font-medium text-gray-800">{profile?.phone ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  Role
+                </p>
+                <p className="text-sm font-medium text-gray-800">{t('pharmacyOwner.role')}</p>
+              </div>
+            </div>
           </div>
 
-        {/* Documents */}
-          <div>
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">
-            {t('pharmacyOwner.submittedDocuments')}
-            </h4>
-          <div className="space-y-2">
-            {docs.map(doc => (
-                <div
-                  key={doc.label}
-                  className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50"
-                >
-                <div className="flex items-center gap-3">
-                  <FileText size={16} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{doc.label}</p>
-                    <p className="text-xs text-gray-400">
-                      {doc.file} · {t('pharmacyOwner.uploaded')} {doc.date}
-                      </p>
-                  </div>
-                </div>
-                <button
-                    className="text-sm font-medium hover:underline"
-                    style={{ color: NAVY }}
-                  >
-                  {t('common.view')}
-                  </button>
-              </div>
-            ))}
+          {/* Registration Details */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold text-gray-900">{t('pharmacyOwner.registrationDetails')}</h3>
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                {t('pharmacyOwner.approved')}
+              </span>
             </div>
-          <p className="text-xs text-gray-400 mt-3">{t('pharmacyOwner.documentsNotice')}</p>
+            <div className="space-y-0">
+              {registrationRows.map(({ label, value, expired }) => (
+                <div
+                  key={label}
+                  className="flex justify-between py-2.5 border-b border-gray-50 last:border-0"
+                >
+                  <p className="text-sm text-gray-500">{label}</p>
+                  <p
+                    className="text-sm font-medium text-right max-w-[55%]"
+                    style={{ color: expired ? '#EF4444' : '#111827' }}
+                  >
+                    {value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Submitted Documents — full width */}
+      <div className="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 className="font-semibold text-gray-900 mb-4">{t('pharmacyOwner.submittedDocuments')}</h3>
+        <div className="space-y-3">
+          {docs.map(doc => (
+            <div
+              key={doc.label}
+              className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: '#EBF4FF' }}
+                >
+                  <FileText size={18} style={{ color: NAVY }} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{doc.label}</p>
+                  <p className="text-xs text-gray-400">
+                    {t('pharmacyOwner.uploaded')}: {doc.date}
+                  </p>
+                </div>
+              </div>
+              <button
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg border text-sm font-medium hover:bg-blue-50 transition-colors"
+                style={{ borderColor: NAVY, color: NAVY }}
+              >
+                {t('common.view')}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Warning notice */}
+        <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
+          <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-700">{t('pharmacyOwner.documentsNotice')}</p>
+        </div>
+      </div>
+
     </div>
-  </div>
-);
+  );
 }

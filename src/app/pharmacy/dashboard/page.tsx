@@ -2,19 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 import {
-  TrendingUp, TrendingDown, Package, Users, BarChart2,
-  Activity, GitBranch, DollarSign, AlertTriangle,
+  TrendingUp, TrendingDown, Users,
+  Activity, GitBranch, DollarSign, AlertTriangle, Calendar, AlignJustify,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, Legend,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend,
 } from 'recharts';
 
 const TEAL  = '#2D9B8A';
 const NAVY  = '#1E4D8C';
+const BLUE  = '#1B72C8';
 const BRANCH_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
+const SPARKLINE_COLORS = ['#2D9B8A', '#2D9B8A', '#F59E0B', '#10B981'];
 
 function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -38,9 +41,12 @@ function ChangeBadge({ value }: { value: number }) {
 function SkeletonCard() {
   return (
     <div className="rounded-2xl p-5 bg-white border border-gray-100 animate-pulse space-y-3">
-      <div className="w-8 h-8 rounded-xl bg-gray-100" />
-      <div className="h-3 w-24 bg-gray-100 rounded" />
-      <div className="h-6 w-20 bg-gray-200 rounded" />
+      <div className="flex items-start justify-between">
+        <div className="w-10 h-10 rounded-xl bg-gray-100" />
+        <div className="h-7 w-20 bg-gray-200 rounded" />
+      </div>
+      <div className="h-3 w-28 bg-gray-100 rounded" />
+      <div className="h-3 w-16 bg-gray-100 rounded" />
     </div>
   );
 }
@@ -61,7 +67,6 @@ function EmptyState() {
   );
 }
 
-// Custom tooltip for charts
 function RevenueTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -83,10 +88,10 @@ export default function PharmacyDashboard() {
   const [analytics,     setAnalytics]     = useState<any>(null);
   const [dailyRevenue,  setDailyRevenue]  = useState<any>(null);
   const [weeklyRevenue, setWeeklyRevenue] = useState<any>(null);
+  const [profileInfo,   setProfileInfo]   = useState<any>(null);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState(false);
 
-  // Which branches to show on charts (multi-select)
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [revenueView, setRevenueView] = useState<'daily' | 'weekly'>('daily');
 
@@ -99,17 +104,19 @@ export default function PharmacyDashboard() {
       api.get('/pharmacies/dashboard/analytics',      { signal: s }),
       api.get('/pharmacies/dashboard/daily-revenue',  { signal: s }),
       api.get('/pharmacies/dashboard/weekly-revenue', { signal: s }),
+      api.get('/pharmacies/profile/me',               { signal: s }),
     ])
-      .then(([sRes, aRes, dRes, wRes]) => {
+      .then(([sRes, aRes, dRes, wRes, pRes]) => {
         const st = sRes.data?.data  ?? sRes.data;
         const an = aRes.data?.data  ?? aRes.data;
         const dr = dRes.data?.data  ?? dRes.data;
         const wr = wRes.data?.data  ?? wRes.data;
+        const pr = pRes.data?.data  ?? pRes.data;
         setStats(st);
         setAnalytics(an);
         setDailyRevenue(dr);
         setWeeklyRevenue(wr);
-        // Default: select all branches
+        setProfileInfo(pr);
         const names = (dr?.branchDaily ?? []).map((b: any) => b.branchName);
         setSelectedBranches(names);
       })
@@ -119,10 +126,25 @@ export default function PharmacyDashboard() {
     return () => controller.abort();
   }, []);
 
+  // ── Greeting ──────────────────────────────────────────────────────────────
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? t('dashboard.goodMorning')
+    : hour < 18 ? t('dashboard.goodAfternoon')
+    : t('dashboard.goodEvening');
+
+  const ownerFullName  = profileInfo?.representativeName ?? profileInfo?.ownerName ?? '';
+  const pharmacyName   = profileInfo?.name ?? '';
+  // Extract last 1–2 words for greeting (e.g. "Dr. Jean Damascene" → "Dr. Damascene")
+  const nameParts = ownerFullName.split(/\s+/).filter(Boolean);
+  const greetingName = nameParts.length > 2
+    ? [nameParts[0], nameParts[nameParts.length - 1]].join(' ')
+    : ownerFullName;
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-8 animate-pulse bg-gray-200 h-28" />
+        <div className="rounded-2xl p-8 animate-pulse h-40" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -139,9 +161,9 @@ export default function PharmacyDashboard() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
-          <h1 className="text-3xl font-bold">{t('pharmacyOwner.ownerOverview')}</h1>
-          <p className="mt-1 text-white/70">{t('pharmacyOwner.ownerOverviewSubtitle')}</p>
+        <div className="rounded-2xl p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }}>
+          <h1 className="text-3xl font-bold" style={{ color: NAVY }}>{t('pharmacyOwner.ownerOverview')}</h1>
+          <p className="mt-1 text-gray-500 text-sm">{t('pharmacyOwner.ownerOverviewSubtitle')}</p>
         </div>
         <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
           Could not load dashboard data. Check your connection and refresh.
@@ -150,40 +172,66 @@ export default function PharmacyDashboard() {
     );
   }
 
-  // ── Data mapping ──────────────────────────────────────────────────────────
+  // ── Data ─────────────────────────────────────────────────────────────────
+  const branchNames = (stats?.revenueByBranch ?? []).map((b: any) => b.name).slice(0, 3).join(' + ');
+
   const overviewCards = [
-    { icon: GitBranch,     label: t('pharmacyOwner.totalBranches'),  value: stats?.totalBranches  ?? 0, dark: false },
-    { icon: Users,         label: t('pharmacyOwner.totalEmployees'), value: stats?.totalEmployees ?? 0, dark: false },
-    { icon: DollarSign,    label: t('pharmacyOwner.monthlyRevenue'), value: `RWF ${fmt(stats?.monthlyRevenue ?? 0)}`, dark: false },
-    { icon: AlertTriangle, label: 'Total Revenue',                   value: `RWF ${fmt(stats?.totalRevenue   ?? 0)}`, dark: true  },
+    {
+      icon: GitBranch,
+      accentColor: NAVY,   iconLightBg: '#EEF2FF',
+      label: t('pharmacyOwner.totalBranches'),
+      value: stats?.totalBranches ?? 0,
+      sub: branchNames ? `↗ ${branchNames}` : undefined,
+      subColor: TEAL,
+    },
+    {
+      icon: Users,
+      accentColor: TEAL,   iconLightBg: '#E0F7F4',
+      label: t('pharmacyOwner.totalEmployees'),
+      value: stats?.totalEmployees ?? 0,
+      sub: `↗ ${t('pharmacyOwner.allActive')}`,
+      subColor: TEAL,
+    },
+    {
+      icon: Calendar,
+      accentColor: '#F59E0B', iconLightBg: '#FEF9E7',
+      label: t('pharmacyOwner.monthlyRevenue'),
+      value: `RWF ${fmt(stats?.monthlyRevenue ?? 0)}`,
+      sub: `↗ ${t('analytics.thisMonth')}`,
+      subColor: '#F59E0B',
+    },
+    {
+      icon: DollarSign,
+      accentColor: '#10B981', iconLightBg: '#E8FAF1',
+      label: t('pharmacyOwner.totalRevenue'),
+      value: `RWF ${fmt(stats?.totalRevenue ?? 0)}`,
+      sub: `↗ ${t('pharmacyOwner.cumulativeRevenue')}`,
+      subColor: '#10B981',
+    },
   ];
 
   const analyticsCards = [
-    { icon: TrendingUp, label: 'Monthly Revenue',  value: `RWF ${fmt(analytics?.totalRevenue  ?? 0)}`, change: analytics?.revenueChange   },
-    { icon: BarChart2,  label: 'Monthly Orders',   value: analytics?.totalOrders  ?? 0,                change: analytics?.ordersChange    },
-    { icon: DollarSign, label: 'Avg Order Value',  value: `RWF ${fmt(analytics?.avgOrderValue ?? 0)}`, change: analytics?.avgValueChange  },
-    { icon: Package,    label: 'Items Sold',        value: analytics?.itemsSold    ?? 0,                change: analytics?.itemsChange     },
+    { label: 'Monthly Revenue',  value: `RWF ${fmt(analytics?.totalRevenue  ?? 0)}`, sub: '↑ vs last month',  sparkColor: SPARKLINE_COLORS[0] },
+    { label: 'Monthly Orders',   value: analytics?.totalOrders  ?? 0,                sub: 'Orders fulfilled', sparkColor: SPARKLINE_COLORS[1] },
+    { label: 'Avg Order Value',  value: `RWF ${fmt(analytics?.avgOrderValue ?? 0)}`, sub: 'Per transaction',  sparkColor: SPARKLINE_COLORS[2] },
+    { label: 'Items Sold',       value: analytics?.itemsSold    ?? 0,                sub: 'Units dispatched', sparkColor: SPARKLINE_COLORS[3] },
   ];
 
-  const alerts:                 any[]  = stats?.alerts               ?? [];
-  const revenueByBranch:        any[]  = stats?.revenueByBranch      ?? [];
-  const inventoryDistribution:  any[]  = stats?.inventoryDistribution ?? [];
+  const alerts:                any[]  = stats?.alerts               ?? [];
+  const revenueByBranch:       any[]  = stats?.revenueByBranch      ?? [];
+  const inventoryDistribution: any[]  = stats?.inventoryDistribution ?? [];
+  const totalInventoryUnits           = inventoryDistribution.reduce((s: number, d: any) => s + (d.totalUnits ?? d.value ?? 0), 0);
 
-  // ── Branch revenue time-series ─────────────────────────────────────────
-  // Build chart data from daily or weekly response
-  const activeData     = revenueView === 'daily' ? dailyRevenue  : weeklyRevenue;
-  const labelKey       = revenueView === 'daily' ? 'label'       : 'label';
-  const rawLabels: string[]  = revenueView === 'daily'
-    ? (dailyRevenue?.dailyTotal  ?? []).map((d: any) => d.label)
+  // ── Time-series charts ────────────────────────────────────────────────────
+  const rawLabels: string[] = revenueView === 'daily'
+    ? (dailyRevenue?.dailyTotal   ?? []).map((d: any) => d.label)
     : (weeklyRevenue?.weeklyTotal ?? []).map((d: any) => d.label);
 
-  // Chart rows: one entry per time bucket, value per branch
   const branchTimeData: any[] = rawLabels.map((lbl, i) => {
     const row: any = { label: lbl };
     const branchArr = revenueView === 'daily'
-      ? (dailyRevenue?.branchDaily  ?? [])
+      ? (dailyRevenue?.branchDaily   ?? [])
       : (weeklyRevenue?.branchWeekly ?? []);
-
     branchArr.forEach((b: any) => {
       if (selectedBranches.includes(b.branchName)) {
         row[b.branchName] = b.data[i]?.revenue ?? 0;
@@ -192,7 +240,6 @@ export default function PharmacyDashboard() {
     return row;
   });
 
-  // Pharmacy-wide total line
   const totalTimeData: any[] = revenueView === 'daily'
     ? (dailyRevenue?.dailyTotal   ?? []).map((d: any) => ({ label: d.label, revenue: d.revenue }))
     : (weeklyRevenue?.weeklyTotal ?? []).map((d: any) => ({ label: d.label, revenue: d.revenue }));
@@ -201,25 +248,52 @@ export default function PharmacyDashboard() {
     ? (dailyRevenue?.branchDaily   ?? []).map((b: any) => b.branchName)
     : (weeklyRevenue?.branchWeekly ?? []).map((b: any) => b.branchName);
 
-  const toggleBranch = (name: string) => {
+  const toggleBranch = (name: string) =>
     setSelectedBranches(prev =>
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     );
-  };
 
-  // Tick sampling: for daily (30 points) show every 5th label to avoid crowding
   const tickInterval = revenueView === 'daily' ? 4 : 0;
 
   return (
     <div className="space-y-6">
 
-      {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">{t('pharmacyOwner.ownerOverview')}</h1>
-        <p className="mt-1 text-white/70">{t('pharmacyOwner.ownerOverviewSubtitle')}</p>
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 lg:p-10"
+        style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }}
+      >
+        {/* ECG decoration */}
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none hidden lg:block">
+          <svg width="200" height="90" viewBox="0 0 200 90" fill="none">
+            <polyline
+              points="0,45 28,45 42,10 58,80 72,26 84,45 110,45 124,45 138,10 154,80 168,26 180,45 200,45"
+              stroke="#1E4D8C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        {pharmacyName && (
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>
+            {pharmacyName} — {t('pharmacyOwner.role').toUpperCase()}
+          </p>
+        )}
+        <h1 className="text-3xl lg:text-5xl font-extrabold leading-tight" style={{ color: NAVY }}>
+          {greeting},<br />{greetingName ? `${greetingName}.` : ''}
+        </h1>
+        <p className="mt-3 text-sm text-gray-500 max-w-md">{t('pharmacyOwner.performanceSubtitle')}</p>
+        <Link href="/pharmacy/orders">
+          <button
+            className="mt-5 px-6 py-3 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm"
+            style={{ backgroundColor: BLUE }}
+          >
+            <AlignJustify size={15} />
+            {t('pharmacyOwner.viewAllOrders')}
+          </button>
+        </Link>
       </div>
 
-      {/* Alerts */}
+      {/* ── Alerts ────────────────────────────────────────────────────── */}
       {alerts.length > 0 && (
         <div className="space-y-2">
           {alerts.map((alert, i) => (
@@ -246,73 +320,74 @@ export default function PharmacyDashboard() {
         </div>
       )}
 
-      {/* Overview stat cards */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('dashboard.businessOverview')}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {overviewCards.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={i} className="rounded-2xl p-5 flex items-center justify-between" style={{ backgroundColor: s.dark ? NAVY : TEAL }}>
-                <div>
-                  <p className="text-white/80 text-sm">{s.label}</p>
-                  <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
+      {/* ── Overview stat cards ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {overviewCards.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+              <div className="h-1.5" style={{ backgroundColor: s.accentColor }} />
+              <div className="p-5">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: s.iconLightBg }}>
+                  <Icon size={20} style={{ color: s.accentColor }} />
                 </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
-                  <Icon size={22} className="text-white" />
-                </div>
+                <p className="text-2xl font-bold text-gray-900 mb-1">{s.value}</p>
+                <p className="text-sm text-gray-600">{s.label}</p>
+                {s.sub && <p className="text-xs font-medium mt-1.5" style={{ color: s.subColor ?? '#9CA3AF' }}>{s.sub}</p>}
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Monthly performance cards ─────────────────────────────────── */}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.monthlyPerformance')}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {analyticsCards.map((s, i) => (
+            <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{s.label}</p>
+              <p className="text-2xl font-bold text-gray-900 mb-0.5">{s.value}</p>
+              <p className="text-xs text-gray-500 mb-3">{s.sub}</p>
+              {totalTimeData.length > 0 && (
+                <ResponsiveContainer width="100%" height={40}>
+                  <AreaChart data={totalTimeData.slice(-14)} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id={`sparkGrad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={s.sparkColor} stopOpacity={0.2} />
+                        <stop offset="95%" stopColor={s.sparkColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="revenue" stroke={s.sparkColor} fill={`url(#sparkGrad-${i})`} strokeWidth={1.5} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Monthly performance cards */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('dashboard.monthlyPerformance')}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {analyticsCards.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: '#F0F7F6' }}>
-                  <Icon size={18} style={{ color: TEAL }} />
-                </div>
-                <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-                <div className="flex items-end justify-between gap-2">
-                  <p className="text-lg font-bold text-gray-900">{s.value}</p>
-                  {s.change !== undefined && <ChangeBadge value={s.change} />}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Daily / Weekly Revenue per Branch ──────────────────────────── */}
+      {/* ── Revenue per Branch (time-series) ──────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-        {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-gray-800">{t('dashboard.revenuePerBranch')}</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Past 30 days, {revenueView === 'daily' ? 'day by day' : 'grouped by week'}</p>
+            <h3 className="font-semibold text-gray-800">
+              {t('dashboard.revenuePerBranch')} (Past 30 days)
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {revenueView === 'daily' ? 'Day by day' : 'Grouped by week'}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Daily / Weekly toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-0.5 text-xs font-semibold">
+          <div className="flex bg-gray-100 rounded-lg p-0.5 text-xs font-semibold">
+            {(['daily', 'weekly'] as const).map(v => (
               <button
-                onClick={() => setRevenueView('daily')}
-                className={`px-3 py-1.5 rounded-md transition-all ${revenueView === 'daily' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                key={v}
+                onClick={() => setRevenueView(v)}
+                className={`px-3 py-1.5 rounded-md transition-all capitalize ${revenueView === v ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                Daily
+                {v === 'daily' ? 'Daily' : 'Weekly'}
               </button>
-              <button
-                onClick={() => setRevenueView('weekly')}
-                className={`px-3 py-1.5 rounded-md transition-all ${revenueView === 'weekly' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Weekly
-              </button>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -337,107 +412,146 @@ export default function PharmacyDashboard() {
           </div>
         )}
 
-        {/* Chart */}
         {branchTimeData.length > 0 && selectedBranches.length > 0 ? (
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={branchTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+            <AreaChart data={branchTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <defs>
+                {selectedBranches.map((name, i) => (
+                  <linearGradient key={name} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={BRANCH_COLORS[allBranchNames.indexOf(name) % BRANCH_COLORS.length]} stopOpacity={0.15} />
+                    <stop offset="95%" stopColor={BRANCH_COLORS[allBranchNames.indexOf(name) % BRANCH_COLORS.length]} stopOpacity={0} />
+                  </linearGradient>
+                ))}
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                axisLine={false}
-                tickLine={false}
-                interval={tickInterval}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => fmt(v)}
-                width={52}
-              />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={tickInterval} />
+              <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} width={52} />
               <Tooltip content={<RevenueTooltip />} />
-              {selectedBranches.map((name, i) => (
-                <Line
-                  key={name}
-                  type="monotone"
-                  dataKey={name}
-                  name={name}
-                  stroke={BRANCH_COLORS[allBranchNames.indexOf(name) % BRANCH_COLORS.length]}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              ))}
-            </LineChart>
+              {selectedBranches.map((name, i) => {
+                const colorIdx = allBranchNames.indexOf(name) % BRANCH_COLORS.length;
+                return (
+                  <Area
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    name={name}
+                    stroke={BRANCH_COLORS[colorIdx]}
+                    fill={`url(#grad-${i})`}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                );
+              })}
+            </AreaChart>
           </ResponsiveContainer>
         ) : <EmptyState />}
       </div>
 
-      {/* ── Pharmacy-wide total revenue trend (30-day) ─────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <div className="mb-4">
-          <h3 className="font-semibold text-gray-800">{t('dashboard.totalRevenueTrend')}</h3>
-          <p className="text-xs text-gray-400 mt-0.5">All branches combined, past 30 days ({revenueView === 'daily' ? 'daily' : 'weekly'})</p>
-        </div>
-        {totalTimeData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={totalTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                axisLine={false}
-                tickLine={false}
-                interval={tickInterval}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => fmt(v)}
-                width={52}
-              />
-              <Tooltip content={<RevenueTooltip />} />
-              <Bar dataKey="revenue" name="Total Revenue" fill={TEAL} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : <EmptyState />}
-      </div>
-
-      {/* ── Revenue by branch (this month) + Inventory distribution ─────── */}
+      {/* ── Total Revenue Trend + Revenue by Branch side-by-side ──────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="font-semibold text-gray-800 mb-4">{t('pharmacyOwner.revenueByBranch')} (This Month)</h3>
-          {revenueByBranch.length > 0 ? (
+
+        {/* Total Revenue Trend */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="mb-4">
+            <h3 className="font-semibold text-gray-800">{t('dashboard.totalRevenueTrend')}</h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              All branches, past 30 days ({revenueView === 'daily' ? 'daily' : 'weekly'})
+            </p>
+          </div>
+          {totalTimeData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={revenueByBranch} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <BarChart data={totalTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={tickInterval} />
                 <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} width={52} />
                 <Tooltip content={<RevenueTooltip />} />
-                <Bar dataKey="revenue" name="Revenue" fill={NAVY} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="revenue" name="Total Revenue" fill={TEAL} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <EmptyState />}
         </div>
 
+        {/* Revenue by Branch — This Month (horizontal bars) */}
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="font-semibold text-gray-800 mb-4">{t('pharmacyOwner.inventoryDistribution')}</h3>
-          {inventoryDistribution.length > 0 ? (
+          <h3 className="font-semibold text-gray-800 mb-4">
+            {t('pharmacyOwner.revenueByBranch')} — This Month
+          </h3>
+          {revenueByBranch.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={revenueByBranch}
+                layout="vertical"
+                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} width={90} />
+                <Tooltip content={<RevenueTooltip />} />
+                <Bar dataKey="revenue" name="Revenue" fill={NAVY} radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <EmptyState />}
+        </div>
+      </div>
+
+      {/* ── Inventory Distribution ────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl p-5 border border-gray-100">
+        <h3 className="font-semibold text-gray-800 mb-4">{t('pharmacyOwner.inventoryDistribution')}</h3>
+        {inventoryDistribution.length > 0 ? (
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <ResponsiveContainer width={220} height={220} minWidth={220}>
               <PieChart>
-                <Pie data={inventoryDistribution} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={3} dataKey="value">
+                <Pie
+                  data={inventoryDistribution}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={90}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
                   {inventoryDistribution.map((_: any, i: number) => (
                     <Cell key={i} fill={BRANCH_COLORS[i % BRANCH_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${v} SKUs`, 'Medications']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                <Legend />
+                <Tooltip
+                  formatter={(v: any) => [`${v} SKUs`, 'Medications']}
+                  contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                />
               </PieChart>
             </ResponsiveContainer>
-          ) : <EmptyState />}
-        </div>
+
+            <div className="flex-1 space-y-3">
+              {inventoryDistribution.map((item: any, i: number) => {
+                const total = inventoryDistribution.reduce((s: number, d: any) => s + d.value, 0);
+                const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
+                return (
+                  <div key={item.name ?? i} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-sm inline-block shrink-0"
+                        style={{ backgroundColor: BRANCH_COLORS[i % BRANCH_COLORS.length] }}
+                      />
+                      <span className="text-sm text-gray-700">{item.name}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800">{pct}%</span>
+                  </div>
+                );
+              })}
+              {totalInventoryUnits > 0 && (
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    Total Units in Stock
+                  </p>
+                  <p className="text-xl font-bold text-gray-900 mt-0.5">
+                    {totalInventoryUnits.toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : <EmptyState />}
       </div>
 
     </div>
