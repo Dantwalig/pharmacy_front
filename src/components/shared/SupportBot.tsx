@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { XMarkIcon, ChatBubbleOvalLeftEllipsisIcon, PhoneIcon, DocumentTextIcon, ChevronRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
+import { SUPPORT_EMAIL } from '@/lib/constants';
 
 interface SupportBotProps {
   open?: boolean;
@@ -122,7 +123,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                 {/* Info rows */}
                 <div className="px-6 pt-4 pb-2 space-y-1">
                   <a
-                    href="mailto:support@ubwenge.com"
+                    href={`mailto:${SUPPORT_EMAIL}`}
                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0F7F6' }}>
@@ -130,7 +131,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800">{t('supportBot.callOrEmail')}</p>
-                      <p className="text-xs text-gray-400 truncate">support@ubwenge.com</p>
+                      <p className="text-xs text-gray-400 truncate">{SUPPORT_EMAIL}</p>
                     </div>
                     <ChevronRightIcon className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors" />
                   </a>

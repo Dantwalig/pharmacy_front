@@ -6,7 +6,7 @@
  *
  * The three portals differ only in HOW they resolve the branchId:
  *   pharmacy     → fetches GET /branches/my-branches → shows a <select> of branches
- *   branch       → infers from JWT context via GET /attendance/summary (no select needed)
+   *   branch       → calls GET /branches/my-branch-details → resolves id and name from JWT server-side
  *   staff        → fetches GET /staff/profile/me which returns branch info directly
  *
  * The hook returns state + a submit handler. JSX stays in the page component.
@@ -100,22 +100,16 @@ export function useMedicationForm(role: MedicationFormRole): UseMedicationFormRe
         .finally(() => setCtxLoad(false));
 
     } else if (role === 'branch') {
-      // Branch manager: branchId is resolved server-side from JWT.
-      // We try the localStorage cache first, then fall back to attendance summary
-      // which at least gives us the branch name for display.
-      const cached = localStorage.getItem('branchId') ?? sessionStorage.getItem('branchId');
-      if (cached) {
-        setBranchId(cached);
-        setCtxLoad(false);
-      } else {
-        api.get('/attendance/summary')
-          .then(res => {
-            if (res.data?.branchName) setBranchName(res.data.branchName);
-            // branchId resolved server-side — no need to store it here
-          })
-          .catch(() => { /* non-fatal — submit will still work via JWT */ })
-          .finally(() => setCtxLoad(false));
-      }
+      // Branch manager: GET /branches/my-branch-details returns the manager's own
+      // branch { id, name, address, latitude, longitude } resolved from JWT server-side.
+      api.get('/branches/my-branch-details')
+        .then(res => {
+          const branch = res.data?.data ?? res.data;
+          if (branch?.id)   setBranchId(branch.id);
+          if (branch?.name) setBranchName(branch.name);
+        })
+        .catch(() => toast.error(t('errors.failedLoadBranchInfo')))
+        .finally(() => setCtxLoad(false));
 
     } else {
       // staff: GET /staff/profile/me returns branchId and branch.name
