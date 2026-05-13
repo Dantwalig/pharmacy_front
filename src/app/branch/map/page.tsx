@@ -4,25 +4,19 @@
  * Branch Manager — Localized Map View
  * Route: /branch/map
  *
- * Shows this branch's own location plus all sibling branches
- * from the same pharmacy network. The "Competitors" layer is
- * visually disabled until GET /map/competitors is implemented.
- *
- * APIs:
- *   GET /branches/pharmacy-branches     → sibling branches (same pharmacy)
- *   GET /branches/my-branch-details     → own branch lat/lng (optional)
- *   GET /map/competitors (not yet live) → nearby competitors
+ * APIs used:
+ *   GET /triangulation/manager     → { managerBranch, sisterBranches[] with distance }
+ *   GET /triangulation/competitors → PharmacyLocationDto[] (within 3 km, competitor branches)
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   MapPin, Navigation, GitBranch, RefreshCw,
-  AlertCircle, Building2, Eye, EyeOff, Lock,
+  AlertCircle, Building2, Eye, EyeOff, Users,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
 import type { MapMarker } from '@/components/map/BaseMap';
 
 const NAVY = '#1E4D8C';
@@ -31,44 +25,23 @@ const RED  = '#EF4444';
 
 const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false });
 
-// ── Coming Soon Tooltip wrapper ────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-function ComingSoonTooltip({ children }: { children: React.ReactNode }) {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  return (
-    <div
-      ref={ref}
-      className="relative inline-block"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      onFocus={() => setVisible(true)}
-      onBlur={() => setVisible(false)}
-    >
-      {children}
-      {visible && (
-        <div
-          role="tooltip"
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none"
-        >
-          <div className="bg-gray-900 text-white text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">
-            <div className="flex items-center gap-1.5">
-              <Lock size={10} />
-              Coming Soon — backend endpoint pending
-            </div>
-            {/* Arrow */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function fmtKm(km: number) {
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
-// ── Sibling Branch Card ────────────────────────────────────────────────────
+// ── Sister Branch Card ───────────────────────────────────────────────────────
 
-function SiblingCard({ branch, active, onClick }: { branch: any; active: boolean; onClick: () => void }) {
+function SisterCard({
+  branch,
+  active,
+  onClick,
+}: {
+  branch: any;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
@@ -85,16 +58,68 @@ function SiblingCard({ branch, active, onClick }: { branch: any; active: boolean
         >
           <GitBranch size={14} style={{ color: active ? '#6366F1' : '#9CA3AF' }} />
         </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-gray-900 text-sm truncate">{branch.name}</p>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-gray-900 text-sm truncate">{branch.displayName}</p>
           <p className="text-xs text-gray-400 truncate">{branch.address || '—'}</p>
         </div>
+        {branch.distance != null && (
+          <span
+            className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}
+          >
+            {fmtKm(branch.distance)}
+          </span>
+        )}
       </div>
     </button>
   );
 }
 
-// ── Quick stat pill ────────────────────────────────────────────────────────
+// ── Competitor Card ──────────────────────────────────────────────────────────
+
+function CompetitorCard({
+  branch,
+  active,
+  onClick,
+}: {
+  branch: any;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left rounded-xl p-3.5 border transition-all duration-150"
+      style={{
+        backgroundColor: active ? '#FEF2F2' : '#fff',
+        borderColor:     active ? RED : '#E5E7EB',
+      }}
+    >
+      <div className="flex items-center gap-2.5">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: active ? '#FEE2E2' : '#FFF5F5' }}
+        >
+          <Building2 size={14} style={{ color: active ? RED : '#FCA5A5' }} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-gray-900 text-sm truncate">{branch.name}</p>
+          <p className="text-xs text-gray-400 truncate">{branch.address || '—'}</p>
+        </div>
+        {branch.distance != null && (
+          <span
+            className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: '#FEE2E2', color: '#991B1B' }}
+          >
+            {fmtKm(branch.distance)}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+// ── Quick stat pill ──────────────────────────────────────────────────────────
 
 function StatPill({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
@@ -106,36 +131,39 @@ function StatPill({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BranchMapPage() {
-  const { t }    = useTranslation();
-  const { user } = useAuth();
+  const { t } = useTranslation();
 
-  const [siblings, setSiblings]             = useState<any[]>([]);
-  const [myBranch, setMyBranch]             = useState<any | null>(null);
-  const [loading, setLoading]               = useState(true);
-  const [error, setError]                   = useState(false);
-  const [showSiblings, setShowSiblings]     = useState(true);
-  const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
-  const [activeCard, setActiveCard]         = useState<string | null>(null);
+  const [managerBranch, setManagerBranch]     = useState<any | null>(null);
+  const [sisterBranches, setSisterBranches]   = useState<any[]>([]);
+  const [competitors, setCompetitors]         = useState<any[]>([]);
+  const [loading, setLoading]                 = useState(true);
+  const [error, setError]                     = useState(false);
+  const [showSisters, setShowSisters]         = useState(true);
+  const [showCompetitors, setShowCompetitors] = useState(false);
+  const [selectedMarker, setSelectedMarker]   = useState<MapMarker | null>(null);
+  const [activeCard, setActiveCard]           = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
     setError(false);
     try {
-      const [sibRes, branchRes] = await Promise.allSettled([
-        api.get('/branches/pharmacy-branches'),
-        api.get('/branches/my-branch-details'),
+      const [triRes, compRes] = await Promise.allSettled([
+        api.get('/triangulation/manager'),
+        api.get('/triangulation/competitors'),
       ]);
 
-      if (sibRes.status === 'fulfilled') {
-        const data = sibRes.value.data?.data ?? sibRes.value.data ?? [];
-        setSiblings(Array.isArray(data) ? data : []);
+      if (triRes.status === 'fulfilled') {
+        const data = triRes.value.data;
+        setManagerBranch(data?.managerBranch ?? null);
+        setSisterBranches(Array.isArray(data?.sisterBranches) ? data.sisterBranches : []);
       }
 
-      if (branchRes.status === 'fulfilled') {
-        setMyBranch(branchRes.value.data?.data ?? branchRes.value.data);
+      if (compRes.status === 'fulfilled') {
+        const data = compRes.value.data;
+        setCompetitors(Array.isArray(data) ? data : []);
       }
     } catch {
       setError(true);
@@ -146,39 +174,66 @@ export default function BranchMapPage() {
 
   useEffect(() => { load(); }, []);
 
-  // ── Build markers ────────────────────────────────────────────────────────
+  // ── Build markers ──────────────────────────────────────────────────────────
+
   const markers: MapMarker[] = [];
 
-  if (myBranch?.latitude != null) {
+  if (managerBranch?.latitude != null) {
     markers.push({
-      id:       myBranch.id ?? 'my-branch',
-      lat:      myBranch.latitude,
-      lng:      myBranch.longitude,
-      label:    myBranch.name ?? 'My Branch',
-      sublabel: myBranch.address,
+      id:       managerBranch.id ?? 'my-branch',
+      lat:      managerBranch.latitude,
+      lng:      managerBranch.longitude,
+      label:    managerBranch.displayName ?? managerBranch.name ?? 'My Branch',
+      sublabel: managerBranch.address,
       type:     'own',
-      status:   'My Location',
+      status:   'My Branch',
     });
   }
 
-  if (showSiblings) {
-    siblings
+  if (showSisters) {
+    sisterBranches
       .filter(b => b.latitude != null && b.longitude != null)
       .forEach(b =>
         markers.push({
           id:       b.id,
           lat:      b.latitude,
           lng:      b.longitude,
-          label:    b.name,
+          label:    b.displayName ?? b.name,
           sublabel: b.address,
           type:     'sibling',
-          status:   'Network Branch',
+          status:   b.distance != null ? `Sister · ${fmtKm(b.distance)}` : 'Sister Branch',
+          meta:     { distance: b.distance },
         })
       );
   }
 
-  const siblingsWithCoords = siblings.filter(b => b.latitude != null);
-  const siblingsNoCoords   = siblings.filter(b => b.latitude == null);
+  if (showCompetitors) {
+    competitors
+      .filter(c => c.latitude != null && c.longitude != null)
+      .forEach(c =>
+        markers.push({
+          id:       c.id,
+          lat:      c.latitude,
+          lng:      c.longitude,
+          label:    c.name,
+          sublabel: c.address,
+          type:     'competitor',
+          status:   c.distance != null ? `Competitor · ${fmtKm(c.distance)}` : 'Competitor',
+          meta:     { distance: c.distance, phone: c.phone, hours: c.hours },
+        })
+      );
+  }
+
+  // ── Derived counts ─────────────────────────────────────────────────────────
+
+  const sistersWithCoords    = sisterBranches.filter(b => b.latitude != null);
+  const sistersNoCoords      = sisterBranches.filter(b => b.latitude == null);
+  const competitorsWithCoords = competitors.filter(c => c.latitude != null);
+
+  // ── Triangulation: draw lines from managerBranch → each sister (star pattern) ──
+  // We pass triangulate=true only when own + sisters are shown; BaseMap draws mesh.
+  // The "star" feel comes naturally since managerBranch is always marker[0].
+  const doTriangulate = showSisters && sistersWithCoords.length > 0 && managerBranch?.latitude != null;
 
   return (
     <div className="space-y-5">
@@ -194,7 +249,9 @@ export default function BranchMapPage() {
             <p className="text-white/70 text-sm font-medium">Branch Location</p>
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold">Network Map</h1>
-          <p className="mt-1 text-white/60 text-sm">Your branch and nearby network locations</p>
+          <p className="mt-1 text-white/60 text-sm">
+            Your branch, sister branches, and nearby competitors
+          </p>
         </div>
         <button
           onClick={load}
@@ -207,8 +264,9 @@ export default function BranchMapPage() {
 
       {/* Stats */}
       <div className="flex flex-wrap gap-2">
-        <StatPill label="Sibling branches" value={siblings.length}          color="#6366F1" />
-        <StatPill label="On map"           value={siblingsWithCoords.length} color={TEAL}   />
+        <StatPill label="Sister branches"  value={sisterBranches.length}      color="#6366F1" />
+        <StatPill label="On map"           value={sistersWithCoords.length}    color={TEAL}    />
+        <StatPill label="Competitors nearby" value={competitorsWithCoords.length} color={RED}  />
       </div>
 
       {error ? (
@@ -231,42 +289,42 @@ export default function BranchMapPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">Layers</span>
 
-              {/* Sibling branches — fully functional */}
+              {/* Sister branches */}
               <button
-                onClick={() => setShowSiblings(v => !v)}
+                onClick={() => setShowSisters(v => !v)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
                 style={
-                  showSiblings
+                  showSisters
                     ? { backgroundColor: '#EEF2FF', borderColor: '#6366F1', color: '#6366F1' }
                     : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
                 }
               >
-                {showSiblings ? <Eye size={12} /> : <EyeOff size={12} />}
-                Sibling Branches
+                {showSisters ? <Eye size={12} /> : <EyeOff size={12} />}
+                Sister Branches
               </button>
 
-              {/* Competitors — DISABLED until GET /map/competitors is live */}
-              <ComingSoonTooltip>
-                <button
-                  disabled
-                  aria-disabled="true"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium cursor-not-allowed select-none"
-                  style={{
-                    backgroundColor: '#F9FAFB',
-                    borderColor:     '#E5E7EB',
-                    color:           '#D1D5DB',
-                  }}
-                >
-                  <Lock size={11} className="text-gray-300" />
-                  Competitors
+              {/* Competitors — now live */}
+              <button
+                onClick={() => setShowCompetitors(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
+                style={
+                  showCompetitors
+                    ? { backgroundColor: '#FEF2F2', borderColor: RED, color: RED }
+                    : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
+                }
+              >
+                {showCompetitors ? <Eye size={12} /> : <EyeOff size={12} />}
+                <Users size={12} />
+                Competitors
+                {competitorsWithCoords.length > 0 && (
                   <span
                     className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
-                    style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
+                    style={{ backgroundColor: '#FEE2E2', color: '#991B1B' }}
                   >
-                    Soon
+                    {competitorsWithCoords.length}
                   </span>
-                </button>
-              </ComingSoonTooltip>
+                )}
+              </button>
             </div>
 
             {/* Map canvas */}
@@ -280,13 +338,13 @@ export default function BranchMapPage() {
                 <MapPin size={32} className="text-gray-200" />
                 <p className="text-sm text-gray-400">No location data available.</p>
                 <p className="text-xs text-gray-300 text-center max-w-xs">
-                  Ask your Pharmacy Owner to add coordinates to this branch and sibling branches.
+                  Ask your Pharmacy Owner to add coordinates to this branch.
                 </p>
               </div>
             ) : (
               <BaseMap
                 markers={markers}
-                triangulate={showSiblings && siblingsWithCoords.length > 0}
+                triangulate={doTriangulate}
                 height="480px"
                 onMarkerClick={m => {
                   setSelectedMarker(m);
@@ -301,7 +359,7 @@ export default function BranchMapPage() {
           <div className="space-y-4">
 
             {/* My branch info */}
-            {myBranch && (
+            {managerBranch && (
               <div
                 className="rounded-2xl border p-4 space-y-3"
                 style={{ borderColor: TEAL, backgroundColor: '#F0FAFA' }}
@@ -314,20 +372,20 @@ export default function BranchMapPage() {
                     <Navigation size={14} className="text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-sm">{myBranch.name}</p>
+                    <p className="font-bold text-gray-900 text-sm">{managerBranch.displayName ?? managerBranch.name}</p>
                     <p className="text-xs text-gray-400">My Branch</p>
                   </div>
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <div className="flex gap-2">
                     <span className="text-gray-400 w-14 shrink-0">Address</span>
-                    <span className="text-gray-700 font-medium">{myBranch.address || '—'}</span>
+                    <span className="text-gray-700 font-medium">{managerBranch.address || '—'}</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-gray-400 w-14 shrink-0">Coords</span>
                     <span className="font-mono text-[11px] text-gray-500">
-                      {myBranch.latitude != null
-                        ? `${myBranch.latitude.toFixed(4)}, ${myBranch.longitude.toFixed(4)}`
+                      {managerBranch.latitude != null
+                        ? `${managerBranch.latitude.toFixed(4)}, ${managerBranch.longitude.toFixed(4)}`
                         : <span className="text-amber-500">Not set</span>
                       }
                     </span>
@@ -336,21 +394,21 @@ export default function BranchMapPage() {
               </div>
             )}
 
-            {/* Sibling list */}
+            {/* Sister branches list */}
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Network Branches ({siblings.length})
+                Sister Branches ({sisterBranches.length})
               </p>
-              <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: '300px' }}>
+              <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: '240px' }}>
                 {loading ? (
                   [...Array(3)].map((_, i) => (
                     <div key={i} className="h-16 rounded-xl bg-gray-100 animate-pulse" />
                   ))
-                ) : siblings.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-6">No sibling branches found.</p>
+                ) : sisterBranches.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-6">No sister branches found.</p>
                 ) : (
-                  siblings.map(b => (
-                    <SiblingCard
+                  sisterBranches.map(b => (
+                    <SisterCard
                       key={b.id}
                       branch={b}
                       active={activeCard === b.id}
@@ -361,17 +419,42 @@ export default function BranchMapPage() {
               </div>
             </div>
 
+            {/* Competitors list (only shown when layer is on) */}
+            {showCompetitors && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  Nearby Competitors ({competitors.length})
+                </p>
+                <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: '200px' }}>
+                  {competitors.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-4">
+                      No competitor branches within 3 km.
+                    </p>
+                  ) : (
+                    competitors.map(c => (
+                      <CompetitorCard
+                        key={c.id}
+                        branch={c}
+                        active={activeCard === c.id}
+                        onClick={() => setActiveCard(prev => prev === c.id ? null : c.id)}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Missing coords warning */}
-            {siblingsNoCoords.length > 0 && (
+            {sistersNoCoords.length > 0 && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs font-semibold text-amber-700">
-                      {siblingsNoCoords.length} branch{siblingsNoCoords.length > 1 ? 'es' : ''} missing coordinates
+                      {sistersNoCoords.length} branch{sistersNoCoords.length > 1 ? 'es' : ''} missing coordinates
                     </p>
                     <p className="text-xs text-amber-600 mt-0.5">
-                      {siblingsNoCoords.map(b => b.name).join(', ')} — ask the pharmacy owner to update them.
+                      {sistersNoCoords.map(b => b.displayName ?? b.name).join(', ')} — ask the pharmacy owner to update them.
                     </p>
                   </div>
                 </div>
@@ -384,44 +467,42 @@ export default function BranchMapPage() {
                 <div className="flex items-center gap-2">
                   <Building2
                     size={14}
-                    style={{ color: selectedMarker.type === 'competitor' ? RED : selectedMarker.type === 'sibling' ? '#6366F1' : TEAL }}
+                    style={{
+                      color: selectedMarker.type === 'competitor' ? RED
+                           : selectedMarker.type === 'sibling'    ? '#6366F1'
+                           : TEAL,
+                    }}
                   />
                   <p className="font-bold text-gray-900 text-sm">{selectedMarker.label}</p>
                 </div>
                 {selectedMarker.sublabel && (
                   <p className="text-xs text-gray-500">{selectedMarker.sublabel}</p>
                 )}
-                <span
-                  className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                  style={
-                    selectedMarker.type === 'competitor'
-                      ? { backgroundColor: '#FEE2E2', color: '#991B1B' }
-                      : selectedMarker.type === 'sibling'
-                      ? { backgroundColor: '#EEF2FF', color: '#4338CA' }
-                      : { backgroundColor: `${TEAL}22`, color: TEAL }
-                  }
-                >
-                  {selectedMarker.status}
-                </span>
-                <p className="text-[11px] font-mono text-gray-400">
+                <div className="flex flex-wrap gap-2">
+                  <span
+                    className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                    style={
+                      selectedMarker.type === 'competitor'
+                        ? { backgroundColor: '#FEE2E2', color: '#991B1B' }
+                        : selectedMarker.type === 'sibling'
+                        ? { backgroundColor: '#EEF2FF', color: '#4338CA' }
+                        : { backgroundColor: `${TEAL}22`, color: TEAL }
+                    }
+                  >
+                    {selectedMarker.status}
+                  </span>
+                </div>
+                {selectedMarker.meta?.hours && (
+                  <p className="text-[11px] text-gray-400">Hours: {selectedMarker.meta.hours}</p>
+                )}
+                {selectedMarker.meta?.phone && (
+                  <p className="text-[11px] text-gray-400">Phone: {selectedMarker.meta.phone}</p>
+                )}
+                <p className="text-[11px] font-mono text-gray-300">
                   {selectedMarker.lat.toFixed(5)}, {selectedMarker.lng.toFixed(5)}
                 </p>
               </div>
             )}
-
-            {/* Competitors pending notice */}
-            <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-              <div className="flex items-start gap-2">
-                <Lock size={13} className="text-gray-300 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-500">Competitor layer coming soon</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    The nearby competitor map requires a backend endpoint that is currently being built.
-                    It will activate automatically once deployed.
-                  </p>
-                </div>
-              </div>
-            </div>
 
           </div>
         </div>
