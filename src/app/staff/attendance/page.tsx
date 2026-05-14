@@ -51,8 +51,8 @@ export default function StaffAttendancePage() {
       setRecords(res.data);
       const hours = res.data.reduce((sum: number, r: AttendanceRecord) => sum + (r.totalHours || 0), 0);
       setTotalHours(hours);
-    } catch (error) {
-      console.error('Failed to load attendance:', error);
+    } catch {
+      // Records stay empty on failure
     } finally {
       setLoading(false);
     }

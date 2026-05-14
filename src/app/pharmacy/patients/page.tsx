@@ -145,8 +145,7 @@ export default function PharmacyPatientsPage() {
       
       setPatients(enhancedPatients);
       setTotalPatients(totalCount);
-    } catch (error) {
-      console.error('Failed to fetch patients:', error);
+    } catch {
       toast.error('Unable to load patients data. Using sample data.');
       const mockPatients = [
         {

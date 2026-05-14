@@ -49,8 +49,8 @@ export default function BranchAttendancePage() {
     try {
       const res = await api.get('/attendance/branch'); // GET /attendance/branch
       setRecords(res.data);
-    } catch (error) {
-      console.error('Failed to load attendance:', error);
+    } catch {
+      // Records stay empty on failure
     } finally {
       setLoading(false);
     }

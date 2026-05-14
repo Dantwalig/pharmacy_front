@@ -140,7 +140,7 @@ export default function PharmacyAnalyticsPage() {
         setAnalytics(aRes.data?.data ?? aRes.data);
         setStats(sRes.data?.data ?? sRes.data);
       })
-      .catch(err => { if (err?.code !== 'ERR_CANCELED') console.error(err); })
+      .catch(() => {})
       .finally(() => setLoading(false));
     return () => ctrl.abort();
   }, []);

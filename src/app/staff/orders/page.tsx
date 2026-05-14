@@ -59,8 +59,7 @@ export default function StaffOrdersPage() {
     try {
       const res = await api.get('/orders/pharmacy-orders'); // GET /orders/pharmacy-orders
       setOrders(unwrapData(res.data));
-    } catch (error) {
-      console.error('Failed to load orders:', error);
+    } catch {
       toast.error(t('errors.failedToLoadOrders'));
     } finally {
       setLoading(false);

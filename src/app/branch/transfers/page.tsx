@@ -128,7 +128,6 @@ export default function BranchTransfersPage() {
       } else {
         // Unexpected error (500, network) — show unavailable rather than a crash
         setBackendState('unavailable');
-        console.error('Transfers fetch error:', err);
       }
     }
   };

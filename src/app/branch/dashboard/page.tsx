@@ -60,8 +60,8 @@ export default function BranchDashboardPage() {
       setPendingClockIns(clockInsRes.data);
       setPendingClockOuts(clockOutsRes.data);
       setStaffCount(Array.isArray(staffRes.data) ? staffRes.data.length : 0);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
+    } catch {
+      // Dashboard shows empty state on failure
     } finally {
       setLoading(false);
     }

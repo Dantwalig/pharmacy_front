@@ -101,8 +101,8 @@ export default function StaffDashboardPage() {
         });
 
         setRecentActivities(mappedActivities);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
+    } catch {
+      // Dashboard shows empty state on failure
     } finally {
       setLoading(false);
     }

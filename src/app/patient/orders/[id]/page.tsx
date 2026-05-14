@@ -60,8 +60,7 @@ export default function OrderDetailsPage() {
     try {
       const res = await api.get(`/orders/${params.id}`);
       setOrder(res.data);
-    } catch (error) {
-      console.error('Failed to fetch order:', error);
+    } catch {
       toast.error(t('errors.failedToLoadOrder'));
     } finally {
       setLoading(false);

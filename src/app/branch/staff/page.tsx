@@ -53,8 +53,8 @@ export default function BranchStaffPage() {
     try {
       const res = await api.get('/staff'); // GET /staff
       setStaff(res.data);
-    } catch (error) {
-      console.error('Failed to load staff:', error);
+    } catch {
+      // Staff list stays empty on failure
     } finally {
       setLoading(false);
     }

@@ -56,7 +56,7 @@ export default function BranchAnalyticsPage() {
         setOrders(Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? []);
         setAttendanceSummary(attRes.data);
       })
-      .catch(err => { if (err?.code !== 'ERR_CANCELED') console.error(err); })
+      .catch(() => {})
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);

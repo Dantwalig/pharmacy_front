@@ -72,8 +72,8 @@ export default function PharmacyRejectedPage() {
         rdbCertificate: res.data.rdbCertificate || '',
         pharmacyLicense: res.data.pharmacyLicense || '',
       });
-    } catch (error) {
-      console.error('Failed to load pharmacy data:', error);
+    } catch {
+      // Form stays with default empty values
     }
   };
 
