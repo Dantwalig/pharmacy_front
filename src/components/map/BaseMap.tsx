@@ -18,6 +18,8 @@ export interface MapMarker {
 interface BaseMapProps {
   markers: MapMarker[];
   triangulate?: boolean;
+  heatmapPoints?: [number, number, number][]; // [lat, lng, intensity]
+  routes?: { points: [number, number][], color?: string, weight?: number, dashed?: boolean }[];
   centerLat?: number;
   centerLng?: number;
   zoom?: number;
@@ -60,7 +62,21 @@ function loadLeaflet(): Promise<void> {
 
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => { window._leafletLoaded = true; resolve(); };
+    script.onload = () => {
+      // Load Leaflet Heat plugin
+      const heatScript = document.createElement('script');
+      heatScript.src = 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+      heatScript.onload = () => {
+        window._leafletLoaded = true;
+        resolve();
+      };
+      heatScript.onerror = () => {
+        // Fallback resolve even if heat plugin fails
+        window._leafletLoaded = true;
+        resolve();
+      };
+      document.head.appendChild(heatScript);
+    };
     script.onerror = () => reject(new Error('Failed to load Leaflet'));
     document.head.appendChild(script);
   });
@@ -83,7 +99,9 @@ function buildDivMarkerHtml(color: string): string {
         position:absolute;top:50%;left:50%;
         transform:translate(-50%,-60%);
         width:${size * 0.35}px;height:${size * 0.35}px;
-        background:white;border-radius:50%;opacity:0.9;
+        background:#fff;
+        border-radius:50%;
+        box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
       "></div>
     </div>
   `;
@@ -92,6 +110,8 @@ function buildDivMarkerHtml(color: string): string {
 export default function BaseMap({
   markers,
   triangulate = false,
+  heatmapPoints,
+  routes,
   centerLat,
   centerLng,
   zoom = 13,
@@ -103,9 +123,12 @@ export default function BaseMap({
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const polylinesRef = useRef<any[]>([]);
+  const heatmapLayerRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [popupMarker, setPopupMarker] = useState<MapMarker | null>(null);
+
+  const validCoord = (v: any) => typeof v === 'number' && isFinite(v);
 
   // Load Leaflet + init map
   useEffect(() => {
@@ -118,12 +141,13 @@ export default function BaseMap({
         const L = window.L;
         if (mapRef.current) return;
 
-        const validMarkers = markers.filter(m => typeof m.lat === 'number' && typeof m.lng === 'number');
+        const validMarkers = markers.filter(m => validCoord(m.lat) && validCoord(m.lng));
         const lat = centerLat ?? validMarkers[0]?.lat ?? -1.9441;
         const lng = centerLng ?? validMarkers[0]?.lng ?? 30.0619;
 
         const map = L.map(containerRef.current!, { center: [lat, lng], zoom, zoomControl: false });
 
+        // Tile layer — Standard OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
           maxZoom: 19,
@@ -154,14 +178,18 @@ export default function BaseMap({
     const L = window.L;
     const map = mapRef.current;
 
-    const validCoord = (v: any) => typeof v === 'number' && isFinite(v);
-
     const draw = () => {
+      // Clear existing
       markersRef.current.forEach(m => m.remove());
       polylinesRef.current.forEach(p => p.remove());
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
       markersRef.current = [];
       polylinesRef.current = [];
+      heatmapLayerRef.current = null;
 
+      // Add markers
       markers.forEach((m) => {
         if (!validCoord(m.lat) || !validCoord(m.lng)) return;
 
@@ -183,6 +211,7 @@ export default function BaseMap({
         markersRef.current.push(leafletMarker);
       });
 
+      // Triangulation lines
       if (triangulate && markers.length >= 2) {
         const valid = markers.filter(m => validCoord(m.lat) && validCoord(m.lng));
         for (let i = 0; i < valid.length; i++) {
@@ -198,6 +227,30 @@ export default function BaseMap({
         }
       }
 
+      // Custom Routes
+      if (routes && routes.length > 0) {
+        routes.forEach(r => {
+          const line = L.polyline(r.points, {
+            color: r.color ?? NAVY,
+            weight: r.weight ?? 3,
+            opacity: 0.8,
+            dashArray: r.dashed ? '8 8' : undefined,
+          }).addTo(map);
+          polylinesRef.current.push(line);
+        });
+      }
+
+      // Heatmap Layer
+      if (heatmapPoints && heatmapPoints.length > 0 && L.heatLayer) {
+        heatmapLayerRef.current = L.heatLayer(heatmapPoints, {
+          radius: 25,
+          blur: 15,
+          maxZoom: 14,
+          gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
+        }).addTo(map);
+      }
+
+      // Fit bounds to all markers safely
       const plotted = markers.filter(m => validCoord(m.lat) && validCoord(m.lng));
       if (plotted.length > 1) {
         try {
@@ -212,7 +265,7 @@ export default function BaseMap({
     map.invalidateSize();
     const t = setTimeout(draw, 50);
     return () => clearTimeout(t);
-  }, [ready, markers, triangulate]);
+  }, [ready, markers, triangulate, heatmapPoints, routes, zoom]);
 
   const validMarkers = markers.filter(
     m => typeof m.lat === 'number' && isFinite(m.lat) && typeof m.lng === 'number' && isFinite(m.lng)
