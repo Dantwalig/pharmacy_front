@@ -2,10 +2,12 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { 
   UserGroupIcon,
@@ -40,27 +42,33 @@ interface Patient {
 export default function PharmacyPatientsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [totalPatients, setTotalPatients] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  useEffect(() => {
-    fetchPatients();
-  }, []);
+  const fetchPatientsData = useCallback(
+    async (signal: AbortSignal) => {
+      const res = await api.get('/pharmacies/dashboard/patients', { signal });
+      return {
+        patients: res.data.patients,
+        totalPatients: res.data.totalPatients,
+      };
+    },
+    []
+  );
 
-  const fetchPatients = async () => {
-    try {
-      const res = await api.get('/pharmacies/dashboard/patients');
-      setPatients(res.data.patients);
-      setTotalPatients(res.data.totalPatients);
-    } catch (error) {
-      console.error('Failed to fetch patients:', error);
-    } finally {
-      setLoading(false);
+  const { data, loading, error } = useFetch<{
+    patients: Patient[];
+    totalPatients: number;
+  }>(fetchPatientsData, []);
+
+  const patients = data?.patients ?? [];
+  const totalPatients = data?.totalPatients ?? 0;
+
+  useEffect(() => {
+    if (error) {
+      toast.error(t('errors.failedToLoadPatients'));
     }
-  };
+  }, [error, t]);
 
   const filteredPatients = patients.filter(patient =>
   `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
