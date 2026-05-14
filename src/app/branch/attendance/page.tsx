@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -71,8 +72,8 @@ export default function BranchAttendancePage() {
       await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
       toast.success(isReject ? t('attendance.rejected') : t('attendance.approved'));
       await fetchAttendance(); // Refresh
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('attendance.actionFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
