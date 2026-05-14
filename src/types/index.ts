@@ -188,6 +188,7 @@ export interface PharmacyProfile {
   name: string;
   representativeName?: string;
   ownerName?: string;
+  email?: string;
   phone?: string;
   address?: string;
   dateOfIncorporation?: string;

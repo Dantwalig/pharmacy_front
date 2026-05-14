@@ -8,9 +8,6 @@ import api from '@/lib/api';
 import type { Order } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
-import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 
 const STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
@@ -26,12 +23,12 @@ function getNextAction(status: string, type: string, t: (k: string) => string): 
   const labels: Record<string, { label: string; color: string }> = {
     ACCEPTED:         { label: t('pharmacyOwner.acceptOrder'),         color: 'bg-green-500 hover:bg-green-600' },
     PREPARING:        { label: t('pharmacyOwner.startPreparing'),      color: 'bg-blue-500 hover:bg-blue-600' },
-    READY_FOR_PICKUP: { label: t('pharmacyOwner.markReadyForPickup'),  color: 'bg-teal-500 hover:bg-teal-600' },
+    READY_FOR_PICKUP: { label: t('pharmacyOwner.markReadyForPickup'),  color: 'bg-blue-600 hover:bg-blue-700' },
     OUT_FOR_DELIVERY: { label: t('pharmacyOwner.dispatchForDelivery'), color: 'bg-purple-500 hover:bg-purple-600' },
     COMPLETED:        { label: t('pharmacyOwner.markCompleted'),       color: 'bg-green-600 hover:bg-green-700' },
     DELIVERED:        { label: t('pharmacyOwner.markDelivered'),       color: 'bg-green-600 hover:bg-green-700' },
   };
-  return { label: labels[next]?.label || `→ ${next}`, status: next, color: labels[next]?.color || 'bg-teal-500' };
+  return { label: labels[next]?.label || `→ ${next}`, status: next, color: labels[next]?.color || 'bg-blue-600' };
 }
 
 const statusColor: Record<string, string> = {
@@ -88,13 +85,10 @@ export default function PharmacyOrderDetailPage() {
   };
 
   if (loading) return (
-    <div className="flex min-h-screen bg-gray-50">
-    <PharmacySidebar /><SupportBot />
-    <div className="flex-1 flex flex-col lg:ml-72"><PharmacyTopbar />
-      <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
+    <div className="flex flex-1 items-center justify-center py-24">
+      <LoadingSpinner />
     </div>
-  </div>
-);
+  );
 
   if (!order) return null;
 
@@ -103,13 +97,8 @@ export default function PharmacyOrderDetailPage() {
   const currentIdx = flow.indexOf(order.status);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-    <PharmacySidebar /><SupportBot />
-    <div className="flex-1 flex flex-col lg:ml-72">
-      <PharmacyTopbar />
-      <main className="flex-1 p-4 lg:p-8 overflow-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
-
+    <>
+    <div className="max-w-4xl mx-auto space-y-6">
           <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
             <ArrowLeftIcon className="w-4 h-4" /> Back to Orders
             </button>
@@ -231,7 +220,7 @@ export default function PharmacyOrderDetailPage() {
                       </td>
                     <td className="py-2.5 text-center text-gray-700">{item.quantity}</td>
                     <td className="py-2.5 text-right text-gray-700">{Number(item.unitPrice || item.price).toLocaleString()} RWF</td>
-                    <td className="py-2.5 text-right font-semibold text-teal-600">{(Number(item.unitPrice || item.price) * item.quantity).toLocaleString()} RWF</td>
+                    <td className="py-2.5 text-right font-semibold text-blue-600">{(Number(item.unitPrice || item.price) * item.quantity).toLocaleString()} RWF</td>
                   </tr>
                 ))}
                 </tbody>
@@ -239,31 +228,29 @@ export default function PharmacyOrderDetailPage() {
             <div className="mt-4 pt-3 border-t border-gray-200 space-y-1 text-sm">
               <div className="flex justify-between text-gray-600"><span>{t('orders2.subtotal')}</span><span>{Number(order.subtotal || 0).toLocaleString()} RWF</span></div>
               {(order.deliveryFee ?? 0) > 0 && <div className="flex justify-between text-gray-600"><span>{t('orders2.deliveryFee')}</span><span>{Number(order.deliveryFee ?? 0).toLocaleString()} RWF</span></div>}
-                <div className="flex justify-between font-bold text-base border-t pt-2"><span>{t('cart.total')}</span><span className="text-teal-600">{Number(order.total || 0).toLocaleString()} RWF</span></div>
+                <div className="flex justify-between font-bold text-base border-t pt-2"><span>{t('cart.total')}</span><span className="text-blue-600">{Number(order.total || 0).toLocaleString()} RWF</span></div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
 
     {/* Reject Modal */}
-      {showReject && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    {showReject && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
           <h3 className="text-lg font-bold text-gray-900 mb-3">{t('orders2.rejectOrder')}</h3>
           <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={4}
-              placeholder={t('checkout2.rejectReasonPlaceholder')}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" />
+            placeholder={t('checkout2.rejectReasonPlaceholder')}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" />
           <div className="flex gap-3 mt-4">
             <button onClick={() => setShowReject(false)} className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium">{t('common.cancel')}</button>
             <button onClick={handleReject} disabled={actionLoading || !rejectReason.trim()}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
               Confirm Rejection
-              </button>
+            </button>
           </div>
         </div>
       </div>
     )}
-    </div>
+    </>
 );
 }
