@@ -2,6 +2,7 @@
 
 'use client';
 
+import {useFetch} from '@/hooks/useFetch';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -31,29 +32,34 @@ interface Notification {
 export default function PharmacyNotificationsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'ORDERS' | 'INVENTORY' | 'OTHER'>('ALL');
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get('/notifications?userType=pharmacy');
-      setNotifications(res.data);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    } finally {
-      setLoading(false);
+  const { data, loading, error } = useFetch<Notification[]>(
+    async (signal) => {
+      const res = await api.get('/notifications?userType=pharmacy', { signal });
+      return res.data;
+    },
+    []
+  );
+
+  const notifications = data ?? [];
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    setLocalNotifications(notifications);
+  }, [notifications]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(t('errors.failedToLoadNotifications') || 'Failed to load notifications');
     }
-  };
+  }, [error, t]);
 
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => 
+      setLocalNotifications(localNotifications.map(n => 
       n.id === id ? { ...n, isRead: true } : n
       ));
     } catch (error) {
@@ -64,7 +70,7 @@ export default function PharmacyNotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await api.put('/notifications/read-all?userType=pharmacy');
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      setLocalNotifications(localNotifications.map(n => ({ ...n, isRead: true })));
       toast.success(t('success.allNotificationsRead'));
     } catch (error) {
       toast.error(t('success.notificationsReadFailed'));
