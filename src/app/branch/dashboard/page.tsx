@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   UserGroupIcon,
@@ -74,8 +75,8 @@ export default function BranchDashboardPage() {
       toast.success(t('success.clockInApproved'));
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, pending: prev.pending - 1, approved: prev.approved + 1 } : prev);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -85,8 +86,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockInRejected'));
       setPendingClockIns(prev => prev.filter(r => r.id !== id));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -97,8 +98,8 @@ export default function BranchDashboardPage() {
       toast.success(t('success.clockOutApproved'));
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
       setSummary(prev => prev ? { ...prev, completed: prev.completed + 1 } : prev);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -108,8 +109,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockOutRejected'));
       setPendingClockOuts(prev => prev.filter(r => r.id !== id));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 

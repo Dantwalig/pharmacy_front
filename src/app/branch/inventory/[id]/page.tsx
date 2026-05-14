@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
@@ -71,12 +72,12 @@ export default function BranchEditMedicationPage() {
       });
       toast.success(t('success.medicationUpdated'));
       router.push('/branch/inventory');
-    } catch (err: any) {
-      if (err?.response?.status === 403) {
+    } catch (error: unknown) {
+      if ((error as any)?.response?.status === 403) {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabled'));
       } else {
-        toast.error(err.response?.data?.message || t('errors.failedToLoad'));
+        toast.error(getErrorMessage(error));
       }
     } finally {
       setSaving(false);

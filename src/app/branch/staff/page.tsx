@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   UserGroupIcon,
@@ -66,8 +67,8 @@ export default function BranchStaffPage() {
     try {
       await api.post(`/staff/${staffId}/resend-credentials`); // POST /staff/:id/resend-credentials
       toast.success(`Credentials resent to ${email}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staffMgmt.failedToResend'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -80,8 +81,8 @@ export default function BranchStaffPage() {
       await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
       setStaff(prev => prev.filter(s => s.id !== staffId));
       toast.success(t('success.staffMemberRemoved'));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('branch.failedToDeleteStaff'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }

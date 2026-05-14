@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { getErrorMessage } from '@/lib/errorHandler';
 import {
   ArrowLeftIcon,
   UserCircleIcon,
@@ -96,8 +97,8 @@ export default function StaffDetailPage() {
       await api.delete(`/staff/${staffId}`);
       toast.success(`${name} has been removed`);
       router.push('/branch/staff');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staffMgmt.failedToRemove'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setDeactivating(false); }
   };
 

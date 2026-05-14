@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { FDA_CATEGORIES } from '@/lib/constants';
 import {
   MagnifyingGlassIcon,
@@ -45,8 +46,8 @@ export default function BranchInventoryPage() {
       const res = await api.get('/medications/pharmacy/my-medications');
       setMedications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
       setBackendReady(true);
-    } catch (err: any) {
-      if (err?.response?.status === 403) {
+    } catch (error: unknown) {
+      if ((error as any)?.response?.status === 403) {
         setBackendReady(false);
       } else {
         toast.error(t('errors.failedToLoadMedication'));

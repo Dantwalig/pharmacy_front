@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const PERM_GROUP_KEY: Record<string, string> = {
@@ -109,8 +110,8 @@ export default function NewStaffPage() {
       });
       toast.success(t('success.staffCredentialsSent'));
       router.push('/branch/staff');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staffMgmt.failedToCreate'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

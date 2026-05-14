@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { CloudArrowUpIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 import { BranchStatus } from '@/types';
@@ -48,8 +49,8 @@ export default function BranchPendingApprovalPage() {
 
       toast.success(t('success.licenseUploaded'));
       setBranchStatus('PENDING');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('pendingApproval.uploadFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setUploading(false);
     }

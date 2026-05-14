@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapData } from '@/lib/api';// This is a placeholder import. The backend team needs to create the necessary endpoints for stock transfers as described in the comments below.
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ArrowsRightLeftIcon,
@@ -119,8 +120,8 @@ export default function BranchTransfersPage() {
       const res = await api.get('/stock-transfers/branch');
       setTransfers(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
       setBackendState('ready');
-    } catch (err: any) {
-      const status = err?.response?.status;
+    } catch (error: unknown) {
+      const status = (error as any)?.response?.status;
       // 404 → endpoint doesn't exist yet; 403 → role not wired yet
       // Both mean the backend feature isn't deployed — show the unavailable state
       if (status === 404 || status === 403) {
@@ -168,12 +169,12 @@ export default function BranchTransfersPage() {
       setShowForm(false);
       setForm({ toBranchId: '', notes: '', items: [{ medicationId: '', quantity: '' }] });
       fetchTransfers();
-    } catch (err: any) {
-      const status = err?.response?.status;
+    } catch (error: unknown) {
+      const status = (error as any)?.response?.status;
       if (status === 404 || status === 403) {
         setBackendState('unavailable');
       } else {
-        toast.error(err.response?.data?.message || t('transfers.failedToSubmit'));
+        toast.error(getErrorMessage(error));
       }
     } finally {
       setSubmitting(false);
