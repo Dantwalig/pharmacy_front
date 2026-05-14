@@ -61,7 +61,9 @@ export default function SearchMedications() {
         <div className="flex-1 relative">
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
+              id="searchMedications"
               type="text"
+              aria-label={t("Search Medications")}
               placeholder={t('medications.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

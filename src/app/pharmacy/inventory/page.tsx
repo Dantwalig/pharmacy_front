@@ -9,39 +9,8 @@ import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { MagnifyingGlassIcon, PlusIcon, PencilIcon, ArrowUpTrayIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { FDA_CATEGORIES } from '@/lib/constants';
 
-const FDA_CATEGORIES = [
-  'All Categories',
-  'Analgesics & Antipyretics',
-  'Antibiotics & Antimicrobials',
-  'Antifungals',
-  'Antivirals & Antiretrovirals',
-  'Antimalaria',
-  'Antituberculosis',
-  'Antiparasitics & Anthelmintics',
-  'Cardiovascular & Antihypertensives',
-  'Antidiabetics',
-  'Gastrointestinal',
-  'Respiratory & Bronchodilators',
-  'Central Nervous System',
-  'Vitamins, Minerals & Supplements',
-  'Dermatologicals',
-  'Ophthalmologicals',
-  'ENT (Ear, Nose & Throat)',
-  'Hormones & Endocrine',
-  'Vaccines & Biologicals',
-  'Oncologicals',
-  'Immunosuppressants',
-  'Contraceptives',
-  'Haematologicals',
-  'Musculoskeletal & Anti-inflammatories',
-  'Urological',
-  'Psychiatric & Psychotropic',
-  'Anesthetics',
-  'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines',
-  'Other',
-];
 
 export default function PharmacyInventoryPage() {
   const { t } = useTranslation();

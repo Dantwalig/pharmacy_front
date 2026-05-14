@@ -15,8 +15,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GitBranch, MapPin, Users, RefreshCw, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { api } from '@/lib/api';
+import { api, unwrapData } from '@/lib/api';
 import type { MapMarker } from '@/components/map/BaseMap';
+import { MapSkeleton } from '@/components/map/MapStates';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -102,7 +103,7 @@ export default function PharmacyMapPage() {
     setError(false);
     try {
       const res = await api.get('/branches/my-branches');
-      const data: any[] = res.data?.data ?? res.data ?? [];
+      const data = unwrapData(res.data);
       setBranches(data);
     } catch {
       setError(true);
@@ -224,7 +225,7 @@ export default function PharmacyMapPage() {
 
             {/* Map */}
             {loading ? (
-              <div className="rounded-2xl bg-gray-100 animate-pulse" style={{ height: '520px' }} />
+              <div style={{ height: '520px' }}><MapSkeleton /></div>
             ) : mappableBranches.length === 0 ? (
               <div
                 className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 gap-3"

@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { setAuthTokens, removeAuthTokens, getUserFromToken, User, cacheUserData, clearUserCache } from '@/lib/auth';
+import { setAuthTokens, removeAuthTokens, getUserFromToken, cacheUserData, clearUserCache } from '@/lib/auth';
+import { User } from '@/types';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -16,7 +17,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUser: (userData: any) => void;
+  updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
 }
 
@@ -125,8 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUser = (userData: any) => {
-    setUser((prev) => ({ ...prev, ...userData } as User));
+  const updateUser = (userData: Partial<User>) => {
+    setUser((prev: User | null) => (prev ? { ...prev, ...userData } : null));
   };
 
   const refreshUser = async () => {

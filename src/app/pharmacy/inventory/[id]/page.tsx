@@ -9,19 +9,10 @@ import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
+import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { FDA_CATEGORIES } from '@/lib/constants';
 
-const FDA_CATEGORIES = [
-  'Analgesics & Antipyretics','Antibiotics & Antimicrobials','Antifungals','Antivirals & Antiretrovirals',
-  'Antimalaria','Antituberculosis','Antiparasitics & Anthelmintics','Cardiovascular & Antihypertensives',
-  'Antidiabetics','Gastrointestinal','Respiratory & Bronchodilators','Central Nervous System',
-  'Vitamins, Minerals & Supplements','Dermatologicals','Ophthalmologicals','ENT (Ear, Nose & Throat)',
-  'Hormones & Endocrine','Vaccines & Biologicals','Oncologicals','Immunosuppressants',
-  'Contraceptives','Haematologicals','Musculoskeletal & Anti-inflammatories','Urological',
-  'Psychiatric & Psychotropic','Anesthetics','Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines','Other',
-];
 
 export default function EditMedicationPage() {
   const { t } = useTranslation();

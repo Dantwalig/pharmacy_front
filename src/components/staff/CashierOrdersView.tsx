@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CreditCard, Package, CheckCircle2, ListOrdered, User, ShoppingCart } from 'lucide-react';
-import CashierPOSModal, { type CashierOrder } from './CashierPOSModal';
+import CashierPOSModal from './CashierPOSModal';
 import { useAuth } from '@/context/AuthContext';
+import { Order } from '@/types';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -16,7 +17,7 @@ const STATUS_READY_PICKUP = ['ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY'];
 const STATUS_COMPLETED = ['COMPLETED', 'DELIVERED'];
 
 interface CashierOrdersViewProps {
-  orders: CashierOrder[];
+  orders: Order[];
   loading: boolean;
 }
 
@@ -24,7 +25,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
   const { t } = useTranslation();
   const { user } = useAuth();
   const [tab, setTab] = useState<CashierTab>('pending_payment');
-  const [activeOrder, setActiveOrder] = useState<CashierOrder | null>(null);
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [advancedIds, setAdvancedIds] = useState<Set<string>>(new Set());
 
   const tabs: { key: CashierTab; label: string; icon: React.ElementType }[] = [
@@ -35,7 +36,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
   ];
 
   const filtered = useMemo(() => {
-    return orders.filter((o: any) => {
+    return orders.filter((o) => {
       if (advancedIds.has(o.id)) {
         return tab === 'completed' || tab === 'all';
       }
@@ -73,9 +74,9 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('cashier.tabAll'),             value: orders.length,                                                          dark: false },
-          { label: t('cashier.tabPendingPayment'),  value: orders.filter((o: any) => STATUS_PENDING_PAYMENT.includes(o.status)).length, dark: false },
-          { label: t('cashier.tabReadyPickup'),     value: orders.filter((o: any) => STATUS_READY_PICKUP.includes(o.status)).length,    dark: false },
-          { label: t('cashier.tabCompleted'),       value: orders.filter((o: any) => STATUS_COMPLETED.includes(o.status)).length + advancedIds.size, dark: true },
+          { label: t('cashier.tabPendingPayment'),  value: orders.filter((o) => STATUS_PENDING_PAYMENT.includes(o.status)).length, dark: false },
+          { label: t('cashier.tabReadyPickup'),     value: orders.filter((o) => STATUS_READY_PICKUP.includes(o.status)).length,    dark: false },
+          { label: t('cashier.tabCompleted'),       value: orders.filter((o) => STATUS_COMPLETED.includes(o.status)).length + advancedIds.size, dark: true },
         ].map((s) => (
           <div
             key={s.label}
@@ -118,9 +119,8 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((order) => {
-            const o = order as any;
-            const itemCount = o.orderItems.reduce((s: number, it: any) => s + it.quantity, 0);
+          {filtered.map((o) => {
+            const itemCount = o.orderItems.reduce((s, it) => s + it.quantity, 0);
             const isPaid = advancedIds.has(o.id);
             const isPaymentTab = tab === 'pending_payment';
 
@@ -166,7 +166,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
 
                   {isPaymentTab && !isPaid && (
                     <button
-                      onClick={() => setActiveOrder(order)}
+                      onClick={() => setActiveOrder(o)}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 shrink-0"
                       style={{ backgroundColor: TEAL }}
                     >

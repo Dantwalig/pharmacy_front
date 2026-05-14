@@ -86,7 +86,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
                   onClick={() => setShowDropdown(false)}
                   className="block w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                {t('extras.profile.myProfile')}
+                {t('patient.myProfile')}
                 </Link>
               <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
               <button

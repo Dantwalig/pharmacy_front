@@ -1,14 +1,13 @@
-// frontend/src/app/patient/notifications/page.tsx
-
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { BellIcon, ClipboardDocumentListIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { POLLING_INTERVAL_MS } from '@/lib/constants';
+
 
 type NotificationCategory = 'all' | 'orders' | 'prescriptions' | 'alerts';
 
@@ -19,80 +18,95 @@ interface Notification {
   message: string;
   isRead: boolean;
   orderId?: string;
+  prescriptionId?: string;
   createdAt: string;
 }
 
-// Map backend NotificationType to frontend category
 const getCategory = (type: string): Omit<NotificationCategory, 'all'> => {
-  if (type.startsWith('ORDER_')) return 'orders';
+  if (type.startsWith('ORDER_'))        return 'orders';
   if (type.startsWith('PRESCRIPTION_')) return 'prescriptions';
   return 'alerts';
 };
 
-const getIcon = (type: string): string => {
+// Maps notification type → { icon background color, icon emoji, label }
+const getTypeConfig = (type: string) => {
   switch (type) {
-    case 'ORDER_PLACED': return '';
-    case 'ORDER_ACCEPTED': return '';
-    case 'ORDER_PREPARING': return '';
-    case 'ORDER_OUT_FOR_DELIVERY': return '';
-    case 'ORDER_READY_FOR_PICKUP': return '';
-    case 'ORDER_DELIVERED': return '';
-    case 'ORDER_CANCELLED': return '';
-    case 'PRESCRIPTION_APPROVED': return '';
-    case 'PRESCRIPTION_REJECTED': return '';
-    default: return '';
+    case 'ORDER_PLACED':           return { bg: '#EEF2FF', color: '#4F46E5', emoji: '🛒',  label: 'ORDER UPDATE' };
+    case 'ORDER_ACCEPTED':         return { bg: '#ECFDF5', color: '#059669', emoji: '✅',  label: 'ORDER UPDATE' };
+    case 'ORDER_PREPARING':        return { bg: '#FFF7ED', color: '#EA580C', emoji: '⚗️',  label: 'ORDER UPDATE' };
+    case 'ORDER_OUT_FOR_DELIVERY': return { bg: '#EFF6FF', color: '#2563EB', emoji: '🚚',  label: 'ORDER UPDATE' };
+    case 'ORDER_READY_FOR_PICKUP': return { bg: '#F0FAFA', color: '#0D9488', emoji: '📦',  label: 'ORDER UPDATE' };
+    case 'ORDER_DELIVERED':        return { bg: '#ECFDF5', color: '#16A34A', emoji: '🎉',  label: 'ORDER UPDATE' };
+    case 'ORDER_CANCELLED':        return { bg: '#FEF2F2', color: '#DC2626', emoji: '❌',  label: 'ORDER UPDATE' };
+    case 'PRESCRIPTION_APPROVED':  return { bg: '#FFF7ED', color: '#EA580C', emoji: '📋',  label: 'PRESCRIPTION' };
+    case 'PRESCRIPTION_REJECTED':  return { bg: '#FEF2F2', color: '#DC2626', emoji: '🚫',  label: 'PRESCRIPTION' };
+    default:                       return { bg: '#F3F4F6', color: '#6B7280', emoji: '🔔',  label: 'ALERT' };
   }
 };
+
+const NAVY = '#1E3A5F';
+const TEAL = '#2D9B8A';
 
 export default function PatientNotificationsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [notifications, setNotifications]   = useState<Notification[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [refreshing, setRefreshing]         = useState(false);
+  const [lastUpdated, setLastUpdated]       = useState<Date | null>(null);
   const [activeCategory, setActiveCategory] = useState<NotificationCategory>('all');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else         setRefreshing(true);
     try {
-      // Correct endpoint: GET /notifications?userType=patient
       const res = await api.get('/notifications?userType=patient');
-      setNotifications(res.data);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      setNotifications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  const handleMarkAsRead = async (notification: Notification) => {
-    if (!notification.isRead) {
+  useEffect(() => {
+    fetchNotifications(false);
+    intervalRef.current = setInterval(() => fetchNotifications(true), POLLING_INTERVAL_MS);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [fetchNotifications]);
+
+  const handleMarkAsRead = async (n: Notification) => {
+    if (!n.isRead) {
       try {
-        // PUT /notifications/:id/read
-        await api.put(`/notifications/${notification.id}/read`);
-        setNotifications(prev =>
-        prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
-        );
-      } catch (error) {
-        console.error('Failed to mark as read:', error);
-      }
+        await api.put(`/notifications/${n.id}/read`);
+        setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x));
+      } catch { /* silent */ }
     }
-    // Navigate to order if linked
-    if (notification.orderId) {
-      router.push(`/patient/orders/${notification.orderId}`);
-    }
+    if (n.orderId) router.push(`/patient/orders/${n.orderId}`);
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      // PUT /notifications/read-all?userType=patient
       await api.put('/notifications/read-all?userType=patient');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       toast.success(t('success.allNotificationsRead'));
-    } catch (error) {
+    } catch {
       toast.error(t('success.notificationsReadFailed'));
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/notifications/${id}`);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {
+      // optimistic: remove anyway for UX
+      setNotifications(prev => prev.filter(n => n.id !== id));
     }
   };
 
@@ -101,117 +115,229 @@ export default function PatientNotificationsPage() {
     : notifications.filter(n => getCategory(n.type) === activeCategory);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
+
   const getCategoryCount = (cat: NotificationCategory) =>
-  cat === 'all' ? notifications.length : notifications.filter(n => getCategory(n.type) === cat).length;
+    cat === 'all'
+      ? notifications.length
+      : notifications.filter(n => getCategory(n.type) === cat).length;
 
   const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+    const diffMs    = Date.now() - new Date(dateStr).getTime();
+    const diffMins  = Math.floor(diffMs / 60_000);
     const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffMins < 1) return t('common.justNow');
-    if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    const diffDays  = Math.floor(diffHours / 24);
+    if (diffMins < 1)   return t('common.justNow');
+    if (diffMins < 60)  return `${diffMins} ${t('notifications2.minAgo')}`;
+    if (diffHours < 24) return `${diffHours} ${diffHours > 1 ? t('notifications2.hoursAgo') : t('notifications2.hourAgo')}`;
+    return `${diffDays} ${diffDays > 1 ? t('notifications2.daysAgo') : t('notifications2.dayAgo')}`;
   };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
+  const TABS: { id: NotificationCategory; label: string }[] = [
+    { id: 'all',           label: `All (${getCategoryCount('all')})` },
+    { id: 'orders',        label: `Orders (${getCategoryCount('orders')})` },
+    { id: 'prescriptions', label: `Prescriptions (${getCategoryCount('prescriptions')})` },
+    { id: 'alerts',        label: `Alerts (${getCategoryCount('alerts')})` },
+  ];
+
   return (
-    <div className="space-y-6">
-    {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('notifications2.notifications')}</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
-            </p>
-        </div>
-        {unreadCount > 0 && (
-            <button onClick={handleMarkAllAsRead} className="text-[#1E4D8C] dark:text-blue-400 hover:underline font-medium text-sm">
-            Mark all as read
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+
+        {/* ── Header card ──────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-start justify-between mb-1">
+            <h1 className="text-3xl font-bold" style={{ color: NAVY }}>
+              {t('notifications2.notifications')}
+            </h1>
+            <button
+              onClick={handleMarkAllAsRead}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors hover:bg-gray-50"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              {/* checkmark icon */}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {t('notifications2.markAllAsRead')}
             </button>
-        )}
-        </div>
-
-      {/* Category Tabs */}
-        <div className="flex flex-wrap gap-3 mt-6">
-        {([
-            { id: 'all',           label: t('notifications2.allNotifications').split(' ')[0], icon: BellIcon },
-            { id: 'orders',        label: t('common.orders'),                                  icon: ClipboardDocumentListIcon },
-            { id: 'prescriptions', label: t('prescriptions.prescriptionsTitle'),               icon: ClipboardDocumentListIcon },
-            { id: 'alerts',        label: t('notifications2.alerts'),                          icon: ExclamationTriangleIcon },
-          ] as const).map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setActiveCategory(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                activeCategory === id
-                  ? 'bg-[#1E4D8C] text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}>
-            <Icon className="w-5 h-5" />
-            {label} ({getCategoryCount(id)})
-            </button>
-        ))}
-        </div>
-    </div>
-
-    {/* Notifications List */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          {activeCategory === 'all' ? t('notifications2.allNotifications') : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} ${t('notifications2.notifications').toLowerCase()}`}
-          </h2>
-      </div>
-
-      {filteredNotifications.length === 0 ? (
-          <div className="p-12 text-center">
-          <p className="text-6xl mb-4"></p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {notifications.length === 0 ? t('notifications2.noNotificationsYet') : t('notifications2.noNotificationsInCategory')}
-            </p>
-        </div>
-      ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                onClick={() => handleMarkAsRead(notification)}
-                className={`p-6 hover:bg-[#1E4D8C]/5 dark:hover:bg-gray-700 transition-all cursor-pointer ${
-                  !notification.isRead ? 'bg-[#2D9B8A]/5 border-l-4 border-[#2D9B8A]' : 'border-l-4 border-transparent'
-                }`}
-              >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#1E4D8C]/10 dark:bg-[#1E4D8C]/30 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-2xl text-[#1E4D8C]">{getIcon(notification.type) || '🔔'}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">{notification.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
-                    </div>
-                    {!notification.isRead && (
-                        <span className="px-3 py-1 bg-[#2D9B8A] text-white text-xs font-semibold rounded-full shrink-0">
-                        New
-                        </span>
-                    )}
-                    </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-500">{formatTime(notification.createdAt)}</p>
-                    {notification.orderId && (
-                        <span className="text-xs text-[#1E4D8C] dark:text-blue-400 font-medium">View order →</span>
-                    )}
-                    </div>
-                </div>
-              </div>
-            </div>
-          ))}
           </div>
-      )}
+
+          {unreadCount > 0 && (
+            <p className="text-sm font-medium mb-5" style={{ color: TEAL }}>
+              {t('notifications2.youHave')} {unreadCount} {unreadCount === 1
+                ? t('notifications2.unreadNotification')
+                : t('notifications2.unreadNotifications')}
+            </p>
+          )}
+
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={
+                  activeCategory === tab.id
+                    ? { backgroundColor: NAVY, color: '#fff' }
+                    : { backgroundColor: '#F3F4F6', color: '#374151' }
+                }
+              >
+                {/* tab icon */}
+                {tab.id === 'all'           && <span>🔔</span>}
+                {tab.id === 'orders'        && <span>🛒</span>}
+                {tab.id === 'prescriptions' && <span>📋</span>}
+                {tab.id === 'alerts'        && <span>⚠️</span>}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Refresh indicator */}
+          {refreshing && (
+            <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              {t('notifications2.refreshing')}
+            </p>
+          )}
+        </div>
+
+        {/* ── Notification section header ───────────────────────────────── */}
+        <h2 className="text-xl font-bold px-1" style={{ color: NAVY }}>
+          {activeCategory === 'all'           ? t('notifications2.allNotifications')
+          : activeCategory === 'orders'        ? t('notifications2.ordersNotifications')
+          : activeCategory === 'prescriptions' ? t('notifications2.prescriptionsNotifications')
+          :                                      t('notifications2.alertsNotifications')}
+        </h2>
+
+        {/* ── Notification cards ────────────────────────────────────────── */}
+        {filteredNotifications.length === 0 ? (
+          <div className="bg-white rounded-2xl p-16 text-center shadow-sm">
+            <p className="text-5xl mb-4">🔔</p>
+            <p className="text-gray-400 font-medium">
+              {notifications.length === 0
+                ? t('notifications2.noNotificationsYet')
+                : t('notifications2.noNotificationsInCategory')}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredNotifications.map(n => {
+              const cfg = getTypeConfig(n.type);
+              const isOrder        = n.type.startsWith('ORDER_');
+              const isOutForDelivery = n.type === 'ORDER_OUT_FOR_DELIVERY';
+              const isPrescription = n.type.startsWith('PRESCRIPTION_');
+
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => handleMarkAsRead(n)}
+                  className="bg-white rounded-2xl p-5 shadow-sm cursor-pointer transition-shadow hover:shadow-md relative"
+                >
+                  {/* Unread blue dot */}
+                  {!n.isRead && (
+                    <span
+                      className="absolute top-5 right-12 w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: '#3B82F6' }}
+                    />
+                  )}
+
+                  {/* Delete / more button */}
+                  <button
+                    onClick={e => handleDelete(e, n.id)}
+                    className="absolute top-4 right-4 p-1 text-gray-300 hover:text-gray-500 transition-colors"
+                    title="Delete notification"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
+                  <div className="flex gap-4">
+                    {/* Icon badge */}
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl"
+                      style={{ backgroundColor: cfg.bg }}
+                    >
+                      {cfg.emoji}
+                    </div>
+
+                    <div className="flex-1 min-w-0 pr-6">
+                      {/* Type label + timestamp */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className="text-xs font-bold tracking-wide"
+                          style={{ color: cfg.color }}
+                        >
+                          {cfg.label}
+                        </span>
+                        <span className="text-gray-300 text-xs">•</span>
+                        <span className="text-xs text-gray-400">{formatTime(n.createdAt)}</span>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="font-bold text-gray-900 mb-1 leading-snug">
+                        {n.title}
+                      </h3>
+
+                      {/* Message — bold drug names if present */}
+                      <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                        {n.message}
+                      </p>
+
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap gap-2">
+                        {isOutForDelivery && (
+                          <button
+                            onClick={e => { e.stopPropagation(); if (n.orderId) router.push(`/patient/orders/${n.orderId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                            style={{ backgroundColor: NAVY }}
+                          >
+                            Track Courier
+                          </button>
+                        )}
+                        {isOrder && n.orderId && (
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push(`/patient/orders/${n.orderId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors hover:bg-gray-50"
+                            style={{ borderColor: '#D1D5DB', color: '#374151' }}
+                          >
+                            View Order
+                          </button>
+                        )}
+                        {isPrescription && n.prescriptionId && (
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push(`/patient/prescriptions/${n.prescriptionId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                            style={{ backgroundColor: NAVY }}
+                          >
+                            View Prescription
+                          </button>
+                        )}
+                        {isPrescription && (
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push('/patient/search'); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors hover:bg-gray-50"
+                            style={{ borderColor: '#D1D5DB', color: '#374151' }}
+                          >
+                            Find Pharmacy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-  </div>
-);
+    </div>
+  );
 }

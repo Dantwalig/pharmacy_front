@@ -2,8 +2,9 @@
 // Placeholder API service for pharmacy location data
 // TODO: Replace mock data with real API calls when backend /api/pharmacies/locations is ready
 
-import { MOCK_PHARMACIES, PharmacyLocation } from '@/features/map/pharmacyData';
-import { api } from '@/lib/api';
+import { api, unwrapData } from '@/lib/api';
+import { ApiResponse } from '@/types';
+import { PharmacyLocation } from '@/features/map/pharmacyData';
 
 export interface PharmacyLocationResponse {
   pharmacies: PharmacyLocation[];
@@ -21,13 +22,32 @@ export interface FetchResult<T> {
  */
 export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLocation[]>> {
   try {
-    const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
-    return { data: res.data.pharmacies, error: null };
+    try {
+      const res = await api.get('/pharmacies/locations');
+      const data = unwrapData<PharmacyLocation>(res.data);
+      if (data.length > 0) return data;
+      if (Array.isArray(res.data?.pharmacies) && res.data.pharmacies.length > 0) return res.data.pharmacies;
+    } catch {
+      // Fallback for roles without access to /locations (e.g. Branch Managers)
+    }
+
+    // Fallback mapping directly to public /pharmacies endpoint
+    const res = await api.get('/pharmacies');
+    return res.data.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      address: p.address || 'No Address',
+      latitude: p.latitude,
+      longitude: p.longitude,
+      phone: p.phone || 'N/A',
+      status: p.status === 'APPROVED' ? 'OPEN' : 'CLOSED',
+      isActive: true,
+      region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown',
+      hours: p.operatingHours ? 'Various' : '08:00 - 20:00',
+    }));
   } catch (error) {
-    return { 
-      data: null, 
-      error: error instanceof Error ? error.message : 'Failed to load pharmacies' 
-    };
+    console.error('Error fetching global locations:', error);
+    return [];
   }
 }
 
@@ -49,17 +69,12 @@ export async function fetchNearbyPharmacies(
   }
 
   try {
-    const res = await api.get(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
-    // Backend returns data in data array when successful
-    const pharmacies = res.data?.data ?? res.data ?? [];
-    return { data: pharmacies, error: null };
+    const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
+    return unwrapData<PharmacyLocation>(res.data);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to load nearby pharmacies';
     console.error('Error fetching nearby locations:', error);
-    return { 
-      data: null, 
-      error: errorMessage 
-    };
+    return [];
   }
 }
 
@@ -76,23 +91,11 @@ export async function fetchPharmacyById(id: string): Promise<FetchResult<Pharmac
   }
 
   try {
-    const res = await api.get(`/pharmacies/${id}`);
-    const pharmacy = res.data?.data ?? res.data ?? null;
-    
-    if (!pharmacy) {
-      return { 
-        data: null, 
-        error: 'Pharmacy not found' 
-      };
-    }
-
-    return { data: pharmacy, error: null };
+    const res = await api.get<ApiResponse<PharmacyLocation>>(`/pharmacies/${id}`);
+    return res.data.data ?? null;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to load pharmacy details';
     console.error('Error fetching pharmacy by ID:', error);
-    return { 
-      data: null, 
-      error: errorMessage 
-    };
+    return null;
   }
 }

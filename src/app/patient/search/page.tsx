@@ -21,6 +21,7 @@ import { LocationDeniedState, OfflineState, MapSkeleton } from '@/components/map
 import { fetchNearbyPharmacies, fetchPharmacyLocations } from '@/services/pharmacies';
 import { PharmacyLocation, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/features/map/pharmacyData';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { Medication } from '@/types';
 
 // Leaflet must never touch SSR – dynamic import is mandatory
 const MapView = dynamic(() => import('@/components/map/MapView'), {
@@ -39,7 +40,7 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<'pharmacies' | 'medications'>('pharmacies');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [searchQuery, setSearchQuery] = useState('');
-  const [medications, setMedications] = useState([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [medLoading, setMedLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -61,8 +62,8 @@ export default function SearchPage() {
     setMapLoading(true);
     try {
       const data = await fetchPharmacyLocations();
-      setAllPharmacies(data);
-      setMapPharmacies(data);
+      setAllPharmacies(data ?? []);
+      setMapPharmacies(data ?? []);
     } catch {
       toast.error('Failed to load pharmacies.');
     } finally {
@@ -77,11 +78,21 @@ export default function SearchPage() {
       (async () => {
         setMapLoading(true);
         const nearby = await fetchNearbyPharmacies(coords[0], coords[1]);
-        setMapPharmacies(nearby);
+        setMapPharmacies(nearby ?? []);
         setMapLoading(false);
       })();
     }
   }, [geoStatus, coords]);
+
+  // Compute routes from user to the 3 nearest pharmacies
+  const routes = (geoStatus === 'success' && coords && mapPharmacies.length > 0)
+    ? mapPharmacies.slice(0, 3).filter(p => p.latitude && p.longitude).map(p => ({
+        points: [coords, [p.latitude!, p.longitude!]] as [number, number][],
+        color: NAVY,
+        weight: 3,
+        dashed: true
+      }))
+    : [];
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +132,7 @@ export default function SearchPage() {
     [router]
   );
 
-  const handleAddToCart = (med: any) => {
+  const handleAddToCart = (med: Medication) => {
     addToCart({
       medicationId: med.id,
       name: med.name,
@@ -140,7 +151,7 @@ export default function SearchPage() {
   const mapHeader = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-        {geoStatus === 'success' ? 'Pharmacies Near You' : 'All Pharmacies'}
+        {geoStatus === 'success' ? t('search.pharmaciesNearYou') : t('search.allPharmacies')}
         <span
           className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full"
           style={{ background: `${NAVY}15`, color: NAVY }}
@@ -177,7 +188,7 @@ export default function SearchPage() {
         className="rounded-2xl shadow-xl p-8 text-white"
         style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
       >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Find Pharmacy & Medicine</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('patient.findPharmacyAndMedicine')}</h1>
         <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
       </div>
 
@@ -190,13 +201,13 @@ export default function SearchPage() {
               type="text"
               placeholder={
                 activeTab === 'pharmacies'
-                  ? 'Search pharmacies by name or area…'
+                  ? t('search.searchPharmaciesPlaceholder')
                   : t('search.searchPlaceholder')
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2 transition-all"
-              style={{ '--tw-ring-color': TEAL } as any}
+              style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
             />
           </div>
           <button
@@ -204,7 +215,7 @@ export default function SearchPage() {
             className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap"
             style={{ background: TEAL }}
           >
-            Search
+            {t('common.search')}
           </button>
         </div>
       </form>
@@ -215,14 +226,14 @@ export default function SearchPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-6 py-3 rounded-xl font-semibold capitalize transition-all"
+            className="px-6 py-3 rounded-xl font-semibold transition-all"
             style={
               activeTab === tab
                 ? { background: NAVY, color: '#fff' }
                 : { background: '#e5e7eb', color: '#374151' }
             }
           >
-            {tab}
+            {tab === 'pharmacies' ? t('pharmacies.pharmacies') : t('medications.medications')}
           </button>
         ))}
       </div>
@@ -245,9 +256,9 @@ export default function SearchPage() {
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-8 h-8 shrink-0" />
                 <div>
-                  <p className="font-bold text-lg">Find Pharmacies Near Me</p>
+                  <p className="font-bold text-lg">{t('search.findNearMe')}</p>
                   <p className="text-sm opacity-90">
-                    Allow location access to see pharmacies sorted by distance.
+                    {t('search.locationAccessDesc')}
                   </p>
                 </div>
               </div>
@@ -257,7 +268,7 @@ export default function SearchPage() {
                 className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60"
                 style={{ color: TEAL }}
               >
-                {geoStatus === 'loading' ? 'Locating…' : 'Use My Location'}
+                {geoStatus === 'loading' ? t('search.locating') : t('search.useMyLocation')}
               </button>
             </div>
           )}
@@ -273,8 +284,9 @@ export default function SearchPage() {
                 <MapView
                   pharmacies={mapPharmacies}
                   center={mapCenter}
-                  zoom={DEFAULT_ZOOM}
+                  zoom={14}
                   selectedId={selectedId}
+                  routes={routes}
                   onSelectPharmacy={handleSelectPharmacy}
                   onViewDetails={handleViewDetails}
                   userLocation={coords}
@@ -321,19 +333,19 @@ export default function SearchPage() {
           )}
           {!medLoading && searched && medications.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {medications.map((med: any) => (
+              {medications.map((med) => (
                 <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
                   <div className="p-6 space-y-4">
                     <div>
                       <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-1">{med.name}</h3>
-                      <p className="text-sm text-gray-500">Available at: {med.pharmacy?.name}</p>
+                      <p className="text-sm text-gray-500">{t('search.availableAt')} {med.pharmacy?.name}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold" style={{ color: NAVY }}>
                         RWF {med.price?.toLocaleString()}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                        {med.quantity > 0 ? `In Stock (${med.quantity})` : 'Out of Stock'}
+                        {med.quantity > 0 ? `${t('inventory.inStock')} (${med.quantity})` : t('inventory.outOfStock')}
                       </span>
                     </div>
                     <button
@@ -342,7 +354,7 @@ export default function SearchPage() {
                       className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40"
                       style={{ background: TEAL }}
                     >
-                      Add to Cart
+                      {t('medications.addToCart')}
                     </button>
                   </div>
                 </div>

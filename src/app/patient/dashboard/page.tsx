@@ -7,8 +7,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
+import { Order } from '@/types';
 import {
   ShoppingCartIcon,
   MapPinIcon,
@@ -34,7 +36,18 @@ export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
-  const firstName = (user as any)?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
+  const firstName = user?.profile?.firstName ?? user?.email?.split('@')[0] ?? 'there';
+
+  const getStatusLabel = (status: string) => ({
+    PENDING: t('orders2.statusPending'),
+    ACCEPTED: t('orders2.statusAccepted'),
+    PREPARING: t('orders2.statusPreparing'),
+    OUT_FOR_DELIVERY: t('orders2.statusOutForDelivery'),
+    READY_FOR_PICKUP: t('orders2.statusReadyForPickup'),
+    DELIVERED: t('orders2.statusDelivered'),
+    CANCELLED: t('orders2.statusCancelled'),
+    COMPLETED: t('orders2.statusDelivered'),
+  } as Record<string, string>)[status] ?? status;
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -44,7 +57,7 @@ export default function PatientDashboard() {
   };
 
   const [stats, setStats] = useState({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Map state
@@ -59,14 +72,14 @@ export default function PatientDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const ordersRes = await api.get('/orders/my-orders');
+      const ordersRes = await api.get<Order[]>('/orders/my-orders');
       const orders = ordersRes.data;
       setStats({
         totalOrders: orders.length,
-        completedOrders: orders.filter((o: any) =>
+        completedOrders: orders.filter((o) =>
           ['COMPLETED', 'DELIVERED'].includes(o.status)
         ).length,
-        pendingOrders: orders.filter((o: any) =>
+        pendingOrders: orders.filter((o) =>
           ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)
         ).length,
       });
@@ -74,6 +87,7 @@ export default function PatientDashboard() {
     } catch {
       setStats({ totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
       setRecentOrders([]);
+      toast.error(t('errors.failedToLoadOrders'));
     } finally {
       setLoading(false);
     }
@@ -82,10 +96,10 @@ export default function PatientDashboard() {
   const loadMapPharmacies = async () => {
     try {
       const data = await fetchPharmacyLocations();
-      // Show only first 6 on dashboard preview
       setMapPharmacies(data.slice(0, 6));
     } catch {
       setMapPharmacies([]);
+      toast.error(t('errors.failedToLoadPharmacies'));
     } finally {
       setMapLoading(false);
     }
@@ -93,7 +107,7 @@ export default function PatientDashboard() {
 
   const quickActions = [
     {
-      title: t('checkout2.cartEmpty').replace('Your cart is empty', '') || t('common.profileInfo').replace('Profile Info', '') || 'Shopping Cart',
+      title: t('cart.title'),
       description: t('patient.browsePharmacies'),
       icon: ShoppingCartIcon,
       href: '/patient/cart',
@@ -103,7 +117,7 @@ export default function PatientDashboard() {
     },
     {
       title: t('analytics.activeOrders'),
-      description: `${stats.pendingOrders} ${t('orders.pending').toLowerCase()}`,
+      description: `${stats.pendingOrders} ${t('orders2.statusPending').toLowerCase()}`,
       icon: BoltIcon,
       href: '/patient/orders',
       color: '#D97706',
@@ -132,7 +146,7 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome hero banner */}
-      <div className="rounded-2xl px-12 py-30 relative overflow-hidden" style={{ background: '#EBF5FF' }}>
+      <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
         {/* Decorative heartbeat watermark */}
         <svg
           className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]"
@@ -147,17 +161,17 @@ export default function PatientDashboard() {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3" style={{ color: NAVY }}>
+          <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
             {getGreeting()},<br />{firstName}.
           </h1>
-          <p className="text-gray-500 text-lg mb-7">Your health metrics are looking excellent today.</p>
+          <p className="text-gray-500 text-lg mb-7">{t('dashboard.healthMetrics')}</p>
           <Link
             href="/patient/search"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90"
-            style={{ background: TEAL }}
+            className="inline-flex items-center text-white font-semibold text-base transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
           >
             <MapPinIcon className="w-5 h-5" />
-            Browse Nearby Pharmacies
+            {t('dashboard.browseNearbyPharmacies')}
           </Link>
         </div>
       </div>
@@ -203,10 +217,10 @@ export default function PatientDashboard() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                Nearby Pharmacies
+                {t('dashboard.nearbyPharmacies')}
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                {mapPharmacies.length} pharmacies on the map
+                {mapPharmacies.length} {t('dashboard.pharmaciesOnMap')}
               </p>
             </div>
           </div>
@@ -215,7 +229,7 @@ export default function PatientDashboard() {
             className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
             style={{ background: NAVY }}
           >
-            View All →
+            {t('common.viewAll')} →
           </Link>
         </div>
 
@@ -260,20 +274,20 @@ export default function PatientDashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
-            Recent Medical Orders
+            {t('dashboard.recentMedicalOrders')}
           </h2>
           <Link
             href="/patient/orders"
             className="font-semibold text-sm flex items-center gap-1 hover:underline"
             style={{ color: NAVY }}
           >
-            View All <span className="text-base">›</span>
+            {t('common.viewAll')} <span className="text-base">›</span>
           </Link>
         </div>
 
         {recentOrders.length > 0 ? (
           <div className="flex flex-col" style={{ gap: '20px' }}>
-            {recentOrders.map((order: any) => {
+            {recentOrders.map((order) => {
               const firstItem = order.items?.[0] ?? order.orderItems?.[0];
               const medName = firstItem?.medication?.name ?? 'Medication';
               const medImage = firstItem?.medication?.imageUrl;
@@ -307,8 +321,8 @@ export default function PatientDashboard() {
 
                     {/* Order info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}</p>
-                      <p className="font-semibold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="font-extrabold text-gray-900">Order #{order.id.slice(0, 8)}</p>
+                      <p className="font-extrabold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {pharmacyName}{branchName ? ` • ${branchName}` : ''}
                       </p>
@@ -324,7 +338,7 @@ export default function PatientDashboard() {
                         style={{ background: s.bg, color: s.color }}
                       >
                         <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
-                        {order.status}
+                        {getStatusLabel(order.status)}
                       </span>
                     </div>
                   </div>

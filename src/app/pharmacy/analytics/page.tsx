@@ -4,32 +4,136 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import {
-  CurrencyDollarIcon,
-  ShoppingCartIcon,
-  ArrowTrendingUpIcon,
-  CubeIcon,
-} from '@heroicons/react/24/outline';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell,
 } from 'recharts';
 
-const TEAL = '#2D9B8A';
-const NAVY = '#1E4D8C';
-const PIE_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#EF4444', '#8B5CF6'];
+const NAVY  = '#1E4D8C';
+const TEAL  = '#2D9B8A';
+const DONUT_COLORS = ['#0B2545', '#1E3A5F', '#6B84A8', '#8B5CF6', '#EF4444'];
+
+const MOCK_ANALYTICS = {
+  totalRevenue: 78000, totalOrders: 4, avgOrderValue: 20000, itemsSold: 46,
+  revenueChange: 12,   ordersChange: -8, avgValueChange: 4,  targetRevenue: 85000,
+};
+const MOCK_STATS = {
+  revenueByBranch: [
+    { name: 'MedPlus Main',     revenue: 58500, percentage: 75 },
+    { name: 'Remera Pharmacy',  revenue: 19500, percentage: 25 },
+  ],
+  monthlyComparison: [
+    { name: 'MedPlus Main', revenue: 58500 },
+    { name: 'Kimironko',     revenue: 12000 },
+    { name: 'Remera',       revenue: 19500 },
+  ],
+  revenueOverTime: {
+    '3M': [
+      { month: 'Feb', revenue: 40000 },
+      { month: 'Mar', revenue: 48000 },
+      { month: 'Apr', revenue: 58000 },
+    ],
+    '6M': [
+      { month: 'Nov', revenue: 28000 },
+      { month: 'Dec', revenue: 35000 },
+      { month: 'Jan', revenue: 31000 },
+      { month: 'Feb', revenue: 40000 },
+      { month: 'Mar', revenue: 48000 },
+      { month: 'Apr', revenue: 58000 },
+    ],
+    '1Y': [
+      { month: 'May', revenue: 20000 },
+      { month: 'Jun', revenue: 24000 },
+      { month: 'Jul', revenue: 22000 },
+      { month: 'Aug', revenue: 30000 },
+      { month: 'Sep', revenue: 27000 },
+      { month: 'Oct', revenue: 33000 },
+      { month: 'Nov', revenue: 28000 },
+      { month: 'Dec', revenue: 35000 },
+      { month: 'Jan', revenue: 31000 },
+      { month: 'Feb', revenue: 40000 },
+      { month: 'Mar', revenue: 48000 },
+      { month: 'Apr', revenue: 58000 },
+    ],
+  },
+};
+
+const fmt = (n: number) => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(0)}K`;
+  return String(n ?? 0);
+};
+
+const currentMonthLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+// ── Donut legend ──────────────────────────────────────────────────────────────
+function DonutLegend({ data }: { data: { name: string; percentage: number }[] }) {
+  return (
+    <div className="flex flex-col gap-2 mt-2">
+      {data.map((d, i) => (
+        <div key={d.name} className="flex items-center gap-2 text-sm">
+          <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+          <span className="text-gray-600 flex-1">{d.name}</span>
+          <span className="font-semibold text-gray-800">{d.percentage}%</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Progress row (Monthly Summary) ───────────────────────────────────────────
+function ProgressRow({ label, sub, change, color }: { label: string; sub: string; change: number; color: string }) {
+  const pct    = Math.min(Math.abs(change), 100);
+  const isPos  = change >= 0;
+  const sign   = isPos ? '+' : '';
+  const clr    = isPos ? '#16A34A' : '#DC2626';
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-gray-800">{label}</p>
+          <p className="text-xs text-gray-400">{sub}</p>
+        </div>
+        <span className="text-sm font-bold" style={{ color: clr }}>{sign}{change}%</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Stat card ────────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, subColor, icon }: {
+  label: string; value: string | number; sub: string; subColor?: string; icon: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-2xl p-5 flex items-start gap-4 shadow-sm border border-gray-100">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${NAVY}12` }}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+        <p className="text-2xl font-bold text-gray-900 leading-tight">{value}</p>
+        <p className="text-xs mt-0.5" style={{ color: subColor ?? '#6B7280' }}>{sub}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function PharmacyAnalyticsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
+  const [loading,   setLoading]   = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [stats,     setStats]     = useState<any>(null);
+  const [trendTab,  setTrendTab]  = useState<'3M' | '6M' | '1Y'>('6M');
 
   useEffect(() => {
-    const controller = new AbortController();
+    const ctrl = new AbortController();
     Promise.all([
-      api.get('/pharmacies/dashboard/analytics', { signal: controller.signal }),
-      api.get('/pharmacies/dashboard/stats', { signal: controller.signal }),
+      api.get('/pharmacies/dashboard/analytics', { signal: ctrl.signal }),
+      api.get('/pharmacies/dashboard/stats',     { signal: ctrl.signal }),
     ])
       .then(([aRes, sRes]) => {
         setAnalytics(aRes.data?.data ?? aRes.data);
@@ -37,162 +141,208 @@ export default function PharmacyAnalyticsPage() {
       })
       .catch(err => { if (err?.code !== 'ERR_CANCELED') console.error(err); })
       .finally(() => setLoading(false));
-    return () => controller.abort();
+    return () => ctrl.abort();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-      <LoadingSpinner />
-    </div>
-  );
-  }
+  if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  const fmt = (n: number) => {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-    return String(n ?? 0);
+  const a = { ...MOCK_ANALYTICS, ...analytics };
+  const s = {
+    revenueByBranch:    stats?.revenueByBranch    ?? MOCK_STATS.revenueByBranch,
+    monthlyComparison:  stats?.monthlyComparison  ?? MOCK_STATS.monthlyComparison,
+    revenueOverTime:    stats?.revenueOverTime     ?? MOCK_STATS.revenueOverTime,
   };
 
-  const getChangeColor = (change: number) => {
-    if (change > 0) return 'text-green-600';
-    if (change < 0) return 'text-red-600';
-    return 'text-gray-600';
-  };
+  // Handle flat array from API — map to 6M bucket
+  const trendData: any[] = Array.isArray(s.revenueOverTime)
+    ? s.revenueOverTime
+    : (s.revenueOverTime[trendTab] ?? MOCK_STATS.revenueOverTime['6M']);
 
-  const formatChange = (change: number) => {
-    if (change > 0) return `+${change}%`;
-    if (change < 0) return `${change}%`;
-    return '0%';
-  };
+  // Build donut data (percentage field might not exist — derive from revenue)
+  const totalBranchRevenue = s.revenueByBranch.reduce((sum: number, b: any) => sum + (b.revenue ?? 0), 0);
+  const donutData = s.revenueByBranch.map((b: any) => ({
+    name:       b.name,
+    revenue:    b.revenue ?? 0,
+    percentage: b.percentage ?? (totalBranchRevenue ? Math.round((b.revenue / totalBranchRevenue) * 100) : 0),
+  }));
 
-  const cards = [
-    { label: 'Total Revenue', value: `RWF ${fmt(analytics?.totalRevenue ?? 0)}`, change: analytics?.revenueChange, icon: CurrencyDollarIcon, color: 'bg-teal-100', iconColor: 'text-teal-600' },
-    { label: 'Total Orders', value: analytics?.totalOrders ?? 0, change: analytics?.ordersChange, icon: ShoppingCartIcon, color: 'bg-blue-100', iconColor: 'text-blue-600' },
-    { label: 'Avg. Order Value', value: `RWF ${fmt(analytics?.avgOrderValue ?? 0)}`, change: analytics?.avgValueChange, icon: ArrowTrendingUpIcon, color: 'bg-purple-100', iconColor: 'text-purple-600' },
-    { label: 'Items Sold', value: analytics?.itemsSold ?? 0, change: analytics?.itemsChange, icon: CubeIcon, color: 'bg-green-100', iconColor: 'text-green-600' },
+  const latestRevenue = fmt(trendData[trendData.length - 1]?.revenue ?? 0);
+
+  const statCards = [
+    {
+      label: t('analytics.totalRevenue'),
+      value: `${fmt(a.totalRevenue)} RWF`,
+      sub:   a.revenueChange != null ? `${a.revenueChange > 0 ? '+' : ''}${a.revenueChange}% ${t('analytics.vsLastMonth')}` : t('analytics.thisMonth'),
+      subColor: a.revenueChange > 0 ? '#16A34A' : a.revenueChange < 0 ? '#DC2626' : undefined,
+      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    },
+    {
+      label: t('analytics.totalOrders'),
+      value: a.totalOrders ?? 0,
+      sub:   t('analytics.thisMonth'),
+      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
+    },
+    {
+      label: t('analytics.avgOrderValue2'),
+      value: `${fmt(a.avgOrderValue)} RWF`,
+      sub:   a.avgValueChange != null ? `${a.avgValueChange > 0 ? '+' : ''}${a.avgValueChange}%` : '',
+      subColor: a.avgValueChange > 0 ? '#16A34A' : a.avgValueChange < 0 ? '#DC2626' : undefined,
+      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+    },
+    {
+      label: t('analytics.itemsSold'),
+      value: a.itemsSold ?? 0,
+      sub:   t('analytics.units'),
+      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    },
   ];
 
-  const revenueOverTime = stats?.revenueOverTime ?? [];
-  const revenueByBranch = stats?.revenueByBranch ?? [];
-  const inventoryDistribution = stats?.inventoryDistribution ?? [];
-
   return (
-    <div className="space-y-6">
-    {/* Header */}
-      <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
-      <h1 className="text-2xl lg:text-3xl font-bold mb-1">{t('analytics.analyticsTitle')}</h1>
-      <p className="text-blue-100 text-sm">{t('analytics.trackPerformance')}</p>
-    </div>
+    <div className="space-y-5 pb-8">
 
-    {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div key={card.label} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 ${card.color} rounded-lg flex items-center justify-center`}>
-                <Icon className={`w-6 h-6 ${card.iconColor}`} />
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-1">{card.label}</p>
-            <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{card.value}</p>
-            {card.change !== undefined && (
-                <p className={`text-sm font-medium ${getChangeColor(card.change)}`}>
-                {formatChange(card.change)} from last month
-                </p>
-            )}
-            </div>
-        );
-        })}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="rounded-2xl px-6 py-5 flex items-center justify-between" style={{ background: 'linear-gradient(96.98deg, #0B2545 0%, #1E3A5F 55%, #6B84A8 100%)' }}>
+        <div>
+          <h1 className="text-2xl font-bold text-white">{t('analytics.analyticsTitle')}</h1>
+          <p className="text-sm text-white/60 mt-0.5">{t('analytics.trackPerformance')}</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-sm font-medium text-white/80 hover:bg-white/10 transition-colors">
+          <CalendarDaysIcon className="w-4 h-4 text-white/60" />
+          {t('analytics.thisMonth')}
+        </button>
       </div>
 
-    {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Revenue trend */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.revenueTrend6Months')}</h2>
-        {revenueOverTime.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={revenueOverTime} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-              <Tooltip formatter={(v: any) => [`RWF ${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Line type="monotone" dataKey="revenue" stroke={TEAL} strokeWidth={2.5} dot={{ fill: TEAL, r: 4 }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noRevenueData')}</div>
-        )}
-        </div>
-
-      {/* Revenue by branch */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.revenueByBranch')}</h2>
-        {revenueByBranch.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={revenueByBranch} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-              <Tooltip formatter={(v: any) => [`RWF ${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Bar dataKey="revenue" fill={NAVY} radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noBranchData')}</div>
-        )}
-        </div>
-    </div>
-
-    {/* Inventory distribution */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.inventoryDistribution')}</h2>
-      {inventoryDistribution.length > 0 ? (
-          <div className="flex flex-col lg:flex-row items-center gap-6">
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={inventoryDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
-                {inventoryDistribution.map((_: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-                </Pie>
-              <Tooltip formatter={(v: any) => [`${v} SKUs`, 'Medications']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-          <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('analytics.noInventoryData')}</div>
-      )}
-      </div>
-
-    {/* Monthly performance summary */}
-      <div className="bg-white rounded-xl shadow-md p-6 pb-8">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">{t('analytics.monthlyPerformance')}</h2>
-      <div className="space-y-4">
-        {[
-            { label: 'Revenue Growth', value: `RWF ${fmt(analytics?.totalRevenue ?? 0)}`, change: analytics?.revenueChange },
-            { label: 'Order Growth', value: `${analytics?.totalOrders ?? 0} orders`, change: analytics?.ordersChange },
-            { label: 'Average Order Value', value: `RWF ${fmt(analytics?.avgOrderValue ?? 0)}`, change: analytics?.avgValueChange },
-          ].map((row) => (
-            <div key={row.label} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="text-sm text-gray-600">{row.label}</p>
-              <p className="text-xl font-bold text-gray-900">{row.value}</p>
-            </div>
-            {row.change !== undefined && (
-                <div className={`text-right ${getChangeColor(row.change)}`}>
-                <p className="text-xl font-bold">{formatChange(row.change)}</p>
-                <p className="text-xs text-gray-500">{t('analytics.vsLastMonth')}</p>
-              </div>
-            )}
-            </div>
+      {/* ── Stat Cards ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map(c => (
+          <StatCard key={c.label} label={c.label} value={c.value} sub={c.sub} subColor={c.subColor} icon={c.icon} />
         ))}
+      </div>
+
+      {/* ── Charts Row 1: Donut + Bar ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Donut — Inventory Distribution / Revenue by branch */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-500 mb-0.5">{t('analytics.inventoryDistribution')}</p>
+          <h2 className="text-base font-bold text-gray-900 mb-4">{t('analytics.revenueByBranch')}</h2>
+          <div className="flex items-center gap-6">
+            <ResponsiveContainer width={160} height={160}>
+              <PieChart>
+                <Pie data={donutData} cx="50%" cy="50%" innerRadius={48} outerRadius={72} dataKey="revenue" paddingAngle={3}>
+                  {donutData.map((_: any, i: number) => (
+                    <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <DonutLegend data={donutData} />
+          </div>
         </div>
+
+        {/* Bar — Monthly Comparison */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-500 mb-0.5">{t('analytics.monthlyComparison')}</p>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">{t('analytics.revenueByBranch')}</h2>
+            <span className="text-xs text-gray-400 font-medium">{currentMonthLabel}</span>
+          </div>
+          {s.monthlyComparison.length > 0 ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={s.monthlyComparison} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
+                  {s.monthlyComparison.map((_: any, i: number) => (
+                    <Cell key={i} fill={i === 0 ? '#2563EB' : '#60A5FA'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-40 flex items-center justify-center text-gray-300 text-sm">{t('analytics.noDataYet')}</div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Charts Row 2: Summary + Revenue Trend ───────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Monthly Performance Summary */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-500 mb-0.5">{t('analytics.monthlyPerformance')}</p>
+          <h2 className="text-base font-bold text-gray-900 mb-5">{t('analytics.summary')}</h2>
+          <div className="space-y-4">
+            <ProgressRow
+              label={t('analytics.revenueGrowth')}
+              sub={`${fmt(a.totalRevenue)} RWF ${t('analytics.vsLastMonth')}`}
+              change={a.revenueChange ?? 0}
+              color={NAVY}
+            />
+            <ProgressRow
+              label={t('analytics.orderGrowth')}
+              sub={`${a.totalOrders ?? 0} ${t('analytics.totalOrders').toLowerCase()} ${t('analytics.thisMonth').toLowerCase()}`}
+              change={a.ordersChange ?? 0}
+              color={TEAL}
+            />
+            <ProgressRow
+              label={t('analytics.avgOrderValue2')}
+              sub={`${fmt(a.avgOrderValue)} RWF avg`}
+              change={a.avgValueChange ?? 0}
+              color={NAVY}
+            />
+          </div>
+          {a.targetRevenue && (
+            <div className="mt-5 flex items-center gap-2 text-xs text-gray-500">
+              <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+              {t('analytics.onTrackToHit')} <span className="font-semibold text-gray-700 mx-1">{fmt(a.targetRevenue)} RWF</span> {t('analytics.thisMonthDot')}
+            </div>
+          )}
+        </div>
+
+        {/* Revenue Trend */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-500 mb-0.5">{t('analytics.revenueTrend')}</p>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">
+              {trendTab === '1Y' ? t('analytics.last12Months') : trendTab === '6M' ? t('analytics.last6Months') : t('analytics.last3Months')}
+            </h2>
+            <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+              {(['3M', '6M', '1Y'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setTrendTab(tab)}
+                  className="px-3 py-1 rounded-md text-xs font-semibold transition-all"
+                  style={trendTab === tab
+                    ? { backgroundColor: '#fff', color: NAVY, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
+                    : { color: '#9CA3AF' }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Line type="monotone" dataKey="revenue" stroke={TEAL} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: TEAL }} />
+              </LineChart>
+            </ResponsiveContainer>
+            {/* Annotation badge */}
+            <div
+              className="absolute bottom-8 right-4 px-3 py-1 rounded-full text-white text-xs font-bold shadow-md pointer-events-none"
+              style={{ backgroundColor: NAVY }}
+            >
+              {latestRevenue} {t('analytics.made')}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
 }

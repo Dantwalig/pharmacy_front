@@ -1,119 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { useMedicationForm } from '@/hooks/useMedicationForm';
+import { FDA_CATEGORIES } from '@/lib/constants';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const FDA_CATEGORIES = [
-  'Analgesics & Antipyretics', 'Antibiotics & Antimicrobials', 'Antifungals',
-  'Antivirals & Antiretrovirals', 'Antimalaria', 'Antituberculosis',
-  'Antiparasitics & Anthelmintics', 'Cardiovascular & Antihypertensives',
-  'Antidiabetics', 'Gastrointestinal', 'Respiratory & Bronchodilators',
-  'Central Nervous System', 'Vitamins, Minerals & Supplements', 'Dermatologicals',
-  'Ophthalmologicals', 'ENT (Ear, Nose & Throat)', 'Hormones & Endocrine',
-  'Vaccines & Biologicals', 'Oncologicals', 'Immunosuppressants', 'Contraceptives',
-  'Haematologicals', 'Musculoskeletal & Anti-inflammatories', 'Urological',
-  'Psychiatric & Psychotropic', 'Anesthetics', 'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines', 'Other',
-];
-
 export default function BranchAddMedicationPage() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [branchId, setBranchId] = useState('');
-  const [branchName, setBranchName] = useState('');
-  const [branchLoading, setBranchLoading] = useState(true);
-  const [backendReady, setBackendReady] = useState(true);
+  const { t }    = useTranslation();
+  const router   = useRouter();
 
-  const [form, setForm] = useState({
-    name: '',
-    category: FDA_CATEGORIES[0],
-    chemicalName: '',
-    description: '',
-    price: '',
-    quantity: '',
-    lowStockThreshold: '10',
-    requiresPrescription: false,
-  });
+  const {
+    form, setForm,
+    loading,
+    backendPending,
+    handleSubmit,
+  } = useMedicationForm('branch');
 
-  useEffect(() => {
-    // Branch manager belongs to one branch — fetch it from their profile
-    // GET /staff/profile/me is not available for BRANCH_MANAGER
-    // Instead we use GET /branches/my-branches which is restricted to PHARMACY only
-    // BACKEND NOTE: the backend team should expose the manager's branch via auth context
-    // For now we rely on the dashboard data which fetches /attendance/summary (includes branchId)
-    // As a fallback we read from the JWT-cached user object if available
-    const cached = localStorage.getItem('branchId') || sessionStorage.getItem('branchId');
-    if (cached) {
-      setBranchId(cached);
-      setBranchLoading(false);
-    } else {
-      // Try to infer from attendance summary which contains branchId in context
-      api.get('/attendance/summary')
-        .then(res => {
-          // branchId is resolved server-side from the JWT; we don't get it back directly
-          // We display branch name from the summary if available
-          if (res.data?.branchName) setBranchName(res.data.branchName);
-          setBranchLoading(false);
-        })
-        .catch(() => setBranchLoading(false));
-    }
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // BACKEND PENDING: POST /medications
-      // This endpoint currently restricts access to Role.PHARMACY only.
-      // The backend team needs to add Role.BRANCH_MANAGER to the @Roles decorator.
-      // The backend service should resolve the branchId from the JWT (same pattern
-      // as it already does for PHARMACY role using findByUserId).
-      // When done, this call will work automatically with no frontend changes needed.
-      await api.post('/medications', {
-        name: form.name,
-        chemicalName: form.chemicalName || undefined,
-        description: form.description || undefined,
-        category: form.category,
-        price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
-        lowStockThreshold: parseInt(form.lowStockThreshold),
-        requiresPrescription: form.requiresPrescription,
-        branchId: branchId,
-      });
-      toast.success(t('success.medicationAdded'));
-      router.push('/branch/inventory');
-    } catch (err: any) {
-      if (err?.response?.status === 403) {
-        setBackendReady(false);
-        toast.error(t('errors.backendNotEnabled'));
-      } else {
-        toast.error(err.response?.data?.message || t('errors.failedToLoad'));
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const inputCls = "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400 transition-colors";
-  const labelCls = "block text-sm font-semibold text-gray-700 mb-1";
+  const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400 transition-colors';
+  const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-
-      <button
-        onClick={() => router.push('/branch/inventory')}
+      <button onClick={() => router.push('/branch/inventory')}
         className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}
-      >
+        style={{ color: NAVY }}>
         <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
       </button>
 
@@ -122,7 +36,7 @@ export default function BranchAddMedicationPage() {
         <p className="mt-1 text-white/70">{t('inventory.addMedicationBranchSubtitle')}</p>
       </div>
 
-      {!backendReady && (
+      {backendPending && (
         <div className="flex items-start gap-3 px-4 py-4 rounded-xl border border-yellow-200 bg-yellow-50">
           <LockClosedIcon className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
           <div>
@@ -139,7 +53,6 @@ export default function BranchAddMedicationPage() {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
-
         <div>
           <label className={labelCls}>Medication Name <span className="text-red-500">*</span></label>
           <input type="text" required value={form.name}
