@@ -209,6 +209,7 @@ export default function PatientNotificationsPage() {
             );
           })}
         </div>
+      </div>
 
       {/* ── Notifications list ───────────────────────────── */}
       <div>
