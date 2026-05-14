@@ -10,17 +10,24 @@ export interface PharmacyLocationResponse {
   total: number;
 }
 
+export interface FetchResult<T> {
+  data: T | null;
+  error: string | null;
+}
+
 /**
  * Fetch all pharmacy locations for the map
  * TODO: Uncomment real API call and remove mock return
  */
-export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
+export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLocation[]>> {
   try {
     const res = await api.get<PharmacyLocationResponse>('/pharmacies/locations');
-    return res.data.pharmacies;
+    return { data: res.data.pharmacies, error: null };
   } catch (error) {
-    console.error('Error fetching global locations:', error);
-    return []; // No more mock data
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : 'Failed to load pharmacies' 
+    };
   }
 }
 
@@ -33,17 +40,26 @@ export async function fetchNearbyPharmacies(
   lat: number,
   lng: number,
   radiusKm = 5
-): Promise<PharmacyLocation[]> {
+): Promise<FetchResult<PharmacyLocation[]>> {
   if (!lat || !lng) {
-    return [];
+    return {
+      data: null,
+      error: 'Location coordinates are required',
+    };
   }
+
   try {
     const res = await api.get(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
     // Backend returns data in data array when successful
-    return res.data?.data ?? res.data ?? [];
+    const pharmacies = res.data?.data ?? res.data ?? [];
+    return { data: pharmacies, error: null };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load nearby pharmacies';
     console.error('Error fetching nearby locations:', error);
-    return []; // Return empty array instead of mock data so the UI doesn't show fake pharmacies
+    return { 
+      data: null, 
+      error: errorMessage 
+    };
   }
 }
 
@@ -51,12 +67,32 @@ export async function fetchNearbyPharmacies(
  * Fetch a single pharmacy by ID
  * TODO: Backend endpoint GET /pharmacies/:id
  */
-export async function fetchPharmacyById(id: string): Promise<PharmacyLocation | null> {
+export async function fetchPharmacyById(id: string): Promise<FetchResult<PharmacyLocation>> {
+  if (!id) {
+    return { 
+      data: null, 
+      error: 'Pharmacy ID is required' 
+    };
+  }
+
   try {
     const res = await api.get(`/pharmacies/${id}`);
-    return res.data?.data ?? res.data ?? null;
+    const pharmacy = res.data?.data ?? res.data ?? null;
+    
+    if (!pharmacy) {
+      return { 
+        data: null, 
+        error: 'Pharmacy not found' 
+      };
+    }
+
+    return { data: pharmacy, error: null };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load pharmacy details';
     console.error('Error fetching pharmacy by ID:', error);
-    return null; // Don't fall back to mock data
+    return { 
+      data: null, 
+      error: errorMessage 
+    };
   }
 }
