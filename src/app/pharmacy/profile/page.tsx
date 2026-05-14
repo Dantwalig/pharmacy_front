@@ -1,9 +1,11 @@
 'use client';
 // src/app/(pharmacy)/profile/page.tsx
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, FileText, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { api } from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -14,26 +16,41 @@ export default function PharmacyProfilePage() {
   const [ownerName, setOwnerName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(true);
+
+  const fetchProfileData = useCallback(
+    async (signal: AbortSignal) => {
+      const res = await api.get('/pharmacies/profile/me', { signal });
+      return res.data?.data ?? res.data;
+    },
+    []
+  );
+
+  const { data, loading, error } = useFetch<any>(fetchProfileData, []);
 
   useEffect(() => {
-    api.get('/pharmacies/profile/me')
-      .then(r => {
-        const d = r.data?.data ?? r.data;
-        setProfile(d);
-        setOwnerName(d?.representativeName ?? d?.ownerName ?? d?.name ?? '');
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    if (data) {
+      setProfile(data);
+      setOwnerName(data?.representativeName ?? data?.ownerName ?? data?.name ?? '');
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(t('errors.failedToLoadProfile'));
+    }
+  }, [error, t]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await api.put('/pharmacies/profile/me', { representativeName: ownerName });
       setSaved(true);
+      toast.success(t('common.savedSuccessfully'));
       setTimeout(() => setSaved(false), 3000);
-    } catch {}
+    } catch (err) {
+      toast.error(t('errors.failedToSaveProfile'));
+      console.error('Profile save failed:', err);
+    }
     setSaving(false);
   };
 
