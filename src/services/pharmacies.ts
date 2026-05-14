@@ -40,8 +40,7 @@ export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
       region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown',
       hours: p.operatingHours ? 'Various' : '08:00 - 20:00',
     }));
-  } catch (error) {
-    console.error('Error fetching global locations:', error);
+  } catch {
     return [];
   }
 }
@@ -62,8 +61,7 @@ export async function fetchNearbyPharmacies(
   try {
     const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
     return unwrapData<PharmacyLocation>(res.data);
-  } catch (error) {
-    console.error('Error fetching nearby locations:', error);
+  } catch {
     return [];
   }
 }
@@ -76,8 +74,7 @@ export async function fetchPharmacyById(id: string): Promise<PharmacyLocation | 
   try {
     const res = await api.get<ApiResponse<PharmacyLocation>>(`/pharmacies/${id}`);
     return res.data.data ?? null;
-  } catch (error) {
-    console.error('Error fetching pharmacy by ID:', error);
+  } catch {
     return null;
   }
 }
