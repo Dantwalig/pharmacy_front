@@ -115,8 +115,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
+      // Logout cleanup always runs in finally
     } finally {
       removeAuthTokens();
       clearUserCache();
@@ -158,8 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = { ...currentUser, ...response.data };
       cacheUserData(userData);
       setUser(userData);
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
+    } catch {
       removeAuthTokens();
       clearUserCache();
       setUser(null);
