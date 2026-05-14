@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
+import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 
 const STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];

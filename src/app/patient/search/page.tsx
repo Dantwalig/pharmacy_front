@@ -62,8 +62,8 @@ export default function SearchPage() {
     setMapLoading(true);
     try {
       const data = await fetchPharmacyLocations();
-      setAllPharmacies(data);
-      setMapPharmacies(data);
+      setAllPharmacies(data ?? []);
+      setMapPharmacies(data ?? []);
     } catch {
       toast.error('Failed to load pharmacies.');
     } finally {
@@ -78,11 +78,21 @@ export default function SearchPage() {
       (async () => {
         setMapLoading(true);
         const nearby = await fetchNearbyPharmacies(coords[0], coords[1]);
-        setMapPharmacies(nearby);
+        setMapPharmacies(nearby ?? []);
         setMapLoading(false);
       })();
     }
   }, [geoStatus, coords]);
+
+  // Compute routes from user to the 3 nearest pharmacies
+  const routes = (geoStatus === 'success' && coords && mapPharmacies.length > 0)
+    ? mapPharmacies.slice(0, 3).filter(p => p.latitude && p.longitude).map(p => ({
+        points: [coords, [p.latitude!, p.longitude!]] as [number, number][],
+        color: NAVY,
+        weight: 3,
+        dashed: true
+      }))
+    : [];
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,8 +284,9 @@ export default function SearchPage() {
                 <MapView
                   pharmacies={mapPharmacies}
                   center={mapCenter}
-                  zoom={DEFAULT_ZOOM}
+                  zoom={14}
                   selectedId={selectedId}
+                  routes={routes}
                   onSelectPharmacy={handleSelectPharmacy}
                   onViewDetails={handleViewDetails}
                   userLocation={coords}

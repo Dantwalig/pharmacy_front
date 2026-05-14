@@ -18,6 +18,7 @@ import {
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import type { MapMarker } from '@/components/map/BaseMap';
+import { MapSkeleton } from '@/components/map/MapStates';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -165,6 +166,7 @@ export default function BranchMapPage() {
         const data = compRes.value.data;
         setCompetitors(Array.isArray(data) ? data : []);
       }
+
     } catch {
       setError(true);
     } finally {
@@ -234,6 +236,30 @@ export default function BranchMapPage() {
   // We pass triangulate=true only when own + sisters are shown; BaseMap draws mesh.
   // The "star" feel comes naturally since managerBranch is always marker[0].
   const doTriangulate = showSisters && sistersWithCoords.length > 0 && managerBranch?.latitude != null;
+
+  // Competitors
+  if (showCompetitors) {
+    competitors.forEach(c => {
+      markers.push({
+        id: `comp-${c.id}`,
+        lat: c.latitude,
+        lng: c.longitude,
+        label: c.name,
+        type: 'competitor',
+      });
+    });
+  }
+
+  // Generate simulated Heatmap Points around myBranch
+  const heatmapPoints: [number, number, number][] = [];
+  if (showHeatmap && myBranch?.latitude && myBranch?.longitude) {
+    for (let i = 0; i < 60; i++) {
+      const latOffset = (Math.random() - 0.5) * 0.04;
+      const lngOffset = (Math.random() - 0.5) * 0.04;
+      const intensity = Math.random() * 0.8 + 0.2;
+      heatmapPoints.push([myBranch.latitude + latOffset, myBranch.longitude + lngOffset, intensity]);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -329,7 +355,7 @@ export default function BranchMapPage() {
 
             {/* Map canvas */}
             {loading ? (
-              <div className="rounded-2xl bg-gray-100 animate-pulse" style={{ height: '480px' }} />
+              <div style={{ height: '480px' }}><MapSkeleton /></div>
             ) : markers.length === 0 ? (
               <div
                 className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 gap-3"

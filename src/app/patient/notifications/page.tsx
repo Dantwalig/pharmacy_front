@@ -1,5 +1,3 @@
-// frontend/src/app/patient/notifications/page.tsx
-
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -30,6 +28,7 @@ interface Notification {
   message: string;
   isRead: boolean;
   orderId?: string;
+  prescriptionId?: string;
   createdAt: string;
 }
 
@@ -210,12 +209,12 @@ export default function PatientNotificationsPage() {
             );
           })}
         </div>
-      </div>
 
       {/* ── Notifications list ───────────────────────────── */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">{sectionTitle}</h2>
 
+        {/* ── Notification cards ────────────────────────────────────────── */}
         {filteredNotifications.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
             <BellIcon className="w-14 h-14 text-gray-300 mx-auto mb-4" />

@@ -71,15 +71,15 @@ export default function CartPage() {
                     </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 border-2 border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden">
-                      <button onClick={() => updateQuantity(item.medicationId, item.quantity - 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <button onClick={() => updateQuantity(item.medicationId, item.quantity - 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={`Decrease quantity of ${item.name}`}>
                         <MinusIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                       <span className="px-4 font-bold text-gray-800 dark:text-gray-100">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.medicationId, item.quantity + 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <button onClick={() => updateQuantity(item.medicationId, item.quantity + 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={`Increase quantity of ${item.name}`}>
                         <PlusIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                     </div>
-                    <button onClick={() => removeFromCart(item.medicationId)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                    <button onClick={() => removeFromCart(item.medicationId)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" aria-label={`Remove ${item.name} from cart}`}>
                       <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>

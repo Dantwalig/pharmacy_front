@@ -11,6 +11,7 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Important for CORS with credentials
+  timeout: 15000, // 15 second timeout to prevent endless hanging
 });
 
 // Request interceptor - Add auth token
@@ -157,5 +158,17 @@ export const authApi = {
     return response.data;
   },
 };
+
+/**
+ * Normalises API responses that sometimes wrap arrays in { data: [...] }
+ * and sometimes return the array directly.
+ */
+export function unwrapData<T = unknown>(payload: unknown, fallback: T[] = []): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === 'object' && Array.isArray((payload as any).data)) {
+    return (payload as any).data as T[];
+  }
+  return fallback;
+}
 
 export default api;
