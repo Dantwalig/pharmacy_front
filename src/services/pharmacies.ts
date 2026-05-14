@@ -1,4 +1,4 @@
-﻿// src/services/pharmacies.ts
+// src/services/pharmacies.ts
 // Placeholder API service for pharmacy location data
 // TODO: Replace mock data with real API calls when backend /api/pharmacies/locations is ready
 
@@ -17,11 +17,29 @@ export interface PharmacyLocationResponse {
  */
 export async function fetchPharmacyLocations(): Promise<PharmacyLocation[]> {
   try {
-    const res = await api.get('/pharmacies/locations');
-    // Handle flat array, { data: [] }, or legacy { pharmacies: [] } shapes
-    const data = unwrapData<PharmacyLocation>(res.data);
-    if (data.length === 0 && Array.isArray(res.data?.pharmacies)) return res.data.pharmacies;
-    return data;
+    try {
+      const res = await api.get('/pharmacies/locations');
+      const data = unwrapData<PharmacyLocation>(res.data);
+      if (data.length > 0) return data;
+      if (Array.isArray(res.data?.pharmacies) && res.data.pharmacies.length > 0) return res.data.pharmacies;
+    } catch {
+      // Fallback for roles without access to /locations (e.g. Branch Managers)
+    }
+
+    // Fallback mapping directly to public /pharmacies endpoint
+    const res = await api.get('/pharmacies');
+    return res.data.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      address: p.address || 'No Address',
+      latitude: p.latitude,
+      longitude: p.longitude,
+      phone: p.phone || 'N/A',
+      status: p.status === 'APPROVED' ? 'OPEN' : 'CLOSED',
+      isActive: true,
+      region: p.address ? p.address.split(',').pop()?.trim() : 'Unknown',
+      hours: p.operatingHours ? 'Various' : '08:00 - 20:00',
+    }));
   } catch (error) {
     console.error('Error fetching global locations:', error);
     return [];

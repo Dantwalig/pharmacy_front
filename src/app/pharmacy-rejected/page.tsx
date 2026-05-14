@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import { SUPPORT_EMAIL } from '@/lib/constants';
 
 export default function PharmacyRejectedPage() {
   const { t } = useTranslation();
@@ -301,7 +302,7 @@ export default function PharmacyRejectedPage() {
           Need help? Contact our support team
           </p>
         <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-          Email: <span className="text-orange-600 dark:text-orange-400 font-medium">support@evuze.com</span>
+          Email: <span className="text-orange-600 dark:text-orange-400 font-medium">{SUPPORT_EMAIL}</span>
         </p>
       </div>
     </div>
