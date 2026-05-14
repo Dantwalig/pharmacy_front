@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { Order } from '@/types';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline';
@@ -40,7 +42,7 @@ export default function OrderDetailsPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
@@ -74,12 +76,13 @@ export default function OrderDetailsPage() {
       await api.patch(`/orders/${params.id}/cancel`, { cancellationReason: cancellationReason.trim() });
       toast.success(t('success.orderCancelled'));
       fetchOrderDetails();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('orders.failedToCancel'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setCancelling(false); }
   };
 
   const handlePayment = async () => {
+    if (!order) return;
     if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && !phoneNumber) {
       toast.error(t('orders.enterMobileNumber'));
       return;
@@ -243,16 +246,16 @@ export default function OrderDetailsPage() {
       <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.paymentSummary')}</h2>
       <div className="space-y-3">
         <div className="flex justify-between text-gray-700 dark:text-gray-300">
-          <span>{t('orders.subtotal')}</span><span>{order.subtotal.toLocaleString()} RWF</span>
+          <span>{t('orders.subtotal')}</span><span>{(order.subtotal ?? 0).toLocaleString()} RWF</span>
         </div>
-        {order.deliveryFee > 0 && (
+        {(order.deliveryFee ?? 0) > 0 && (
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-            <span>{t('orders.deliveryFee')}</span><span>{order.deliveryFee.toLocaleString()} RWF</span>
+            <span>{t('orders.deliveryFee')}</span><span>{(order.deliveryFee ?? 0).toLocaleString()} RWF</span>
           </div>
         )}
-          {order.insuranceCoverage > 0 && (
+          {(order.insuranceCoverage ?? 0) > 0 && (
             <div className="flex justify-between text-green-600 dark:text-green-400">
-            <span>{t('orders.insuranceCoverage')}</span><span>-{order.insuranceCoverage.toLocaleString()} RWF</span>
+            <span>{t('orders.insuranceCoverage')}</span><span>-{(order.insuranceCoverage ?? 0).toLocaleString()} RWF</span>
           </div>
         )}
           <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-xl">
@@ -265,7 +268,7 @@ export default function OrderDetailsPage() {
           {t('orders.paymentMethod')}: {t(PAYMENT_METHOD_KEYS[order.paymentMethod] ?? order.paymentMethod)}
           </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t('orders2.paymentStatus')}: <span className={`font-semibold ${order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{t(PAYMENT_STATUS_KEYS[order.paymentStatus] ?? order.paymentStatus)}</span>
+          {t('orders2.paymentStatus')}: <span className={`font-semibold ${order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{t(PAYMENT_STATUS_KEYS[order.paymentStatus ?? ''] ?? order.paymentStatus ?? '')}</span>
         </p>
 
         {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
