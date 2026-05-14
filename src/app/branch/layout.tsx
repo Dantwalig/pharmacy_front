@@ -8,7 +8,7 @@ import BranchTopbar from '@/components/branch/BranchTopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import SupportBot from '@/components/shared/SupportBot';
 
-const STANDALONE_PAGES = ['/branch/change-password', '/branch/pending-approval'];
+const STANDALONE_PAGES = ['/branch/pending-approval'];
 
 export default function BranchLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
