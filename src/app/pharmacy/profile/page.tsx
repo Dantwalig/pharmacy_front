@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, FileText, CheckCircle } from 'lucide-react';
 import { api } from '@/lib/api';
+import type { PharmacyProfile } from '@/types';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
 export default function PharmacyProfilePage() {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<PharmacyProfile | null>(null);
   const [ownerName, setOwnerName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

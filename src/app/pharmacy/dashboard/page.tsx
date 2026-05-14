@@ -7,6 +7,7 @@ import {
   Activity, GitBranch, DollarSign, AlertTriangle,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import type { PharmacyStats, PharmacyAnalytics, DailyRevenue, WeeklyRevenue } from '@/types';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend,
@@ -79,10 +80,10 @@ function RevenueTooltip({ active, payload, label }: any) {
 export default function PharmacyDashboard() {
   const { t } = useTranslation();
 
-  const [stats,         setStats]         = useState<any>(null);
-  const [analytics,     setAnalytics]     = useState<any>(null);
-  const [dailyRevenue,  setDailyRevenue]  = useState<any>(null);
-  const [weeklyRevenue, setWeeklyRevenue] = useState<any>(null);
+  const [stats,         setStats]         = useState<PharmacyStats | null>(null);
+  const [analytics,     setAnalytics]     = useState<PharmacyAnalytics | null>(null);
+  const [dailyRevenue,  setDailyRevenue]  = useState<DailyRevenue | null>(null);
+  const [weeklyRevenue, setWeeklyRevenue] = useState<WeeklyRevenue | null>(null);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState(false);
 

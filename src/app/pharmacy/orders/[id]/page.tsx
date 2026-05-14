@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { Order } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
@@ -48,7 +49,7 @@ export default function PharmacyOrderDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -237,7 +238,7 @@ export default function PharmacyOrderDetailPage() {
             </table>
             <div className="mt-4 pt-3 border-t border-gray-200 space-y-1 text-sm">
               <div className="flex justify-between text-gray-600"><span>{t('orders2.subtotal')}</span><span>{Number(order.subtotal || 0).toLocaleString()} RWF</span></div>
-              {order.deliveryFee > 0 && <div className="flex justify-between text-gray-600"><span>{t('orders2.deliveryFee')}</span><span>{Number(order.deliveryFee).toLocaleString()} RWF</span></div>}
+              {(order.deliveryFee ?? 0) > 0 && <div className="flex justify-between text-gray-600"><span>{t('orders2.deliveryFee')}</span><span>{Number(order.deliveryFee ?? 0).toLocaleString()} RWF</span></div>}
                 <div className="flex justify-between font-bold text-base border-t pt-2"><span>{t('cart.total')}</span><span className="text-teal-600">{Number(order.total || 0).toLocaleString()} RWF</span></div>
             </div>
           </div>

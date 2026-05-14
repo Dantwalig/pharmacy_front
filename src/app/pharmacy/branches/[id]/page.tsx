@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, DollarSign, Users, Mail, Package, Ban } from 'lucide-react';
 import { api } from '@/lib/api';
+import type { BranchDetail } from '@/types';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -13,7 +14,7 @@ export default function BranchDetailPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useParams();
-  const [branch, setBranch] = useState<any>(null);
+  const [branch, setBranch] = useState<BranchDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [sendingCreds, setSendingCreds] = useState(false);

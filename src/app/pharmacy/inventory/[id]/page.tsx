@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
@@ -22,8 +23,8 @@ export default function EditMedicationPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [med, setMed] = useState<any>(null);
-  const [form, setForm] = useState<any>({});
+  const [med, setMed] = useState<MedicationDetail | null>(null);
+  const [form, setForm] = useState<MedicationForm>({} as MedicationForm);
 
   useEffect(() => { fetchMedication(); }, [params.id]);
 
@@ -55,8 +56,8 @@ export default function EditMedicationPage() {
         category: form.category,
         chemicalName: form.dosage || undefined,
         description: form.description || undefined,
-        price: parseFloat(form.unitPrice),       // correct field name
-        quantity: parseInt(form.quantityInStock), // correct field name
+        price: parseFloat(form.unitPrice ?? '0'),
+        quantity: parseInt(form.quantityInStock ?? '0'),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
@@ -94,8 +95,9 @@ export default function EditMedicationPage() {
 
   if (!med) return null;
 
-  const stockStatus = form.quantityInStock == 0 ? 'out' :
-    form.quantityInStock <= (form.lowStockThreshold || 10) ? 'low' : 'ok';
+  const qty = Number(form.quantityInStock ?? 0);
+  const stockStatus = qty === 0 ? 'out' :
+    qty <= Number(form.lowStockThreshold || 10) ? 'low' : 'ok';
 
   return (
     <div className="flex min-h-screen bg-gray-50">
