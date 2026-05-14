@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { AttendanceSummary } from '@/types';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ShoppingCartIcon,
@@ -42,7 +43,7 @@ function RevenueTooltip({ active, payload, label }: any) {
 export default function BranchAnalyticsPage() {
   const { t } = useTranslation();
   const [orders, setOrders] = useState<any[]>([]);
-  const [attendanceSummary, setAttendanceSummary] = useState<any>(null);
+  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

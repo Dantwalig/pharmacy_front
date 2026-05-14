@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
@@ -20,8 +21,8 @@ export default function BranchEditMedicationPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [backendReady, setBackendReady] = useState(true);
-  const [med, setMed] = useState<any>(null);
-  const [form, setForm] = useState<any>({});
+  const [med, setMed] = useState<MedicationDetail | null>(null);
+  const [form, setForm] = useState<MedicationForm>({} as MedicationForm);
 
   useEffect(() => { fetchMedication(); }, [params.id]);
 
@@ -36,10 +37,12 @@ export default function BranchEditMedicationPage() {
         category: data.category || FDA_CATEGORIES[0],
         chemicalName: data.chemicalName || '',
         description: data.description || '',
-        price: data.price || '',
-        quantity: data.quantity || '',
-        lowStockThreshold: data.lowStockThreshold ?? 10,
+        price: String(data.price || ''),
+        quantity: String(data.quantity || ''),
+        lowStockThreshold: String(data.lowStockThreshold ?? 10),
         requiresPrescription: data.requiresPrescription || false,
+        manufacturer: data.manufacturer || '',
+        expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString().split('T')[0] : '',
       });
     } catch {
       toast.error(t('errors.failedToLoadMedication'));
@@ -61,8 +64,8 @@ export default function BranchEditMedicationPage() {
         category: form.category,
         chemicalName: form.chemicalName || undefined,
         description: form.description || undefined,
-        price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
+        price: parseFloat(form.price ?? '0'),
+        quantity: parseInt(form.quantity ?? '0'),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
