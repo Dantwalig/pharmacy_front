@@ -83,8 +83,7 @@ export default function SuperAdminDashboard() {
       setPendingPharmacies(pendingRes.data);
       setPendingBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
       setUnverifiedLocations(Array.isArray(unverifiedRes.data) ? unverifiedRes.data : []);
-    } catch (error: any) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch (error: unknown) {
       toast.error(t('errors.failedToLoadDashboard'));
     } finally {
       setLoading(false);

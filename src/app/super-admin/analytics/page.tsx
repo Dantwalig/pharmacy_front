@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { SuperAdminAnalytics, SuperAdminRevenue } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -16,8 +17,8 @@ import {
 
 export default function SuperAdminAnalyticsPage() {
   const { t } = useTranslation();
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [revenue, setRevenue] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<SuperAdminAnalytics | null>(null);
+  const [revenue, setRevenue] = useState<SuperAdminRevenue | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,8 +35,7 @@ export default function SuperAdminAnalyticsPage() {
       
       setAnalytics(analyticsRes.data);
       setRevenue(revenueRes.data);
-    } catch (error: any) {
-      console.error('Failed to fetch analytics:', error);
+    } catch (error: unknown) {
       toast.error(t('errors.failedToLoadAnalytics'));
     } finally {
       setLoading(false);
@@ -137,7 +137,7 @@ export default function SuperAdminAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.avgOrderValue')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    ${revenue?.transactionCount ? (revenue.totalRevenue / revenue.transactionCount).toFixed(2) : 0}
+                    ${revenue?.transactionCount ? ((revenue.totalRevenue ?? 0) / revenue.transactionCount).toFixed(2) : 0}
                     </p>
                 </div>
                 <CurrencyDollarIcon className="w-12 h-12 text-green-500" />
