@@ -69,6 +69,42 @@ export default function PharmacyPatientsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [activeTab, setActiveTab] = useState<'orders' | 'prescriptions'>('orders');
+  
+  const [sortOrder, setSortOrder] = useState<'recent' | 'oldest' | 'spent-high' | 'spent-low' | 'orders-high'>('recent');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [viewingPrescription, setViewingPrescription] = useState<any | null>(null);
+
+  // Order History Tab state
+  const [orderSearchTerm, setOrderSearchTerm] = useState('');
+  const [orderFilterStatus, setOrderFilterStatus] = useState<string>('all');
+  const [orderSortOrder, setOrderSortOrder] = useState<'recent' | 'oldest' | 'highest' | 'lowest'>('recent');
+  const [showOrderFilterMenu, setShowOrderFilterMenu] = useState(false);
+  const [showOrderSortMenu, setShowOrderSortMenu] = useState(false);
+
+  const getFilteredSortedOrders = () => {
+    if (!selectedPatient) return [];
+    
+    let filtered = selectedPatient.orders.filter(order => {
+      const searchLower = orderSearchTerm.toLowerCase();
+      const matchesSearch = order.orderNumber.toLowerCase().includes(searchLower) || 
+                            order.itemsSummary.toLowerCase().includes(searchLower);
+      const matchesStatus = orderFilterStatus === 'all' ? true : order.status === orderFilterStatus;
+      return matchesSearch && matchesStatus;
+    });
+
+    return filtered.sort((a, b) => {
+      switch (orderSortOrder) {
+        case 'oldest': return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'highest': return b.total - a.total;
+        case 'lowest': return a.total - b.total;
+        case 'recent':
+        default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+  };
+
 
   useEffect(() => {
     fetchPatients();
@@ -189,11 +225,40 @@ export default function PharmacyPatientsPage() {
     }
   };
 
-  const filteredPatients = patients.filter(patient =>
-    `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone.includes(searchTerm)
-  );
+  const filteredPatients = patients.filter(patient => {
+    const matchesSearch = `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.phone.includes(searchTerm);
+      
+    const matchesStatus = filterStatus === 'all' ? true : patient.memberStatus === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    switch (sortOrder) {
+      case 'oldest':
+        return new Date(a.registeredDate).getTime() - new Date(b.registeredDate).getTime();
+      case 'spent-high':
+        return b.totalSpent - a.totalSpent;
+      case 'spent-low':
+        return a.totalSpent - b.totalSpent;
+      case 'orders-high':
+        return b.totalOrders - a.totalOrders;
+      case 'recent':
+      default:
+        return new Date(b.registeredDate).getTime() - new Date(a.registeredDate).getTime();
+    }
+  });
+
+  const getSortLabel = () => {
+    switch (sortOrder) {
+      case 'recent': return 'Sort: Recent';
+      case 'oldest': return 'Sort: Oldest';
+      case 'spent-high': return 'Sort: Highest Spent';
+      case 'spent-low': return 'Sort: Lowest Spent';
+      case 'orders-high': return 'Sort: Most Orders';
+      default: return 'Sort: Recent';
+    }
+  };
 
   if (loading) {
     return (
@@ -320,25 +385,91 @@ export default function PharmacyPatientsPage() {
 
         {/* Tabs & List Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
-          <div className="flex border-b border-gray-100 px-8 pt-6 gap-8">
-            <button 
-              className={`pb-4 text-sm transition-colors relative ${activeTab === 'orders' ? 'text-blue-600 font-black' : 'text-gray-500 font-semibold hover:text-gray-700'}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              {t('patientPageUI.orderHistory') || 'Order History'}
-              {activeTab === 'orders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-            </button>
-            <button 
-              className={`pb-4 text-sm transition-colors relative ${activeTab === 'prescriptions' ? 'text-blue-600 font-black' : 'text-gray-500 font-semibold hover:text-gray-700'}`}
-              onClick={() => setActiveTab('prescriptions')}
-            >
-              {t('patientPageUI.prescriptionsTab') || 'Prescriptions'}
-              {activeTab === 'prescriptions' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 px-8 pt-6 pb-2 gap-4">
+            <div className="flex gap-8">
+              <button 
+                className={`pb-4 text-sm transition-colors relative ${activeTab === 'orders' ? 'text-blue-600 font-black' : 'text-gray-500 font-semibold hover:text-gray-700'}`}
+                onClick={() => setActiveTab('orders')}
+              >
+                {t('patientPageUI.orderHistory') || 'Order History'}
+                {activeTab === 'orders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+              </button>
+              <button 
+                className={`pb-4 text-sm transition-colors relative ${activeTab === 'prescriptions' ? 'text-blue-600 font-black' : 'text-gray-500 font-semibold hover:text-gray-700'}`}
+                onClick={() => setActiveTab('prescriptions')}
+              >
+                {t('patientPageUI.prescriptionsTab') || 'Prescriptions'}
+                {activeTab === 'prescriptions' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+              </button>
+            </div>
+
+            {activeTab === 'orders' && (
+              <div className="flex items-center gap-3 w-full sm:w-auto pb-2 sm:pb-0">
+                <div className="relative hidden md:block">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search orders..."
+                    value={orderSearchTerm}
+                    onChange={(e) => setOrderSearchTerm(e.target.value)}
+                    className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-full sm:w-64"
+                  />
+                </div>
+                
+                {/* Filter Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                      setShowOrderFilterMenu(!showOrderFilterMenu);
+                      setShowOrderSortMenu(false);
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  >
+                    <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                    Filter
+                    {orderFilterStatus !== 'all' && <span className="ml-1 w-2 h-2 rounded-full bg-blue-600"></span>}
+                  </button>
+                  {showOrderFilterMenu && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                      <div className="p-2">
+                        <button onClick={() => { setOrderFilterStatus('all'); setShowOrderFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderFilterStatus === 'all' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>All</button>
+                        <button onClick={() => { setOrderFilterStatus('PENDING'); setShowOrderFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderFilterStatus === 'PENDING' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Pending</button>
+                        <button onClick={() => { setOrderFilterStatus('ACCEPTED'); setShowOrderFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderFilterStatus === 'ACCEPTED' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Accepted</button>
+                        <button onClick={() => { setOrderFilterStatus('COMPLETED'); setShowOrderFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderFilterStatus === 'COMPLETED' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Completed</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                      setShowOrderSortMenu(!showOrderSortMenu);
+                      setShowOrderFilterMenu(false);
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  >
+                    <Bars3BottomRightIcon className="w-4 h-4" />
+                    Sort: {orderSortOrder === 'recent' ? 'Recent' : orderSortOrder === 'oldest' ? 'Oldest' : orderSortOrder === 'highest' ? 'Highest' : 'Lowest'}
+                  </button>
+                  {showOrderSortMenu && (
+                    <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                      <div className="p-2">
+                        <button onClick={() => { setOrderSortOrder('recent'); setShowOrderSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderSortOrder === 'recent' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Recent</button>
+                        <button onClick={() => { setOrderSortOrder('oldest'); setShowOrderSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderSortOrder === 'oldest' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Oldest</button>
+                        <button onClick={() => { setOrderSortOrder('highest'); setShowOrderSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderSortOrder === 'highest' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Highest Spent</button>
+                        <button onClick={() => { setOrderSortOrder('lowest'); setShowOrderSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg ${orderSortOrder === 'lowest' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Lowest Spent</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="p-8 space-y-4">
-            {activeTab === 'orders' && selectedPatient.orders.map(order => (
+            {activeTab === 'orders' && getFilteredSortedOrders().map(order => (
               <div key={order.id} className="flex items-center justify-between p-5 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow">
                 <div className="flex items-center gap-5">
                   <div className={`p-2.5 rounded-full ${
@@ -373,7 +504,7 @@ export default function PharmacyPatientsPage() {
               </div>
             ))}
 
-            {activeTab === 'orders' && selectedPatient.orders.length === 0 && (
+            {activeTab === 'orders' && getFilteredSortedOrders().length === 0 && (
               <p className="text-gray-500 py-4 text-center">{t('common.noData') || 'No data found'}</p>
             )}
             
@@ -388,7 +519,10 @@ export default function PharmacyPatientsPage() {
                     <p className="text-sm text-gray-500 mt-1">{t('patientPageUI.uploaded') || 'Uploaded:'} {rx.uploadedDate}</p>
                   </div>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-2.5 border border-blue-200 text-blue-600 rounded-full text-sm font-semibold hover:bg-blue-50 transition-colors">
+                <button 
+                  onClick={() => setViewingPrescription(rx)}
+                  className="flex items-center gap-2 px-6 py-2.5 border border-blue-200 text-blue-600 rounded-full text-sm font-semibold hover:bg-blue-50 transition-colors"
+                >
                   <EyeIcon className="w-4 h-4" />
                   {t('patientPageUI.viewBtn') || 'View'}
                 </button>
@@ -400,6 +534,105 @@ export default function PharmacyPatientsPage() {
             )}
           </div>
         </div>
+
+        {/* Prescription Viewer Modal */}
+        {viewingPrescription && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white relative z-10">
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">{viewingPrescription.rxNumber}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Uploaded {viewingPrescription.uploadedDate}</p>
+                </div>
+                <button 
+                  onClick={() => setViewingPrescription(null)}
+                  className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <span className="text-2xl font-light leading-none">&times;</span>
+                </button>
+              </div>
+              
+              <div className="p-8 flex-1 overflow-y-auto bg-gray-50 flex flex-col items-center justify-center min-h-[400px]">
+                {viewingPrescription.type === 'doc' ? (
+                  <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                    <div className="border-b-2 border-gray-100 pb-4 mb-6 text-center">
+                      <h2 className="text-2xl font-bold text-blue-900 uppercase tracking-widest">Prescription</h2>
+                      <p className="text-sm text-gray-500 mt-2">Dr. House Clinic</p>
+                    </div>
+                    <div className="space-y-4 text-sm">
+                      <div className="flex justify-between border-b border-gray-50 pb-2">
+                        <span className="text-gray-500 font-medium">Patient:</span>
+                        <span className="font-bold text-gray-900">{selectedPatient?.firstName} {selectedPatient?.lastName}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-gray-50 pb-2">
+                        <span className="text-gray-500 font-medium">Date:</span>
+                        <span className="font-bold text-gray-900">{viewingPrescription.uploadedDate}</span>
+                      </div>
+                      <div className="pt-4 space-y-3">
+                        <p className="font-bold text-gray-900">Rx:</p>
+                        <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                          <li>Amoxicillin 500mg, Take 1 tablet every 8 hours for 7 days</li>
+                          <li>Ibuprofen 400mg, Take 1 tablet as needed for pain</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="mt-12 pt-6 border-t border-gray-100 text-center">
+                      <div className="w-32 h-16 border-b-2 border-blue-900 mx-auto mb-2 opacity-50 relative">
+                        <span className="absolute bottom-1 left-0 right-0 text-gray-400 italic text-lg" style={{ fontFamily: "cursive" }}>Dr. Signature</span>
+                      </div>
+                      <p className="text-xs text-gray-400">Authorized Signature</p>
+                    </div>
+                  </div>
+                ) : viewingPrescription.type === 'card' ? (
+                  <div className="w-full max-w-md bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl shadow-xl text-white">
+                    <div className="flex justify-between items-start mb-8">
+                      <div className="flex items-center gap-2">
+                        <CheckBadgeIcon className="w-8 h-8 text-blue-200" />
+                        <span className="font-black text-xl tracking-wider">MEDICARD</span>
+                      </div>
+                      <span className="text-blue-200 text-xs font-bold uppercase tracking-widest">Insurance</span>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-blue-200 text-xs font-medium mb-1">Member Name</p>
+                        <p className="font-bold text-lg">{selectedPatient?.firstName} {selectedPatient?.lastName}</p>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="text-blue-200 text-xs font-medium mb-1">ID Number</p>
+                          <p className="font-mono font-bold">{viewingPrescription.rxNumber.replace('RX - ', 'ID-')}</p>
+                        </div>
+                        <div>
+                          <p className="text-blue-200 text-xs font-medium mb-1">Valid Thru</p>
+                          <p className="font-bold">12/28</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-sm bg-yellow-50 p-6 rounded-2xl shadow-sm border border-yellow-200 text-center text-yellow-800">
+                    <DocumentTextIcon className="w-16 h-16 mx-auto mb-4 text-yellow-600 opacity-50" />
+                    <h3 className="font-bold text-lg mb-2">Medical Bill Copy</h3>
+                    <p className="text-sm opacity-80">Reference: {viewingPrescription.rxNumber}</p>
+                    <p className="text-xs mt-4 opacity-60">This is a digitized copy of a physical document.</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 border-t border-gray-100 bg-white flex justify-end gap-3 z-10">
+                <button className="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                  Print Document
+                </button>
+                <button 
+                  onClick={() => setViewingPrescription(null)}
+                  className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
+                >
+                  Close View
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -478,14 +711,57 @@ export default function PharmacyPatientsPage() {
           />
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 w-full sm:w-auto transition-colors">
-            <AdjustmentsHorizontalIcon className="w-5 h-5" />
-            {t('patientPageUI.filter') || 'Filter'}
-          </button>
-          <button className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 w-full sm:w-auto transition-colors">
-            <Bars3BottomRightIcon className="w-5 h-5" />
-            {t('patientPageUI.sortRecent') || 'Sort: Recent'}
-          </button>
+          {/* Filter Dropdown */}
+          <div className="relative w-full sm:w-auto">
+            <button 
+              onClick={() => {
+                setShowFilterMenu(!showFilterMenu);
+                setShowSortMenu(false);
+              }}
+              className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 w-full sm:w-auto transition-colors"
+            >
+              <AdjustmentsHorizontalIcon className="w-5 h-5" />
+              {t('patientPageUI.filter') || 'Filter'}
+              {filterStatus !== 'all' && <span className="ml-1 w-2 h-2 rounded-full bg-blue-600"></span>}
+            </button>
+            {showFilterMenu && (
+              <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2">
+                  <div className="text-xs font-bold text-gray-400 uppercase px-3 py-2">Member Status</div>
+                  <button onClick={() => { setFilterStatus('all'); setShowFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${filterStatus === 'all' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>All Statuses</button>
+                  <button onClick={() => { setFilterStatus('VIP'); setShowFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${filterStatus === 'VIP' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>VIP Members</button>
+                  <button onClick={() => { setFilterStatus('ACTIVE'); setShowFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${filterStatus === 'ACTIVE' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Active Members</button>
+                  <button onClick={() => { setFilterStatus('NEW'); setShowFilterMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${filterStatus === 'NEW' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>New Members</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="relative w-full sm:w-auto">
+            <button 
+              onClick={() => {
+                setShowSortMenu(!showSortMenu);
+                setShowFilterMenu(false);
+              }}
+              className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 rounded-xl text-gray-700 text-sm font-bold hover:bg-gray-50 w-full sm:w-auto transition-colors"
+            >
+              <Bars3BottomRightIcon className="w-5 h-5" />
+              {getSortLabel()}
+            </button>
+            {showSortMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2">
+                  <div className="text-xs font-bold text-gray-400 uppercase px-3 py-2">Sort By</div>
+                  <button onClick={() => { setSortOrder('recent'); setShowSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${sortOrder === 'recent' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Most Recent</button>
+                  <button onClick={() => { setSortOrder('oldest'); setShowSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${sortOrder === 'oldest' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Oldest</button>
+                  <button onClick={() => { setSortOrder('spent-high'); setShowSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${sortOrder === 'spent-high' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Highest Spent</button>
+                  <button onClick={() => { setSortOrder('spent-low'); setShowSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${sortOrder === 'spent-low' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Lowest Spent</button>
+                  <button onClick={() => { setSortOrder('orders-high'); setShowSortMenu(false); }} className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${sortOrder === 'orders-high' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>Most Orders</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

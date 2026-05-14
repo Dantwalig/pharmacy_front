@@ -12,8 +12,8 @@ import {
   CubeIcon, CheckCircleIcon, UserGroupIcon, ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { POLLING_INTERVAL_MS } from '@/lib/constants';
 
-const POLL_INTERVAL_MS = 30_000; // 30 seconds
 
 interface Notification {
   id: string;
@@ -57,7 +57,7 @@ export default function PharmacyNotificationsPage() {
 
     intervalRef.current = setInterval(() => {
       fetchNotifications(true);
-    }, POLL_INTERVAL_MS);
+    }, POLLING_INTERVAL_MS);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
