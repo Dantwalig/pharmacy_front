@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import toast from 'react-hot-toast';
 import {
   BuildingStorefrontIcon,
   CheckCircleIcon,
@@ -12,6 +13,7 @@ import {
   MapPinIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { fetchPharmacyLocations } from '@/services/pharmacies';
 import { PharmacyLocation } from '@/features/map/pharmacyData';
@@ -38,6 +40,7 @@ export default function SuperAdminMapPage() {
   const [allPharmacies, setAllPharmacies] = useState<PharmacyLocation[]>([]);
   const [filtered, setFiltered] = useState<PharmacyLocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedPharmacy, setSelectedPharmacy] = useState<PharmacyLocation | null>(null);
   const [search, setSearch] = useState('');
@@ -47,10 +50,26 @@ export default function SuperAdminMapPage() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchPharmacyLocations();
-        setAllPharmacies(data);
-        setFiltered(data);
-      } catch {
+        setLoading(true);
+        setError(null);
+        const { data, error: fetchError } = await fetchPharmacyLocations();
+        
+        if (fetchError) {
+          setError(fetchError);
+          toast.error(fetchError);
+          setAllPharmacies([]);
+          setFiltered([]);
+          return;
+        }
+
+        if (data) {
+          setAllPharmacies(data);
+          setFiltered(data);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Failed to load pharmacies';
+        setError(errorMsg);
+        toast.error(errorMsg);
         setAllPharmacies([]);
         setFiltered([]);
       } finally {
@@ -170,6 +189,17 @@ export default function SuperAdminMapPage() {
         </div>
       </div>
 
+      {/* Error state */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-start gap-3">
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-semibold text-red-900 dark:text-red-200 text-sm">Failed to load pharmacies</p>
+            <p className="text-red-700 dark:text-red-300 text-xs mt-1">{error}</p>
+          </div>
+        </div>
+      )}
+
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -234,27 +264,37 @@ export default function SuperAdminMapPage() {
       </div>
 
       {/* Map + sidebar via MapLayout */}
-      <MapLayout
-        mapHeightMobile={360}
-        mapHeightTablet={440}
-        mapHeightDesktop={540}
-        map={
-          loading ? (
-            <MapSkeleton />
-          ) : (
-            <MapView
-              pharmacies={filtered}
-              center={RWANDA_CENTER}
-              zoom={RWANDA_ZOOM}
-              selectedId={selectedId}
-              onSelectPharmacy={handleSelectPharmacy}
-              onViewDetails={(id) => router.push(`/super-admin/pharmacies/${id}`)}
-              className="h-full"
-            />
-          )
-        }
-        sidebar={sidebarContent}
-      />
+      {error ? (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: `#ef444412` }}>
+            <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+          </div>
+          <p className="text-gray-700 dark:text-gray-200 font-semibold text-base mb-2">Unable to Load Map</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">{error}</p>
+        </div>
+      ) : (
+        <MapLayout
+          mapHeightMobile={360}
+          mapHeightTablet={440}
+          mapHeightDesktop={540}
+          map={
+            loading ? (
+              <MapSkeleton />
+            ) : (
+              <MapView
+                pharmacies={filtered}
+                center={RWANDA_CENTER}
+                zoom={RWANDA_ZOOM}
+                selectedId={selectedId}
+                onSelectPharmacy={handleSelectPharmacy}
+                onViewDetails={(id) => router.push(`/super-admin/pharmacies/${id}`)}
+                className="h-full"
+              />
+            )
+          }
+          sidebar={sidebarContent}
+        />
+      )}
     </div>
   );
 }
