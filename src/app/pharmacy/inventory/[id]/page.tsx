@@ -13,6 +13,7 @@ import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
 import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 
 export default function EditMedicationPage() {
@@ -64,8 +65,8 @@ export default function EditMedicationPage() {
       toast.success(t('success.medicationUpdated'));
       setEditing(false);
       fetchMedication();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Update failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setSaving(false); }
   };
 
@@ -76,8 +77,8 @@ export default function EditMedicationPage() {
       await api.delete(`/medications/${params.id}`);
       toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Delete failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setDeleting(false); }
   };
 

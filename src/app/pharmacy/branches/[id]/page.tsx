@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, DollarSign, Users, Mail, Package, Ban } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { BranchDetail } from '@/types';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -51,9 +52,8 @@ export default function BranchDetailPage() {
       // Refresh so manager field updates
       const r = await api.get(`/branches/${id}`);
       setBranch(r.data?.data ?? r.data);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message;
-      showMsg(msg ?? t('pharmacyOwner.credentialsFailed'), false);
+    } catch (error: unknown) {
+      showMsg(getErrorMessage(error), false);
     } finally {
       setSendingCreds(false);
     }
@@ -64,9 +64,8 @@ export default function BranchDetailPage() {
     try {
       await api.post(`/branches/${id}/resend`);
       showMsg(t('pharmacyOwner.credentialsResent'), true);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message;
-      showMsg(msg ?? t('pharmacyOwner.credentialsFailed'), false);
+    } catch (error: unknown) {
+      showMsg(getErrorMessage(error), false);
     } finally {
       setResendingCreds(false);
     }

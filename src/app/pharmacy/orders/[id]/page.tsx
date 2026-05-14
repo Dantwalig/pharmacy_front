@@ -9,6 +9,7 @@ import type { Order } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 const STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
 const DELIVERY_STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
@@ -68,7 +69,7 @@ export default function PharmacyOrderDetailPage() {
       await api.patch(`/orders/${params.id}/status`, { status });
       toast.success(`Order updated to ${status}`);
       fetchOrder();
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.updateFailed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setActionLoading(false); }
   };
 
@@ -80,7 +81,7 @@ export default function PharmacyOrderDetailPage() {
       toast.success(t('success.orderCancelled2'));
       setShowReject(false);
       fetchOrder();
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.failed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setActionLoading(false); }
   };
 
