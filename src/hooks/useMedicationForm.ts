@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { FDA_CATEGORIES } from '@/lib/constants';
 
 export type MedicationFormRole = 'pharmacy' | 'branch' | 'staff';
@@ -159,13 +160,13 @@ export function useMedicationForm(role: MedicationFormRole): UseMedicationFormRe
       toast.success(t('success.medicationAdded'));
       router.push(REDIRECT[role]);
 
-    } catch (err: any) {
-      if (err?.response?.status === 403) {
+    } catch (error: unknown) {
+      if ((error as any)?.response?.status === 403) {
         // Backend hasn't granted this role access to POST /medications yet
         setBackendPending(true);
         toast.error(t('errors.backendNotEnabled'));
       } else {
-        toast.error(err?.response?.data?.message || t('errors.failedToLoad'));
+        toast.error(getErrorMessage(error));
       }
     } finally {
       setLoading(false);
