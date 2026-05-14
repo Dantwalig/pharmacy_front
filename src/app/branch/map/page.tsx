@@ -237,29 +237,6 @@ export default function BranchMapPage() {
   // The "star" feel comes naturally since managerBranch is always marker[0].
   const doTriangulate = showSisters && sistersWithCoords.length > 0 && managerBranch?.latitude != null;
 
-  // Competitors
-  if (showCompetitors) {
-    competitors.forEach(c => {
-      markers.push({
-        id: `comp-${c.id}`,
-        lat: c.latitude,
-        lng: c.longitude,
-        label: c.name,
-        type: 'competitor',
-      });
-    });
-  }
-
-  // Generate simulated Heatmap Points around myBranch
-  const heatmapPoints: [number, number, number][] = [];
-  if (showHeatmap && myBranch?.latitude && myBranch?.longitude) {
-    for (let i = 0; i < 60; i++) {
-      const latOffset = (Math.random() - 0.5) * 0.04;
-      const lngOffset = (Math.random() - 0.5) * 0.04;
-      const intensity = Math.random() * 0.8 + 0.2;
-      heatmapPoints.push([myBranch.latitude + latOffset, myBranch.longitude + lngOffset, intensity]);
-    }
-  }
 
   return (
     <div className="space-y-5">

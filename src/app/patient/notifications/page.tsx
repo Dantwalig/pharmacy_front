@@ -6,18 +6,8 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import {
-  BellIcon,
-  ClipboardDocumentListIcon,
-  ExclamationTriangleIcon,
-  CheckIcon,
-  TrashIcon,
-  EllipsisVerticalIcon,
-  TruckIcon,
-  DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+import { POLLING_INTERVAL_MS } from '@/lib/constants';
 
-const POLL_INTERVAL_MS = 30_000;
 
 type NotificationCategory = 'all' | 'orders' | 'prescriptions' | 'alerts';
 
@@ -38,30 +28,24 @@ const getCategory = (type: string): Omit<NotificationCategory, 'all'> => {
   return 'alerts';
 };
 
-const getIconConfig = (type: string) => {
+// Maps notification type → { icon background color, icon emoji, label }
+const getTypeConfig = (type: string) => {
   switch (type) {
-    case 'ORDER_OUT_FOR_DELIVERY':
-      return { Icon: TruckIcon,                bg: 'bg-blue-50',   color: 'text-blue-600' };
-    case 'ORDER_PLACED':
-    case 'ORDER_ACCEPTED':
-    case 'ORDER_PREPARING':
-    case 'ORDER_READY_FOR_PICKUP':
-    case 'ORDER_DELIVERED':
-    case 'ORDER_CANCELLED':
-      return { Icon: ClipboardDocumentListIcon, bg: 'bg-blue-50',   color: 'text-blue-600' };
-    case 'PRESCRIPTION_APPROVED':
-    case 'PRESCRIPTION_REJECTED':
-      return { Icon: DocumentTextIcon,          bg: 'bg-orange-50', color: 'text-orange-500' };
-    default:
-      return { Icon: BellIcon,                  bg: 'bg-gray-100',  color: 'text-gray-500' };
+    case 'ORDER_PLACED':           return { bg: '#EEF2FF', color: '#4F46E5', emoji: '🛒',  label: 'ORDER UPDATE' };
+    case 'ORDER_ACCEPTED':         return { bg: '#ECFDF5', color: '#059669', emoji: '✅',  label: 'ORDER UPDATE' };
+    case 'ORDER_PREPARING':        return { bg: '#FFF7ED', color: '#EA580C', emoji: '⚗️',  label: 'ORDER UPDATE' };
+    case 'ORDER_OUT_FOR_DELIVERY': return { bg: '#EFF6FF', color: '#2563EB', emoji: '🚚',  label: 'ORDER UPDATE' };
+    case 'ORDER_READY_FOR_PICKUP': return { bg: '#F0FAFA', color: '#0D9488', emoji: '📦',  label: 'ORDER UPDATE' };
+    case 'ORDER_DELIVERED':        return { bg: '#ECFDF5', color: '#16A34A', emoji: '🎉',  label: 'ORDER UPDATE' };
+    case 'ORDER_CANCELLED':        return { bg: '#FEF2F2', color: '#DC2626', emoji: '❌',  label: 'ORDER UPDATE' };
+    case 'PRESCRIPTION_APPROVED':  return { bg: '#FFF7ED', color: '#EA580C', emoji: '📋',  label: 'PRESCRIPTION' };
+    case 'PRESCRIPTION_REJECTED':  return { bg: '#FEF2F2', color: '#DC2626', emoji: '🚫',  label: 'PRESCRIPTION' };
+    default:                       return { bg: '#F3F4F6', color: '#6B7280', emoji: '🔔',  label: 'ALERT' };
   }
 };
 
-const getCategoryLabel = (type: string) => {
-  if (type.startsWith('ORDER_'))        return { label: 'ORDER UPDATE', cls: 'text-orange-500' };
-  if (type.startsWith('PRESCRIPTION_')) return { label: 'PRESCRIPTION', cls: 'text-teal-600'   };
-  return                                       { label: 'ALERT',        cls: 'text-red-500'    };
-};
+const NAVY = '#1E3A5F';
+const TEAL = '#2D9B8A';
 
 export default function PatientNotificationsPage() {
   const { t } = useTranslation();
@@ -70,8 +54,8 @@ export default function PatientNotificationsPage() {
   const [notifications, setNotifications]   = useState<Notification[]>([]);
   const [loading, setLoading]               = useState(true);
   const [refreshing, setRefreshing]         = useState(false);
+  const [lastUpdated, setLastUpdated]       = useState<Date | null>(null);
   const [activeCategory, setActiveCategory] = useState<NotificationCategory>('all');
-  const [openMenuId, setOpenMenuId]         = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchNotifications = useCallback(async (silent = false) => {
@@ -79,9 +63,10 @@ export default function PatientNotificationsPage() {
     else         setRefreshing(true);
     try {
       const res = await api.get('/notifications?userType=patient');
-      setNotifications(res.data);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      setNotifications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -90,26 +75,18 @@ export default function PatientNotificationsPage() {
 
   useEffect(() => {
     fetchNotifications(false);
-    intervalRef.current = setInterval(() => fetchNotifications(true), POLL_INTERVAL_MS);
+    intervalRef.current = setInterval(() => fetchNotifications(true), POLLING_INTERVAL_MS);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [fetchNotifications]);
 
-  const markAsRead = async (id: string) => {
-    try {
-      await api.put(`/notifications/${id}/read`);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    } catch { /* silent */ }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await api.delete(`/notifications/${id}`);
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      toast.success('Notification deleted');
-    } catch {
-      toast.error('Failed to delete notification');
+  const handleMarkAsRead = async (n: Notification) => {
+    if (!n.isRead) {
+      try {
+        await api.put(`/notifications/${n.id}/read`);
+        setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x));
+      } catch { /* silent */ }
     }
-    setOpenMenuId(null);
+    if (n.orderId) router.push(`/patient/orders/${n.orderId}`);
   };
 
   const handleMarkAllAsRead = async () => {
@@ -119,6 +96,17 @@ export default function PatientNotificationsPage() {
       toast.success(t('success.allNotificationsRead'));
     } catch {
       toast.error(t('success.notificationsReadFailed'));
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/notifications/${id}`);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {
+      // optimistic: remove anyway for UX
+      setNotifications(prev => prev.filter(n => n.id !== id));
     }
   };
 
@@ -138,230 +126,210 @@ export default function PatientNotificationsPage() {
     const diffMins  = Math.floor(diffMs / 60_000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays  = Math.floor(diffHours / 24);
-    if (diffMins < 1)   return 'Just now';
-    if (diffMins < 60)  return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffMins < 1)   return t('common.justNow');
+    if (diffMins < 60)  return `${diffMins} ${t('notifications2.minAgo')}`;
+    if (diffHours < 24) return `${diffHours} ${diffHours > 1 ? t('notifications2.hoursAgo') : t('notifications2.hourAgo')}`;
+    return `${diffDays} ${diffDays > 1 ? t('notifications2.daysAgo') : t('notifications2.dayAgo')}`;
   };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  const tabs: { id: NotificationCategory; label: string; Icon: React.ElementType }[] = [
-    { id: 'all',           label: 'All',           Icon: BellIcon                  },
-    { id: 'orders',        label: 'Orders',        Icon: ClipboardDocumentListIcon },
-    { id: 'prescriptions', label: 'Prescriptions', Icon: DocumentTextIcon          },
-    { id: 'alerts',        label: 'Alerts',        Icon: ExclamationTriangleIcon   },
+  const TABS: { id: NotificationCategory; label: string }[] = [
+    { id: 'all',           label: `All (${getCategoryCount('all')})` },
+    { id: 'orders',        label: `Orders (${getCategoryCount('orders')})` },
+    { id: 'prescriptions', label: `Prescriptions (${getCategoryCount('prescriptions')})` },
+    { id: 'alerts',        label: `Alerts (${getCategoryCount('alerts')})` },
   ];
 
-  const sectionTitle =
-    activeCategory === 'all'            ? 'All Notifications'
-    : activeCategory === 'orders'       ? 'Order Notifications'
-    : activeCategory === 'prescriptions'? 'Prescription Notifications'
-    : 'Alert Notifications';
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
 
-      {/* ── Header card ─────────────────────────────────── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-        <div className="flex items-start justify-between gap-4 mb-1">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#1E3A5F]">
-            Notifications
-          </h1>
-          {unreadCount > 0 && (
+        {/* ── Header card ──────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-start justify-between mb-1">
+            <h1 className="text-3xl font-bold" style={{ color: NAVY }}>
+              {t('notifications2.notifications')}
+            </h1>
             <button
               onClick={handleMarkAllAsRead}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-[#1E3A5F] text-[#1E3A5F] font-semibold text-sm hover:bg-[#1E3A5F] hover:text-white transition-all shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors hover:bg-gray-50"
+              style={{ borderColor: NAVY, color: NAVY }}
             >
-              <CheckIcon className="w-4 h-4" />
-              Mark all as read
+              {/* checkmark icon */}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {t('notifications2.markAllAsRead')}
             </button>
-          )}
-        </div>
+          </div>
 
-        <p className="text-[#2D9B8A] font-medium mb-6">
-          {unreadCount > 0
-            ? `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
-            : "You're all caught up!"}
-          {refreshing && (
-            <span className="ml-2 text-gray-400 text-sm animate-pulse">Refreshing…</span>
+          {unreadCount > 0 && (
+            <p className="text-sm font-medium mb-5" style={{ color: TEAL }}>
+              {t('notifications2.youHave')} {unreadCount} {unreadCount === 1
+                ? t('notifications2.unreadNotification')
+                : t('notifications2.unreadNotifications')}
+            </p>
           )}
-        </p>
 
-        {/* Category tabs */}
-        <div className="flex flex-wrap gap-3">
-          {tabs.map(({ id, label, Icon }) => {
-            const count    = getCategoryCount(id);
-            const isActive = activeCategory === id;
-            return (
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {TABS.map(tab => (
               <button
-                key={id}
-                onClick={() => setActiveCategory(id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all border-2 ${
-                  isActive
-                    ? 'bg-[#1E3A5F] text-white border-[#1E3A5F] shadow-md'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#1E3A5F] hover:text-[#1E3A5F]'
-                }`}
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={
+                  activeCategory === tab.id
+                    ? { backgroundColor: NAVY, color: '#fff' }
+                    : { backgroundColor: '#F3F4F6', color: '#374151' }
+                }
               >
-                <Icon className="w-4 h-4" />
-                {label} ({count})
+                {/* tab icon */}
+                {tab.id === 'all'           && <span>🔔</span>}
+                {tab.id === 'orders'        && <span>🛒</span>}
+                {tab.id === 'prescriptions' && <span>📋</span>}
+                {tab.id === 'alerts'        && <span>⚠️</span>}
+                {tab.label}
               </button>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
 
-      {/* ── Notifications list ───────────────────────────── */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">{sectionTitle}</h2>
+          {/* Refresh indicator */}
+          {refreshing && (
+            <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              {t('notifications2.refreshing')}
+            </p>
+          )}
+        </div>
+
+        {/* ── Notification section header ───────────────────────────────── */}
+        <h2 className="text-xl font-bold px-1" style={{ color: NAVY }}>
+          {activeCategory === 'all'           ? t('notifications2.allNotifications')
+          : activeCategory === 'orders'        ? t('notifications2.ordersNotifications')
+          : activeCategory === 'prescriptions' ? t('notifications2.prescriptionsNotifications')
+          :                                      t('notifications2.alertsNotifications')}
+        </h2>
 
         {/* ── Notification cards ────────────────────────────────────────── */}
         {filteredNotifications.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
-            <BellIcon className="w-14 h-14 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg font-medium">
+          <div className="bg-white rounded-2xl p-16 text-center shadow-sm">
+            <p className="text-5xl mb-4">🔔</p>
+            <p className="text-gray-400 font-medium">
               {notifications.length === 0
-                ? 'No notifications yet'
-                : 'No notifications in this category'}
+                ? t('notifications2.noNotificationsYet')
+                : t('notifications2.noNotificationsInCategory')}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredNotifications.map(notification => {
-              const { Icon, bg, color } = getIconConfig(notification.type);
-              const { label: catLabel, cls: catCls } = getCategoryLabel(notification.type);
-              const isOrder        = notification.type.startsWith('ORDER_');
-              const isDelivery     = notification.type === 'ORDER_OUT_FOR_DELIVERY';
-              const isPrescription = notification.type.startsWith('PRESCRIPTION_');
-              const isUnread       = !notification.isRead;
+            {filteredNotifications.map(n => {
+              const cfg = getTypeConfig(n.type);
+              const isOrder        = n.type.startsWith('ORDER_');
+              const isOutForDelivery = n.type === 'ORDER_OUT_FOR_DELIVERY';
+              const isPrescription = n.type.startsWith('PRESCRIPTION_');
 
               return (
                 <div
-                  key={notification.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 relative cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => { if (isUnread) markAsRead(notification.id); }}
+                  key={n.id}
+                  onClick={() => handleMarkAsRead(n)}
+                  className="bg-white rounded-2xl p-5 shadow-sm cursor-pointer transition-shadow hover:shadow-md relative"
                 >
+                  {/* Unread blue dot */}
+                  {!n.isRead && (
+                    <span
+                      className="absolute top-5 right-12 w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: '#3B82F6' }}
+                    />
+                  )}
+
+                  {/* Delete / more button */}
+                  <button
+                    onClick={e => handleDelete(e, n.id)}
+                    className="absolute top-4 right-4 p-1 text-gray-300 hover:text-gray-500 transition-colors"
+                    title="Delete notification"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
                   <div className="flex gap-4">
-                    {/* Icon square */}
-                    <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center shrink-0 mt-0.5`}>
-                      <Icon className={`w-6 h-6 ${color}`} />
+                    {/* Icon badge */}
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl"
+                      style={{ backgroundColor: cfg.bg }}
+                    >
+                      {cfg.emoji}
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      {/* Category label + timestamp */}
+                    <div className="flex-1 min-w-0 pr-6">
+                      {/* Type label + timestamp */}
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs font-bold tracking-widest uppercase ${catCls}`}>
-                          {catLabel}
+                        <span
+                          className="text-xs font-bold tracking-wide"
+                          style={{ color: cfg.color }}
+                        >
+                          {cfg.label}
                         </span>
-                        <span className="text-gray-300 text-xs">·</span>
-                        <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">
-                          {formatTime(notification.createdAt)}
-                        </span>
+                        <span className="text-gray-300 text-xs">•</span>
+                        <span className="text-xs text-gray-400">{formatTime(n.createdAt)}</span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="font-bold text-gray-900 text-base leading-snug mb-1">
-                        {notification.title}
+                      <h3 className="font-bold text-gray-900 mb-1 leading-snug">
+                        {n.title}
                       </h3>
 
-                      {/* Message */}
-                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                        {notification.message}
+                      {/* Message — bold drug names if present */}
+                      <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                        {n.message}
                       </p>
 
                       {/* Action buttons */}
-                      <div className="flex flex-wrap gap-3">
-                        {isDelivery && (
+                      <div className="flex flex-wrap gap-2">
+                        {isOutForDelivery && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (notification.orderId) router.push(`/patient/orders/${notification.orderId}`);
-                            }}
-                            className="px-5 py-2 rounded-xl bg-[#1E3A5F] text-white text-sm font-semibold hover:bg-[#162d4a] transition-colors"
+                            onClick={e => { e.stopPropagation(); if (n.orderId) router.push(`/patient/orders/${n.orderId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                            style={{ backgroundColor: NAVY }}
                           >
                             Track Courier
                           </button>
                         )}
-                        {isOrder && (
+                        {isOrder && n.orderId && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (notification.orderId) router.push(`/patient/orders/${notification.orderId}`);
-                            }}
-                            className={`px-5 py-2 rounded-xl text-sm font-semibold transition-colors border-2 ${
-                              isDelivery
-                                ? 'border-gray-200 text-gray-700 hover:border-[#1E3A5F] hover:text-[#1E3A5F] bg-white'
-                                : 'bg-[#1E3A5F] text-white border-[#1E3A5F] hover:bg-[#162d4a]'
-                            }`}
+                            onClick={e => { e.stopPropagation(); router.push(`/patient/orders/${n.orderId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors hover:bg-gray-50"
+                            style={{ borderColor: '#D1D5DB', color: '#374151' }}
                           >
                             View Order
                           </button>
                         )}
+                        {isPrescription && n.prescriptionId && (
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push(`/patient/prescriptions/${n.prescriptionId}`); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                            style={{ backgroundColor: NAVY }}
+                          >
+                            View Prescription
+                          </button>
+                        )}
                         {isPrescription && (
-                          <>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); router.push('/patient/medications'); }}
-                              className="px-5 py-2 rounded-xl bg-[#1E3A5F] text-white text-sm font-semibold hover:bg-[#162d4a] transition-colors"
-                            >
-                              View Prescription
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); router.push('/patient/pharmacies'); }}
-                              className="px-5 py-2 rounded-xl border-2 border-gray-200 text-gray-700 text-sm font-semibold hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition-colors bg-white"
-                            >
-                              Find Pharmacy
-                            </button>
-                          </>
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push('/patient/search'); }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors hover:bg-gray-50"
+                            style={{ borderColor: '#D1D5DB', color: '#374151' }}
+                          >
+                            Find Pharmacy
+                          </button>
                         )}
                       </div>
-                    </div>
-
-                    {/* Right column: unread dot + action */}
-                    <div className="flex flex-col items-center gap-3 shrink-0">
-                      {isUnread && (
-                        <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-300" />
-                      )}
-                      {isUnread ? (
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId(openMenuId === notification.id ? null : notification.id);
-                            }}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                          >
-                            <EllipsisVerticalIcon className="w-5 h-5" />
-                          </button>
-                          {openMenuId === notification.id && (
-                            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 min-w-40">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markAsRead(notification.id);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                Mark as read
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}
-                                className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
