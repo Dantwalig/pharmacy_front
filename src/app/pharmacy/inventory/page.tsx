@@ -1,6 +1,7 @@
 // frontend/src/app/pharmacy/inventory/page.tsx
 'use client';
 
+import {useFetch} from '@/hooks/useFetch';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
@@ -45,26 +46,34 @@ const FDA_CATEGORIES = [
 export default function PharmacyInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [medications, setMedications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { fetchMedications(); }, [stockFilter]);
 
-  const fetchMedications = async () => {
-    try {
-      setLoading(true);
-      let url = '/medications/pharmacy/my-medications';
-      if (stockFilter === 'LOW_STOCK') url = '/medications/pharmacy/low-stock';
-      else if (stockFilter === 'OUT_OF_STOCK') url = '/medications/pharmacy/out-of-stock';
-      const res = await api.get(url);
-      setMedications(res.data);
-    } catch {
-      toast.error(t('errors.failedToLoadMedication'));
-    } finally { setLoading(false); }
-  };
+const { data, loading, error } = useFetch<any[]>(
+  async (signal) => {
+    let url = '/medications/pharmacy/my-medications';
+
+    if (stockFilter === 'LOW_STOCK') {
+      url = '/medications/pharmacy/low-stock';
+    } else if (stockFilter === 'OUT_OF_STOCK') {
+      url = '/medications/pharmacy/out-of-stock';
+    }
+
+    const res = await api.get(url, { signal });
+    return res.data;
+  },
+  [stockFilter]
+);
+
+const medications = data ?? [];
+
+useEffect(() => {
+  if (error) {
+    toast.error(t('errors.failedToLoadMedication'));
+    }
+  }, [error, t]);
 
   const filtered = medications.filter(m => {
     const matchSearch = m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -153,6 +162,12 @@ export default function PharmacyInventoryPage() {
           </button>
       </div>
     </div>
+
+    {error && (
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+      Failed to load medications. Please try again.
+    </div>
+      )}
 
     {/* Table */}
       {loading ? (
