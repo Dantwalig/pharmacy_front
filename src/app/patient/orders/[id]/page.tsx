@@ -106,8 +106,8 @@ export default function OrderDetailsPage() {
         // We can poll here or have user click a verify button.
         // In the interest of simplicity we let the user await the prompt.
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders.failedToInitiatePayment'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingPayment(false);
     }
@@ -124,8 +124,8 @@ export default function OrderDetailsPage() {
       toast.success(t('orders2.paymentCompleted'));
       setShowOtpInput(false);
       fetchOrderDetails();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders.invalidOtp'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingPayment(false);
     }
