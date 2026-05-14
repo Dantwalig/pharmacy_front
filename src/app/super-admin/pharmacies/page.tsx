@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useFetch } from '@/hooks/useFetch';
+import { useState, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
@@ -27,8 +28,6 @@ function PharmaciesContent() {
   const router = useRouter();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
-  const [pharmacies, setPharmacies] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(searchParams.get('filter')?.toUpperCase() || 'ALL');
   const [actionId, setActionId] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
@@ -40,30 +39,35 @@ function PharmaciesContent() {
   const [searchLicense, setSearchLicense] = useState('');
   const [searchBusiness, setSearchBusiness] = useState('');
 
-  useEffect(() => { fetchPharmacies(); }, [filter]);
 
-  const fetchPharmacies = async () => {
-    setLoading(true);
-    try {
-      // GET /super-admin/pharmacies?status=PENDING|APPROVED|REJECTED|ALL
-      const url = filter === 'ALL'
-        ? '/super-admin/pharmacies'
-        : `/super-admin/pharmacies?status=${filter}`;
-      const res = await api.get(url);
-      setPharmacies(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
-    } catch {
-      toast.error(t('errors.failedToLoadPharmacies'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data,
+    loading,
+    error,
+    refetch,
+  } = useFetch<any[]>(
+    async (signal) => {
+      const url =
+        filter === 'ALL'
+          ? '/super-admin/pharmacies'
+          : `/super-admin/pharmacies?status=${filter}`;
+
+      const res = await api.get(url, { signal });
+
+      const rawData = Array.isArray(res.data) ? res.data : res.data?.data;
+      return Array.isArray(rawData)? rawData : [];
+    },
+    [filter]
+  );
+
+  const pharmacies = data ?? [];
 
   const handleApprove = async (id: string) => {
     setActionId(id);
     try {
       await api.patch(`/super-admin/pharmacies/${id}/approve`);
       toast.success(t('success.pharmacyApproved'));
-      fetchPharmacies();
+      refetch();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to approve');
     } finally {
@@ -82,7 +86,7 @@ function PharmaciesContent() {
       toast.success(t('success.pharmacyRejected'));
       setRejectModal(null);
       setRejectReason('');
-      fetchPharmacies();
+      refetch();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reject');
     } finally {
@@ -119,7 +123,13 @@ function PharmaciesContent() {
     setSearchLicense('');
     setSearchBusiness('');
   };
-
+if (error) {
+  return (
+    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
+      {error}
+    </div>
+  );
+}
   return (
     <div className="space-y-6">
 
