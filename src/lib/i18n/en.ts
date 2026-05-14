@@ -485,6 +485,18 @@ export const en = {
     openNow: 'Open Now',
     onMap: 'On Map',
     networkBranch: 'Network Branch',
+    allOrders: 'All Orders',
+    allDates: 'All Dates',
+    showingOrders: 'Showing {{count}} of {{total}} orders',
+    editProfile: 'Edit Profile',
+    emailAddress: 'Email Address',
+    myProfileTitle: 'My Profile',
+    pharmacyOwnerBreadcrumb: 'Pharmacy / Pharmacy Owner',
+    expired: 'Expired',
+    viewAllOrders: 'View All Orders',
+    performanceSubtitle: "Your pharmacy is performing well. Here's an overview of today's operations.",
+    allActive: 'All active',
+    cumulativeRevenue: 'Cumulative',
   },
   // LEGACY PHARMACY (single-branch dashboard)
   pharmacy: {
