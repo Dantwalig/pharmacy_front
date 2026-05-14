@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import { SUPPORT_EMAIL } from '@/lib/constants';
 
 export default function PendingApprovalPage() {
   const { t } = useTranslation();
@@ -118,7 +119,7 @@ export default function PendingApprovalPage() {
           {t('pending.contactInfo')}
           </p>
         <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-          {t('pending.email')}: <span className="text-purple-600 dark:text-purple-400 font-medium">support@evuze.com</span>
+          {t('pending.email')}: <span className="text-purple-600 dark:text-purple-400 font-medium">{SUPPORT_EMAIL}</span>
         </p>
       </div>
     </div>
