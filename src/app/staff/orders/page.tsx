@@ -168,7 +168,7 @@ export default function StaffOrdersPage() {
                         {order.patient.firstName} {order.patient.lastName}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {formatDate(order.createdAt)} · {order.type} · {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                        {formatDate(order.createdAt)} · {order.type} · {(order.orderItems ?? []).length} item{(order.orderItems ?? []).length !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -194,7 +194,7 @@ export default function StaffOrdersPage() {
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.items')}</p>
                       <div className="space-y-2">
-                        {order.orderItems.map((item, i) => (
+                        {(order.orderItems ?? []).map((item, i) => (
                           <div key={i} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">
                               {item.medication.name}
