@@ -4,7 +4,7 @@ import { useFetch } from '@/hooks/useFetch';
 import { useState, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
-import api, { unwrapData } from '@/lib/api';
+import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -39,23 +39,6 @@ function PharmaciesContent() {
   const [searchLicense, setSearchLicense] = useState('');
   const [searchBusiness, setSearchBusiness] = useState('');
 
-  useEffect(() => { fetchPharmacies(); }, [filter]);
-
-  const fetchPharmacies = async () => {
-    setLoading(true);
-    try {
-      // GET /super-admin/pharmacies?status=PENDING|APPROVED|REJECTED|ALL
-      const url = filter === 'ALL'
-        ? '/super-admin/pharmacies'
-        : `/super-admin/pharmacies?status=${filter}`;
-      const res = await api.get(url);
-      setPharmacies(unwrapData(res.data));
-    } catch {
-      toast.error(t('errors.failedToLoadPharmacies'));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const {
     data,
