@@ -1,7 +1,6 @@
 'use client';
 
-import {useFetch} from '@/hooks/useFetch';
-import {useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -40,51 +39,41 @@ interface PendingAttendance {
 
 export default function BranchDashboardPage() {
   const { t } = useTranslation();
+  const [summary, setSummary] = useState<AttendanceSummary | null>(null);
+  const [pendingClockIns, setPendingClockIns] = useState<PendingAttendance[]>([]);
+  const [pendingClockOuts, setPendingClockOuts] = useState<PendingAttendance[]>([]);
+  const [staffCount, setStaffCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchDashboardData = useCallback(
-    async (signal: AbortSignal) => {
+  useEffect(() => { fetchDashboardData(); }, []);
+
+  const fetchDashboardData = async () => {
+    try {
       const [summaryRes, clockInsRes, clockOutsRes, staffRes] = await Promise.all([
-        api.get('/attendance/summary', { signal }),
-        api.get('/attendance/pending-clock-ins', { signal }),
-        api.get('/attendance/pending-clock-outs', { signal }),
-        api.get('/staff', { signal }),
+        api.get('/attendance/summary'),
+        api.get('/attendance/pending-clock-ins'),
+        api.get('/attendance/pending-clock-outs'),
+        api.get('/staff'),
       ]);
-
-      return {
-        summary: summaryRes.data,
-        pendingClockIns: clockInsRes.data,
-        pendingClockOuts: clockOutsRes.data,
-        staffCount: Array.isArray(staffRes.data) ? staffRes.data.length : 0,
-      };
-    },
-    []
-  );
-
-  const { data, loading, error, refetch } = useFetch<{
-    summary: AttendanceSummary | null;
-    pendingClockIns: PendingAttendance[];
-    pendingClockOuts: PendingAttendance[];
-    staffCount: number;
-  }>(fetchDashboardData, []);
-
-  const summary = data?.summary ?? null;
-  const pendingClockIns = data?.pendingClockIns ?? [];
-  const pendingClockOuts = data?.pendingClockOuts ?? [];
-  const staffCount = data?.staffCount ?? 0;
-
-  useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadDashboard'));
+      setSummary(summaryRes.data);
+      setPendingClockIns(clockInsRes.data);
+      setPendingClockOuts(clockOutsRes.data);
+      setStaffCount(Array.isArray(staffRes.data) ? staffRes.data.length : 0);
+    } catch (error) {
+      console.error('Failed to load dashboard:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [error, t]);
+  };
 
   const approveClockIn = async (id: string) => {
     setActionLoading(id);
     try {
       await api.put(`/attendance/${id}/approve-clock-in`, {});
       toast.success(t('success.clockInApproved'));
-      await refetch();
+      setPendingClockIns(prev => prev.filter(r => r.id !== id));
+      setSummary(prev => prev ? { ...prev, pending: prev.pending - 1, approved: prev.approved + 1 } : prev);
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
     } finally { setActionLoading(null); }
@@ -95,7 +84,7 @@ export default function BranchDashboardPage() {
     try {
       await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockInRejected'));
-      await refetch();
+      setPendingClockIns(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
     } finally { setActionLoading(null); }
@@ -106,7 +95,8 @@ export default function BranchDashboardPage() {
     try {
       await api.put(`/attendance/${id}/approve-clock-out`, {});
       toast.success(t('success.clockOutApproved'));
-      await refetch();
+      setPendingClockOuts(prev => prev.filter(r => r.id !== id));
+      setSummary(prev => prev ? { ...prev, completed: prev.completed + 1 } : prev);
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
     } finally { setActionLoading(null); }
@@ -117,7 +107,7 @@ export default function BranchDashboardPage() {
     try {
       await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockOutRejected'));
-      await refetch();
+      setPendingClockOuts(prev => prev.filter(r => r.id !== id));
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
     } finally { setActionLoading(null); }

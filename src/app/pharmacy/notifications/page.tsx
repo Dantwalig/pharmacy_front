@@ -28,21 +28,18 @@ interface Notification {
 export default function PharmacyNotificationsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading]         = useState(true);
+  const [refreshing, setRefreshing]   = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'ORDERS' | 'INVENTORY' | 'OTHER'>('ALL');
-  const pollTimerRef = useRef<number | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchNotifications = useCallback(async (showRefresh = false) => {
+  // ─── Fetch ────────────────────────────────────────────────────────────────
+  const fetchNotifications = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else         setRefreshing(true);
     try {
-      if (showRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
       const res = await api.get('/notifications?userType=pharmacy');
       setNotifications(res.data);
       setLastUpdated(new Date());
@@ -54,20 +51,24 @@ export default function PharmacyNotificationsPage() {
     }
   }, []);
 
+  // ─── Mount: initial fetch + polling; unmount: clear ───────────────────────
   useEffect(() => {
-    fetchNotifications();
-    pollTimerRef.current = window.setInterval(() => fetchNotifications(true), POLLING_INTERVAL_MS);
+    fetchNotifications(false);
+
+    intervalRef.current = setInterval(() => {
+      fetchNotifications(true);
+    }, POLLING_INTERVAL_MS);
+
     return () => {
-      if (pollTimerRef.current !== null) window.clearInterval(pollTimerRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [fetchNotifications]);
 
+  // ─── Actions ──────────────────────────────────────────────────────────────
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-      ));
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -76,7 +77,7 @@ export default function PharmacyNotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await api.put('/notifications/read-all?userType=pharmacy');
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       toast.success(t('success.allNotificationsRead'));
     } catch {
       toast.error(t('success.notificationsReadFailed'));

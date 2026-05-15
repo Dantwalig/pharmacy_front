@@ -9,7 +9,6 @@ import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import CashierOrdersView from '@/components/staff/CashierOrdersView';
 import { Order, OrderStatus } from '@/types';
-import { useFetch } from '@/hooks/useFetch';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -47,27 +46,26 @@ export default function StaffOrdersPage() {
   const isCashier = user?.role === 'CASHIER';
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const { data: fetchedOrders = [], loading, error } = useFetch<Order[]>(
-    async (signal) => {
-      const res = await api.get('/orders/pharmacy-orders', { signal });
-      return unwrapData<Order>(res.data);
-    },
-    []
-  );
-
-  // Sync fetched data with local state for optimistic updates
   useEffect(() => {
-    setOrders(fetchedOrders ?? []);
-  }, [fetchedOrders]);
+    fetchOrders();
+  }, []);
 
-  if (error) {
-    console.error('Failed to load orders:', error);
-    toast.error(t('errors.failedToLoadOrders'));
-  }
+  const fetchOrders = async () => {
+    try {
+      const res = await api.get('/orders/pharmacy-orders'); // GET /orders/pharmacy-orders
+      setOrders(unwrapData(res.data));
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+      toast.error(t('errors.failedToLoadOrders'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
@@ -80,8 +78,7 @@ export default function StaffOrdersPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
     } finally {
-      setUpdatingId(null);
-    }
+      setUpdatingId(null); }
   };
 
   const formatDate = (d: string) =>

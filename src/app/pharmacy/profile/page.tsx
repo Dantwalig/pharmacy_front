@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useFetch } from '@/hooks/useFetch';
 
 const BLUE = '#1B72C8';
 const NAVY = '#1E4D8C';
