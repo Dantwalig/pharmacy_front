@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import type { PharmacyDetail } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -88,8 +89,8 @@ export default function SuperAdminPharmacyDetailPage() {
       await api.patch(`/super-admin/pharmacies/${params.id}/approve`);
       toast.success(t('success.pharmacyApproved'));
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionLoading(false);
     }
@@ -103,8 +104,8 @@ export default function SuperAdminPharmacyDetailPage() {
       toast.success(t('success.pharmacyRejected'));
       setShowReject(false);
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionLoading(false);
     }
@@ -116,8 +117,8 @@ export default function SuperAdminPharmacyDetailPage() {
       await api.patch(`/super-admin/pharmacies/${params.id}/verify-location`, { verified });
       toast.success(verified ? 'Location marked as verified.' : 'Location flagged as unverified.');
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update location status.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLocationLoading(false);
     }

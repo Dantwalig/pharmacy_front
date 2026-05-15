@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ClipboardDocumentListIcon,
@@ -55,8 +56,8 @@ export default function StaffPrescriptionsPage() {
       await api.put(`/prescriptions/${id}/status`, { status: 'APPROVED' });
       toast.success(t('success.prescriptionVerified'));
       setPrescriptions(prev => prev.map(p => p.id === id ? { ...p, status: 'APPROVED' } : p));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('prescriptions.failedToVerify'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -74,8 +75,8 @@ export default function StaffPrescriptionsPage() {
       ));
       setRejectingId(null);
       setRejectReason('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('prescriptions.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }

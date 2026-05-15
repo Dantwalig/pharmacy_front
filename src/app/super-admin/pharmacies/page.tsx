@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   MagnifyingGlassIcon,
@@ -64,8 +65,8 @@ function PharmaciesContent() {
       await api.patch(`/super-admin/pharmacies/${id}/approve`);
       toast.success(t('success.pharmacyApproved'));
       fetchPharmacies();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -83,8 +84,8 @@ function PharmaciesContent() {
       setRejectModal(null);
       setRejectReason('');
       fetchPharmacies();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }

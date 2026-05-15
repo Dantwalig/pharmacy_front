@@ -10,6 +10,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -74,8 +75,8 @@ export default function StaffEditMedicationPage() {
       });
       toast.success(t('success.medicationUpdated'));
       router.push('/staff/inventory');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToLoad'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
