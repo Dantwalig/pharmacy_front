@@ -7,7 +7,7 @@ import { HomeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 export default function NotFound() {
   const { user } = useAuth();
 
-  // Determine the correct dashboard link based on user role
+  // Determine the correct dashboard redirect link based on the user's role
   let dashboardLink = '/login';
   let dashboardLabel = 'Back to Login';
 
