@@ -2,11 +2,12 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { 
   UserGroupIcon,
@@ -63,9 +64,6 @@ interface Patient {
 export default function PharmacyPatientsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [totalPatients, setTotalPatients] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [activeTab, setActiveTab] = useState<'orders' | 'prescriptions'>('orders');
@@ -106,124 +104,30 @@ export default function PharmacyPatientsPage() {
   };
 
 
-  useEffect(() => {
-    fetchPatients();
-  }, []);
+  const fetchPatientsData = useCallback(
+    async (signal: AbortSignal) => {
+      const res = await api.get('/pharmacies/dashboard/patients', { signal });
+      return {
+        patients: res.data.patients,
+        totalPatients: res.data.totalPatients,
+      };
+    },
+    []
+  );
 
-  const fetchPatients = async () => {
-    try {
-      const res = await api.get('/pharmacies/dashboard/patients');
-      
-      const rawPatients = res.data?.patients || res.data?.data?.patients || (Array.isArray(res.data) ? res.data : []);
-      const totalCount = res.data?.totalPatients || res.data?.data?.totalPatients || rawPatients.length;
-      
-      const enhancedPatients = rawPatients.map((p: Record<string, unknown>) => ({
-        ...p,
-        gender: p.gender || 'Female',
-        dateOfBirth: p.dateOfBirth || 'Feb 24, 1997',
-        address: p.address || 'KN 5 Ave, Nyarugenge',
-        city: p.city || 'Kigali',
-        postalCode: p.postalCode || '00250',
-        registeredDate: p.registeredDate || 'Jan 12, 2026',
-        preferredBranch: p.preferredBranch || 'MedPlus Main',
-        memberStatus: p.memberStatus || ((p.totalSpent as number) > 100000 ? 'VIP' : (p.totalSpent as number) === 0 ? 'NEW' : 'ACTIVE'),
-        orders: Array.isArray(p.orders) && p.orders.length > 0 ? p.orders.map((o: Record<string, unknown>) => ({
-          ...o,
-          branchName: o.branchName || 'Main Branch',
-          itemsSummary: o.itemsSummary || 'Paracetamol 500mg · 1 item'
-        })) : [
-          { id: '1', orderNumber: '20260421-0001', status: 'PENDING', total: 3000, createdAt: '2026-04-21T19:40:00Z', itemCount: 1, itemsSummary: 'Paracetamol 500mg · 1 item' },
-          { id: '2', orderNumber: '2026-0003', status: 'ACCEPTED', total: 11000, createdAt: '2026-04-20T22:18:00Z', itemCount: 2, itemsSummary: 'Amoxicillin 250mg, Vitamin C · 2 items' },
-          { id: '3', orderNumber: '2026-0001', status: 'COMPLETED', total: 58500, createdAt: '2026-04-20T10:18:00Z', itemCount: 2, itemsSummary: 'Ibuprofen 400mg, Multivitamin · 2 items' }
-        ],
-        prescriptions: [
-          { id: '1', rxNumber: 'RX - 000001', uploadedDate: 'January 10, 2025', type: 'doc' },
-          { id: '2', rxNumber: 'RX - 000002', uploadedDate: 'January 5, 2018', type: 'card' },
-          { id: '3', rxNumber: 'RX - 000003', uploadedDate: 'January 5, 2018', type: 'bill' }
-        ]
-      }));
-      
-      setPatients(enhancedPatients);
-      setTotalPatients(totalCount);
-    } catch (error) {
-      console.error('Failed to fetch patients:', error);
-      toast.error('Unable to load patients data. Using sample data.');
-      const mockPatients = [
-        {
-          id: 'mock-1',
-          firstName: 'Alice',
-          lastName: 'Mukamana',
-          email: 'alice@patient.com',
-          phone: '+250 788 200 001',
-          totalOrders: 3,
-          totalSpent: 72500,
-          lastOrderDate: '2026-04-21T00:00:00Z',
-          gender: 'Female',
-          dateOfBirth: 'Feb 24, 1997',
-          address: 'KN 5 Ave, Nyarugenge',
-          city: 'Kigali',
-          postalCode: '00250',
-          registeredDate: 'Jan 12, 2026',
-          preferredBranch: 'MedPlus Main',
-          memberStatus: 'VIP',
-          orders: [
-            { id: '1', orderNumber: '20260421-0001', status: 'PENDING', total: 3000, createdAt: '2026-04-21T19:40:00Z', itemCount: 1, itemsSummary: 'Paracetamol 500mg · 1 item' },
-            { id: '2', orderNumber: '2026-0003', status: 'ACCEPTED', total: 11000, createdAt: '2026-04-20T22:18:00Z', itemCount: 2, itemsSummary: 'Amoxicillin 250mg, Vitamin C · 2 items' },
-            { id: '3', orderNumber: '2026-0001', status: 'COMPLETED', total: 58500, createdAt: '2026-04-20T10:18:00Z', itemCount: 2, itemsSummary: 'Ibuprofen 400mg, Multivitamin · 2 items' }
-          ],
-          prescriptions: [
-            { id: '1', rxNumber: 'RX - 000001', uploadedDate: 'January 10, 2025', type: 'doc' },
-            { id: '2', rxNumber: 'RX - 000002', uploadedDate: 'January 5, 2018', type: 'card' },
-            { id: '3', rxNumber: 'RX - 000003', uploadedDate: 'January 5, 2018', type: 'bill' }
-          ]
-        },
-        {
-          id: 'mock-2',
-          firstName: 'Jean',
-          lastName: 'Niyonkuru',
-          email: 'jean.niyonkuru@example.com',
-          phone: '+250 788 345 022',
-          totalOrders: 1,
-          totalSpent: 5600,
-          lastOrderDate: '2026-04-18T00:00:00Z',
-          gender: 'Male',
-          dateOfBirth: 'Mar 15, 1992',
-          address: 'KG 11 Ave, Remera',
-          city: 'Kigali',
-          postalCode: '00250',
-          registeredDate: 'Mar 20, 2026',
-          preferredBranch: 'MedPlus Kacyiru',
-          memberStatus: 'NEW',
-          orders: [],
-          prescriptions: []
-        },
-        {
-          id: 'mock-3',
-          firstName: 'Claudine',
-          lastName: 'Ishimwe',
-          email: 'claudine.ishimwe@example.com',
-          phone: '+250 788 512 803',
-          totalOrders: 2,
-          totalSpent: 14200,
-          lastOrderDate: '2026-04-15T00:00:00Z',
-          gender: 'Female',
-          dateOfBirth: 'Nov 30, 1988',
-          address: 'KK 15 Rd, Kicukiro',
-          city: 'Kigali',
-          postalCode: '00250',
-          registeredDate: 'Feb 05, 2026',
-          preferredBranch: 'MedPlus Main',
-          memberStatus: 'ACTIVE',
-          orders: [],
-          prescriptions: []
-        }
-      ];
-      setPatients(mockPatients as unknown as Patient[]);
-      setTotalPatients(mockPatients.length);
-    } finally {
-      setLoading(false);
+  const { data, loading, error } = useFetch<{
+    patients: Patient[];
+    totalPatients: number;
+  }>(fetchPatientsData, []);
+
+  const patients = data?.patients ?? [];
+  const totalPatients = data?.totalPatients ?? 0;
+
+  useEffect(() => {
+    if (error) {
+      toast.error(t('errors.failedToLoadPatients'));
     }
-  };
+  }, [error, t]);
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
