@@ -20,10 +20,10 @@ export interface FetchResult<T> {
  * Fetch all pharmacy locations for the map
  * TODO: Uncomment real API call and remove mock return
  */
-export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLocation[]>> {
+export async function fetchPharmacyLocations(signal?: AbortSignal): Promise<PharmacyLocation[]> {
   try {
     try {
-      const res = await api.get('/pharmacies/locations');
+      const res = await api.get('/pharmacies/locations', { signal });
       const data = unwrapData<PharmacyLocation>(res.data);
       if (data.length > 0) return data;
       if (Array.isArray(res.data?.pharmacies) && res.data.pharmacies.length > 0) return res.data.pharmacies;
@@ -32,7 +32,7 @@ export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLoca
     }
 
     // Fallback mapping directly to public /pharmacies endpoint
-    const res = await api.get('/pharmacies');
+    const res = await api.get('/pharmacies', { signal });
     return res.data.map((p: any) => ({
       id: p.id,
       name: p.name,
@@ -46,8 +46,11 @@ export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLoca
       hours: p.operatingHours ? 'Various' : '08:00 - 20:00',
     }));
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error;
+    }
     console.error('Error fetching global locations:', error);
-    return [];
+    throw new Error('Failed to load pharmacy locations. Please try again.');
   }
 }
 
@@ -59,22 +62,26 @@ export async function fetchPharmacyLocations(): Promise<FetchResult<PharmacyLoca
 export async function fetchNearbyPharmacies(
   lat: number,
   lng: number,
-  radiusKm = 5
-): Promise<FetchResult<PharmacyLocation[]>> {
+  radiusKm = 5,
+  signal?: AbortSignal
+): Promise<PharmacyLocation[]> {
   if (!lat || !lng) {
-    return {
-      data: null,
-      error: 'Location coordinates are required',
-    };
+    throw new Error('Location coordinates are required');
   }
 
   try {
-    const res = await api.get<ApiResponse<PharmacyLocation[]>>(`/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
+    const res = await api.get<ApiResponse<PharmacyLocation[]>>(
+      `/pharmacies/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`,
+      { signal }
+    );
     return unwrapData<PharmacyLocation>(res.data);
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error;
+    }
     const errorMessage = error instanceof Error ? error.message : 'Failed to load nearby pharmacies';
     console.error('Error fetching nearby locations:', error);
-    return [];
+    throw new Error(errorMessage);
   }
 }
 
@@ -82,20 +89,24 @@ export async function fetchNearbyPharmacies(
  * Fetch a single pharmacy by ID
  * TODO: Backend endpoint GET /pharmacies/:id
  */
-export async function fetchPharmacyById(id: string): Promise<FetchResult<PharmacyLocation>> {
+export async function fetchPharmacyById(id: string, signal?: AbortSignal): Promise<PharmacyLocation> {
   if (!id) {
-    return { 
-      data: null, 
-      error: 'Pharmacy ID is required' 
-    };
+    throw new Error('Pharmacy ID is required');
   }
 
   try {
-    const res = await api.get<ApiResponse<PharmacyLocation>>(`/pharmacies/${id}`);
-    return res.data.data ?? null;
+    const res = await api.get<ApiResponse<PharmacyLocation>>(`/pharmacies/${id}`, { signal });
+    const pharmacy = res.data.data ?? res.data;
+    if (!pharmacy) {
+      throw new Error('Pharmacy not found');
+    }
+    return pharmacy;
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error;
+    }
     const errorMessage = error instanceof Error ? error.message : 'Failed to load pharmacy details';
     console.error('Error fetching pharmacy by ID:', error);
-    return null;
+    throw new Error(errorMessage);
   }
 }

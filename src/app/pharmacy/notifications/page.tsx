@@ -29,23 +29,38 @@ export default function PharmacyNotificationsPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'ORDERS' | 'INVENTORY' | 'OTHER'>('ALL');
+  const pollTimerRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async (showRefresh = false) => {
     try {
+      if (showRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
       const res = await api.get('/notifications?userType=pharmacy');
       setNotifications(res.data);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    pollTimerRef.current = window.setInterval(() => fetchNotifications(true), POLLING_INTERVAL_MS);
+    return () => {
+      if (pollTimerRef.current !== null) window.clearInterval(pollTimerRef.current);
+    };
+  }, [fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     try {
