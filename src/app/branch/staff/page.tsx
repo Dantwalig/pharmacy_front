@@ -2,12 +2,13 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   UserGroupIcon,
@@ -42,24 +43,15 @@ const ROLE_COLORS: Record<string, string> = {
 export default function BranchStaffPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchStaff();
-  }, []);
-
-  const fetchStaff = async () => {
-    try {
-      const res = await api.get('/staff'); // GET /staff
-      setStaff(res.data);
-    } catch {
-      // Staff list stays empty on failure
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: staff = [], loading, refetch } = useFetch<StaffMember[]>(
+    async (signal) => {
+      const res = await api.get('/staff', { signal });
+      return res.data;
+    },
+    []
+  ) as any;
 
   const handleResendCredentials = async (staffId: string, email: string) => {
     if (!confirm(t('staffMgmt.resendConfirm', { email }))) return;
@@ -79,8 +71,8 @@ export default function BranchStaffPage() {
     setActionId(staffId + '-delete');
     try {
       await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
-      setStaff(prev => prev.filter(s => s.id !== staffId));
       toast.success(t('success.staffMemberRemoved'));
+      refetch();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -136,7 +128,7 @@ export default function BranchStaffPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {staff.map((member) => (
+            {staff.map((member: any) => (
                 <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
                 <td className="px-6 py-4">
                   <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
