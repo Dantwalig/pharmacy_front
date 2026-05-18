@@ -51,7 +51,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
             <p className="text-xs text-blue-200">{t('auth.healthcarePlatform')}</p>
           </div>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors">
+        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close sidebar">
           <XMarkIcon className="w-5 h-5" />
         </button>
       </div>

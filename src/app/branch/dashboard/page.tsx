@@ -168,97 +168,135 @@ export default function BranchDashboardPage() {
       {/* Pending clock-ins and clock-outs */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Pending Clock-Ins */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockIns')}</h2>
             <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockIns.length}
             </span>
           </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {pendingClockIns.length === 0 ? (
-              <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockIns')}</p>
-            ) : (
-              pendingClockIns.map((record) => (
-                <div key={record.id} className="p-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                      {record.staff.firstName} {record.staff.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {record.staff.user.role.toLowerCase()} · {formatTime(record.clockInTime)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => approveClockIn(record.id)}
-                      disabled={!!actionLoading}
-                      className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                      style={{ borderColor: TEAL, color: TEAL }}
-                      title={t('branch.approve')}
-                    >
-                      <CheckCircleIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => rejectClockIn(record.id)}
-                      disabled={!!actionLoading}
-                      className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                      title={t('branch.reject')}
-                    >
-                      <XCircleIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          {pendingClockIns.length === 0 ? (
+            <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockIns')}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('common.name')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('form.role')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('staff.clockIn')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider text-right">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {pendingClockIns.map((record) => (
+                    <tr key={record.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                          {record.staff.firstName} {record.staff.lastName}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-xs text-gray-500 capitalize">
+                        {record.staff.user.role.toLowerCase()}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">
+                        {formatTime(record.clockInTime)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => approveClockIn(record.id)}
+                            disabled={!!actionLoading}
+                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                            style={{ borderColor: TEAL, color: TEAL }}
+                            title={t('branch.approve')}
+                            aria-label={`Approve clock in for ${record.staff.firstName} ${record.staff.lastName}`}
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => rejectClockIn(record.id)}
+                            disabled={!!actionLoading}
+                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
+                            title={t('branch.reject')}
+                            aria-label={`Reject clock in for ${record.staff.firstName} ${record.staff.lastName}`}
+                          >
+                            <XCircleIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Pending Clock-Outs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockOuts')}</h2>
             <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
               {pendingClockOuts.length}
             </span>
           </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {pendingClockOuts.length === 0 ? (
-              <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockOuts')}</p>
-            ) : (
-              pendingClockOuts.map((record) => (
-                <div key={record.id} className="p-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                      {record.staff.firstName} {record.staff.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {record.staff.user.role.toLowerCase()} · out: {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => approveClockOut(record.id)}
-                      disabled={!!actionLoading}
-                      className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                      style={{ borderColor: TEAL, color: TEAL }}
-                      title={t('branch.approve')}
-                    >
-                      <CheckCircleIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => rejectClockOut(record.id)}
-                      disabled={!!actionLoading}
-                      className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                      title={t('branch.reject')}
-                    >
-                      <XCircleIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          {pendingClockOuts.length === 0 ? (
+            <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockOuts')}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('common.name')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('form.role')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('staff.clockOut')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider text-right">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {pendingClockOuts.map((record) => (
+                    <tr key={record.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                          {record.staff.firstName} {record.staff.lastName}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-xs text-gray-500 capitalize">
+                        {record.staff.user.role.toLowerCase()}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">
+                        {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => approveClockOut(record.id)}
+                            disabled={!!actionLoading}
+                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                            style={{ borderColor: TEAL, color: TEAL }}
+                            title={t('branch.approve')}
+                            aria-label={`Approve clock out for ${record.staff.firstName} ${record.staff.lastName}`}
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => rejectClockOut(record.id)}
+                            disabled={!!actionLoading}
+                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
+                            title={t('branch.reject')}
+                            aria-label={`Reject clock out for ${record.staff.firstName} ${record.staff.lastName}`}
+                          >
+                            <XCircleIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

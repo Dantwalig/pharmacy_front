@@ -31,6 +31,7 @@ export default function PharmacyTopbar({ onMenuClick }: PharmacyTopbarProps) {
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Open sidebar"
         >
           <Menu size={18} className="text-gray-600" />
         </button>
@@ -64,12 +65,15 @@ export default function PharmacyTopbar({ onMenuClick }: PharmacyTopbarProps) {
         </div>
 
         {/* Sun icon */}
-        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <button 
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label={t('common.toggleTheme') || 'Toggle theme'}
+        >
           <Sun size={17} className="text-gray-500" />
         </button>
 
         {/* Bell */}
-        <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Notifications">
           <Bell size={18} className="text-gray-600" />
           <span
             className="absolute top-1 right-1 w-2 h-2 rounded-full"

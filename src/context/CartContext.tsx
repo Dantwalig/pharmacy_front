@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import { useAuth } from '@/context/AuthContext';
+
 interface CartItem {
   medicationId: string;
   name: string;
@@ -35,25 +37,64 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [pharmacyId, setPharmacyId] = useState<string | null>(null);
   const [branchId, setBranchId] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [prevUser, setPrevUser] = useState<any>(null);
+
+  // Clear cart silently on logout
+  useEffect(() => {
+    if (prevUser && !user) {
+      setItems([]);
+      setPharmacyId(null);
+      setBranchId(null);
+      localStorage.removeItem('cart');
+    }
+    setPrevUser(user);
+  }, [user, prevUser]);
 
   // Load cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      const parsed = JSON.parse(savedCart);
-      setItems(parsed.items || []);
-      setPharmacyId(parsed.pharmacyId || null);
-      setBranchId(parsed.branchId || null);
+      try {
+        const parsed = JSON.parse(savedCart);
+        const savedAt = parsed.savedAt || 0;
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (now - savedAt > twentyFourHours) {
+          localStorage.removeItem('cart');
+          setItems([]);
+          setPharmacyId(null);
+          setBranchId(null);
+        } else {
+          setItems(parsed.items || []);
+          setPharmacyId(parsed.pharmacyId || null);
+          setBranchId(parsed.branchId || null);
+        }
+      } catch (e) {
+        console.error('Error parsing cart from localStorage:', e);
+      }
     }
+    setIsLoaded(true);
   }, []);
 
   // Save cart to localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify({ items, pharmacyId, branchId }));
-  }, [items, pharmacyId, branchId]);
+    if (!isLoaded) return;
+    localStorage.setItem(
+      'cart',
+      JSON.stringify({
+        items,
+        pharmacyId,
+        branchId,
+        savedAt: Date.now(),
+      })
+    );
+  }, [items, pharmacyId, branchId, isLoaded]);
 
   const addToCart = (item: CartItem) => {
     // Check if adding from different pharmacy branch

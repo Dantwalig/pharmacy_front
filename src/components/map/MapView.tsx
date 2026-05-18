@@ -85,9 +85,8 @@ export default function MapView({
     document.head.appendChild(script);
   }, []);
 
-  // Init Leaflet map once library is available
   useEffect(() => {
-    let isMounted = true;
+    const isMounted = true;
     if (!leafletLoaded || !mapContainerRef.current || leafletMap.current) return;
     const L = window.L;
 

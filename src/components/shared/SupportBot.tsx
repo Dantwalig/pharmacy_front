@@ -106,6 +106,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                 <button
                   onClick={handleDismiss}
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close support chat"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>

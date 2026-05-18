@@ -42,7 +42,7 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
           <p className="text-white text-2xl font-bold tracking-tight">E-Vuze</p>
           <p className="text-white/60 text-sm mt-0.5">{t('staff.portal')}</p>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10">
+        <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10" aria-label="Close sidebar">
           <X size={18} className="text-white/70" />
         </button>
       </div>

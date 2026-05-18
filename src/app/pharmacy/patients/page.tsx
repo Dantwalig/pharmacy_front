@@ -84,7 +84,7 @@ export default function PharmacyPatientsPage() {
   const getFilteredSortedOrders = () => {
     if (!selectedPatient) return [];
     
-    let filtered = selectedPatient.orders.filter(order => {
+    const filtered = selectedPatient.orders.filter(order => {
       const searchLower = orderSearchTerm.toLowerCase();
       const matchesSearch = order.orderNumber.toLowerCase().includes(searchLower) || 
                             order.itemsSummary.toLowerCase().includes(searchLower);
@@ -451,6 +451,7 @@ export default function PharmacyPatientsPage() {
                 <button 
                   onClick={() => setViewingPrescription(null)}
                   className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label={t('common.close') || 'Close'}
                 >
                   <span className="text-2xl font-light leading-none">&times;</span>
                 </button>

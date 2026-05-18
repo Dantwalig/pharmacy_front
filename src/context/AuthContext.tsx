@@ -113,16 +113,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    let apiFailed = false;
     try {
       await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
+      apiFailed = true;
     } finally {
       removeAuthTokens();
       clearUserCache();
       setUser(null);
       router.push('/login');
-      toast.success(t('auth2.loggedOut'));
+      if (apiFailed) {
+        toast.error('Could not reach server, but you have been logged out locally.');
+      } else {
+        toast.success(t('auth2.loggedOut') || 'Logged out successfully');
+      }
     }
   };
 

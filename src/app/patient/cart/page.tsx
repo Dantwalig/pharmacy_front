@@ -79,7 +79,7 @@ export default function CartPage() {
                         <PlusIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                     </div>
-                    <button onClick={() => removeFromCart(item.medicationId)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" aria-label={`Remove ${item.name} from cart}`}>
+                    <button onClick={() => removeFromCart(item.medicationId)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" aria-label={`Remove ${item.name} from cart`}>
                       <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
