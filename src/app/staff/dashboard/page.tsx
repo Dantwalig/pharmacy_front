@@ -241,6 +241,7 @@ export default function StaffDashboardPage() {
               disabled={actionLoading}
               className="text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
               style={{ backgroundColor: TEAL }}
+              aria-label="Clock in to start shift"
             >
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -287,6 +288,7 @@ export default function StaffDashboardPage() {
                 onClick={handleClockOut}
                 disabled={actionLoading}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                aria-label="Clock out to end shift"
               >
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

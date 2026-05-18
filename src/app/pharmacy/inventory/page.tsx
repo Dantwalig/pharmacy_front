@@ -194,7 +194,8 @@ useEffect(() => {
                     <td className="px-4 py-3">{stockBadge(med)}</td>
                     <td className="px-4 py-3">
                       <button onClick={() => router.push(`/pharmacy/inventory/${med.id}`)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-xs font-medium transition-all">
+                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-xs font-medium transition-all"
+                          aria-label={`Edit ${med.name}`}>
                         <PencilIcon className="w-3.5 h-3.5" /> Edit
                         </button>
                     </td>

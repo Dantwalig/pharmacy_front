@@ -160,6 +160,8 @@ export default function StaffOrdersPage() {
                 <button
                   className="w-full flex items-center justify-between p-4 lg:p-5 hover:bg-gray-50 transition-colors text-left"
                   onClick={() => setExpanded(isExpanded ? null : order.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? 'Collapse' : 'Expand'} order for ${order.patient.firstName} ${order.patient.lastName}`}
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
