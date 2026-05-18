@@ -65,7 +65,10 @@ export default function PharmacyTopbar({ onMenuClick }: PharmacyTopbarProps) {
         </div>
 
         {/* Sun icon */}
-        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <button 
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label={t('common.toggleTheme') || 'Toggle theme'}
+        >
           <Sun size={17} className="text-gray-500" />
         </button>
 
