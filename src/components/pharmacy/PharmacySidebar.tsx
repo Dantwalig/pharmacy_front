@@ -54,8 +54,8 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
           const active = isActive(href);
           return (
             <Link key={href} href={href} onClick={onClose}
-              className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
-              style={active ? { backgroundColor: '#2D9B8A' } : {}}
+              className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+              style={active ? { background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' } : {}}
             >
               <div className="flex items-center gap-3">
                 <Icon size={18} />
@@ -70,12 +70,13 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
       </nav>
 
       {/* Footer */}
-      <div className="px-4 pb-5 shrink-0">
+      <div className="px-5 pb-6 shrink-0">
         <button
           onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium transition-all"
+          className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-80"
+          style={{ color: '#F26B6B' }}
         >
-          <LogOut size={18} />
+          <LogOut size={17} />
           {t('common.logout')}
         </button>
       </div>

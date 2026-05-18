@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -52,9 +53,15 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
+        // Show user-facing error message before redirect
+        toast.error('Session expired. Redirecting to login...');
+        
+        // Clear auth state
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
         Cookies.remove('user');
+        
+        // Redirect to login
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

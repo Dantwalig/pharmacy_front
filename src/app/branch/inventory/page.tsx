@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api, { unwrapData } from '@/lib/api';
+import { api } from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { FDA_CATEGORIES } from '@/lib/constants';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -17,58 +19,34 @@ import {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const FDA_CATEGORIES = [
-  'All Categories',
-  'Analgesics & Antipyretics', 'Antibiotics & Antimicrobials', 'Antifungals',
-  'Antivirals & Antiretrovirals', 'Antimalaria', 'Antituberculosis',
-  'Antiparasitics & Anthelmintics', 'Cardiovascular & Antihypertensives',
-  'Antidiabetics', 'Gastrointestinal', 'Respiratory & Bronchodilators',
-  'Central Nervous System', 'Vitamins, Minerals & Supplements', 'Dermatologicals',
-  'Ophthalmologicals', 'ENT (Ear, Nose & Throat)', 'Hormones & Endocrine',
-  'Vaccines & Biologicals', 'Oncologicals', 'Immunosuppressants', 'Contraceptives',
-  'Haematologicals', 'Musculoskeletal & Anti-inflammatories', 'Urological',
-  'Psychiatric & Psychotropic', 'Anesthetics', 'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines', 'Other',
-];
 
 export default function BranchInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [medications, setMedications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [backendReady, setBackendReady] = useState(true);
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW' | 'OUT'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { fetchMedications(); }, []);
-
-  const fetchMedications = async () => {
-    setLoading(true);
-    try {
-      // BACKEND PENDING: GET /medications/pharmacy/my-medications
-      // This endpoint currently restricts access to Role.PHARMACY only.
-      // The backend team needs to add Role.BRANCH_MANAGER to this endpoint's
-      // @Roles decorator in medications.controller.ts.
-      // The same update is needed for:
-      //   GET /medications/pharmacy/low-stock   → add Role.BRANCH_MANAGER
-      //   GET /medications/pharmacy/out-of-stock → add Role.BRANCH_MANAGER
-      // When done, this page will work automatically with no frontend changes needed.
-      const res = await api.get('/medications/pharmacy/my-medications');
-      setMedications(unwrapData(res.data));
-      setBackendReady(true);
-    } catch (err: any) {
-      if (err?.response?.status === 403) {
-        setBackendReady(false);
-      } else {
-        toast.error(t('errors.failedToLoadMedication'));
+  const { data: medications = [], loading } = useFetch<any[]>(
+    async (signal) => {
+      try {
+        const res = await api.get('/medications/pharmacy/my-medications', { signal });
+        setBackendReady(true);
+        return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+      } catch (err: any) {
+        if (err?.response?.status === 403) {
+          setBackendReady(false);
+        } else {
+          toast.error(t('errors.failedToLoadMedication'));
+        }
+        return [];
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    []
+  ) as any;
 
-  const filtered = medications.filter(m => {
+  const filtered = medications.filter((m: any) => {
     const matchSearch = !searchTerm ||
       m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       m.category?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -98,9 +76,9 @@ export default function BranchInventoryPage() {
 
   const summaryStats = {
     total:      medications.length,
-    outOfStock: medications.filter(m => (m.quantity ?? 0) === 0).length,
-    lowStock:   medications.filter(m => { const q = m.quantity ?? 0; return q > 0 && q <= (m.lowStockThreshold ?? 10); }).length,
-    categories: new Set(medications.map(m => m.category)).size,
+    outOfStock: medications.filter((m: any) => (m.quantity ?? 0) === 0).length,
+    lowStock:   medications.filter((m: any) => { const q = m.quantity ?? 0; return q > 0 && q <= (m.lowStockThreshold ?? 10); }).length,
+    categories: new Set(medications.map((m: any) => m.category)).size,
   };
 
   return (
@@ -155,7 +133,6 @@ export default function BranchInventoryPage() {
         <div className="relative w-full sm:w-72">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            id="searchInventory"
             type="text"
             placeholder={t('inventory.searchBranchPlaceholder')}
             value={searchTerm}
@@ -275,7 +252,7 @@ export default function BranchInventoryPage() {
           </div>
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500">
-              {t('inventory.showingMedications', { filtered: filtered.length, total: medications.length })}
+              Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
             </p>
           </div>
         </div>

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api, { unwrapData } from '@/lib/api';
+import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
+import { FDA_CATEGORIES } from '@/lib/constants';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -17,19 +18,6 @@ import {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const FDA_CATEGORIES = [
-  'All Categories',
-  'Analgesics & Antipyretics', 'Antibiotics & Antimicrobials', 'Antifungals',
-  'Antivirals & Antiretrovirals', 'Antimalaria', 'Antituberculosis',
-  'Antiparasitics & Anthelmintics', 'Cardiovascular & Antihypertensives',
-  'Antidiabetics', 'Gastrointestinal', 'Respiratory & Bronchodilators',
-  'Central Nervous System', 'Vitamins, Minerals & Supplements', 'Dermatologicals',
-  'Ophthalmologicals', 'ENT (Ear, Nose & Throat)', 'Hormones & Endocrine',
-  'Vaccines & Biologicals', 'Oncologicals', 'Immunosuppressants', 'Contraceptives',
-  'Haematologicals', 'Musculoskeletal & Anti-inflammatories', 'Urological',
-  'Psychiatric & Psychotropic', 'Anesthetics', 'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines', 'Other',
-];
 
 export default function StaffInventoryPage() {
   const { t } = useTranslation();
@@ -49,7 +37,7 @@ export default function StaffInventoryPage() {
     try {
       // GET /medications/pharmacy/my-medications — Role.PHARMACIST now permitted
       const res = await api.get('/medications/pharmacy/my-medications');
-      setMedications(unwrapData(res.data));
+      setMedications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
     } catch {
       toast.error(t('errors.failedToLoadMedication'));
     } finally {
@@ -218,7 +206,7 @@ export default function StaffInventoryPage() {
           </div>
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500">
-              {t('inventory.showingMedications', { filtered: filtered.length, total: medications.length })}
+              Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
             </p>
           </div>
         </div>

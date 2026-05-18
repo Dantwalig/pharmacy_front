@@ -1,9 +1,11 @@
 'use client';
 // src/app/(pharmacy)/orders/page.tsx
-import { useState, useEffect } from 'react';
+import { useFetch } from '@/hooks/useFetch';
+import { useState, useEffect, useCallback} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -20,31 +22,39 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
-  const [orders, setOrders]     = useState<Record<string, unknown>[]>([]);
-  const [filtered, setFiltered] = useState<Record<string, unknown>[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
   const [tab, setTab]           = useState<TabKey>('PENDING');
   const [search, setSearch]     = useState('');
   const [branch, setBranch]     = useState('');
-  const [branches, setBranches] = useState<Record<string, unknown>[]>([]);
-  const [loading, setLoading]   = useState(true);
+
+  const fetchOrdersData = useCallback(
+  async (signal: AbortSignal) => {
+    const [ordRes, brRes] = await Promise.all([
+      api.get('/orders/pharmacy-orders', { signal }),
+      api.get('/branches/my-branches', { signal }),
+    ]);
+
+    return {
+      orders: ordRes.data?.data ?? ordRes.data ?? [],
+      branches: brRes.data?.data ?? brRes.data ?? [],
+    };
+  },
+  []
+  );
+
+  const { data, loading, error } = useFetch<{
+  orders: any[];
+  branches: any[];
+  }>(fetchOrdersData,[]);
+
+const orders = data?.orders ?? [];
+const branches = data?.branches ?? [];
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [ordRes, brRes] = await Promise.all([
-          api.get('/orders/pharmacy-orders'),
-          api.get('/branches/my-branches'),
-        ]);
-        setOrders(ordRes.data?.data ?? ordRes.data ?? []);
-        setBranches(brRes.data?.data ?? brRes.data ?? []);
-      } catch {
-        // silently fail, show empty state
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+     if (error) {
+        toast.error(t('errors.failedToLoadOrders'));
+      };
+    }, [error, t]);
 
   useEffect(() => {
     let res = orders.filter(o => o.status === tab);
@@ -52,8 +62,8 @@ export default function PharmacyOrdersPage() {
     if (search) {
       const q = search.toLowerCase();
       res = res.filter(o =>
-      (o.id as string)?.toLowerCase().includes(q) ||
-        (o.patientName as string)?.toLowerCase().includes(q)
+      o.id?.toLowerCase().includes(q) ||
+        o.patientName?.toLowerCase().includes(q)
       );
     }
     setFiltered(res);
@@ -96,8 +106,8 @@ export default function PharmacyOrdersPage() {
             className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           >
           <option value="">{t('pharmacyOwner.allBranches')}</option>
-          {branches.map((b: Record<string, unknown>) => (
-              <option key={b.id as string} value={b.id as string}>{b.name as string}</option>
+          {branches.map((b: any) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
           ))}
           </select>
       </div>
@@ -159,40 +169,33 @@ export default function PharmacyOrdersPage() {
                 </td>
             </tr>
           ) : (
-              filtered.map((order: Record<string, unknown>) => {
-                const status = order.status as string;
-                const sc = STATUS_COLORS[status] ?? { bg: '#F3F4F6', text: '#374151' };
-                const id = order.id as string;
-                const patientName = order.patientName as string;
-                const total = order.total as number;
-                const staffName = order.staffName as string;
-                const createdAt = order.createdAt as string;
-
+              filtered.map((order: any) => {
+                const sc = STATUS_COLORS[order.status] ?? { bg: '#F3F4F6', text: '#374151' };
                 return (
-                  <tr key={id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-medium text-gray-800">
-                    #{id?.slice(0, 8)}
+                    #{order.id?.slice(0, 8)}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-700">
-                    {patientName ?? '—'}
+                    {order.patientName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm font-semibold" style={{ color: TEAL }}>
-                    {total?.toLocaleString()} RWF
+                    {order.total?.toLocaleString()} RWF
                     </td>
                   <td className="px-5 py-4">
                     <span
                         className="px-2.5 py-1 rounded-full text-xs font-semibold"
                         style={{ backgroundColor: sc.bg, color: sc.text }}
                       >
-                      {status}
+                      {order.status}
                       </span>
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {staffName ?? '—'}
+                    {order.staffName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {createdAt
-                        ? new Date(createdAt).toLocaleString()
+                    {order.createdAt
+                        ? new Date(order.createdAt).toLocaleString()
                         : '—'}
                     </td>
                   <td className="px-5 py-4">

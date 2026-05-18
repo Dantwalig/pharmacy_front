@@ -1,6 +1,7 @@
 // frontend/src/app/pharmacy/inventory/page.tsx
 'use client';
 
+import {useFetch} from '@/hooks/useFetch';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
@@ -8,63 +9,40 @@ import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { MagnifyingGlassIcon, PlusIcon, PencilIcon, ArrowUpTrayIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { FDA_CATEGORIES } from '@/lib/constants';
 
-const FDA_CATEGORIES = [
-  'All Categories',
-  'Analgesics & Antipyretics',
-  'Antibiotics & Antimicrobials',
-  'Antifungals',
-  'Antivirals & Antiretrovirals',
-  'Antimalaria',
-  'Antituberculosis',
-  'Antiparasitics & Anthelmintics',
-  'Cardiovascular & Antihypertensives',
-  'Antidiabetics',
-  'Gastrointestinal',
-  'Respiratory & Bronchodilators',
-  'Central Nervous System',
-  'Vitamins, Minerals & Supplements',
-  'Dermatologicals',
-  'Ophthalmologicals',
-  'ENT (Ear, Nose & Throat)',
-  'Hormones & Endocrine',
-  'Vaccines & Biologicals',
-  'Oncologicals',
-  'Immunosuppressants',
-  'Contraceptives',
-  'Haematologicals',
-  'Musculoskeletal & Anti-inflammatories',
-  'Urological',
-  'Psychiatric & Psychotropic',
-  'Anesthetics',
-  'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines',
-  'Other',
-];
 
 export default function PharmacyInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [medications, setMedications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { fetchMedications(); }, [stockFilter]);
 
-  const fetchMedications = async () => {
-    try {
-      setLoading(true);
-      let url = '/medications/pharmacy/my-medications';
-      if (stockFilter === 'LOW_STOCK') url = '/medications/pharmacy/low-stock';
-      else if (stockFilter === 'OUT_OF_STOCK') url = '/medications/pharmacy/out-of-stock';
-      const res = await api.get(url);
-      setMedications(res.data);
-    } catch {
-      toast.error(t('errors.failedToLoadMedication'));
-    } finally { setLoading(false); }
-  };
+const { data, loading, error } = useFetch<any[]>(
+  async (signal) => {
+    let url = '/medications/pharmacy/my-medications';
+
+    if (stockFilter === 'LOW_STOCK') {
+      url = '/medications/pharmacy/low-stock';
+    } else if (stockFilter === 'OUT_OF_STOCK') {
+      url = '/medications/pharmacy/out-of-stock';
+    }
+
+    const res = await api.get(url, { signal });
+    return res.data;
+  },
+  [stockFilter]
+);
+
+const medications = data ?? [];
+
+useEffect(() => {
+  if (error) {
+    toast.error(t('errors.failedToLoadMedication'));
+    }
+  }, [error, t]);
 
   const filtered = medications.filter(m => {
     const matchSearch = m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -154,6 +132,12 @@ export default function PharmacyInventoryPage() {
       </div>
     </div>
 
+    {error && (
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+      Failed to load medications. Please try again.
+    </div>
+      )}
+
     {/* Table */}
       {loading ? (
         <div className="flex justify-center py-16"><LoadingSpinner /></div>
@@ -224,7 +208,7 @@ export default function PharmacyInventoryPage() {
         {/* Table footer */}
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            {t('inventory.showingMedications', { filtered: filtered.length, total: medications.length })}
+            Showing <span className="font-semibold">{filtered.length}</span> of <span className="font-semibold">{medications.length}</span> medications
             </p>
           <p className="text-xs text-gray-400">{t('inventory.categoriesFootnote')}</p>
         </div>
