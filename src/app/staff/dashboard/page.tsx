@@ -242,6 +242,7 @@ export default function StaffDashboardPage() {
               disabled={actionLoading}
               className="text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
               style={{ backgroundColor: TEAL }}
+              aria-label="Clock in to start shift"
             >
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -288,6 +289,7 @@ export default function StaffDashboardPage() {
                 onClick={handleClockOut}
                 disabled={actionLoading}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                aria-label="Clock out to end shift"
               >
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -325,11 +327,11 @@ export default function StaffDashboardPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
-                  <th className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
-                  <th className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">

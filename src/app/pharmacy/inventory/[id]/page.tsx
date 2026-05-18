@@ -108,7 +108,7 @@ export default function EditMedicationPage() {
       <main className="flex-1 p-4 lg:p-8 overflow-auto">
         <div className="max-w-3xl mx-auto space-y-6">
 
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm" aria-label="Back to inventory list">
             <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
             </button>
 
@@ -132,11 +132,13 @@ export default function EditMedicationPage() {
             {!editing ? (
                 <>
                 <button onClick={() => setEditing(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
+                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium"
+                    aria-label={`Edit ${med?.name}`}>
                   <PencilIcon className="w-4 h-4" /> Edit Medication
                   </button>
                 <button onClick={handleDelete} disabled={deleting}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                    aria-label={`Remove ${med?.name} from inventory`}>
                   <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
                   </button>
               </>

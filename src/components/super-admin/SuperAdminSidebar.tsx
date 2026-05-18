@@ -46,7 +46,7 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
               <p className="text-xs text-slate-400">{t('superAdmin.portal')}</p>
             </div>
           </div>
-          <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10">
+          <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10" aria-label="Close sidebar">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>

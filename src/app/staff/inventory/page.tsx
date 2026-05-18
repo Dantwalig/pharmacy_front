@@ -194,7 +194,8 @@ export default function StaffInventoryPage() {
                       <td className="px-4 py-3">
                         <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
-                          style={{ backgroundColor: '#F0F7F6', color: TEAL }}>
+                          style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                          aria-label={`Edit ${med.name}`}>
                           <PencilIcon className="w-3.5 h-3.5" /> Edit
                         </button>
                       </td>

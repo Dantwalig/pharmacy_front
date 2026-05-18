@@ -298,6 +298,7 @@ export default function SuperAdminPharmacyDetailPage() {
                       }}
                       className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
                       style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                      aria-label={`View ${item.label} document`}
                     >
                       View Doc
                     </button>
@@ -447,6 +448,7 @@ export default function SuperAdminPharmacyDetailPage() {
                   }}
                   className="px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-all"
                   style={{ backgroundColor: TEAL }}
+                  aria-label={`Open ${doc.label}`}
                 >
                   Open
                 </button>

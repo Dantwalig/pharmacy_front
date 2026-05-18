@@ -88,7 +88,9 @@ export default function StaffChangePasswordPage() {
                     onBlur={e => (e.target.style.borderColor = '#D1D5DB')}
                   />
                   <button type="button" onClick={() => toggle(field)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    aria-label={showPass[field] ? t('common.hidePassword') || 'Hide password' : t('common.showPassword') || 'Show password'}
+                  >
                     {showPass[field] ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </button>
                 </div>

@@ -491,6 +491,7 @@ export default function SuperAdminDashboard() {
               <button
                 onClick={() => setLocationModal(null)}
                 className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                aria-label={t('common.close') || 'Close'}
               >✕</button>
             </div>
 

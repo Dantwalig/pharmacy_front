@@ -1,9 +1,10 @@
-﻿// src/app/super-admin/map/page.tsx
+// src/app/super-admin/map/page.tsx
 // Super Admin Global Pharmacy Triangulation Map
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import dynamic from 'next/dynamic';
 import {
   BuildingStorefrontIcon,
@@ -35,6 +36,7 @@ type FilterActive = 'all' | 'active' | 'inactive';
 
 export default function SuperAdminMapPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [allPharmacies, setAllPharmacies] = useState<PharmacyLocation[]>([]);
   const [filtered, setFiltered] = useState<PharmacyLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -288,7 +290,13 @@ function DetailsPanel({
         style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
       >
         <p className="font-bold text-sm truncate">{pharmacy.name}</p>
-        <button onClick={onClose} className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0">×</button>
+        <button 
+          onClick={onClose} 
+          className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0"
+          aria-label="Close"
+        >
+          ×
+        </button>
       </div>
       <div className="p-4 space-y-3 text-sm">
         <span

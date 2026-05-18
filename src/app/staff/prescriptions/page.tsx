@@ -209,13 +209,15 @@ export default function StaffPrescriptionsPage() {
                       <>
                         <button onClick={() => handleVerify(p.id)} disabled={!!actionId}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50"
-                          style={{ backgroundColor: TEAL }}>
+                          style={{ backgroundColor: TEAL }}
+                          aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
                           <CheckCircleIcon className="w-4 h-4" />
                           {actionId === p.id ? t('prescriptions.verifying') : t('staff.verify')}
                         </button>
                         <button onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
                           disabled={!!actionId}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50">
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
+                          aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
                           <XCircleIcon className="w-4 h-4" />
                           {t('staff.reject')}
                         </button>
