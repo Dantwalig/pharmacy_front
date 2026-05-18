@@ -334,7 +334,8 @@ if (error) {
                           onClick={() => router.push(`/super-admin/pharmacies/${p.id}`)}
                           className="p-1.5 rounded-lg transition-colors"
                           style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}
-                          title={t('common.viewDetails')}
+                          title={t('common.viewDetails') || 'View Details'}
+                          aria-label={t('common.viewDetails') || 'View Details'}
                         >
                           <EyeIcon className="w-4 h-4" />
                         </button>
@@ -345,7 +346,8 @@ if (error) {
                               disabled={actionId === p.id}
                               className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
                               style={{ backgroundColor: '#F0FDF4', color: '#15803D' }}
-                              title={t('superAdmin.approve')}
+                              title={t('superAdmin.approve') || 'Approve'}
+                              aria-label={t('superAdmin.approve') || 'Approve'}
                             >
                               <CheckCircleIcon className="w-4 h-4" />
                             </button>
@@ -354,7 +356,8 @@ if (error) {
                               disabled={actionId === p.id}
                               className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
                               style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}
-                              title={t('superAdmin.reject')}
+                              title={t('superAdmin.reject') || 'Reject'}
+                              aria-label={t('superAdmin.reject') || 'Reject'}
                             >
                               <XCircleIcon className="w-4 h-4" />
                             </button>

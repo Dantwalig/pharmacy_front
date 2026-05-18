@@ -2,6 +2,7 @@
 // src/app/(pharmacy)/orders/page.tsx
 import { useFetch } from '@/hooks/useFetch';
 import { useState, useEffect, useCallback} from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -22,6 +23,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [filtered, setFiltered] = useState<any[]>([]);
   const [tab, setTab]           = useState<TabKey>('PENDING');
   const [search, setSearch]     = useState('');
@@ -200,6 +202,7 @@ const branches = data?.branches ?? [];
                     </td>
                   <td className="px-5 py-4">
                     <button
+                        onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
                         className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
                       >
                       <Eye size={14} />
