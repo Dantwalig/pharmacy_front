@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -39,8 +40,7 @@ export default function PharmacyDetailsPage() {
         (b) => b.branchStatus === 'APPROVED'
       ) || branchesRes.data[0];
       if (approvedBranch) setBranchId(approvedBranch.id);
-    } catch (error) {
-      console.error('Failed to fetch pharmacy:', error);
+    } catch {
       toast.error(t('pharmacies.loadFailed'));
     } finally {
       setLoading(false);
@@ -163,8 +163,8 @@ export default function PharmacyDetailsPage() {
           {filteredMedications.map((medication) => (
               <div key={medication.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden">
               {medication.imageUrl ? (
-                  <div className="h-48 bg-gray-100 dark:bg-gray-700/30">
-                  <img src={medication.imageUrl} alt={medication.name} className="w-full h-full object-cover" />
+                  <div className="relative h-48 bg-gray-100 dark:bg-gray-700/30">
+                  <Image unoptimized src={medication.imageUrl!} alt={medication.name} fill className="object-cover" />
                 </div>
               ) : (
                   <div className="h-48 bg-gray-100 dark:bg-gray-700/30 flex items-center justify-center">

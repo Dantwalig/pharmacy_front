@@ -28,8 +28,7 @@ export default function SearchMedications() {
       const res = await api.get(`/medications/search?query=${searchQuery}`);
       setMedications(res.data);
       if (res.data.length === 0) toast.error(t('medications.noMedications'));
-    } catch (error) {
-      console.error('Search failed:', error);
+    } catch {
       toast.error(t('errors.searchFailed'));
     } finally { setLoading(false); }
   };

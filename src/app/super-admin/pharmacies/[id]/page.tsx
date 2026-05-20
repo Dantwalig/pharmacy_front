@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
+import type { PharmacyDetail } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import LocationPicker from '@/components/shared/LocationPicker';
@@ -36,7 +38,7 @@ export default function SuperAdminPharmacyDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
-  const [pharmacy, setPharmacy] = useState<any>(null);
+  const [pharmacy, setPharmacy] = useState<PharmacyDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -87,8 +89,8 @@ export default function SuperAdminPharmacyDetailPage() {
       await api.patch(`/super-admin/pharmacies/${params.id}/approve`);
       toast.success(t('success.pharmacyApproved'));
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionLoading(false);
     }
@@ -102,8 +104,8 @@ export default function SuperAdminPharmacyDetailPage() {
       toast.success(t('success.pharmacyRejected'));
       setShowReject(false);
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionLoading(false);
     }
@@ -115,8 +117,8 @@ export default function SuperAdminPharmacyDetailPage() {
       await api.patch(`/super-admin/pharmacies/${params.id}/verify-location`, { verified });
       toast.success(verified ? 'Location marked as verified.' : 'Location flagged as unverified.');
       fetchPharmacy();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update location status.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLocationLoading(false);
     }
@@ -128,7 +130,7 @@ export default function SuperAdminPharmacyDetailPage() {
 
   if (!pharmacy) return null;
 
-  const status = STATUS_STYLES[pharmacy.status] ?? { bg: '#F3F4F6', text: '#374151', label: pharmacy.status };
+  const status = STATUS_STYLES[pharmacy.status ?? ''] ?? { bg: '#F3F4F6', text: '#374151', label: pharmacy.status ?? 'Unknown' };
 
   // Registration number fields from the Prisma schema
   const registrationNumbers = [
@@ -156,7 +158,7 @@ export default function SuperAdminPharmacyDetailPage() {
             <p className="text-white/60 text-sm mb-1">{t('superAdminPages.pharmacyApplication')}</p>
             <h1 className="text-2xl lg:text-3xl font-bold">{pharmacy.name}</h1>
             <p className="text-white/70 mt-1 text-sm">
-              Submitted {new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {pharmacy.createdAt && `Submitted ${new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}
             </p>
           </div>
           <span

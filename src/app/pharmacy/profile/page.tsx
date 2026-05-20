@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useFetch } from '@/hooks/useFetch';
+import type { PharmacyProfile } from '@/types';
 
 const BLUE = '#1B72C8';
 const NAVY = '#1E4D8C';
@@ -19,7 +19,7 @@ function getInitials(name: string = '') {
 
 export default function PharmacyProfilePage() {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<PharmacyProfile | null>(null);
   const [ownerName, setOwnerName] = useState('');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);

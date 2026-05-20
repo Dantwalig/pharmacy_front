@@ -46,8 +46,8 @@ export default function StaffProfilePage() {
       try {
         const res = await api.get('/staff/profile/me'); // GET /staff/profile/me
         setProfile(res.data);
-      } catch (error) {
-        console.error('Failed to load profile:', error);
+      } catch {
+        // Profile shows "not found" state on failure
       } finally {
         setLoading(false);
       }

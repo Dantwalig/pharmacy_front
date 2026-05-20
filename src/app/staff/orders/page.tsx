@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
@@ -64,10 +65,9 @@ export default function StaffOrdersPage() {
     setOrders(fetchedOrders ?? []);
   }, [fetchedOrders]);
 
-  if (error) {
-    console.error('Failed to load orders:', error);
-    toast.error(t('errors.failedToLoadOrders'));
-  }
+  useEffect(() => {
+    if (error) toast.error(t('errors.failedToLoadOrders'));
+  }, [error, t]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
@@ -77,8 +77,8 @@ export default function StaffOrdersPage() {
         prev.map(o => o.id === orderId ? ({ ...o, status: newStatus } as Order) : o)
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setUpdatingId(null);
     }
@@ -173,7 +173,7 @@ export default function StaffOrdersPage() {
                         {order.patient.firstName} {order.patient.lastName}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {formatDate(order.createdAt)} · {order.type} · {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                        {formatDate(order.createdAt)} · {order.type} · {(order.orderItems ?? []).length} item{(order.orderItems ?? []).length !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default function StaffOrdersPage() {
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.items')}</p>
                       <div className="space-y-2">
-                        {order.orderItems.map((item, i) => (
+                        {(order.orderItems ?? []).map((item, i) => (
                           <div key={i} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">
                               {item.medication.name}

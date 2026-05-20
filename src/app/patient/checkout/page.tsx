@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import Link from 'next/link';
 import { ArrowLeftIcon, MapPinIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { PaymentMethod } from '@/types';
@@ -67,8 +68,8 @@ export default function CheckoutPage() {
       setPrescriptionId(prescriptionRes.data.id);
       setPrescriptionUploaded(true);
       toast.success(t('success.prescriptionUploaded'));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToUploadPrescription'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setUploadingPrescription(false);
     }
@@ -122,8 +123,8 @@ export default function CheckoutPage() {
       clearCart();
       toast.success(t('success.orderPlaced'));
       router.push(`/patient/orders/${res.data.id}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToPlaceOrder'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

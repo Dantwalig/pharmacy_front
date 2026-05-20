@@ -65,8 +65,8 @@ export default function PatientNotificationsPage() {
       const res = await api.get('/notifications?userType=patient');
       setNotifications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
       setLastUpdated(new Date());
-    } catch (err) {
-      console.error('Failed to fetch notifications:', err);
+    } catch {
+      // Notifications stay stale on polling failure
     } finally {
       setLoading(false);
       setRefreshing(false);

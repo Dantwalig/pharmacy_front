@@ -46,8 +46,8 @@ export default function PharmacyNotificationsPage() {
       const res = await api.get('/notifications?userType=pharmacy');
       setNotifications(res.data);
       setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+    } catch {
+      // Notifications stay stale on polling failure
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -65,11 +65,9 @@ export default function PharmacyNotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-      ));
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch {
+      // stale on failure is acceptable
     }
   };
 

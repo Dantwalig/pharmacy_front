@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -52,9 +53,7 @@ export default function BranchAttendancePage() {
   const records = data ?? [];
 
   useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadAttendance'));
-    }
+    if (error) toast.error(t('errors.failedToLoadAttendance'));
   }, [error, t]);
 
   const handleAction = async (
@@ -71,8 +70,8 @@ export default function BranchAttendancePage() {
       await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
       toast.success(isReject ? t('attendance.rejected') : t('attendance.approved'));
       await refetch();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('attendance.actionFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }

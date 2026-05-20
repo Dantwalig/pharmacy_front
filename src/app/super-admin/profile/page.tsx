@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import {
   UserCircleIcon,
@@ -55,8 +56,8 @@ export default function SuperAdminProfilePage() {
         newPassword: '',
         confirmPassword: '',
       });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('errors.failedToChangePassword'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setChangingPassword(false);
     }

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
@@ -76,8 +77,8 @@ export default function SignupPage() {
       const res = await api.post('/auth/register/patient', payload);
       toast.success(res.data.message || t('signup.accountCreated'));
       router.push(`/verify-email?email=${encodeURIComponent(patientForm.email)}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('signup.registrationFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setLoading(false); }
   };
 
@@ -100,8 +101,8 @@ export default function SignupPage() {
       const res = await api.post('/auth/register/pharmacy', pharmacyForm);
       toast.success(res.data.message || t('signup.applicationSubmitted'));
       router.push(`/verify-email?email=${encodeURIComponent(pharmacyForm.email)}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('signup.registrationFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setLoading(false); }
   };
 

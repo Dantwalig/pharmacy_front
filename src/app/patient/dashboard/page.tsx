@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -313,7 +314,7 @@ export default function PatientDashboard() {
                       style={{ background: '#F0F7FF' }}
                     >
                       {medImage ? (
-                        <img src={medImage} alt={medName} className="w-full h-full object-contain p-2" />
+                        <Image unoptimized src={medImage} alt={medName} width={80} height={80} className="w-full h-full object-contain p-2" />
                       ) : (
                         <ShoppingCartIcon className="w-8 h-8 text-blue-300" />
                       )}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { PharmacyAnalytics, PharmacyStats } from '@/types';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import {
@@ -125,8 +126,8 @@ function StatCard({ label, value, sub, subColor, icon }: {
 export default function PharmacyAnalyticsPage() {
   const { t } = useTranslation();
   const [loading,   setLoading]   = useState(true);
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [stats,     setStats]     = useState<any>(null);
+  const [analytics, setAnalytics] = useState<PharmacyAnalytics | null>(null);
+  const [stats,     setStats]     = useState<PharmacyStats | null>(null);
   const [trendTab,  setTrendTab]  = useState<'3M' | '6M' | '1Y'>('6M');
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export default function PharmacyAnalyticsPage() {
         setAnalytics(aRes.data?.data ?? aRes.data);
         setStats(sRes.data?.data ?? sRes.data);
       })
-      .catch(err => { if (err?.code !== 'ERR_CANCELED') console.error(err); })
+      .catch(() => {})
       .finally(() => setLoading(false));
     return () => ctrl.abort();
   }, []);

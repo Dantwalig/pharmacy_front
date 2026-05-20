@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { EnvelopeIcon, ShieldCheckIcon, MapPinIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
@@ -52,8 +53,8 @@ function VerifyEmailForm() {
       const res = await authApi.verifyEmail({ email, code: codeStr });
       toast.success(res.message || t('verify.success'));
       setTimeout(() => router.push('/login'), 1500);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('verify.error'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setLoading(false); }
   };
 
@@ -65,8 +66,8 @@ function VerifyEmailForm() {
       toast.success(t('verify.codeSent'));
       setCode(['', '', '', '', '']);
       inputRefs.current[0]?.focus();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('verify.resendError'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setResending(false); }
   };
 

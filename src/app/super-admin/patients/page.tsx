@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { PatientSummary } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -18,7 +19,7 @@ import {
 
 export default function SuperAdminPatientsPage() {
   const { t } = useTranslation();
-  const [patients, setPatients] = useState<any[]>([]);
+  const [patients, setPatients] = useState<PatientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -32,8 +33,7 @@ export default function SuperAdminPatientsPage() {
       // You'll need to create this endpoint in the backend
       const res = await api.get('/super-admin/patients');
       setPatients(res.data);
-    } catch (error: any) {
-      console.error('Failed to fetch patients:', error);
+    } catch (error: unknown) {
       toast.error(t('errors.failedToLoadPatients'));
     } finally {
       setLoading(false);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { ClockIcon, CheckCircleIcon, ShoppingCartIcon, CurrencyDollarIcon, PresentationChartLineIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon, CreditCardIcon } from '@heroicons/react/24/outline';
@@ -101,8 +102,8 @@ export default function StaffDashboardPage() {
         });
 
         setRecentActivities(mappedActivities);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
+    } catch {
+      // Dashboard shows empty state on failure
     } finally {
       setLoading(false);
     }
@@ -114,8 +115,8 @@ export default function StaffDashboardPage() {
       await api.post('/attendance/clock-in', {});
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockIn'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(false); }
   };
 
@@ -125,8 +126,8 @@ export default function StaffDashboardPage() {
       await api.post('/attendance/clock-out', {});
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockOut'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(false); }
   };
 

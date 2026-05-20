@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { UserCircleIcon, LockClosedIcon, BellIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
@@ -44,7 +45,7 @@ export default function PatientProfilePage() {
       // Correct endpoint: PUT /patients/profile
       await api.put('/patients/profile', profile);
       toast.success(t('success.profileUpdated'));
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.updateFailed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setSaving(false); }
   };
 
@@ -57,7 +58,7 @@ export default function PatientProfilePage() {
       await api.put('/auth/change-password', passwords);
       toast.success(t('form.passwordChanged'));
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.failed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setSaving(false); }
   };
 

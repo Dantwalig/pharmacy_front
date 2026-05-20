@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -40,8 +41,8 @@ export default function StaffChangePasswordPage() {
       });
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staff.failedToChangePassword'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { setAuthTokens, removeAuthTokens, getUserFromToken, cacheUserData, clearUserCache } from '@/lib/auth';
 import { User } from '@/types';
 import toast from 'react-hot-toast';
@@ -105,9 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           router.push('/login');
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
       throw error;
     }
   };
@@ -116,8 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let apiFailed = false;
     try {
       await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
       apiFailed = true;
     } finally {
       removeAuthTokens();
@@ -164,8 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = { ...currentUser, ...response.data };
       cacheUserData(userData);
       setUser(userData);
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
+    } catch {
       removeAuthTokens();
       clearUserCache();
       setUser(null);

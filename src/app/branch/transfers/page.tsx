@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { LockClosedIcon, PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
@@ -42,8 +43,8 @@ export default function BranchTransfersPage() {
         const res = await api.get('/stock-transfers/branch', { signal });
         setBackendReady(true);
         return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
-      } catch (err: any) {
-        if (err?.response?.status === 403 || err?.response?.status === 404) {
+      } catch (error: unknown) {
+        if ((error as any)?.response?.status === 403 || (error as any)?.response?.status === 404) {
           setBackendReady(false);
         } else {
           toast.error(t('errors.failedToLoadTransfers'));
@@ -104,12 +105,12 @@ export default function BranchTransfersPage() {
       setShowForm(false);
       setForm({ toBranchId: '', notes: '', items: [{ medicationId: '', quantity: '' }] });
       refetch();
-    } catch (err: any) {
-      if (err?.response?.status === 403 || err?.response?.status === 404) {
+    } catch (error: unknown) {
+      if ((error as any)?.response?.status === 403 || (error as any)?.response?.status === 404) {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabledTransfers'));
       } else {
-        toast.error(err.response?.data?.message || t('transfers.failedToSubmit'));
+        toast.error(getErrorMessage(error));
       }
     } finally {
       setSubmitting(false);

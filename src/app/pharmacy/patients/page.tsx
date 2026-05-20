@@ -124,9 +124,7 @@ export default function PharmacyPatientsPage() {
   const totalPatients = data?.totalPatients ?? 0;
 
   useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadPatients'));
-    }
+    if (error) toast.error(t('errors.failedToLoadPatients'));
   }, [error, t]);
 
   const filteredPatients = patients.filter(patient => {

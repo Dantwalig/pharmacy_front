@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { EnvelopeIcon, ShieldCheckIcon, ClockIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
@@ -24,8 +25,8 @@ export default function ForgotPasswordPage() {
       await authApi.forgotPassword({ email });
       toast.success(t('forgotPassword.success'));
       router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('forgotPassword.error'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setLoading(false); }
   };
 
