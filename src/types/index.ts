@@ -43,6 +43,7 @@ export interface Medication {
   quantity: number;
   pharmacy?: Pharmacy;
   branchId?: string;
+  branch?: Branch;
 }
 
 export interface OrderItem {

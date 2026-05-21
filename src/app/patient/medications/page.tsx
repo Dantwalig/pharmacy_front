@@ -40,7 +40,7 @@ export default function SearchMedications() {
       price: medication.price,
       quantity: 1,
       pharmacyId: medication.pharmacy?.id || '',
-      branchId: medication.branchId || '',
+      branchId: medication.branchId || medication.branch?.id || '',
       pharmacyName: medication.pharmacy?.name || '',
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
