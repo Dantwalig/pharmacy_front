@@ -18,6 +18,8 @@ import Link from 'next/link';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
+const CLOCK_IN_COLOR  = '#007434';
+const CLOCK_OUT_COLOR = '#08007C';
 
 interface CurrentAttendance {
   id: string;
@@ -195,8 +197,15 @@ export default function StaffDashboardPage() {
           </p>
           <Link
             href="/staff/attendance"
-            className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ backgroundColor: TEAL }}
+            className="inline-flex items-center gap-2 mt-5 text-white text-sm font-semibold transition-opacity hover:opacity-90"
+            style={{
+              width: 224,
+              height: 48,
+              borderRadius: 10,
+              background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)',
+              paddingLeft: 20,
+              paddingRight: 20,
+            }}
           >
             <ClockIcon className="w-4 h-4" />
             View your Schedule
@@ -279,8 +288,8 @@ export default function StaffDashboardPage() {
               <button
                 onClick={handleClockIn}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: TEAL }}
+                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: CLOCK_IN_COLOR }}
                 aria-label="Clock in to start shift"
               >
                 {actionLoading ? spinner : <ClockIcon className="w-4 h-4" />}
@@ -316,8 +325,8 @@ export default function StaffDashboardPage() {
                   <button
                     onClick={handleClockIn}
                     disabled={actionLoading}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-                    style={{ backgroundColor: TEAL }}
+                    className="w-full inline-flex items-center justify-center gap-2 h-[49px] rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+                    style={{ backgroundColor: '#08007C' }}
                   >
                     {actionLoading ? spinner : <ClockIcon className="w-4 h-4" />}
                     {t('dashboard.tryAgain')}
@@ -343,8 +352,8 @@ export default function StaffDashboardPage() {
               <p className="text-gray-400 text-xs mt-1 mb-5">Clock out is available once your shift is approved</p>
               <button
                 disabled
-                className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl text-white text-sm font-semibold opacity-40 cursor-not-allowed"
-                style={{ backgroundColor: NAVY }}
+                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold opacity-40 cursor-not-allowed"
+                style={{ backgroundColor: CLOCK_OUT_COLOR }}
               >
                 <ClockIcon className="w-4 h-4" />
                 {t('staff.clockOut')}
@@ -364,8 +373,8 @@ export default function StaffDashboardPage() {
               <button
                 onClick={handleClockOut}
                 disabled={actionLoading}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: NAVY }}
+                className="w-full inline-flex items-center justify-center gap-2 h-[49px] rounded-xl text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: CLOCK_OUT_COLOR }}
                 aria-label="Clock out to end shift"
               >
                 {actionLoading ? spinner : <ClockIcon className="w-4 h-4" />}
