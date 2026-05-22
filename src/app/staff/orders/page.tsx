@@ -51,6 +51,9 @@ export default function StaffOrdersPage() {
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
   const { data: fetchedOrders = [], loading, error } = useFetch<Order[]>(
     async (signal) => {
@@ -77,6 +80,32 @@ export default function StaffOrdersPage() {
         prev.map(o => o.id === orderId ? ({ ...o, status: newStatus } as Order) : o)
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleRejectOrder = async () => {
+    if (!rejectingOrderId) return;
+    if (!rejectReason.trim()) {
+      toast.error(t('form.provideReason'));
+      return;
+    }
+    setUpdatingId(rejectingOrderId);
+    try {
+      await api.patch(`/orders/${rejectingOrderId}/status`, {
+        status: 'CANCELLED',
+        cancellationReason: rejectReason.trim(),
+      });
+      setOrders(prev =>
+        prev.map(o => o.id === rejectingOrderId ? ({ ...o, status: 'CANCELLED' } as Order) : o)
+      );
+      toast.success(t('success.orderCancelled2'));
+      setShowRejectModal(false);
+      setRejectingOrderId(null);
+      setRejectReason('');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -231,7 +260,7 @@ export default function StaffOrdersPage() {
                     )}
 
                     {/* Status update actions */}
-                    {nextStatuses.length > 0 && (
+                    {(nextStatuses.length > 0 || ['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status)) && (
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.updateStatus')}</p>
                         <div className="flex flex-wrap gap-2">
@@ -246,6 +275,19 @@ export default function StaffOrdersPage() {
                               {isUpdating ? t('orders2.updating') : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
                             </button>
                           ))}
+                          {['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status) && (
+                            <button
+                              onClick={() => {
+                                setRejectingOrderId(order.id);
+                                setRejectReason('');
+                                setShowRejectModal(true);
+                              }}
+                              disabled={isUpdating}
+                              className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all disabled:opacity-50"
+                            >
+                              {t('orders2.rejectOrder', 'Reject / Cancel Order')}
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -254,6 +296,39 @@ export default function StaffOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">{t('orders2.rejectOrder')}</h3>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={4}
+              placeholder={t('checkout2.rejectReasonPlaceholder')}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectingOrderId(null);
+                  setRejectReason('');
+                }}
+                className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleRejectOrder}
+                disabled={!!updatingId || !rejectReason.trim()}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

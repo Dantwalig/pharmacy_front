@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import Link from 'next/link';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ClipboardDocumentListIcon,
@@ -341,13 +342,19 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="shrink-0 p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex gap-3">
           <button
             onClick={onClose}
-            className="w-full py-3.5 rounded-2xl font-bold text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
             {t('common.close')}
           </button>
+          <Link
+            href={`/patient/orders/${order.id}`}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-white bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+          >
+            {t('orders2.manageOrder', 'Manage Order')}
+          </Link>
         </div>
       </div>
     </div>

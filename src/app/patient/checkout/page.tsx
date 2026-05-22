@@ -88,7 +88,6 @@ export default function CheckoutPage() {
       toast.error(t('form.unableToDeterminePharmacy'));
       return;
     }
-
     setLoading(true);
     try {
       // POST /orders — JSON body matching CreateOrderDto exactly

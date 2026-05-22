@@ -12,7 +12,7 @@ import { ArrowLeftIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react
 import { getErrorMessage } from '@/lib/errorHandler';
 
 const STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
-const DELIVERY_STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const DELIVERY_STATUS_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED'];
 
 type NextAction = { label: string; status: string; color: string } | null;
 
@@ -136,7 +136,7 @@ export default function PharmacyOrderDetailPage() {
             </div>
 
           {/* Action Buttons */}
-            {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && order.status !== 'DELIVERED' && (
+            {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
               <div className="flex flex-wrap gap-3">
               {nextAction && (
                   <button onClick={() => handleUpdateStatus(nextAction.status)} disabled={actionLoading}

@@ -55,7 +55,7 @@ export default function PharmacyDetailsPage() {
       quantity: 1,
       pharmacyId: pharmacy?.id || '',
       pharmacyName: pharmacy?.name || '',
-      branchId: branchId,
+      branchId: medication.branchId || medication.branch?.id || branchId,
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });
