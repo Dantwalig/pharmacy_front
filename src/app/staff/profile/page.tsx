@@ -106,7 +106,7 @@ export default function StaffProfilePage() {
 
   const handleSave = async () => {
     if (!form.firstName.trim() || !form.lastName.trim()) {
-      toast.error('First name and last name are required.');
+      toast.error(t('form.firstLastRequired'));
       return;
     }
     setSaving(true);
@@ -118,7 +118,7 @@ export default function StaffProfilePage() {
       });
       setProfile(res.data);
       setIsEditing(false);
-      toast.success('Profile updated successfully.');
+      toast.success(t('profile.updateSuccess'));
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -136,18 +136,18 @@ export default function StaffProfilePage() {
 
   const documents = [
     {
-      label:  'Pharmacist License',
+      label:  t('staffPages.pharmacistLicense'),
       expiry: profile.licenseExpiry
-        ? `Expires: ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-        : 'Expires: —',
+        ? `${t('staffPages.docExpires')} ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : `${t('staffPages.docExpires')} —`,
       url:  profile.licenseUrl ?? null,
       icon: DocumentTextIcon,
     },
     {
-      label:  'National ID Certificate',
+      label:  t('staffPages.nationalIdCert'),
       expiry: profile.nationalIdExpiry
-        ? `Expired: ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-        : profile.nationalId ? `ID: ${profile.nationalId}` : 'No document on file',
+        ? `${t('staffPages.docExpired')} ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : profile.nationalId ? `${t('staffPages.docIdPrefix')} ${profile.nationalId}` : t('staffPages.noDocOnFile'),
       url:  null,
       icon: PhotoIcon,
     },
@@ -161,7 +161,7 @@ export default function StaffProfilePage() {
         className="rounded-2xl px-8 py-8"
         style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
       >
-        <h1 className="text-3xl font-extrabold text-gray-900">My Profile</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900">{t('profile2.myProfile')}</h1>
         <p className="mt-1 text-gray-500 text-sm">
           {profile.branch.pharmacy.name} / {roleLabel}
         </p>
@@ -216,7 +216,7 @@ export default function StaffProfilePage() {
           {/* Personal Information */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-gray-900 text-base">Personal Information</h2>
+              <h2 className="font-bold text-gray-900 text-base">{t('profile2.personalInfo')}</h2>
 
               {isEditing ? (
                 <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export default function StaffProfilePage() {
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                   >
                     <XMarkIcon className="w-3.5 h-3.5" />
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={handleSave}
@@ -237,7 +237,7 @@ export default function StaffProfilePage() {
                     {saving
                       ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       : <CheckIcon className="w-3.5 h-3.5" />}
-                    Save
+                    {t('common.save')}
                   </button>
                 </div>
               ) : (
@@ -247,7 +247,7 @@ export default function StaffProfilePage() {
                   style={{ background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' }}
                 >
                   <PencilSquareIcon className="w-3.5 h-3.5" />
-                  Edit Profile
+                  {t('pharmacyOwner.editProfile')}
                 </button>
               )}
             </div>
@@ -255,17 +255,17 @@ export default function StaffProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {isEditing ? (
                 <>
-                  <EditField label="First Name"    value={form.firstName} onChange={v => setForm(f => ({ ...f, firstName: v }))} />
-                  <EditField label="Last Name"     value={form.lastName}  onChange={v => setForm(f => ({ ...f, lastName: v }))} />
-                  <EditField label="Phone Number"  value={form.phone}     onChange={v => setForm(f => ({ ...f, phone: v }))} />
-                  <EditField label="Email Address" value={profile.user.email} onChange={() => {}} disabled />
+                  <EditField label={t('profile2.firstName')}           value={form.firstName} onChange={v => setForm(f => ({ ...f, firstName: v }))} />
+                  <EditField label={t('profile2.lastName')}            value={form.lastName}  onChange={v => setForm(f => ({ ...f, lastName: v }))} />
+                  <EditField label={t('staffPages.phoneNumberLabel')}  value={form.phone}     onChange={v => setForm(f => ({ ...f, phone: v }))} />
+                  <EditField label={t('staffPages.emailAddressLabel')} value={profile.user.email} onChange={() => {}} disabled />
                 </>
               ) : (
                 <>
-                  <ReadField label="Full Name"     value={`${profile.firstName} ${profile.lastName}`} />
-                  <ReadField label="Email Address" value={profile.user.email} />
-                  <ReadField label="Phone Number"  value={profile.phone || '—'} />
-                  <ReadField label="Role"          value={roleLabel} />
+                  <ReadField label={t('staffPages.fullName')}          value={`${profile.firstName} ${profile.lastName}`} />
+                  <ReadField label={t('staffPages.emailAddressLabel')} value={profile.user.email} />
+                  <ReadField label={t('staffPages.phoneNumberLabel')}  value={profile.phone || '—'} />
+                  <ReadField label={t('form.role')}                    value={roleLabel} />
                 </>
               )}
             </div>
@@ -274,20 +274,20 @@ export default function StaffProfilePage() {
           {/* Registration Details */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-gray-900 text-base">Registration Details</h2>
+              <h2 className="font-bold text-gray-900 text-base">{t('pharmacyOwner.registrationDetails')}</h2>
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                 isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                {isApproved ? 'Approved' : 'Pending'}
+                {isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
               </span>
             </div>
 
             <div className="space-y-0 text-sm divide-y divide-gray-50">
               {[
-                { label: 'Pharmacy Name', value: profile.branch.pharmacy.name },
-                { label: 'Branch',        value: profile.branch.name },
-                { label: 'Member Since',  value: memberSince },
+                { label: t('pharmacyOwner.pharmacyName'), value: profile.branch.pharmacy.name },
+                { label: t('form.branch'),                value: profile.branch.name },
+                { label: t('staffMgmt.memberSince'),      value: memberSince },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between py-2.5">
                   <p className="text-gray-400 font-medium">{label}</p>
@@ -295,9 +295,9 @@ export default function StaffProfilePage() {
                 </div>
               ))}
               <div className="flex items-center justify-between py-2.5">
-                <p className="text-gray-400 font-medium">License Status</p>
+                <p className="text-gray-400 font-medium">{t('staffPages.licenseStatus')}</p>
                 <p className={`font-semibold ${isApproved ? 'text-gray-800' : 'text-orange-500'}`}>
-                  {isApproved ? 'Valid' : 'Action Required'}
+                  {isApproved ? t('staffPages.licenseValid') : t('staffPages.actionRequired')}
                 </p>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function StaffProfilePage() {
 
           {/* Submitted Documents */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-bold text-gray-900 text-base mb-4">Submitted Documents</h2>
+            <h2 className="font-bold text-gray-900 text-base mb-4">{t('pharmacyOwner.submittedDocuments')}</h2>
 
             <div className="space-y-3">
               {documents.map(({ label, expiry, url, icon: Icon }) => (
@@ -327,12 +327,12 @@ export default function StaffProfilePage() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
                     >
                       <EyeIcon className="w-3.5 h-3.5" />
-                      View
+                      {t('common.view')}
                     </a>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-gray-400 text-xs font-semibold">
                       <EyeIcon className="w-3.5 h-3.5" />
-                      View
+                      {t('common.view')}
                     </span>
                   )}
                 </div>
@@ -342,7 +342,7 @@ export default function StaffProfilePage() {
             <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-100">
               <ExclamationCircleIcon className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
               <p className="text-xs text-yellow-700">
-                Registration documents cannot be edited. Contact support to update.
+                {t('pharmacyOwner.documentsNotice')}
               </p>
             </div>
           </div>

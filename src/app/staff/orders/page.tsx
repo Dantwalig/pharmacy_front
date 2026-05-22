@@ -121,8 +121,8 @@ export default function StaffOrdersPage() {
         className="rounded-2xl px-8 py-10"
         style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
       >
-        <h1 className="text-3xl font-extrabold text-gray-900">Order Overview</h1>
-        <p className="mt-1 text-gray-500 text-sm">View and manage all branch transactions.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900">{t('staffPages.orderOverview')}</h1>
+        <p className="mt-1 text-gray-500 text-sm">{t('staffPages.orderOverviewSubtitle')}</p>
       </div>
 
       {/* ── 4 Stat Cards ── */}
@@ -267,7 +267,7 @@ export default function StaffOrdersPage() {
                     {/* Prescription */}
                     {order.prescription && (
                       <div className="px-3 py-2 rounded-lg bg-blue-50 text-sm text-blue-700">
-                        Prescription attached · Status:{' '}
+                        {t('staffPages.prescriptionAttachedStatus')}{' '}
                         <span className="font-semibold">{order.prescription.status}</span>
                       </div>
                     )}
@@ -344,7 +344,7 @@ export default function StaffOrdersPage() {
                 disabled={!!updatingId || !rejectReason.trim()}
                 className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
               >
-                Confirm Rejection
+                {t('staffPages.confirmRejection')}
               </button>
             </div>
           </div>

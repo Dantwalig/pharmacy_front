@@ -193,7 +193,7 @@ export default function StaffDashboardPage() {
             {profile ? `${profile.firstName} ${profile.lastName}` : '—'}
           </h1>
           <p className="text-gray-500 mt-3 text-sm leading-relaxed">
-            Your performance metrics are looking good. Here&apos;s an overview of your operations.
+            {t('staffPages.performanceMetrics')}
           </p>
           <Link
             href="/staff/attendance"
@@ -208,7 +208,7 @@ export default function StaffDashboardPage() {
             }}
           >
             <ClockIcon className="w-4 h-4" />
-            View your Schedule
+            {t('staffPages.viewSchedule')}
           </Link>
         </div>
 
@@ -241,7 +241,7 @@ export default function StaffDashboardPage() {
           <p className="text-2xl font-bold text-gray-900 mt-1">
             {t('common.currency')} {grossSales.toLocaleString()}
           </p>
-          <p className="text-green-500 text-xs mt-1 font-medium">+4% Last Month</p>
+          <p className="text-green-500 text-xs mt-1 font-medium">{t('staffPages.lastMonth', '+4% Last Month')}</p>
         </div>
 
         {/* New Sales → POS */}
@@ -339,7 +339,7 @@ export default function StaffDashboardPage() {
 
         {/* End Today's Shift — Clock Out */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-bold text-gray-900 mb-4">End Today&apos;s Shift</h2>
+          <h2 className="font-bold text-gray-900 mb-4">{t('staffPages.endShift')}</h2>
 
           {!canClockOut ? (
             <div className="flex flex-col items-center text-center py-4">
@@ -347,9 +347,9 @@ export default function StaffDashboardPage() {
                 <ClockIcon className="w-7 h-7" style={{ color: NAVY }} />
               </div>
               <p className="text-gray-700 font-medium text-sm">
-                {clockedIn ? t('staff.statusClockOutPending') : 'You have not clocked out yet'}
+                {clockedIn ? t('staff.statusClockOutPending') : t('staffPages.notClockedOut')}
               </p>
-              <p className="text-gray-400 text-xs mt-1 mb-5">Clock out is available once your shift is approved</p>
+              <p className="text-gray-400 text-xs mt-1 mb-5">{t('staffPages.clockOutAvailable')}</p>
               <button
                 disabled
                 className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold opacity-40 cursor-not-allowed"

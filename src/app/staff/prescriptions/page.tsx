@@ -109,7 +109,7 @@ export default function StaffPrescriptionsPage() {
           }}
         >
           <ClipboardDocumentListIcon className="w-4 h-4" />
-          Patient agenda
+          {t('staffPages.patientAgenda')}
         </button>
       </div>
 
