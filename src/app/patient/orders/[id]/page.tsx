@@ -20,7 +20,7 @@ const STATUS_LABEL_KEYS: Record<string, string> = {
   READY_FOR_PICKUP: 'orders2.statusReadyForPickup',
   DELIVERED: 'orders2.statusDelivered',
   CANCELLED: 'orders2.statusCancelled',
-  COMPLETED: 'orders2.statusDelivered',
+  COMPLETED: 'orders2.orderCompleted',
 };
 
 const PAYMENT_METHOD_KEYS: Record<string, string> = {
@@ -137,7 +137,17 @@ export default function OrderDetailsPage() {
 
   if (!order) return <div className="text-center py-12"><p className="text-gray-500">{t('orders.notFound')}</p></div>;
 
-  const statusSteps = ['PENDING', 'ACCEPTED', 'PREPARING', order.type === 'DELIVERY' ? 'OUT_FOR_DELIVERY' : 'READY_FOR_PICKUP', 'DELIVERED'];
+  const statusSteps = order.type === 'DELIVERY'
+    ? ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED']
+    : ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
+
+  const getCurrentStatusIndex = () => {
+    if (!order) return -1;
+    if (order.status === 'COMPLETED') {
+      return statusSteps.length - 1;
+    }
+    return statusSteps.indexOf(order.status);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -166,12 +176,13 @@ export default function OrderDetailsPage() {
           <div className="mt-8">
           <div className="flex justify-between items-center">
             {statusSteps.map((status, index) => {
-                const isComplete = statusSteps.indexOf(order.status) >= index;
-                const isCurrent = order.status === status;
+                const currentIdx = getCurrentStatusIndex();
+                const isComplete = currentIdx >= index;
+                const isCurrent = order.status === status || (order.status === 'COMPLETED' && index === statusSteps.length - 1);
                 return (
                   <div key={status} className="flex flex-col items-center flex-1">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-[#1E4D8C] shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
-                    {isComplete ? '' : index + 1}
+                    {isComplete ? '✓' : index + 1}
                     </div>
                   <p className="text-xs mt-2 text-center text-white/90 font-medium">{t(STATUS_LABEL_KEYS[status] ?? status)}</p>
                 </div>

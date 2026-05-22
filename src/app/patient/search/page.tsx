@@ -139,7 +139,7 @@ export default function SearchPage() {
       price: med.price,
       quantity: 1,
       pharmacyId: med.pharmacy?.id || '',
-      branchId: med.branchId || '',
+      branchId: med.branchId || med.branch?.id || '',
       pharmacyName: med.pharmacy?.name || '',
       requiresPrescription: med.requiresPrescription,
       imageUrl: med.imageUrl,
