@@ -1,5 +1,3 @@
-// frontend/src/app/staff/profile/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,7 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import {
+  PencilSquareIcon,
+  DocumentTextIcon,
+  PhotoIcon,
+  EyeIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/24/outline';
 
 interface StaffProfile {
   id: string;
@@ -19,6 +23,9 @@ interface StaffProfile {
   dateOfBirth?: string;
   status: string;
   createdAt: string;
+  licenseUrl?: string;
+  licenseExpiry?: string;
+  nationalIdExpiry?: string;
   user: { email: string; role: string };
   branch: {
     name: string;
@@ -29,11 +36,16 @@ interface StaffProfile {
   permissions?: { permissions: string[] };
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  PHARMACIST: 'bg-blue-100 text-blue-800',
-  CASHIER:    'bg-blue-100 text-blue-800',
-  NURSE:      'bg-blue-100 text-blue-800',
-};
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+      <div className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 font-medium">
+        {value}
+      </div>
+    </div>
+  );
+}
 
 export default function StaffProfilePage() {
   const { t } = useTranslation();
@@ -42,117 +54,202 @@ export default function StaffProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await api.get('/staff/profile/me'); // GET /staff/profile/me
-        setProfile(res.data);
-      } catch {
-        // Profile shows "not found" state on failure
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
+    api.get('/staff/profile/me')
+      .then(res => setProfile(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
   if (!profile) return <div className="text-center py-20 text-gray-500">{t('profile2.profileNotFound')}</div>;
 
-  const permissions: string[] = profile.permissions?.permissions || [];
+  const initials    = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase();
+  const memberSince = new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const isApproved  = profile.status === 'ACTIVE';
+
+  const documents = [
+    {
+      label: 'Pharmacist License',
+      expiry: profile.licenseExpiry
+        ? `Expires: ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : 'Expires: —',
+      url:  profile.licenseUrl,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: 'National ID Certificate',
+      expiry: profile.nationalIdExpiry
+        ? `Expired: ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : profile.nationalId ? `ID: ${profile.nationalId}` : 'No document on file',
+      url:  null,
+      icon: PhotoIcon,
+    },
+  ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#1E4D8C' }}>
-        <h1 className="text-2xl font-bold">{t('staff.profile')}</h1>
-        <p className="mt-1 text-white/70">{t('profile2.yourPersonalAndBranch')}</p>
-      </div>
+    <div className="max-w-6xl mx-auto space-y-5 p-4 lg:p-6">
 
-    {/* Identity card */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <div className="flex items-center gap-5 mb-6">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0F7F6' }}>
-          <UserCircleIcon className="w-10 h-10" style={{ color: '#2D9B8A' }} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            {profile.firstName} {profile.lastName}
-            </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[profile.user.role] || 'bg-gray-100 text-gray-700'}`}>
-              {t(`roles.${profile.user.role.toLowerCase()}`, { defaultValue: profile.user.role })}
-              </span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                profile.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-              }`}>
-              {profile.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-              </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        {[
-            { label: t('form.email'),       value: profile.user.email },
-            { label: t('form.phone'),       value: profile.phone || '—' },
-            { label: t('form.nationalId'),  value: profile.nationalId || '—' },
-            { label: t('form.gender'),      value: profile.gender || '—' },
-            { label: t('form.dateOfBirth'), value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
-            { label: t('staffMgmt.memberSince'), value: new Date(profile.createdAt).toLocaleDateString() },
-          ].map(({ label, value }) => (
-            <div key={label}>
-            <p className="text-xs text-gray-500">{label}</p>
-            <p className="font-medium text-gray-900 dark:text-gray-100 mt-0.5">{value}</p>
-          </div>
-        ))}
-        </div>
-    </div>
-
-    {/* Branch info */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('form.branch')}</h3>
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <p className="text-xs text-gray-500">{t('form.pharmacy')}</p>
-          <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.pharmacy.name}</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500">{t('form.branch')}</p>
-          <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.name}</p>
-        </div>
-        <div className="col-span-2">
-          <p className="text-xs text-gray-500">{t('form.address')}</p>
-          <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.address}</p>
-        </div>
-      </div>
-    </div>
-
-    {/* Permissions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-        {t('staff.myPermissions')}
-          <span className="ml-2 text-sm font-normal text-gray-500">({t('staff.permissionsGranted', { count: permissions.length })})</span>
-      </h3>
-      {permissions.length === 0 ? (
-          <p className="text-gray-400 text-sm">{t('profile2.noPermissionsAssigned')}</p>
-      ) : (
-          <div className="flex flex-wrap gap-2">
-          {permissions.map((perm) => (
-              <span key={perm} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ backgroundColor: '#F0F7F6', color: '#2D9B8A' }}>
-              {perm.replace(/_/g, ' ')}
-              </span>
-          ))}
-          </div>
-      )}
-      </div>
-
-    {/* Change password */}
-      <button
-        onClick={() => router.push('/staff/change-password')}
-        className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-medium text-sm transition-all"
+      {/* ── Hero ── */}
+      <div
+        className="rounded-2xl px-8 py-8"
+        style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
       >
-      <LockClosedIcon className="w-4 h-4" />
-      {t('staff.changePassword')}
-      </button>
-  </div>
-);
+        <h1 className="text-3xl font-extrabold text-gray-900">My Profile</h1>
+        <p className="mt-1 text-gray-500 text-sm">
+          {profile.branch.pharmacy.name} / {profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase()}
+        </p>
+      </div>
+
+      {/* ── Two-column layout ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5 items-start">
+
+        {/* ── Left: Identity card ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center text-center">
+          {/* Avatar */}
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3 relative"
+            style={{ background: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)' }}
+          >
+            {initials}
+            <span className="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-white shadow">
+              <span className="w-3.5 h-3.5 rounded-full bg-blue-400 flex items-center justify-center">
+                <EyeIcon className="w-2 h-2 text-white" />
+              </span>
+            </span>
+          </div>
+
+          <p className="font-bold text-gray-900 text-base">{profile.firstName} {profile.lastName}</p>
+          <p className="text-gray-400 text-sm mt-0.5">
+            {profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase()}
+          </p>
+
+          <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            {isApproved ? t('common.active') : profile.status}
+          </span>
+
+          <div className="mt-5 w-full space-y-3 text-sm">
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.pharmacy')}</p>
+              <p className="font-semibold text-gray-800 mt-0.5">{profile.branch.pharmacy.name}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.branch')}</p>
+              <p className="font-semibold text-gray-800 mt-0.5">{profile.branch.name}</p>
+            </div>
+            {(profile.phone || profile.branch.phone) && (
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.phone')}</p>
+                <p className="font-semibold text-gray-800 mt-0.5">{profile.phone || profile.branch.phone}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Right: stacked cards ── */}
+        <div className="space-y-5">
+
+          {/* Personal Information */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-gray-900 text-base">Personal Information</h2>
+              <button
+                onClick={() => router.push('/staff/change-password')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' }}
+              >
+                <PencilSquareIcon className="w-3.5 h-3.5" />
+                Edit Profile
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Full Name"      value={`${profile.firstName} ${profile.lastName}`} />
+              <Field label="Email Address"  value={profile.user.email} />
+              <Field label="Phone Number"   value={profile.phone || '—'} />
+              <Field label="Role"           value={profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase()} />
+            </div>
+          </div>
+
+          {/* Registration Details */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-gray-900 text-base">Registration Details</h2>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                {isApproved ? 'Approved' : 'Pending'}
+              </span>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              {[
+                { label: 'Pharmacy Name', value: profile.branch.pharmacy.name },
+                { label: 'Branch',        value: profile.branch.name },
+                { label: 'Member Since',  value: memberSince },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <p className="text-gray-400 font-medium">{label}</p>
+                  <p className="font-semibold text-gray-800">{value}</p>
+                </div>
+              ))}
+              <div className="flex items-center justify-between py-2">
+                <p className="text-gray-400 font-medium">License Status</p>
+                <p className={`font-semibold ${isApproved ? 'text-gray-800' : 'text-orange-500'}`}>
+                  {isApproved ? 'Valid' : 'Action Required'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submitted Documents */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="font-bold text-gray-900 text-base mb-4">Submitted Documents</h2>
+
+            <div className="space-y-3">
+              {documents.map(({ label, expiry, url, icon: Icon }) => (
+                <div key={label} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50">
+                      <Icon className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{expiry}</p>
+                    </div>
+                  </div>
+                  {url ? (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
+                    >
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      View
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-gray-400 text-xs font-semibold">
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      View
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Warning banner */}
+            <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-100">
+              <ExclamationCircleIcon className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-700">
+                Registration documents cannot be edited. Contact support to update.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
 }
