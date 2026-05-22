@@ -339,7 +339,7 @@ export default function StaffDashboardPage() {
 
         {/* End Today's Shift — Clock Out */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-bold text-gray-900 mb-4">{t('staff.clockOut')}</h2>
+          <h2 className="font-bold text-gray-900 mb-4">End Today&apos;s Shift</h2>
 
           {!canClockOut ? (
             <div className="flex flex-col items-center text-center py-4">
