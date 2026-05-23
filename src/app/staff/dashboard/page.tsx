@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { ClockIcon, CheckCircleIcon, ShoppingCartIcon, CurrencyDollarIcon, PresentationChartLineIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon, CreditCardIcon } from '@heroicons/react/24/outline';
@@ -101,8 +102,8 @@ export default function StaffDashboardPage() {
         });
 
         setRecentActivities(mappedActivities);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
+    } catch {
+      // Dashboard shows empty state on failure
     } finally {
       setLoading(false);
     }
@@ -114,8 +115,8 @@ export default function StaffDashboardPage() {
       await api.post('/attendance/clock-in', {});
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockIn'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(false); }
   };
 
@@ -125,8 +126,8 @@ export default function StaffDashboardPage() {
       await api.post('/attendance/clock-out', {});
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockOut'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(false); }
   };
 
@@ -241,11 +242,12 @@ export default function StaffDashboardPage() {
               disabled={actionLoading}
               className="text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
               style={{ backgroundColor: TEAL }}
+              aria-label="Clock in to start shift"
             >
               {actionLoading
                 ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 : <ClockIcon className="w-5 h-5" />}
-              Clock In
+              {t('staff.clockIn')}
             </button>
           </div>
         ) : (
@@ -263,7 +265,7 @@ export default function StaffDashboardPage() {
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
                 {todayShift.clockInApprover && (
                   <p className="text-xs mt-1" style={{ color: TEAL }}>
-                    Approved by {todayShift.clockInApprover.firstName}
+                    {t('dashboard.approvedBy', { name: todayShift.clockInApprover.firstName })}
                   </p>
                 )}
               </div>
@@ -271,14 +273,14 @@ export default function StaffDashboardPage() {
                 <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
                 {todayShift.totalHours && (
-                  <p className="text-xs text-blue-600 mt-1">{todayShift.totalHours.toFixed(1)} hours worked</p>
+                  <p className="text-xs text-blue-600 mt-1">{t('dashboard.hoursWorkedLabel', { hours: todayShift.totalHours.toFixed(1) })}</p>
                 )}
               </div>
             </div>
 
             {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                <p className="text-xs text-red-600 font-medium">Rejection reason: {todayShift.rejectionReason}</p>
+                <p className="text-xs text-red-600 font-medium">{t('dashboard.rejectionReason', { reason: todayShift.rejectionReason })}</p>
               </div>
             )}
 
@@ -287,11 +289,12 @@ export default function StaffDashboardPage() {
                 onClick={handleClockOut}
                 disabled={actionLoading}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                aria-label="Clock out to end shift"
               >
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Clock Out
+                {t('staff.clockOut')}
               </button>
             )}
 
@@ -305,7 +308,7 @@ export default function StaffDashboardPage() {
                 {actionLoading
                   ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <ClockIcon className="w-5 h-5" />}
-                Try Again
+                {t('dashboard.tryAgain')}
               </button>
             )}
           </div>
@@ -324,11 +327,11 @@ export default function StaffDashboardPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
-                  <th className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
-                  <th className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
-                  <th className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">

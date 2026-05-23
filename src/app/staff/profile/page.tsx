@@ -46,8 +46,8 @@ export default function StaffProfilePage() {
       try {
         const res = await api.get('/staff/profile/me'); // GET /staff/profile/me
         setProfile(res.data);
-      } catch (error) {
-        console.error('Failed to load profile:', error);
+      } catch {
+        // Profile shows "not found" state on failure
       } finally {
         setLoading(false);
       }
@@ -79,12 +79,12 @@ export default function StaffProfilePage() {
             </h2>
           <div className="flex items-center gap-2 mt-1">
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[profile.user.role] || 'bg-gray-100 text-gray-700'}`}>
-              {profile.user.role}
+              {t(`roles.${profile.user.role.toLowerCase()}`, { defaultValue: profile.user.role })}
               </span>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                 profile.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
               }`}>
-              {profile.status}
+              {profile.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
               </span>
           </div>
         </div>
@@ -129,8 +129,8 @@ export default function StaffProfilePage() {
     {/* Permissions */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-        My Permissions
-          <span className="ml-2 text-sm font-normal text-gray-500">({permissions.length} granted)</span>
+        {t('staff.myPermissions')}
+          <span className="ml-2 text-sm font-normal text-gray-500">({t('staff.permissionsGranted', { count: permissions.length })})</span>
       </h3>
       {permissions.length === 0 ? (
           <p className="text-gray-400 text-sm">{t('profile2.noPermissionsAssigned')}</p>
@@ -151,7 +151,7 @@ export default function StaffProfilePage() {
         className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-medium text-sm transition-all"
       >
       <LockClosedIcon className="w-4 h-4" />
-      Change Password
+      {t('staff.changePassword')}
       </button>
   </div>
 );

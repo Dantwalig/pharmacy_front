@@ -23,6 +23,7 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Open sidebar"
         >
           <Menu size={18} className="text-gray-600" />
         </button>
@@ -47,7 +48,7 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
           ))}
         </div>
 
-        <button className="relative p-2 rounded-full hover:bg-gray-100">
+        <button className="relative p-2 rounded-full hover:bg-gray-100" aria-label="Notifications">
           <Bell size={18} className="text-gray-600" />
         </button>
 

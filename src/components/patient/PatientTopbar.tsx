@@ -39,6 +39,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
       <button
           onClick={onMenuClick}
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Open sidebar"
         >
         <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
       </button>
@@ -51,13 +52,13 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
       <LanguageSwitcher />
 
       <Link href="/patient/notifications">
-        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors">
+        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors" aria-label="Notifications">
           <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         </button>
       </Link>
 
       <Link href="/patient/cart">
-        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors">
+        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors" aria-label="View shopping cart">
           <ShoppingCartIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
@@ -86,7 +87,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
                   onClick={() => setShowDropdown(false)}
                   className="block w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                {t('extras.profile.myProfile')}
+                {t('patient.myProfile')}
                 </Link>
               <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
               <button

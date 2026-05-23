@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ClipboardDocumentListIcon,
@@ -40,7 +41,7 @@ export default function StaffPrescriptionsPage() {
       // GET /prescriptions/branch — Role.PHARMACIST now permitted
       // Supports optional ?status= query param
       const res = await api.get('/prescriptions/branch');
-      setPrescriptions(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setPrescriptions(unwrapData(res.data));
     } catch {
       toast.error(t('errors.failedToLoadPrescriptions'));
     } finally {
@@ -55,8 +56,8 @@ export default function StaffPrescriptionsPage() {
       await api.put(`/prescriptions/${id}/status`, { status: 'APPROVED' });
       toast.success(t('success.prescriptionVerified'));
       setPrescriptions(prev => prev.map(p => p.id === id ? { ...p, status: 'APPROVED' } : p));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('prescriptions.failedToVerify'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -74,8 +75,8 @@ export default function StaffPrescriptionsPage() {
       ));
       setRejectingId(null);
       setRejectReason('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('prescriptions.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -208,13 +209,15 @@ export default function StaffPrescriptionsPage() {
                       <>
                         <button onClick={() => handleVerify(p.id)} disabled={!!actionId}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50"
-                          style={{ backgroundColor: TEAL }}>
+                          style={{ backgroundColor: TEAL }}
+                          aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
                           <CheckCircleIcon className="w-4 h-4" />
                           {actionId === p.id ? t('prescriptions.verifying') : t('staff.verify')}
                         </button>
                         <button onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
                           disabled={!!actionId}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50">
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
+                          aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
                           <XCircleIcon className="w-4 h-4" />
                           {t('staff.reject')}
                         </button>

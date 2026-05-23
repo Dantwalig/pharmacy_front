@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -40,8 +41,8 @@ export default function StaffChangePasswordPage() {
       });
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staff.failedToChangePassword'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -61,15 +62,15 @@ export default function StaffChangePasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">{t('staff.welcomeTitle')}</h1>
             <p className="text-sm text-gray-500 mt-2">
-              Please set a permanent password before accessing your account.
+              {t('staff.permanentPasswordDesc')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
-              { field: 'temp' as const,    label: 'Temporary Password',    key: 'tempPassword',    placeholder: 'Enter the password from your email' },
-              { field: 'new' as const,     label: 'New Password',          key: 'newPassword',     placeholder: 'At least 8 characters' },
-              { field: 'confirm' as const, label: 'Confirm New Password',  key: 'confirmPassword', placeholder: 'Re-enter new password' },
+              { field: 'temp' as const,    label: t('staff.tempPassword'),    key: 'tempPassword',    placeholder: t('staff.tempPasswordPlaceholder') },
+              { field: 'new' as const,     label: t('staff.newPassword'),     key: 'newPassword',     placeholder: t('staff.newPasswordPlaceholder') },
+              { field: 'confirm' as const, label: t('staff.confirmPassword'), key: 'confirmPassword', placeholder: t('staff.confirmPasswordPlaceholder') },
             ].map(({ field, label, key, placeholder }) => (
               <div key={key}>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>
@@ -87,7 +88,9 @@ export default function StaffChangePasswordPage() {
                     onBlur={e => (e.target.style.borderColor = '#D1D5DB')}
                   />
                   <button type="button" onClick={() => toggle(field)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    aria-label={showPass[field] ? t('common.hidePassword') || 'Hide password' : t('common.showPassword') || 'Show password'}
+                  >
                     {showPass[field] ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </button>
                 </div>

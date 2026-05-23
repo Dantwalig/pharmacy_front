@@ -1,9 +1,12 @@
 'use client';
 // src/app/(pharmacy)/orders/page.tsx
-import { useState, useEffect } from 'react';
+import { useFetch } from '@/hooks/useFetch';
+import { useState, useEffect, useCallback} from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -20,31 +23,40 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 export default function PharmacyOrdersPage() {
   const { t } = useTranslation();
-  const [orders, setOrders]     = useState<any[]>([]);
+  const router = useRouter();
   const [filtered, setFiltered] = useState<any[]>([]);
   const [tab, setTab]           = useState<TabKey>('PENDING');
   const [search, setSearch]     = useState('');
   const [branch, setBranch]     = useState('');
-  const [branches, setBranches] = useState<any[]>([]);
-  const [loading, setLoading]   = useState(true);
+
+  const fetchOrdersData = useCallback(
+  async (signal: AbortSignal) => {
+    const [ordRes, brRes] = await Promise.all([
+      api.get('/orders/pharmacy-orders', { signal }),
+      api.get('/branches/my-branches', { signal }),
+    ]);
+
+    return {
+      orders: ordRes.data?.data ?? ordRes.data ?? [],
+      branches: brRes.data?.data ?? brRes.data ?? [],
+    };
+  },
+  []
+  );
+
+  const { data, loading, error } = useFetch<{
+  orders: any[];
+  branches: any[];
+  }>(fetchOrdersData,[]);
+
+const orders = data?.orders ?? [];
+const branches = data?.branches ?? [];
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [ordRes, brRes] = await Promise.all([
-          api.get('/orders/pharmacy-orders'),
-          api.get('/branches/my-branches'),
-        ]);
-        setOrders(ordRes.data?.data ?? ordRes.data ?? []);
-        setBranches(brRes.data?.data ?? brRes.data ?? []);
-      } catch {
-        // silently fail, show empty state
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+     if (error) {
+        toast.error(t('errors.failedToLoadOrders'));
+      };
+    }, [error, t]);
 
   useEffect(() => {
     let res = orders.filter(o => o.status === tab);
@@ -190,6 +202,7 @@ export default function PharmacyOrdersPage() {
                     </td>
                   <td className="px-5 py-4">
                     <button
+                        onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
                         className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
                       >
                       <Eye size={14} />

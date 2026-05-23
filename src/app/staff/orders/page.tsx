@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import CashierOrdersView from '@/components/staff/CashierOrdersView';
+import { Order, OrderStatus } from '@/types';
+import { useFetch } from '@/hooks/useFetch';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -24,7 +27,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 // Statuses a pharmacist can move an order to from its current status
-const NEXT_STATUSES: Record<string, string[]> = {
+const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
   PENDING:          ['ACCEPTED'],
   ACCEPTED:         ['PREPARING'],
   PREPARING:        ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
@@ -33,16 +36,7 @@ const NEXT_STATUSES: Record<string, string[]> = {
   DELIVERED:        ['COMPLETED'],
 };
 
-interface Order {
-  id: string;
-  status: string;
-  total: number;
-  type: string;
-  createdAt: string;
-  patient: { firstName: string; lastName: string; phone?: string };
-  orderItems: { quantity: number; price: number; medication: { name: string } }[];
-  prescription?: { id: string; status: string } | null;
-}
+
 
 function fmt(n: number) {
   return `RWF ${Number(n ?? 0).toLocaleString()}`;
@@ -54,39 +48,69 @@ export default function StaffOrdersPage() {
   const isCashier = user?.role === 'CASHIER';
 
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+
+  const { data: fetchedOrders = [], loading, error } = useFetch<Order[]>(
+    async (signal) => {
+      const res = await api.get('/orders/pharmacy-orders', { signal });
+      return unwrapData<Order>(res.data);
+    },
+    []
+  );
+
+  // Sync fetched data with local state for optimistic updates
+  useEffect(() => {
+    setOrders(fetchedOrders ?? []);
+  }, [fetchedOrders]);
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (error) toast.error(t('errors.failedToLoadOrders'));
+  }, [error, t]);
 
-  const fetchOrders = async () => {
-    try {
-      const res = await api.get('/orders/pharmacy-orders'); // GET /orders/pharmacy-orders
-      setOrders(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
-    } catch (error) {
-      console.error('Failed to load orders:', error);
-      toast.error(t('errors.failedToLoadOrders'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus }); // PATCH /orders/:id/status
       setOrders(prev =>
-        prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
+        prev.map(o => o.id === orderId ? ({ ...o, status: newStatus } as Order) : o)
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
-      setUpdatingId(null); }
+      setUpdatingId(null);
+    }
+  };
+
+  const handleRejectOrder = async () => {
+    if (!rejectingOrderId) return;
+    if (!rejectReason.trim()) {
+      toast.error(t('form.provideReason'));
+      return;
+    }
+    setUpdatingId(rejectingOrderId);
+    try {
+      await api.patch(`/orders/${rejectingOrderId}/status`, {
+        status: 'CANCELLED',
+        cancellationReason: rejectReason.trim(),
+      });
+      setOrders(prev =>
+        prev.map(o => o.id === rejectingOrderId ? ({ ...o, status: 'CANCELLED' } as Order) : o)
+      );
+      toast.success(t('success.orderCancelled2'));
+      setShowRejectModal(false);
+      setRejectingOrderId(null);
+      setRejectReason('');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const formatDate = (d: string) =>
@@ -96,7 +120,7 @@ export default function StaffOrdersPage() {
 
   const statusFilters = ['all', 'PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'];
 
-  if (isCashier) return <CashierOrdersView orders={orders as any} loading={loading} />;
+  if (isCashier) return <CashierOrdersView orders={orders} loading={loading} />;
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
@@ -165,6 +189,8 @@ export default function StaffOrdersPage() {
                 <button
                   className="w-full flex items-center justify-between p-4 lg:p-5 hover:bg-gray-50 transition-colors text-left"
                   onClick={() => setExpanded(isExpanded ? null : order.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? 'Collapse' : 'Expand'} order for ${order.patient.firstName} ${order.patient.lastName}`}
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -176,7 +202,7 @@ export default function StaffOrdersPage() {
                         {order.patient.firstName} {order.patient.lastName}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {formatDate(order.createdAt)} · {order.type} · {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                        {formatDate(order.createdAt)} · {order.type} · {(order.orderItems ?? []).length} item{(order.orderItems ?? []).length !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -202,7 +228,7 @@ export default function StaffOrdersPage() {
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.items')}</p>
                       <div className="space-y-2">
-                        {order.orderItems.map((item, i) => (
+                        {(order.orderItems ?? []).map((item, i) => (
                           <div key={i} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">
                               {item.medication.name}
@@ -234,7 +260,7 @@ export default function StaffOrdersPage() {
                     )}
 
                     {/* Status update actions */}
-                    {nextStatuses.length > 0 && (
+                    {(nextStatuses.length > 0 || ['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status)) && (
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.updateStatus')}</p>
                         <div className="flex flex-wrap gap-2">
@@ -249,6 +275,19 @@ export default function StaffOrdersPage() {
                               {isUpdating ? t('orders2.updating') : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
                             </button>
                           ))}
+                          {['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status) && (
+                            <button
+                              onClick={() => {
+                                setRejectingOrderId(order.id);
+                                setRejectReason('');
+                                setShowRejectModal(true);
+                              }}
+                              disabled={isUpdating}
+                              className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all disabled:opacity-50"
+                            >
+                              {t('orders2.rejectOrder', 'Reject / Cancel Order')}
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -257,6 +296,39 @@ export default function StaffOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">{t('orders2.rejectOrder')}</h3>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={4}
+              placeholder={t('checkout2.rejectReasonPlaceholder')}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectingOrderId(null);
+                  setRejectReason('');
+                }}
+                className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleRejectOrder}
+                disabled={!!updatingId || !rejectReason.trim()}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

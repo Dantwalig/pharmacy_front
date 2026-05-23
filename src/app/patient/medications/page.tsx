@@ -28,8 +28,7 @@ export default function SearchMedications() {
       const res = await api.get(`/medications/search?query=${searchQuery}`);
       setMedications(res.data);
       if (res.data.length === 0) toast.error(t('medications.noMedications'));
-    } catch (error) {
-      console.error('Search failed:', error);
+    } catch {
       toast.error(t('errors.searchFailed'));
     } finally { setLoading(false); }
   };
@@ -41,7 +40,7 @@ export default function SearchMedications() {
       price: medication.price,
       quantity: 1,
       pharmacyId: medication.pharmacy?.id || '',
-      branchId: medication.branchId || '',
+      branchId: medication.branchId || medication.branch?.id || '',
       pharmacyName: medication.pharmacy?.name || '',
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
@@ -61,7 +60,9 @@ export default function SearchMedications() {
         <div className="flex-1 relative">
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
+              id="searchMedications"
               type="text"
+              aria-label={t("Search Medications")}
               placeholder={t('medications.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

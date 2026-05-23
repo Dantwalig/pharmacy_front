@@ -5,23 +5,16 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
 import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
-import SupportBot from '@/components/pharmacy/SupportBot';
+import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { FDA_CATEGORIES } from '@/lib/constants';
+import { getErrorMessage } from '@/lib/errorHandler';
 
-const FDA_CATEGORIES = [
-  'Analgesics & Antipyretics','Antibiotics & Antimicrobials','Antifungals','Antivirals & Antiretrovirals',
-  'Antimalaria','Antituberculosis','Antiparasitics & Anthelmintics','Cardiovascular & Antihypertensives',
-  'Antidiabetics','Gastrointestinal','Respiratory & Bronchodilators','Central Nervous System',
-  'Vitamins, Minerals & Supplements','Dermatologicals','Ophthalmologicals','ENT (Ear, Nose & Throat)',
-  'Hormones & Endocrine','Vaccines & Biologicals','Oncologicals','Immunosuppressants',
-  'Contraceptives','Haematologicals','Musculoskeletal & Anti-inflammatories','Urological',
-  'Psychiatric & Psychotropic','Anesthetics','Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines','Other',
-];
 
 export default function EditMedicationPage() {
   const { t } = useTranslation();
@@ -31,8 +24,8 @@ export default function EditMedicationPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [med, setMed] = useState<any>(null);
-  const [form, setForm] = useState<any>({});
+  const [med, setMed] = useState<MedicationDetail | null>(null);
+  const [form, setForm] = useState<MedicationForm>({} as MedicationForm);
 
   useEffect(() => { fetchMedication(); }, [params.id]);
 
@@ -64,16 +57,16 @@ export default function EditMedicationPage() {
         category: form.category,
         chemicalName: form.dosage || undefined,
         description: form.description || undefined,
-        price: parseFloat(form.unitPrice),       // correct field name
-        quantity: parseInt(form.quantityInStock), // correct field name
+        price: parseFloat(form.unitPrice ?? '0'),
+        quantity: parseInt(form.quantityInStock ?? '0'),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
       toast.success(t('success.medicationUpdated'));
       setEditing(false);
       fetchMedication();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Update failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setSaving(false); }
   };
 
@@ -84,8 +77,8 @@ export default function EditMedicationPage() {
       await api.delete(`/medications/${params.id}`);
       toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Delete failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setDeleting(false); }
   };
 
@@ -103,8 +96,9 @@ export default function EditMedicationPage() {
 
   if (!med) return null;
 
-  const stockStatus = form.quantityInStock == 0 ? 'out' :
-    form.quantityInStock <= (form.lowStockThreshold || 10) ? 'low' : 'ok';
+  const qty = Number(form.quantityInStock ?? 0);
+  const stockStatus = qty === 0 ? 'out' :
+    qty <= Number(form.lowStockThreshold || 10) ? 'low' : 'ok';
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -114,7 +108,7 @@ export default function EditMedicationPage() {
       <main className="flex-1 p-4 lg:p-8 overflow-auto">
         <div className="max-w-3xl mx-auto space-y-6">
 
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm" aria-label="Back to inventory list">
             <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
             </button>
 
@@ -138,11 +132,13 @@ export default function EditMedicationPage() {
             {!editing ? (
                 <>
                 <button onClick={() => setEditing(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium">
+                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium"
+                    aria-label={`Edit ${med?.name}`}>
                   <PencilIcon className="w-4 h-4" /> Edit Medication
                   </button>
                 <button onClick={handleDelete} disabled={deleting}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                    aria-label={`Remove ${med?.name} from inventory`}>
                   <TrashIcon className="w-4 h-4" /> {deleting ? 'Removing...' : 'Remove'}
                   </button>
               </>

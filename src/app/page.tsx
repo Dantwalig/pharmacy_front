@@ -18,7 +18,19 @@ export default function Home() {
     if (!loading && user) {
       switch (user.role) {
         case 'PATIENT':     router.push('/patient/dashboard');    break;
-        case 'PHARMACY':    router.push('/pharmacy/dashboard');   break;
+        case 'PHARMACY':
+          if (user.pharmacyStatus === 'APPROVED') {
+            router.push('/pharmacy/dashboard');
+          } else if (user.pharmacyStatus === 'PENDING') {
+            router.push('/pending-approval');
+          } else if (user.pharmacyStatus === 'REJECTED') {
+            router.push('/pharmacy-rejected');
+          } else {
+            removeAuthTokens();
+            clearUserCache();
+            setTimeout(() => window.location.reload(), 100);
+          }
+          break;
         case 'SUPER_ADMIN': router.push('/super-admin/dashboard'); break;
         case 'BRANCH_MANAGER': router.push('/branch/dashboard');  break;
         case 'PHARMACIST':

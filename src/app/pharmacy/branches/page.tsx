@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, X } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, unwrapData } from '@/lib/api';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
@@ -30,7 +30,7 @@ export default function BranchManagementPage() {
     setFetchError(false);
     try {
       const res = await api.get('/branches/my-branches');
-      setBranches(res.data?.data ?? res.data ?? []);
+      setBranches(unwrapData(res.data));
     } catch {
       setFetchError(true);
     }
@@ -176,7 +176,11 @@ export default function BranchManagementPage() {
         <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-bold text-gray-900">{t('pharmacyOwner.addBranch')}</h2>
-            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={() => setShowModal(false)} 
+              className="text-gray-400 hover:text-gray-600"
+              aria-label={t('common.close') || 'Close'}
+            >
               <X size={20} />
             </button>
           </div>

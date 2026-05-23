@@ -2,10 +2,12 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
@@ -36,25 +38,23 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function BranchAttendancePage() {
   const { t } = useTranslation();
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchAttendance();
-  }, []);
+  const fetchAttendanceData = useCallback(
+    async (signal: AbortSignal) => {
+      const res = await api.get('/attendance/branch', { signal });
+      return res.data;
+    },
+    []
+  );
 
-  const fetchAttendance = async () => {
-    try {
-      const res = await api.get('/attendance/branch'); // GET /attendance/branch
-      setRecords(res.data);
-    } catch (error) {
-      console.error('Failed to load attendance:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, loading, error, refetch } = useFetch<AttendanceRecord[]>(fetchAttendanceData, []);
+  const records = data ?? [];
+
+  useEffect(() => {
+    if (error) toast.error(t('errors.failedToLoadAttendance'));
+  }, [error, t]);
 
   const handleAction = async (
     id: string,
@@ -67,12 +67,11 @@ export default function BranchAttendancePage() {
 
     setActionId(actionKey);
     try {
-      // PUT /attendance/:id/{action}
       await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
       toast.success(isReject ? t('attendance.rejected') : t('attendance.approved'));
-      await fetchAttendance(); // Refresh
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('attendance.actionFailed'));
+      await refetch();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
@@ -83,8 +84,7 @@ export default function SuperAdminDashboard() {
       setPendingPharmacies(pendingRes.data);
       setPendingBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
       setUnverifiedLocations(Array.isArray(unverifiedRes.data) ? unverifiedRes.data : []);
-    } catch (error: any) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch (error: unknown) {
       toast.error(t('errors.failedToLoadDashboard'));
     } finally {
       setLoading(false);
@@ -97,8 +97,8 @@ export default function SuperAdminDashboard() {
       await api.patch(`/super-admin/branches/${branchId}/approve`);
       toast.success('Branch approved successfully');
       setPendingBranches(prev => prev.filter(b => b.id !== branchId));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to approve branch');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setBranchAction(null);
     }
@@ -116,8 +116,8 @@ export default function SuperAdminDashboard() {
       setPendingBranches(prev => prev.filter(b => b.id !== rejectModal.id));
       setRejectModal(null);
       setRejectReason('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to reject branch');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setBranchAction(null);
     }
@@ -131,8 +131,8 @@ export default function SuperAdminDashboard() {
       toast.success(verified ? 'Location verified.' : 'Location flagged as unverified.');
       setUnverifiedLocations(prev => prev.filter(p => p.id !== locationModal.id));
       setLocationModal(null);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update location status.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLocationActionLoading(false);
     }
@@ -491,6 +491,7 @@ export default function SuperAdminDashboard() {
               <button
                 onClick={() => setLocationModal(null)}
                 className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                aria-label={t('common.close') || 'Close'}
               >✕</button>
             </div>
 

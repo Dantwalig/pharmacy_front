@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -11,6 +12,7 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Important for CORS with credentials
+  timeout: 15000, // 15 second timeout to prevent endless hanging
 });
 
 // Request interceptor - Add auth token
@@ -51,9 +53,15 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
+        // Show user-facing error message before redirect
+        toast.error('Session expired. Redirecting to login...');
+        
+        // Clear auth state
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
         Cookies.remove('user');
+        
+        // Redirect to login
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
@@ -157,5 +165,17 @@ export const authApi = {
     return response.data;
   },
 };
+
+/**
+ * Normalises API responses that sometimes wrap arrays in { data: [...] }
+ * and sometimes return the array directly.
+ */
+export function unwrapData<T = unknown>(payload: unknown, fallback: T[] = []): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === 'object' && Array.isArray((payload as any).data)) {
+    return (payload as any).data as T[];
+  }
+  return fallback;
+}
 
 export default api;

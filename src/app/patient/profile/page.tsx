@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { UserCircleIcon, LockClosedIcon, BellIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
@@ -44,7 +45,7 @@ export default function PatientProfilePage() {
       // Correct endpoint: PUT /patients/profile
       await api.put('/patients/profile', profile);
       toast.success(t('success.profileUpdated'));
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.updateFailed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setSaving(false); }
   };
 
@@ -57,7 +58,7 @@ export default function PatientProfilePage() {
       await api.put('/auth/change-password', passwords);
       toast.success(t('form.passwordChanged'));
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err: any) { toast.error(err.response?.data?.message || t('common.failed')); }
+    } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setSaving(false); }
   };
 
@@ -135,7 +136,7 @@ export default function PatientProfilePage() {
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
-            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : 'Save Changes'}
+            {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : t('common.saveChanges')}
             </button>
         </div>
       </form>
@@ -152,7 +153,7 @@ export default function PatientProfilePage() {
               </label>
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} required minLength={field !== 'currentPassword' ? 8 : 1}
-                  value={(passwords as any)[field]}
+                  value={passwords[field as keyof typeof passwords]}
                   onChange={e => setPasswords({...passwords, [field]: e.target.value})}
                   className={`${inputCls} pr-10`} />
               <button type="button" onClick={() => setShowPwd(!showPwd)}

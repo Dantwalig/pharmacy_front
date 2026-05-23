@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ShieldCheck, Banknote, Receipt, Loader2, X } from 'lucide-react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -112,8 +113,8 @@ export default function CashierPOSModal({
         timestamp: new Date().toLocaleString(),
         reference: order.id,
       });
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('cashier.verifyFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
       setVerifyStatus('idle');
     }
   };
@@ -153,8 +154,8 @@ export default function CashierPOSModal({
         timestamp: new Date().toLocaleString(),
         reference: reference || undefined,
       });
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('cashier.recordFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setSubmitting(false);
     }
@@ -164,8 +165,8 @@ export default function CashierPOSModal({
     try {
       await api.patch(`/orders/${order.id}/status`, { status: 'COMPLETED' });
       onAdvance(order.id);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('cashier.advanceFailed'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     }
     onClose();
   };
@@ -208,6 +209,7 @@ export default function CashierPOSModal({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label={t('common.close') || 'Close'}
           >
             <X size={18} />
           </button>

@@ -6,15 +6,43 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { Order } from '@/types';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline';
+
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  PENDING: 'orders2.statusPending',
+  ACCEPTED: 'orders2.statusAccepted',
+  PREPARING: 'orders2.statusPreparing',
+  OUT_FOR_DELIVERY: 'orders2.statusOutForDelivery',
+  READY_FOR_PICKUP: 'orders2.statusReadyForPickup',
+  DELIVERED: 'orders2.statusDelivered',
+  CANCELLED: 'orders2.statusCancelled',
+  COMPLETED: 'orders2.orderCompleted',
+};
+
+const PAYMENT_METHOD_KEYS: Record<string, string> = {
+  MTN_MOMO: 'cashier.method_mtn_momo',
+  AIRTEL_MONEY: 'cashier.method_airtel_money',
+  CASH: 'cashier.method_cash',
+  CARD: 'cashier.method_card',
+  INSURANCE: 'cashier.method_insurance',
+};
+
+const PAYMENT_STATUS_KEYS: Record<string, string> = {
+  COMPLETED: 'orders2.paymentStatusCompleted',
+  PAID: 'orders2.paymentStatusPaid',
+  PENDING: 'orders2.paymentStatusPending',
+  FAILED: 'orders2.paymentStatusFailed',
+};
 
 export default function OrderDetailsPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
@@ -32,8 +60,7 @@ export default function OrderDetailsPage() {
     try {
       const res = await api.get(`/orders/${params.id}`);
       setOrder(res.data);
-    } catch (error) {
-      console.error('Failed to fetch order:', error);
+    } catch {
       toast.error(t('errors.failedToLoadOrder'));
     } finally {
       setLoading(false);
@@ -48,12 +75,13 @@ export default function OrderDetailsPage() {
       await api.patch(`/orders/${params.id}/cancel`, { cancellationReason: cancellationReason.trim() });
       toast.success(t('success.orderCancelled'));
       fetchOrderDetails();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('orders.failedToCancel'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setCancelling(false); }
   };
 
   const handlePayment = async () => {
+    if (!order) return;
     if (['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && !phoneNumber) {
       toast.error(t('orders.enterMobileNumber'));
       return;
@@ -78,8 +106,8 @@ export default function OrderDetailsPage() {
         // We can poll here or have user click a verify button.
         // In the interest of simplicity we let the user await the prompt.
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders.failedToInitiatePayment'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingPayment(false);
     }
@@ -93,11 +121,11 @@ export default function OrderDetailsPage() {
         paymentId,
         otp,
       });
-      toast.success('Payment completed successfully!');
+      toast.success(t('orders2.paymentCompleted'));
       setShowOtpInput(false);
       fetchOrderDetails();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders.invalidOtp'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingPayment(false);
     }
@@ -109,7 +137,17 @@ export default function OrderDetailsPage() {
 
   if (!order) return <div className="text-center py-12"><p className="text-gray-500">{t('orders.notFound')}</p></div>;
 
-  const statusSteps = ['PENDING', 'ACCEPTED', 'PREPARING', order.type === 'DELIVERY' ? 'OUT_FOR_DELIVERY' : 'READY_FOR_PICKUP', 'DELIVERED'];
+  const statusSteps = order.type === 'DELIVERY'
+    ? ['PENDING', 'ACCEPTED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED']
+    : ['PENDING', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
+
+  const getCurrentStatusIndex = () => {
+    if (!order) return -1;
+    if (order.status === 'COMPLETED') {
+      return statusSteps.length - 1;
+    }
+    return statusSteps.indexOf(order.status);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -130,7 +168,7 @@ export default function OrderDetailsPage() {
             order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
             order.status === 'CANCELLED' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'
           }`}>
-          {order.status}
+          {t(STATUS_LABEL_KEYS[order.status] ?? 'orders2.statusPending')}
           </span>
       </div>
 
@@ -138,14 +176,15 @@ export default function OrderDetailsPage() {
           <div className="mt-8">
           <div className="flex justify-between items-center">
             {statusSteps.map((status, index) => {
-                const isComplete = statusSteps.indexOf(order.status) >= index;
-                const isCurrent = order.status === status;
+                const currentIdx = getCurrentStatusIndex();
+                const isComplete = currentIdx >= index;
+                const isCurrent = order.status === status || (order.status === 'COMPLETED' && index === statusSteps.length - 1);
                 return (
                   <div key={status} className="flex flex-col items-center flex-1">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-[#1E4D8C] shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
-                    {isComplete ? '' : index + 1}
+                    {isComplete ? '✓' : index + 1}
                     </div>
-                  <p className="text-xs mt-2 text-center text-white/90 font-medium">{status}</p>
+                  <p className="text-xs mt-2 text-center text-white/90 font-medium">{t(STATUS_LABEL_KEYS[status] ?? status)}</p>
                 </div>
               );
               })}
@@ -217,16 +256,16 @@ export default function OrderDetailsPage() {
       <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.paymentSummary')}</h2>
       <div className="space-y-3">
         <div className="flex justify-between text-gray-700 dark:text-gray-300">
-          <span>{t('orders.subtotal')}</span><span>{order.subtotal.toLocaleString()} RWF</span>
+          <span>{t('orders.subtotal')}</span><span>{(order.subtotal ?? 0).toLocaleString()} RWF</span>
         </div>
-        {order.deliveryFee > 0 && (
+        {(order.deliveryFee ?? 0) > 0 && (
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-            <span>{t('orders.deliveryFee')}</span><span>{order.deliveryFee.toLocaleString()} RWF</span>
+            <span>{t('orders.deliveryFee')}</span><span>{(order.deliveryFee ?? 0).toLocaleString()} RWF</span>
           </div>
         )}
-          {order.insuranceCoverage > 0 && (
+          {(order.insuranceCoverage ?? 0) > 0 && (
             <div className="flex justify-between text-green-600 dark:text-green-400">
-            <span>{t('orders.insuranceCoverage')}</span><span>-{order.insuranceCoverage.toLocaleString()} RWF</span>
+            <span>{t('orders.insuranceCoverage')}</span><span>-{(order.insuranceCoverage ?? 0).toLocaleString()} RWF</span>
           </div>
         )}
           <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-3 flex justify-between font-bold text-xl">
@@ -236,23 +275,23 @@ export default function OrderDetailsPage() {
             </span>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 pt-2">
-          {t('orders.paymentMethod')}: {order.paymentMethod}
+          {t('orders.paymentMethod')}: {t(PAYMENT_METHOD_KEYS[order.paymentMethod] ?? order.paymentMethod)}
           </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Payment Status: <span className={`font-semibold ${order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{order.paymentStatus}</span>
+          {t('orders2.paymentStatus')}: <span className={`font-semibold ${order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}`}>{t(PAYMENT_STATUS_KEYS[order.paymentStatus ?? ''] ?? order.paymentStatus ?? '')}</span>
         </p>
 
         {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
           <div className="mt-4 pt-4 border-t border-[#2D9B8A]/20 dark:border-[#2D9B8A]/20">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-              <span className="text-xl">💳</span> Complete your payment
+              <span className="text-xl">💳</span> {t('orders2.completeYourPayment')}
             </h3>
             
             {!showOtpInput ? (
               <div className="space-y-3">
                 {['MTN_MOMO', 'AIRTEL_MONEY'].includes(order.paymentMethod) && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Money Number</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">{t('orders2.mobileMoneyNumber')}</label>
                     <input
                       type="text"
                       placeholder="e.g. 078XXXXXXX"
@@ -274,7 +313,7 @@ export default function OrderDetailsPage() {
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Enter OTP</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('orders2.enterOtp')}</label>
                   <input
                     type="text"
                     placeholder="123456"
@@ -300,12 +339,12 @@ export default function OrderDetailsPage() {
     {/* Prescription Info */}
       {order.prescription && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100"> Prescription Information</h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders2.prescriptionInfo')}</h2>
         <div className="space-y-2 text-gray-700 dark:text-gray-300">
           <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
           {order.prescription.fileUrl && (
               <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[#1E4D8C] hover:text-[#2D9B8A] underline">
-              View Prescription
+              {t('orders2.viewPrescription')}
               </a>
           )}
           </div>

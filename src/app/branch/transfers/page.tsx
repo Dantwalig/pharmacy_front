@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { LockClosedIcon, PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
@@ -23,8 +25,6 @@ type Tab = 'outgoing' | 'incoming';
 export default function BranchTransfersPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('outgoing');
-  const [transfers, setTransfers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [backendReady, setBackendReady] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [branches, setBranches] = useState<any[]>([]);
@@ -37,41 +37,25 @@ export default function BranchTransfersPage() {
     items: [{ medicationId: '', quantity: '' }],
   });
 
-  useEffect(() => { fetchTransfers(); }, []);
-
-  const fetchTransfers = async () => {
-    setLoading(true);
-    try {
-      // BACKEND PENDING: No stock transfer endpoints exist yet.
-      // The backend team needs to create the following endpoints in a new
-      // StockTransfersController (the StockTransfer model already exists in the schema):
-      //
-      //   GET  /stock-transfers/branch   → Role.BRANCH_MANAGER
-      //     Returns all transfers where fromBranchId OR toBranchId matches the manager's branch.
-      //
-      //   POST /stock-transfers          → Role.BRANCH_MANAGER
-      //     Body: { toBranchId, notes?, items: [{ medicationId, quantity }] }
-      //     Creates a new transfer request with status PENDING.
-      //
-      //   PATCH /stock-transfers/:id/status → Role.BRANCH_MANAGER (receiving branch manager)
-      //     Body: { status: 'APPROVED' | 'REJECTED' | 'SHIPPED' | 'COMPLETED' }
-      //
-      // When those endpoints are ready, replace the line below with the correct path:
-      //   const res = await api.get('/stock-transfers/branch');
-
-      const res = await api.get('/stock-transfers/branch'); // endpoint to be created by backend team
-      setTransfers(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
-      setBackendReady(true);
-    } catch (err: any) {
-      if (err?.response?.status === 403 || err?.response?.status === 404) {
-        setBackendReady(false);
-      } else {
-        toast.error(t('errors.failedToLoadTransfers'));
+  const { data, loading, refetch } = useFetch<any[]>(
+    async (signal) => {
+      try {
+        const res = await api.get('/stock-transfers/branch', { signal });
+        setBackendReady(true);
+        return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+      } catch (error: unknown) {
+        if ((error as any)?.response?.status === 403 || (error as any)?.response?.status === 404) {
+          setBackendReady(false);
+        } else {
+          toast.error(t('errors.failedToLoadTransfers'));
+        }
+        return [];
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    []
+  );
+
+  const transfers = data ?? [];
 
   const fetchFormData = async () => {
     try {
@@ -120,13 +104,13 @@ export default function BranchTransfersPage() {
       toast.success(t('success.transferSubmitted'));
       setShowForm(false);
       setForm({ toBranchId: '', notes: '', items: [{ medicationId: '', quantity: '' }] });
-      fetchTransfers();
-    } catch (err: any) {
-      if (err?.response?.status === 403 || err?.response?.status === 404) {
+      refetch();
+    } catch (error: unknown) {
+      if ((error as any)?.response?.status === 403 || (error as any)?.response?.status === 404) {
         setBackendReady(false);
         toast.error(t('errors.backendNotEnabledTransfers'));
       } else {
-        toast.error(err.response?.data?.message || t('transfers.failedToSubmit'));
+        toast.error(getErrorMessage(error));
       }
     } finally {
       setSubmitting(false);
@@ -136,8 +120,8 @@ export default function BranchTransfersPage() {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const outgoing = transfers.filter(t => t.direction === 'outgoing' || t.isOutgoing);
-  const incoming = transfers.filter(t => t.direction === 'incoming' || t.isIncoming);
+  const outgoing = transfers.filter((t: any) => t.direction === 'outgoing' || t.isOutgoing);
+  const incoming = transfers.filter((t: any) => t.direction === 'incoming' || t.isIncoming);
   const displayed = tab === 'outgoing' ? outgoing : incoming;
 
   return (
@@ -182,9 +166,9 @@ export default function BranchTransfersPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: t('transfers.totalTransfers'), value: transfers.length,                                           dark: false },
-            { label: t('transfers.pending'),         value: transfers.filter(t => t.status === 'PENDING').length,       dark: false },
-            { label: t('transfers.inTransit'),       value: transfers.filter(t => t.status === 'SHIPPED').length,       dark: false },
-            { label: t('transfers.completed'),       value: transfers.filter(t => t.status === 'COMPLETED').length,     dark: true  },
+            { label: t('transfers.pending'),         value: transfers.filter((t: any) => t.status === 'PENDING').length,       dark: false },
+            { label: t('transfers.inTransit'),       value: transfers.filter((t: any) => t.status === 'SHIPPED').length,       dark: false },
+            { label: t('transfers.completed'),       value: transfers.filter((t: any) => t.status === 'COMPLETED').length,     dark: true  },
           ].map(s => (
             <div
               key={s.label}
@@ -351,7 +335,7 @@ export default function BranchTransfersPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {displayed.map(t => (
+          {displayed.map((t: any) => (
             <div key={t.id} className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 space-y-2">

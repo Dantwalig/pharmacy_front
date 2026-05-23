@@ -2,11 +2,13 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   UserGroupIcon,
@@ -41,47 +43,38 @@ const ROLE_COLORS: Record<string, string> = {
 export default function BranchStaffPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchStaff();
-  }, []);
-
-  const fetchStaff = async () => {
-    try {
-      const res = await api.get('/staff'); // GET /staff
-      setStaff(res.data);
-    } catch (error) {
-      console.error('Failed to load staff:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: staff = [], loading, refetch } = useFetch<StaffMember[]>(
+    async (signal) => {
+      const res = await api.get('/staff', { signal });
+      return res.data;
+    },
+    []
+  ) as any;
 
   const handleResendCredentials = async (staffId: string, email: string) => {
-    if (!confirm(`Resend login credentials to ${email}?`)) return;
+    if (!confirm(t('staffMgmt.resendConfirm', { email }))) return;
     setActionId(staffId + '-resend');
     try {
       await api.post(`/staff/${staffId}/resend-credentials`); // POST /staff/:id/resend-credentials
       toast.success(`Credentials resent to ${email}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('staffMgmt.failedToResend'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
   };
 
   const handleDelete = async (staffId: string, name: string) => {
-    if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+    if (!confirm(t('staffMgmt.deleteConfirm', { name }))) return;
     setActionId(staffId + '-delete');
     try {
       await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
-      setStaff(prev => prev.filter(s => s.id !== staffId));
       toast.success(t('success.staffMemberRemoved'));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to delete staff');
+      refetch();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setActionId(null);
     }
@@ -95,7 +88,7 @@ export default function BranchStaffPage() {
       <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.staff')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{staff.length} member{staff.length !== 1 ? 's' : ''} in your branch</p>
+        <p className="text-sm text-gray-500 mt-1">{staff.length !== 1 ? t('staffMgmt.memberCountPlural', { count: staff.length }) : t('staffMgmt.memberCountSingular', { count: staff.length })}</p>
       </div>
       <button
           onClick={() => router.push('/branch/staff/new')}
@@ -103,7 +96,7 @@ export default function BranchStaffPage() {
           style={{ backgroundColor: TEAL }}
         >
         <PlusIcon className="w-4 h-4" />
-        Add Staff
+        {t('staffMgmt.addStaff')}
         </button>
     </div>
 
@@ -118,7 +111,7 @@ export default function BranchStaffPage() {
             className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={{ backgroundColor: TEAL }}
           >
-          Add Staff Member
+          {t('staffMgmt.addStaffMember')}
           </button>
       </div>
     ) : (
@@ -135,7 +128,7 @@ export default function BranchStaffPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {staff.map((member) => (
+            {staff.map((member: any) => (
                 <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
                 <td className="px-6 py-4">
                   <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
@@ -153,7 +146,7 @@ export default function BranchStaffPage() {
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
                   <p className="text-xs text-gray-500">
-                    {member.permissions?.permissions?.length ?? 0} permissions
+                    {t('staffMgmt.permissionCount', { count: member.permissions?.permissions?.length ?? 0 })}
                     </p>
                 </td>
                 <td className="px-6 py-4">
@@ -162,7 +155,7 @@ export default function BranchStaffPage() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-600'
                     }`}>
-                    {member.status}
+                    {member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
                     </span>
                 </td>
                 <td className="px-6 py-4">
@@ -170,6 +163,7 @@ export default function BranchStaffPage() {
                     <button
                         onClick={() => router.push(`/branch/staff/${member.id}`)}
                         className="p-1.5 rounded-lg transition-all"
+                        aria-label="View staff details"
                         style={{ color: TEAL }}
                         title={t('staffMgmt.viewDetails')}
                       >
@@ -179,6 +173,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleResendCredentials(member.id, member.user.email)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
+                        aria-label="Resend credentials"
                         title={t('staffMgmt.resendCredentials')}
                       >
                       <ArrowPathIcon className="w-4 h-4" />
@@ -187,6 +182,7 @@ export default function BranchStaffPage() {
                         onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
                         disabled={!!actionId}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                        // aria-label="Delete staff member"
                         title={t('staffMgmt.removeStaffMember')}
                       >
                       <TrashIcon className="w-4 h-4" />

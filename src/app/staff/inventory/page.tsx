@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
+import { FDA_CATEGORIES } from '@/lib/constants';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -17,19 +18,6 @@ import {
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-const FDA_CATEGORIES = [
-  'All Categories',
-  'Analgesics & Antipyretics', 'Antibiotics & Antimicrobials', 'Antifungals',
-  'Antivirals & Antiretrovirals', 'Antimalaria', 'Antituberculosis',
-  'Antiparasitics & Anthelmintics', 'Cardiovascular & Antihypertensives',
-  'Antidiabetics', 'Gastrointestinal', 'Respiratory & Bronchodilators',
-  'Central Nervous System', 'Vitamins, Minerals & Supplements', 'Dermatologicals',
-  'Ophthalmologicals', 'ENT (Ear, Nose & Throat)', 'Hormones & Endocrine',
-  'Vaccines & Biologicals', 'Oncologicals', 'Immunosuppressants', 'Contraceptives',
-  'Haematologicals', 'Musculoskeletal & Anti-inflammatories', 'Urological',
-  'Psychiatric & Psychotropic', 'Anesthetics', 'Diagnostics & Contrast Media',
-  'Traditional & Herbal Medicines', 'Other',
-];
 
 export default function StaffInventoryPage() {
   const { t } = useTranslation();
@@ -206,7 +194,8 @@ export default function StaffInventoryPage() {
                       <td className="px-4 py-3">
                         <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium"
-                          style={{ backgroundColor: '#F0F7F6', color: TEAL }}>
+                          style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                          aria-label={`Edit ${med.name}`}>
                           <PencilIcon className="w-3.5 h-3.5" /> Edit
                         </button>
                       </td>

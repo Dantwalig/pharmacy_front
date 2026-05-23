@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import Link from 'next/link';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ClipboardDocumentListIcon,
@@ -111,7 +112,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           </button>
 
           <div className="pr-10">
-            <p className="text-xs font-semibold text-blue-200 uppercase tracking-widest mb-1">Order Details</p>
+            <p className="text-xs font-semibold text-blue-200 uppercase tracking-widest mb-1">{t('orders.orderDetails')}</p>
             <h2 className="text-2xl font-bold mb-1">
               #{order.orderNumber || order.id?.slice(0, 8)}
             </h2>
@@ -140,7 +141,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Progress tracker */}
           {order.status !== 'CANCELLED' && (
             <div className="px-6 py-5">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Order Progress</h3>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">{t('orders.orderProgress')}</h3>
               <div className="relative">
                 <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-200 dark:bg-gray-700" />
                 <div
@@ -184,7 +185,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {order.status === 'CANCELLED' && order.cancellationReason && (
             <div className="px-6 py-4">
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
-                <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-1">Cancellation Reason</p>
+                <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-1">{t('orders.cancellationReason')}</p>
                 <p className="text-sm text-red-700 dark:text-red-300">{order.cancellationReason}</p>
               </div>
             </div>
@@ -192,7 +193,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
 
           {/* Pharmacy */}
           <div className="px-6 py-5">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Pharmacy</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('form.pharmacy')}</h3>
             <div className="flex items-start gap-4">
               <div className="w-11 h-11 bg-linear-to-br from-[#1E4D8C] to-[#2D9B8A] rounded-2xl flex items-center justify-center shrink-0">
                 <BuildingStorefrontIcon className="w-6 h-6 text-white" />
@@ -218,7 +219,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Medications */}
           <div className="px-6 py-5">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              Medications ({order.orderItems?.length || 0} items)
+              {t('orders.medications')} ({order.orderItems?.length || 0} {t('orders2.items').toLowerCase()})
             </h3>
             <div className="space-y-3">
               {order.orderItems?.map((item: any) => (
@@ -232,7 +233,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                       <p className="text-xs text-gray-500 dark:text-gray-400">{item.medication.dosage}</p>
                     )}
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Qty: {item.quantity} × {item.price?.toLocaleString()} RWF
+                      {t('orders.qty')}: {item.quantity} × {item.price?.toLocaleString()} RWF
                     </p>
                   </div>
                   <p className="font-bold text-[#1E4D8C] dark:text-blue-400 text-sm shrink-0">
@@ -246,7 +247,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Delivery Info */}
           {order.type === 'DELIVERY' && (order.deliveryAddress || order.deliveryZone) && (
             <div className="px-6 py-5">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Delivery Details</h3>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('orders.deliveryDetails')}</h3>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 space-y-2">
                 {order.deliveryAddress && (
                   <div className="flex items-start gap-2">
@@ -255,10 +256,10 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                   </div>
                 )}
                 {order.deliveryZone && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 pl-6">Zone: {order.deliveryZone}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 pl-6">{t('orders.zone')}: {order.deliveryZone}</p>
                 )}
                 <p className="text-sm text-gray-600 dark:text-gray-400 pl-6">
-                  Delivery Fee: <span className="font-semibold">{order.deliveryFee?.toLocaleString() || 0} RWF</span>
+                  {t('orders.deliveryFee')}: <span className="font-semibold">{order.deliveryFee?.toLocaleString() || 0} RWF</span>
                 </p>
               </div>
             </div>
@@ -266,26 +267,26 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
 
           {/* Payment Summary */}
           <div className="px-6 py-5">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Payment Summary</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('orders.paymentSummary')}</h3>
             <div className="bg-linear-to-br from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20 rounded-2xl p-4 space-y-2.5">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('orders.subtotal')}</span>
                 <span className="font-medium text-gray-900 dark:text-white">{order.subtotal?.toLocaleString()} RWF</span>
               </div>
               {(order.deliveryFee ?? 0) > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Delivery Fee</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('orders.deliveryFee')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">{order.deliveryFee?.toLocaleString()} RWF</span>
                 </div>
               )}
               {(order.insuranceCoverage ?? 0) > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-600 dark:text-green-400">Insurance Coverage</span>
+                  <span className="text-green-600 dark:text-green-400">{t('orders.insuranceCoverage')}</span>
                   <span className="font-medium text-green-600 dark:text-green-400">-{order.insuranceCoverage?.toLocaleString()} RWF</span>
                 </div>
               )}
               <div className="border-t border-blue-200/60 dark:border-blue-800/50 pt-2.5 flex justify-between items-center">
-                <span className="font-bold text-gray-900 dark:text-white">Total</span>
+                <span className="font-bold text-gray-900 dark:text-white">{t('common.total')}</span>
                 <span className="text-xl font-extrabold bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
                   {order.total?.toLocaleString()} RWF
                 </span>
@@ -312,10 +313,10 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Prescription */}
           {order.prescription && (
             <div className="px-6 py-5">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Prescription</h3>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('prescriptions.prescriptionsTitle')}</h3>
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Status:{' '}
+                  {t('common.status')}:{' '}
                   <span
                     className="font-semibold"
                     style={{ color: order.prescription.status === 'APPROVED' ? '#10B981' : '#F59E0B' }}
@@ -330,7 +331,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                     rel="noopener noreferrer"
                     className="text-sm font-semibold text-[#1E4D8C] dark:text-blue-400 hover:underline"
                   >
-                    View →
+                    {t('common.view')} →
                   </a>
                 )}
               </div>
@@ -341,13 +342,19 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="shrink-0 p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex gap-3">
           <button
             onClick={onClose}
-            className="w-full py-3.5 rounded-2xl font-bold text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            Close
+            {t('common.close')}
           </button>
+          <Link
+            href={`/patient/orders/${order.id}`}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-white bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+          >
+            {t('orders2.manageOrder', 'Manage Order')}
+          </Link>
         </div>
       </div>
     </div>
@@ -406,9 +413,9 @@ export default function OrdersPage() {
               <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
                 <ClipboardDocumentListIcon className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight">My Orders</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight">{t('orders2.myOrders')}</h1>
             </div>
-            <p className="text-blue-100 text-sm pl-1">Track, manage, and view all your medication orders</p>
+            <p className="text-blue-100 text-sm pl-1">{t('orders2.trackManage')}</p>
           </div>
         </div>
 
@@ -427,7 +434,7 @@ export default function OrdersPage() {
               {allCount}
             </span>
             <span className={`text-xs font-semibold ${filter === 'all' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              All Orders
+              {t('orders2.orderAll')}
             </span>
           </button>
 
@@ -444,7 +451,7 @@ export default function OrdersPage() {
               {pendingCount}
             </span>
             <span className={`text-xs font-semibold ${filter === 'pending' ? 'text-amber-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              In Progress
+              {t('orders2.orderActive')}
             </span>
           </button>
 
@@ -461,7 +468,7 @@ export default function OrdersPage() {
               {completedCount}
             </span>
             <span className={`text-xs font-semibold ${filter === 'completed' ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              Completed
+              {t('orders2.orderCompleted')}
             </span>
           </button>
         </div>
@@ -480,7 +487,7 @@ export default function OrdersPage() {
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4">
               <ClipboardDocumentListIcon className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-800 dark:text-gray-200 text-base font-bold mb-1">No orders found</p>
+            <p className="text-gray-800 dark:text-gray-200 text-base font-bold mb-1">{t('orders2.noOrdersFound')}</p>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
               {filter === 'pending'
                 ? t('orders2.noActiveOrders')

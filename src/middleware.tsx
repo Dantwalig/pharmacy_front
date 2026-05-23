@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-function decodeToken(token: string): { role?: string; pharmacyStatus?: string } | null {
+function decodeToken(token: string): { role?: string; pharmacyStatus?: string; status?: string } | null {
   try {
     const payload = token.split('.')[1];
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const decoded = JSON.parse(atob(base64));
     return decoded;
-  } catch (error){
-    console.error("Token decoding failed:", error);
+  } catch {
     return null;
   }
 }
@@ -47,13 +46,16 @@ export function middleware(request: NextRequest) {
     if (payload.role !== 'PHARMACY') {
       return NextResponse.redirect(new URL('/', request.url));
     }
-    if (payload.pharmacyStatus === 'PENDING') {
+    
+    const status = payload.pharmacyStatus || payload.status;
+    
+    if (status === 'PENDING') {
       return NextResponse.redirect(new URL('/pending-approval', request.url));
     }
-    if (payload.pharmacyStatus === 'REJECTED') {
+    if (status === 'REJECTED') {
       return NextResponse.redirect(new URL('/pharmacy-rejected', request.url));
     }
-    if (payload.pharmacyStatus !== 'APPROVED') {
+    if (status !== 'APPROVED') {
       return NextResponse.redirect(new URL('/', request.url));
     }
     return NextResponse.next();

@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   ShoppingCartIcon,
@@ -41,24 +43,32 @@ function RevenueTooltip({ active, payload, label }: any) {
 
 export default function BranchAnalyticsPage() {
   const { t } = useTranslation();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [attendanceSummary, setAttendanceSummary] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+  const fetchAnalyticsData = useCallback(
+    async (signal: AbortSignal) => {
+      const [ordersRes, attRes] = await Promise.all([
+        api.get('/orders/pharmacy-orders', { signal }),
+        api.get('/attendance/summary', { signal }),
+      ]);
+      return {
+        orders: Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? [],
+        attendanceSummary: attRes.data,
+      };
+    },
+    []
+  );
+
+  const { data, loading, error } = useFetch<{
+    orders: any[];
+    attendanceSummary: any;
+  }>(fetchAnalyticsData, []);
+
+  const orders = data?.orders ?? [];
+  const attendanceSummary = data?.attendanceSummary ?? null;
 
   useEffect(() => {
-    const controller = new AbortController();
-    Promise.all([
-      api.get('/orders/pharmacy-orders', { signal: controller.signal }),
-      api.get('/attendance/summary',     { signal: controller.signal }),
-    ])
-      .then(([ordersRes, attRes]) => {
-        setOrders(Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? []);
-        setAttendanceSummary(attRes.data);
-      })
-      .catch(err => { if (err?.code !== 'ERR_CANCELED') console.error(err); })
-      .finally(() => setLoading(false));
-    return () => controller.abort();
-  }, []);
+    if (error) toast.error(t('errors.failedToLoadAnalytics'));
+  }, [error, t]);
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
