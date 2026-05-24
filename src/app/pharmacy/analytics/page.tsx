@@ -13,7 +13,7 @@ import {
 
 const NAVY  = '#1E4D8C';
 const TEAL  = '#2D9B8A';
-const DONUT_COLORS = ['#0B2545', '#1E3A5F', '#6B84A8', '#8B5CF6', '#EF4444'];
+const DONUT_COLORS = ['#2563EB', '#60A5FA', '#6B84A8', '#8B5CF6', '#EF4444'];
 
 const MOCK_ANALYTICS = {
   totalRevenue: 78000, totalOrders: 4, avgOrderValue: 20000, itemsSold: 46,
@@ -70,13 +70,30 @@ const currentMonthLabel = new Date().toLocaleString('default', { month: 'long', 
 
 // ── Donut legend ──────────────────────────────────────────────────────────────
 function DonutLegend({ data }: { data: { name: string; percentage: number }[] }) {
+
+  const BADGE_BG_COLORS = ['#EBF5FF', '#F0FDF4', '#F3F4F6', '#F5F3FF', '#FEF2F2'];
+  const BADGE_TEXT_COLORS = ['#2563EB', '#334155', '#4B5563', '#7C3AED', '#DC2626'];
+
   return (
     <div className="flex flex-col gap-2 mt-2">
       {data.map((d, i) => (
         <div key={d.name} className="flex items-center gap-2 text-sm">
-          <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+          <span 
+            className="w-3 h-3 rounded-sm shrink-0" 
+            style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} 
+          />
           <span className="text-gray-600 flex-1">{d.name}</span>
-          <span className="font-semibold text-gray-800">{d.percentage}%</span>
+          
+          {/* Dynamically style the background and text color based on index */}
+          <span 
+            className="px-2 py-0.5 text-xs font-semibold rounded-md min-w-[38px] text-center"
+            style={{ 
+              backgroundColor: BADGE_BG_COLORS[i % BADGE_BG_COLORS.length],
+              color: BADGE_TEXT_COLORS[i % BADGE_TEXT_COLORS.length]
+            }}
+          >
+            {d.percentage}%
+          </span>
         </div>
       ))}
     </div>
@@ -88,7 +105,7 @@ function ProgressRow({ label, sub, change, color }: { label: string; sub: string
   const pct    = Math.min(Math.abs(change), 100);
   const isPos  = change >= 0;
   const sign   = isPos ? '+' : '';
-  const clr    = isPos ? '#16A34A' : '#DC2626';
+  const clr    = isPos ? '#2563EB' : '#DC2626';
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -202,15 +219,16 @@ export default function PharmacyAnalyticsPage() {
     <div className="space-y-5 pb-8">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl px-6 py-5 flex items-center justify-between" style={{ background: 'linear-gradient(96.98deg, #0B2545 0%, #1E3A5F 55%, #6B84A8 100%)' }}>
+      <div className="rounded-2xl px-6 py-5 flex items-center justify-between" style={{ background: '#E0F2FE' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('analytics.analyticsTitle')}</h1>
-          <p className="text-sm text-white/60 mt-0.5">{t('analytics.trackPerformance')}</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-sm font-medium text-white/80 hover:bg-white/10 transition-colors">
+          <h1 className="text-2xl font-bold text-white" style={{ color: '#1E3A8A' }}>{t('analytics.analyticsTitle')}</h1>
+          <p className="text-sm text-white/60 mt-0.5" style={{ color: '#38BDF8'}}>{t('analytics.trackPerformance')}</p>
+          
+          <button className="mt-5 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#0284C7] to-[#38BDF8] hover:opacity-90 transition">
           <CalendarDaysIcon className="w-4 h-4 text-white/60" />
           {t('analytics.thisMonth')}
         </button>
+        </div>
       </div>
 
       {/* ── Stat Cards ─────────────────────────────────────────────────────── */}
@@ -247,7 +265,7 @@ export default function PharmacyAnalyticsPage() {
           <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-500 mb-0.5">{t('analytics.monthlyComparison')}</p>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-gray-900">{t('analytics.revenueByBranch')}</h2>
-            <span className="text-xs text-gray-400 font-medium">{currentMonthLabel}</span>
+            <span className="text-xs text-blue-500 font-medium">{currentMonthLabel}</span>
           </div>
           {s.monthlyComparison.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
@@ -257,7 +275,7 @@ export default function PharmacyAnalyticsPage() {
                 <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
                   {s.monthlyComparison.map((_: any, i: number) => (
-                    <Cell key={i} fill={i === 0 ? '#2563EB' : '#60A5FA'} />
+                    <Cell key={i} fill={i === 0 ? '#1746A2' : '#6B84A8'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -295,11 +313,32 @@ export default function PharmacyAnalyticsPage() {
               color={NAVY}
             />
           </div>
+
           {a.targetRevenue && (
-            <div className="mt-5 flex items-center gap-2 text-xs text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-              {t('analytics.onTrackToHit')} <span className="font-semibold text-gray-700 mx-1">{fmt(a.targetRevenue)} RWF</span> {t('analytics.thisMonthDot')}
-            </div>
+        <div className="mt-5 flex items-center gap-3 text-xs text-gray-500">
+          {/* The Exclamation Badge Icon Component */}
+          <div className="w-7 h-7 rounded-lg bg-blue-50/80 flex items-center justify-center text-blue-600 shrink-0">
+            <svg 
+              className="w-4 h-4" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth={2.5} 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M12 9v4m0 4h.01"              />
+            </svg>
+          </div>
+          
+          {/* The Text Field */}
+          <div className="leading-tight">
+            {t('analytics.onTrackToHit')}{' '}
+            <span className="font-bold text-gray-900">{fmt(a.targetRevenue)} RWF</span>{' '}
+            {t('analytics.thisMonthDot')}
+          </div>
+        </div>
           )}
         </div>
 

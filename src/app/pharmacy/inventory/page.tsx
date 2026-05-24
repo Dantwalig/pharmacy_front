@@ -73,9 +73,11 @@ useEffect(() => {
   return (
     <div className="space-y-6">
     {/* Header */}
-      <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl p-6 text-white">
+      <div className="rounded-2xl p-6 bg-[#E0F2FE] text-[#1E3A8A]">
       <h1 className="text-2xl font-bold mb-1">{t('pharmacy.inventoryManagement')}</h1>
-      <p className="text-blue-100 text-sm">Manage your pharmacy's medication stock — categories follow Rwanda FDA Medicine Register</p>
+      <p className="text-sm text-[#38BDF8]">
+        Manage your pharmacy's medication stock — categories follow Rwanda FDA Medicine Register
+      </p>
     </div>
 
     {/* Summary stats */}
@@ -100,33 +102,30 @@ useEffect(() => {
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input type="text" placeholder={t('inventory.searchPlaceholder')}
             value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+            className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none" />
       </div>
 
       {/* Category filter */}
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
-          className="w-full sm:w-56 px-3 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
-        {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          className="w-full sm:w-56 px-3 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none">
+          <option value="All Categories">All Categories</option>
+          {FDA_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
 
       {/* Stock filter */}
         <div className="flex gap-2 shrink-0">
-        {(['ALL','LOW_STOCK','OUT_OF_STOCK'] as const).map(f => (
+        {(['LOW_STOCK','OUT_OF_STOCK'] as const).map(f => (
             <button key={f} onClick={() => setStockFilter(f)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${stockFilter === f ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-            {f === 'ALL' ? 'All' : f === 'LOW_STOCK' ? 'Low Stock' : 'Out of Stock'}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${stockFilter === f ? 'bg-[#0284C7] text-white' : 'bg-[#E0F2FE99] text-[#1F2937] hover:bg-[#E0F2FE]'}`}>
+            {f === 'LOW_STOCK' ? 'Low Stock' : 'Out of Stock'}
             </button>
         ))}
         </div>
 
       {/* Action buttons */}
         <div className="flex gap-2 shrink-0">
-        <button onClick={() => router.push('/pharmacy/inventory/add?mode=upload')}
-            className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-teal-500 text-teal-600 rounded-lg text-sm font-medium hover:bg-teal-50 transition-all">
-          <ArrowUpTrayIcon className="w-4 h-4" /> Upload
-          </button>
         <button onClick={() => router.push('/pharmacy/inventory/add')}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all">
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-linear-to-r from-[#38BDF8] to-[#0284C7] hover:bg-[#0284C7] text-white rounded-lg text-sm font-medium shadow-sm transition-all">
           <PlusIcon className="w-4 h-4" /> Add Medication
           </button>
       </div>
@@ -175,12 +174,12 @@ useEffect(() => {
                     </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.dosage || '—'}</td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.manufacturer || '—'}</td>
-                    <td className="px-4 py-3 font-semibold text-teal-600 whitespace-nowrap">{Number(price).toLocaleString()} RWF</td>
+                    <td className="px-4 py-3 font-semibold text-gray-600 whitespace-nowrap">{Number(price).toLocaleString()} RWF</td>
                     <td className="px-4 py-3">
-                      <span className={`font-bold ${qty === 0 ? 'text-red-600' : qty <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-gray-800'}`}>
+                      <span className={`font-bold ${qty === 0 ? 'text-red-600' : qty <= (med.lowStockThreshold ?? 10) ? 'text-yellow-600' : 'text-[#1746A2]'}`}>
                         {qty}
                         </span>
-                      <span className="text-gray-400 text-xs ml-1">{t('inventory.units')}</span>
+                      <span className="text-[#0284C7] text-xs ml-1">{t('inventory.units')}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{med.lowStockThreshold ?? 10} units</td>
                     <td className="px-4 py-3">
