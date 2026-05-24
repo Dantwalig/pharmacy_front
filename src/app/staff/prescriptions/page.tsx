@@ -12,8 +12,8 @@ import {
   XCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
-const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,8 +38,6 @@ export default function StaffPrescriptionsPage() {
   const fetchPrescriptions = async () => {
     setLoading(true);
     try {
-      // GET /prescriptions/branch — Role.PHARMACIST now permitted
-      // Supports optional ?status= query param
       const res = await api.get('/prescriptions/branch');
       setPrescriptions(unwrapData(res.data));
     } catch {
@@ -52,7 +50,6 @@ export default function StaffPrescriptionsPage() {
   const handleVerify = async (id: string) => {
     setActionId(id);
     try {
-      // PUT /prescriptions/:id/status — Role.PHARMACIST now permitted
       await api.put(`/prescriptions/${id}/status`, { status: 'APPROVED' });
       toast.success(t('success.prescriptionVerified'));
       setPrescriptions(prev => prev.map(p => p.id === id ? { ...p, status: 'APPROVED' } : p));
@@ -67,12 +64,11 @@ export default function StaffPrescriptionsPage() {
     if (!rejectReason.trim()) { toast.error(t('form.provideRejectionReason')); return; }
     setActionId(id);
     try {
-      // PUT /prescriptions/:id/status — Role.PHARMACIST now permitted
       await api.put(`/prescriptions/${id}/status`, { status: 'REJECTED', rejectionReason: rejectReason });
       toast.success(t('success.prescriptionRejected'));
-      setPrescriptions(prev => prev.map(p =>
-        p.id === id ? { ...p, status: 'REJECTED', rejectionReason: rejectReason } : p
-      ));
+      setPrescriptions(prev =>
+        prev.map(p => p.id === id ? { ...p, status: 'REJECTED', rejectionReason: rejectReason } : p)
+      );
       setRejectingId(null);
       setRejectReason('');
     } catch (error: unknown) {
@@ -85,54 +81,96 @@ export default function StaffPrescriptionsPage() {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const queue   = prescriptions.filter(p => p.status === 'PENDING');
-  const history = prescriptions.filter(p => p.status !== 'PENDING');
+  const queue    = prescriptions.filter(p => p.status === 'PENDING');
+  const history  = prescriptions.filter(p => p.status !== 'PENDING');
   const displayed = tab === 'queue' ? queue : history;
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5 p-4 lg:p-6">
 
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl lg:text-3xl font-bold">{t('prescriptions.prescriptionsTitle')}</h1>
-        <p className="mt-1 text-white/70">{t('prescriptions.prescriptionsSubtitle')}</p>
+      {/* ── Hero ── */}
+      <div
+        className="rounded-2xl px-8 py-10"
+        style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
+      >
+        <h1 className="text-3xl font-extrabold text-gray-900">{t('prescriptions.prescriptionsTitle')}</h1>
+        <p className="mt-1 font-semibold" style={{ color: TEAL }}>
+          {t('prescriptions.prescriptionsSubtitle')}
+        </p>
+        <button
+          onClick={() => setTab('history')}
+          className="inline-flex items-center gap-2 mt-5 text-white text-sm font-semibold transition-opacity hover:opacity-90"
+          style={{
+            height: 44,
+            paddingLeft: 20,
+            paddingRight: 20,
+            borderRadius: 10,
+            background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)',
+          }}
+        >
+          <ClipboardDocumentListIcon className="w-4 h-4" />
+          {t('staffPages.patientAgenda')}
+        </button>
       </div>
 
+      {/* ── 3 Stat Cards ── */}
       <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: t('prescriptions.pendingReview'), value: queue.length,                                             dark: false },
-          { label: t('prescriptions.verified'),      value: prescriptions.filter(p => p.status === 'APPROVED').length, dark: false },
-          { label: t('prescriptions.rejected'),      value: prescriptions.filter(p => p.status === 'REJECTED').length, dark: true  },
-        ].map(s => (
-          <div key={s.label} className="rounded-2xl p-5 flex items-center justify-between"
-            style={{ backgroundColor: s.dark ? NAVY : TEAL }}>
-            <div>
-              <p className="text-white/80 text-sm">{s.label}</p>
-              <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
-              <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
-            </div>
+        {/* Pending Review */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 mb-3">
+            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-500" />
           </div>
-        ))}
+          <p className="text-4xl font-bold text-gray-900">{queue.length}</p>
+          <p className="text-gray-500 text-sm mt-2">{t('prescriptions.pendingReview')}</p>
+        </div>
+
+        {/* Verified */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-50 mb-3">
+            <CheckCircleSolid className="w-5 h-5 text-green-500" />
+          </div>
+          <p className="text-4xl font-bold text-gray-900">
+            {prescriptions.filter(p => p.status === 'APPROVED').length}
+          </p>
+          <p className="text-gray-500 text-sm mt-2">{t('prescriptions.verified')}</p>
+        </div>
+
+        {/* Rejected */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 mb-3">
+            <XCircleIcon className="w-5 h-5 text-red-500" />
+          </div>
+          <p className="text-4xl font-bold text-gray-900">
+            {prescriptions.filter(p => p.status === 'REJECTED').length}
+          </p>
+          <p className="text-gray-500 text-sm mt-2">{t('prescriptions.rejected')}</p>
+        </div>
       </div>
 
+      {/* ── Tabs ── */}
       <div className="flex bg-gray-100 rounded-xl p-1 w-fit">
         {([
           { key: 'queue',   label: `${t('prescriptions.pendingQueue')} (${queue.length})` },
           { key: 'history', label: `${t('prescriptions.history')} (${history.length})` },
         ] as { key: Tab; label: string }[]).map(tabItem => (
-          <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
-            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === tabItem.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+          <button
+            key={tabItem.key}
+            onClick={() => setTab(tabItem.key)}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+              tab === tabItem.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
             {tabItem.label}
           </button>
         ))}
       </div>
 
+      {/* ── List / Empty state ── */}
       {loading ? (
         <div className="flex justify-center py-16"><LoadingSpinner /></div>
       ) : displayed.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
-          <ClockIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+          <ClockIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 font-medium">
             {tab === 'queue' ? t('prescriptions.noPendingReview') : t('prescriptions.noHistory')}
           </p>
@@ -158,7 +196,7 @@ export default function StaffPrescriptionsPage() {
                   <div className="flex flex-wrap gap-4 text-xs text-gray-500">
                     <span>{t('prescriptions.submitted')} {formatDate(p.createdAt)}</span>
                     {p.reviewedAt && <span>{t('prescriptions.reviewed')} {formatDate(p.reviewedAt)}</span>}
-                    {p.fileName && <span>{t('prescriptions.file')} {p.fileName}</span>}
+                    {p.fileName  && <span>{t('prescriptions.file')} {p.fileName}</span>}
                   </div>
 
                   {p.extractedMedications && Array.isArray(p.extractedMedications) && p.extractedMedications.length > 0 && (
@@ -190,34 +228,47 @@ export default function StaffPrescriptionsPage() {
                   <div className="flex flex-col gap-2 shrink-0">
                     {rejectingId === p.id ? (
                       <div className="space-y-2 w-64">
-                        <textarea rows={2} value={rejectReason}
+                        <textarea
+                          rows={2}
+                          value={rejectReason}
                           onChange={e => setRejectReason(e.target.value)}
                           placeholder={t('prescriptions.rejectionReasonPlaceholder')}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none" />
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none"
+                        />
                         <div className="flex gap-2">
-                          <button onClick={() => { setRejectingId(null); setRejectReason(''); }}
-                            className="flex-1 py-1.5 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
+                          <button
+                            onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            className="flex-1 py-1.5 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                          >
                             {t('common.cancel')}
                           </button>
-                          <button onClick={() => handleReject(p.id)} disabled={!!actionId}
-                            className="flex-1 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700">
+                          <button
+                            onClick={() => handleReject(p.id)}
+                            disabled={!!actionId}
+                            className="flex-1 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                          >
                             {actionId === p.id ? t('prescriptions.rejecting') : t('prescriptions.confirmReject')}
                           </button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <button onClick={() => handleVerify(p.id)} disabled={!!actionId}
+                        <button
+                          onClick={() => handleVerify(p.id)}
+                          disabled={!!actionId}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50"
                           style={{ backgroundColor: TEAL }}
-                          aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
+                          aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
+                        >
                           <CheckCircleIcon className="w-4 h-4" />
                           {actionId === p.id ? t('prescriptions.verifying') : t('staff.verify')}
                         </button>
-                        <button onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
+                        <button
+                          onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
                           disabled={!!actionId}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
-                          aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}>
+                          aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
+                        >
                           <XCircleIcon className="w-4 h-4" />
                           {t('staff.reject')}
                         </button>

@@ -36,32 +36,36 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        const refreshToken = Cookies.get('refreshToken');
-        if (refreshToken) {
-          const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
-            headers: { Authorization: `Bearer ${refreshToken}` },
-          });
+      const refreshToken = Cookies.get('refreshToken');
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          Cookies.set('accessToken', accessToken, { expires: 1/48 }); // 30 minutes
-          if (newRefreshToken) {
-            Cookies.set('refreshToken', newRefreshToken, { expires: 7 }); // 7 days
-          }
-
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Show user-facing error message before redirect
-        toast.error('Session expired. Redirecting to login...');
-        
-        // Clear auth state
+      if (!refreshToken) {
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
         Cookies.remove('user');
-        
-        // Redirect to login
+        Cookies.remove('userRole');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
+          headers: { Authorization: `Bearer ${refreshToken}` },
+        });
+
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+        Cookies.set('accessToken', accessToken, { expires: 1/48 }); // 30 minutes
+        if (newRefreshToken) {
+          Cookies.set('refreshToken', newRefreshToken, { expires: 7 }); // 7 days
+        }
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        toast.error('Session expired. Redirecting to login...');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.remove('user');
+        Cookies.remove('userRole');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
