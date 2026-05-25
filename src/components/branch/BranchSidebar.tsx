@@ -2,7 +2,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { Squares2X2Icon, UsersIcon, ClockIcon, LockClosedIcon, ArrowRightOnRectangleIcon, XMarkIcon, ChartBarIcon, CubeIcon, ArrowsRightLeftIcon, MapIcon } from '@heroicons/react/24/outline';
+import { LayoutDashboard, Users, Clock, Lock, LogOut, X, BarChart2, Package, ArrowLeftRight, Map } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface BranchSidebarProps {
   open?: boolean;
@@ -13,6 +14,7 @@ interface BranchSidebarProps {
 export default function BranchSidebar({ open = false, onClose }: BranchSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { logout } = useAuth();
 
   const nav = [
     { href: '/branch/dashboard',       icon: Squares2X2Icon,     label: t('branch.dashboard') },
@@ -60,7 +62,10 @@ export default function BranchSidebar({ open = false, onClose }: BranchSidebarPr
       {/* Footer — just logout */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <ArrowRightOnRectangleIcon className="w-[18px] h-[18px]" />

@@ -7,6 +7,7 @@ import {
   ArrowRightOnRectangleIcon, ChartBarIcon, CubeIcon, BellIcon, XMarkIcon, LockClosedIcon, MapIcon,
 } from '@heroicons/react/24/outline';
 import { isPatientEnabled } from '@/lib/features';
+import { useAuth } from '@/context/AuthContext';
 
 interface PharmacySidebarProps {
   onOpenSupport?: () => void; // kept for layout compat
@@ -17,6 +18,7 @@ interface PharmacySidebarProps {
 export default function PharmacySidebar({ open = false, onClose }: PharmacySidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { logout } = useAuth();
 
   const nav = [
     { href: '/pharmacy/dashboard',     icon: Squares2X2Icon,            label: t('pharmacyOwner.dashboard') },
@@ -71,7 +73,10 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
       {/* Footer */}
       <div className="px-5 pb-6 shrink-0">
         <button
-          onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-80"
           style={{ color: '#F26B6B' }}
         >
