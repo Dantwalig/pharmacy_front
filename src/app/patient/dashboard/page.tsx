@@ -30,9 +30,6 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   loading: () => <MapSkeleton />,
 });
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 export default function PatientDashboard() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -211,10 +208,9 @@ export default function PatientDashboard() {
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `${TEAL}15` }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-teal/10"
             >
-              <MapPinIcon className="w-6 h-6" style={{ color: TEAL }} />
+              <MapPinIcon className="w-6 h-6 text-brand-teal" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
@@ -227,8 +223,7 @@ export default function PatientDashboard() {
           </div>
           <Link
             href="/patient/search"
-            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
-            style={{ background: NAVY }}
+            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90 bg-brand-navy"
           >
             {t('common.viewAll')} →
           </Link>
@@ -259,10 +254,9 @@ export default function PatientDashboard() {
                 onClick={() => setSelectedId(p.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                   selectedId === p.id
-                    ? 'text-white border-transparent'
+                    ? 'bg-brand-teal text-white border-brand-teal'
                     : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-teal-400'
                 }`}
-                style={selectedId === p.id ? { background: TEAL, borderColor: TEAL } : {}}
               >
                 {p.status === 'OPEN' ? '🟢' : '🔴'} {p.name}
               </button>
@@ -274,13 +268,12 @@ export default function PatientDashboard() {
       {/* Recent Orders */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
+          <h2 className="text-2xl font-bold text-brand-navy">
             {t('dashboard.recentMedicalOrders')}
           </h2>
           <Link
             href="/patient/orders"
-            className="font-semibold text-sm flex items-center gap-1 hover:underline"
-            style={{ color: NAVY }}
+            className="font-semibold text-sm flex items-center gap-1 hover:underline text-brand-navy"
           >
             {t('common.viewAll')} <span className="text-base">›</span>
           </Link>
@@ -323,7 +316,7 @@ export default function PatientDashboard() {
                     {/* Order info */}
                     <div className="flex-1 min-w-0">
                       <p className="font-extrabold text-gray-900">Order #{order.id.slice(0, 8)}</p>
-                      <p className="font-extrabold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="font-extrabold text-sm mt-0.5 text-brand-teal">{medName}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {pharmacyName}{branchName ? ` • ${branchName}` : ''}
                       </p>

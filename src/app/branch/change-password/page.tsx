@@ -60,13 +60,13 @@ export default function BranchChangePasswordPage() {
 
         {/* Security Setup badge */}
         <div className="mb-5">
-          <span className="inline-block px-4 py-1.5 rounded-full border border-[#2D9B8A] text-[#2D9B8A] text-xs font-semibold tracking-wide uppercase">
+          <span className="inline-block px-4 py-1.5 rounded-full border border-brand-teal text-brand-teal text-xs font-semibold tracking-wide uppercase">
             Security Setup
           </span>
         </div>
 
         {/* Heading */}
-        <h1 className="text-4xl font-extrabold text-[#1E3A5F] dark:text-white mb-3">
+        <h1 className="text-4xl font-extrabold text-brand-navy dark:text-white mb-3">
           Change Password
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
@@ -77,7 +77,7 @@ export default function BranchChangePasswordPage() {
 
           {/* Current Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-brand-navy dark:text-blue-300 mb-2">
               Current Password
             </label>
             <div className="relative">
@@ -89,7 +89,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, tempPassword: e.target.value }))
                 }
                 placeholder="Enter current password"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy transition"
               />
               <button
                 type="button"
@@ -107,7 +107,7 @@ export default function BranchChangePasswordPage() {
 
           {/* New Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-brand-navy dark:text-blue-300 mb-2">
               New Password
             </label>
             <div className="relative">
@@ -120,7 +120,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, newPassword: e.target.value }))
                 }
                 placeholder="At least 8 characters"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy transition"
               />
               <button
                 type="button"
@@ -138,7 +138,7 @@ export default function BranchChangePasswordPage() {
 
           {/* Confirm New Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-brand-navy dark:text-blue-300 mb-2">
               Confirm New Password
             </label>
             <div className="relative">
@@ -150,7 +150,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, confirmPassword: e.target.value }))
                 }
                 placeholder="Confirm your new password"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy transition"
               />
               <button
                 type="button"

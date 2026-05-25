@@ -15,9 +15,6 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 interface AttendanceSummary {
   total: number;
   pending: number;
@@ -136,7 +133,7 @@ export default function BranchDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('dashboard.branchDashboard')}</h1>
         <p className="mt-1 text-white/70">{t('dashboard.todayOverview')}</p>
       </div>
@@ -147,8 +144,7 @@ export default function BranchDashboardPage() {
           return (
             <div
               key={s.label}
-              className="rounded-2xl p-5 flex items-center justify-between"
-              style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+              className={`rounded-2xl p-5 flex items-center justify-between ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
             >
               <div>
                 <p className="text-white/80 text-sm">{s.label}</p>
@@ -167,7 +163,7 @@ export default function BranchDashboardPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockIns')}</h2>
-            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
+            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white bg-brand-teal">
               {pendingClockIns.length}
             </span>
           </div>
@@ -203,8 +199,7 @@ export default function BranchDashboardPage() {
                           <button
                             onClick={() => approveClockIn(record.id)}
                             disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                            style={{ borderColor: TEAL, color: TEAL }}
+                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border border-brand-teal text-brand-teal hover:bg-gray-50"
                             title={t('branch.approve')}
                             aria-label={`Approve clock in for ${record.staff.firstName} ${record.staff.lastName}`}
                           >
@@ -233,7 +228,7 @@ export default function BranchDashboardPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockOuts')}</h2>
-            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: TEAL }}>
+            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white bg-brand-teal">
               {pendingClockOuts.length}
             </span>
           </div>
@@ -269,8 +264,7 @@ export default function BranchDashboardPage() {
                           <button
                             onClick={() => approveClockOut(record.id)}
                             disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                            style={{ borderColor: TEAL, color: TEAL }}
+                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border border-brand-teal text-brand-teal hover:bg-gray-50"
                             title={t('branch.approve')}
                             aria-label={`Approve clock out for ${record.staff.firstName} ${record.staff.lastName}`}
                           >

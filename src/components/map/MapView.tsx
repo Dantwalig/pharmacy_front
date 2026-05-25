@@ -13,7 +13,6 @@ import {
   MARKER_CSS,
 } from './PharmacyMarker';
 
-const NAVY = '#1E4D8C';
 
 interface MapViewProps {
   pharmacies: PharmacyLocation[];
@@ -171,7 +170,7 @@ export default function MapView({
     if (routes && routes.length > 0) {
       routes.forEach(r => {
         const line = L.polyline(r.points, {
-          color: r.color ?? NAVY,
+          color: r.color ?? '#1E4D8C',
           weight: r.weight ?? 3,
           opacity: 0.8,
           dashArray: r.dashed ? '8 8' : undefined,
@@ -208,8 +207,8 @@ export default function MapView({
 
     const pulseHtml = `
       <div style="position:relative;width:20px;height:20px;">
-        <div style="position:absolute;inset:0;border-radius:50%;background:${NAVY};opacity:0.2;animation:userPulse 1.8s infinite;"></div>
-        <div style="position:absolute;inset:4px;border-radius:50%;background:${NAVY};border:2.5px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>
+        <div style="position:absolute;inset:0;border-radius:50%;background:#1E4D8C;opacity:0.2;animation:userPulse 1.8s infinite;"></div>
+        <div style="position:absolute;inset:4px;border-radius:50%;background:#1E4D8C;border:2.5px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>
       </div>
     `;
 
@@ -249,8 +248,7 @@ export default function MapView({
       {/* Pharmacy count badge */}
       {!loading && validPharmacies.length > 0 && (
         <div
-          className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-lg pointer-events-none"
-          style={{ background: NAVY }}
+          className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-lg pointer-events-none bg-brand-navy"
         >
           {validPharmacies.length} {validPharmacies.length === 1 ? 'Pharmacy' : 'Pharmacies'}
         </div>

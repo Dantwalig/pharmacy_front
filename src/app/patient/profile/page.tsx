@@ -62,13 +62,13 @@ export default function PatientProfilePage() {
     finally { setSaving(false); }
   };
 
-  const inputCls = "w-full px-3 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D9B8A] focus:border-[#2D9B8A] outline-none text-sm";
+  const inputCls = "w-full px-3 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-teal focus:border-brand-teal outline-none text-sm";
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
+    <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl p-8 text-white">
       <h1 className="text-3xl font-bold mb-1">{t('profile2.myProfile')}</h1>
       <p className="text-blue-100 text-sm">{t('profile2.manageSettings')}</p>
     </div>
@@ -81,7 +81,7 @@ export default function PatientProfilePage() {
           { id: 'notifications', label: t('notifications2.notifications'), icon: BellIcon },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'bg-[#2D9B8A] text-white shadow' : 'bg-white text-gray-700 hover:shadow-md'}`}>
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'bg-brand-teal text-white shadow' : 'bg-white text-gray-700 hover:shadow-md'}`}>
           <Icon className="w-4 h-4" /> {label}
           </button>
       ))}
@@ -92,7 +92,7 @@ export default function PatientProfilePage() {
         <form onSubmit={handleSaveProfile} className="bg-white rounded-2xl shadow p-6 space-y-4">
         {/* Avatar */}
           <div className="flex items-center gap-4 pb-4 border-b">
-          <div className="w-16 h-16 bg-linear-to-br from-[#1E4D8C] to-[#2D9B8A] rounded-full flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 bg-linear-to-br from-brand-navy to-brand-teal rounded-full flex items-center justify-center text-white text-2xl font-bold">
             {profile.firstName?.charAt(0)}{profile.lastName?.charAt(0)}
             </div>
           <div>
@@ -135,7 +135,7 @@ export default function PatientProfilePage() {
         </div>
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
+              className="px-6 py-2.5 bg-brand-teal hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
             {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : t('common.saveChanges')}
             </button>
         </div>
@@ -165,7 +165,7 @@ export default function PatientProfilePage() {
         ))}
           <div className="flex justify-end">
           <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50">
+              className="px-6 py-2.5 bg-brand-teal hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50">
             {saving ? t('common.changing') : t('common.changePassword')}
             </button>
         </div>
@@ -189,7 +189,7 @@ export default function PatientProfilePage() {
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked className="sr-only peer" />
-              <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2D9B8A]"></div>
+              <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-teal"></div>
             </label>
           </div>
         ))}

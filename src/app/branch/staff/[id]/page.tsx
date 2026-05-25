@@ -16,9 +16,6 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 const ROLE_COLORS: Record<string, string> = {
   PHARMACIST: 'bg-violet-100 text-violet-800',
   CASHIER:    'bg-blue-100 text-blue-800',
@@ -116,8 +113,7 @@ export default function StaffDetailPage() {
   if (!staff) return (
     <div className="space-y-4">
       <button onClick={() => router.push('/branch/staff')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}>
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
         <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
@@ -130,14 +126,12 @@ export default function StaffDetailPage() {
     <div className="space-y-6">
       {/* Back */}
       <button onClick={() => router.push('/branch/staff')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}>
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
         <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-navy">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
             <UserCircleIcon className="w-9 h-9 text-white/80" />
@@ -171,9 +165,8 @@ export default function StaffDetailPage() {
           { label: t('staffMgmt.totalHours'),       value: `${totalHours.toFixed(1)}h` },
         ].map((s, i) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-              style={{ backgroundColor: '#F0F7F6' }}>
-              <ClockIcon className="w-5 h-5" style={{ color: TEAL }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-brand-teal-light">
+              <ClockIcon className="w-5 h-5 text-brand-teal" />
             </div>
             <p className="text-xs text-gray-500 mb-1">{s.label}</p>
             <p className="text-lg font-bold text-gray-900">{s.value}</p>
@@ -194,9 +187,8 @@ export default function StaffDetailPage() {
             { icon: ClockIcon,         label: t('staffMgmt.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                style={{ backgroundColor: '#F0F7F6' }}>
-                <Icon className="w-4 h-4" style={{ color: TEAL }} />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-brand-teal-light">
+                <Icon className="w-4 h-4 text-brand-teal" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">{label}</p>

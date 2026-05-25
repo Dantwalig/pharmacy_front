@@ -16,7 +16,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
+      <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
         <p className="text-blue-100 text-lg">{t('cart.title')}</p>
       </div>
@@ -41,7 +41,7 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
-    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
+    <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
       <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
       <p className="text-blue-100"> {pharmacyName}</p>
     </div>
@@ -112,7 +112,7 @@ export default function CartPage() {
           </div>
           <div className="space-y-3">
             <button onClick={() => router.push('/patient/checkout')}
-                className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                className="w-full bg-linear-to-r from-brand-navy to-brand-navy-dark text-white py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
               {t('cart.proceedToCheckout')}
               </button>
             <Link href="/patient/search">

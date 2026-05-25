@@ -18,8 +18,6 @@ import CashierOrdersView from '@/components/staff/CashierOrdersView';
 import { Order, OrderStatus } from '@/types';
 import { useFetch } from '@/hooks/useFetch';
 
-const TEAL = '#2D9B8A';
-
 const STATUS_STYLES: Record<string, { pill: string; label: string }> = {
   PENDING:          { pill: 'bg-orange-100 text-orange-700',  label: 'PENDING'           },
   ACCEPTED:         { pill: 'bg-blue-100 text-blue-700',      label: 'ACCEPTED'          },
@@ -172,10 +170,9 @@ export default function StaffOrdersPage() {
             onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
               filter === s
-                ? 'text-white shadow-sm'
+                ? 'bg-brand-teal text-white shadow-sm'
                 : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
             }`}
-            style={filter === s ? { backgroundColor: TEAL } : {}}
           >
             {s === 'all' ? t('orders2.orderAll') : s.replace(/_/g, ' ')}
           </button>
@@ -250,7 +247,7 @@ export default function StaffOrdersPage() {
                       </div>
                       <div className="flex justify-between text-sm font-bold mt-3 pt-3 border-t border-gray-100">
                         <span className="text-gray-700">{t('cart.total')}</span>
-                        <span style={{ color: TEAL }}>{fmt(order.total)}</span>
+                        <span className="text-brand-teal">{fmt(order.total)}</span>
                       </div>
                     </div>
 

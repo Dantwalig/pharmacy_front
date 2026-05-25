@@ -18,9 +18,6 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 interface StaffMember {
   id: string;
   firstName: string;
@@ -92,8 +89,7 @@ export default function BranchStaffPage() {
       </div>
       <button
           onClick={() => router.push('/branch/staff/new')}
-          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all bg-brand-teal"
         >
         <PlusIcon className="w-4 h-4" />
         {t('staffMgmt.addStaff')}
@@ -108,8 +104,7 @@ export default function BranchStaffPage() {
         <p className="text-gray-400 text-sm mt-1">{t('staffMgmt.addFirst')}</p>
         <button
             onClick={() => router.push('/branch/staff/new')}
-            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{ backgroundColor: TEAL }}
+            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all bg-brand-teal"
           >
           {t('staffMgmt.addStaffMember')}
           </button>
@@ -162,9 +157,8 @@ export default function BranchStaffPage() {
                   <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => router.push(`/branch/staff/${member.id}`)}
-                        className="p-1.5 rounded-lg transition-all"
+                        className="p-1.5 rounded-lg transition-all text-brand-teal"
                         aria-label="View staff details"
-                        style={{ color: TEAL }}
                         title={t('staffMgmt.viewDetails')}
                       >
                       <EyeIcon className="w-4 h-4" />

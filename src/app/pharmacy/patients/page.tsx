@@ -181,14 +181,14 @@ export default function PharmacyPatientsPage() {
   if (!isPatientEnabled()) {
     return (
       <div className="space-y-6">
-        <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
+        <div className="bg-linear-to-r from-brand-navy via-[#2563a8] to-brand-navy-dark rounded-2xl shadow-lg p-6 lg:p-8 text-white">
           <h1 className="text-2xl lg:text-3xl font-bold mb-2">{t('patients.patientsAndCustomers')}</h1>
           <p className="text-blue-100 text-sm lg:text-base">{t('patients.orderIntegration')}</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-12 lg:p-20 text-center">
           <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <LockClosedIcon className="w-10 h-10 text-[#1E4D8C]" />
+            <LockClosedIcon className="w-10 h-10 text-brand-navy" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('patients.featureArrivingSoon')}</h2>
           <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">

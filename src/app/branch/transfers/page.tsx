@@ -9,9 +9,6 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { LockClosedIcon, PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   'bg-yellow-100 text-yellow-800',
   APPROVED:  'bg-blue-100 text-blue-800',
@@ -128,7 +125,7 @@ export default function BranchTransfersPage() {
     <div className="space-y-6">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('transfers.stockTransfers')}</h1>
         <p className="mt-1 text-white/70">{t('transfers.requestManage')}</p>
       </div>
@@ -172,8 +169,7 @@ export default function BranchTransfersPage() {
           ].map(s => (
             <div
               key={s.label}
-              className="rounded-2xl p-5 flex items-center justify-between"
-              style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+              className={`rounded-2xl p-5 flex items-center justify-between ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
             >
               <div>
                 <p className="text-white/80 text-sm">{s.label}</p>
@@ -206,8 +202,7 @@ export default function BranchTransfersPage() {
 
         <button
           onClick={handleOpenForm}
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-medium"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-medium bg-brand-teal"
         >
           <PlusIcon className="w-4 h-4" /> Request Transfer
         </button>
@@ -255,8 +250,7 @@ export default function BranchTransfersPage() {
                 Medications <span className="text-red-500">*</span>
               </label>
               <button type="button" onClick={addItem}
-                className="text-xs font-medium hover:underline"
-                style={{ color: TEAL }}>
+                className="text-xs font-medium hover:underline text-brand-teal">
                 + Add Item
               </button>
             </div>
@@ -306,8 +300,7 @@ export default function BranchTransfersPage() {
               Cancel
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-              style={{ backgroundColor: TEAL }}>
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 bg-brand-teal">
               {submitting ? t('transfers.submitting') : t('transfers.submitRequest')}
             </button>
           </div>

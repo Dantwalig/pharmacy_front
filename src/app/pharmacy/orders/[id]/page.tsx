@@ -105,7 +105,7 @@ export default function PharmacyOrderDetailPage() {
             </button>
 
           {/* Order Header */}
-            <div className="bg-linear-to-r from-[#1E4D8C] to-[#2563a8] rounded-2xl p-6 text-white">
+            <div className="bg-linear-to-r from-brand-navy to-[#2563a8] rounded-2xl p-6 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-blue-200 text-sm mb-1">Order #{order.orderNumber || order.id?.slice(0,8)}</p>

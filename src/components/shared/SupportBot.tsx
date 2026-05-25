@@ -86,7 +86,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
       <button
         onClick={handleOpen}
         className="fixed bottom-6 right-6 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
-        style={{ zIndex: 1200, background: 'linear-gradient(135deg, #1E4D8C, #2D9B8A)' }}
+        style={{ zIndex: 1200, background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-teal))' }}
         aria-label={t('supportBot.contactSupport')}
       >
         <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6" />
@@ -102,7 +102,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
               {/* ── Header ──────────────────────────────────────────────────── */}
               <div
                 className="px-6 pt-6 pb-8"
-                style={{ background: 'linear-gradient(135deg, #1E4D8C 0%, #0f2a5c 100%)' }}
+                style={{ background: 'linear-gradient(135deg, var(--color-brand-navy) 0%, #0f2a5c 100%)' }}
               >
                 <button
                   onClick={handleDismiss}
@@ -128,8 +128,8 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                     href={`mailto:${SUPPORT_EMAIL}`}
                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
                   >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0F7F6' }}>
-                      <PhoneIcon className="w-4 h-4" style={{ color: '#2D9B8A' }} />
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-brand-teal-light">
+                      <PhoneIcon className="w-4 h-4 text-brand-teal" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800">{t('supportBot.callOrEmail')}</p>
@@ -140,7 +140,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
 
                   <div className="flex items-center gap-3 p-3 rounded-xl">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#EEF2FF' }}>
-                      <DocumentTextIcon className="w-4 h-4" style={{ color: '#1E4D8C' }} />
+                      <DocumentTextIcon className="w-4 h-4 text-brand-navy" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-800">{t('supportBot.fillFormBelow')}</p>
@@ -151,7 +151,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
 
                 <div className="px-6">
                   <div className="h-px bg-gray-100 mb-4" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: '#2D9B8A' }}>{t('supportBot.sendUsMessage')}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-4 text-brand-teal">{t('supportBot.sendUsMessage')}</p>
                 </div>
 
                 {ticketRef ? (
@@ -163,15 +163,14 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-1">{t('supportBot.messageSent')}</h3>
                     {ticketRef !== 'PENDING' && ticketRef !== 'OK' && (
-                      <p className="text-xs font-medium mb-1" style={{ color: '#1E4D8C' }}>
+                      <p className="text-xs font-medium mb-1 text-brand-navy">
                         {t('supportBot.ticketRef')}: <span className="font-bold">{ticketRef}</span>
                       </p>
                     )}
                     <p className="text-sm text-gray-400 mb-4">{t('supportBot.getBackSoon')}</p>
                     <button
                       onClick={handleDismiss}
-                      className="w-full py-3 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: '#1E4D8C' }}
+                      className="w-full py-3 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 bg-brand-navy"
                     >
                       {t('common.close')}
                     </button>
@@ -181,22 +180,22 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
                     <input
                       type="text" name="name" value={formData.name} onChange={handleChange} required
                       placeholder={t('supportBot.fullName')}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#2D9B8A] focus:ring-1 focus:ring-[#2D9B8A] transition-all placeholder:text-gray-300"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-all placeholder:text-gray-300"
                     />
                     <input
                       type="email" name="email" value={formData.email} onChange={handleChange} required
                       placeholder={t('supportBot.emailAddress')}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#2D9B8A] focus:ring-1 focus:ring-[#2D9B8A] transition-all placeholder:text-gray-300"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-all placeholder:text-gray-300"
                     />
                     <input
                       type="tel" name="phone" value={formData.phone} onChange={handleChange}
                       placeholder={`${t('supportBot.phoneNumber')} (${t('supportBot.optional')})`}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#2D9B8A] focus:ring-1 focus:ring-[#2D9B8A] transition-all placeholder:text-gray-300"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-all placeholder:text-gray-300"
                     />
                     <textarea
                       name="issue" value={formData.issue} onChange={handleChange} required rows={3}
                       placeholder={t('supportBot.describeIssuePlaceholder')}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#2D9B8A] focus:ring-1 focus:ring-[#2D9B8A] transition-all resize-none placeholder:text-gray-300"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-all resize-none placeholder:text-gray-300"
                     />
 
                     {error && (
@@ -205,8 +204,7 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
 
                     <button
                       type="submit" disabled={isSubmitting}
-                      className="w-full py-3 rounded-xl text-white text-sm font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
-                      style={{ backgroundColor: '#1E4D8C' }}
+                      className="w-full py-3 rounded-xl text-white text-sm font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60 bg-brand-navy"
                     >
                       {isSubmitting ? t('supportBot.sending') : (
                         <>

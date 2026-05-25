@@ -18,9 +18,6 @@ import {
   ResponsiveContainer, LineChart, Line,
 } from 'recharts';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(0)}K`;
@@ -109,7 +106,7 @@ export default function BranchAnalyticsPage() {
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('analytics.branchAnalytics')}</h1>
         <p className="mt-1 text-white/70">{t('analytics.branchPerformance')}</p>
       </div>
@@ -121,8 +118,7 @@ export default function BranchAnalyticsPage() {
           return (
             <div
               key={s.label}
-              className="rounded-2xl p-5 flex items-center justify-between"
-              style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+              className={`rounded-2xl p-5 flex items-center justify-between ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
             >
               <div>
                 <p className="text-white/80 text-sm">{s.label}</p>
@@ -148,8 +144,8 @@ export default function BranchAnalyticsPage() {
               { label: t('analytics.hoursWorked'),    value: `${(attendanceSummary.totalHoursWorked ?? 0).toFixed(1)}h` },
             ].map(s => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: '#F0F7F6' }}>
-                  <ClockIcon className="w-5 h-5" style={{ color: TEAL }} />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-brand-teal-light">
+                  <ClockIcon className="w-5 h-5 text-brand-teal" />
                 </div>
                 <p className="text-xs text-gray-500 mb-1">{s.label}</p>
                 <p className="text-lg font-bold text-gray-900">{s.value}</p>
@@ -170,7 +166,7 @@ export default function BranchAnalyticsPage() {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={1} />
               <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} width={52} />
               <Tooltip content={<RevenueTooltip />} />
-              <Line type="monotone" dataKey="revenue" name="Revenue" stroke={TEAL} strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+              <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#2D9B8A" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         ) : (
@@ -191,7 +187,7 @@ export default function BranchAnalyticsPage() {
               <XAxis dataKey="status" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} allowDecimals={false} width={36} />
               <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Bar dataKey="count" name="Orders" fill={NAVY} radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" name="Orders" fill="#1E4D8C" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (

@@ -243,7 +243,7 @@ export default function NewStaffPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: '#2D9B8A' }}
+          className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 bg-brand-teal"
         >
         {loading ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.loading')}</>

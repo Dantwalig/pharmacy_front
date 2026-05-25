@@ -4,8 +4,6 @@
 import { PharmacyLocation } from '@/features/map/pharmacyData';
 import { MapPinIcon, PhoneIcon, ClockIcon, StarIcon } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 interface Props {
   pharmacy: PharmacyLocation;
@@ -21,7 +19,7 @@ export default function PharmacyPopup({ pharmacy, onViewDetails, onClose }: Prop
       {/* Header bar */}
       <div
         className="px-4 py-3 flex items-center justify-between"
-        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-navy-dark))' }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
@@ -55,19 +53,19 @@ export default function PharmacyPopup({ pharmacy, onViewDetails, onClose }: Prop
 
         {/* Address */}
         <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <MapPinIcon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: NAVY }} />
+          <MapPinIcon className="w-4 h-4 mt-0.5 shrink-0 text-brand-navy" />
           <span>{pharmacy.address}</span>
         </div>
 
         {/* Phone */}
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <PhoneIcon className="w-4 h-4 shrink-0" style={{ color: TEAL }} />
+          <PhoneIcon className="w-4 h-4 shrink-0 text-brand-teal" />
           <span>{pharmacy.phone}</span>
         </div>
 
         {/* Hours */}
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <ClockIcon className="w-4 h-4 shrink-0" style={{ color: NAVY }} />
+          <ClockIcon className="w-4 h-4 shrink-0 text-brand-navy" />
           <span>{pharmacy.hours}</span>
         </div>
 
@@ -81,8 +79,7 @@ export default function PharmacyPopup({ pharmacy, onViewDetails, onClose }: Prop
           )}
           {pharmacy.distance !== undefined && (
             <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: `${TEAL}15`, color: TEAL }}
+              className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-teal/10 text-brand-teal"
             >
               {pharmacy.distance} km away
             </span>
@@ -96,7 +93,7 @@ export default function PharmacyPopup({ pharmacy, onViewDetails, onClose }: Prop
           <button
             onClick={() => onViewDetails(pharmacy.id)}
             className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
-            style={{ background: `linear-gradient(135deg, ${TEAL}, #207a6c)` }}
+            style={{ background: 'linear-gradient(135deg, var(--color-brand-teal), #207a6c)' }}
           >
             View Full Details →
           </button>
