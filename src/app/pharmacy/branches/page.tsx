@@ -79,9 +79,9 @@ export default function BranchManagementPage() {
     )}
 
       {/* Hero */}
-      <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: NAVY }}>
-      <h1 className="text-3xl font-bold">{t('pharmacyOwner.branchManagementTitle')}</h1>
-      <p className="mt-1 text-white/70">{t('pharmacyOwner.branchManagementSubtitle')}</p>
+      <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: '#E0F2FE' }}>
+      <h1 className="text-3xl font-bold text-[#1E3A8A]">{t('pharmacyOwner.branchManagementTitle')}</h1>
+      <p className="mt-1 text-[#35BAF5]">{t('pharmacyOwner.branchManagementSubtitle')}</p>
     </div>
 
     {/* Toolbar */}
@@ -98,7 +98,7 @@ export default function BranchManagementPage() {
       <button
           onClick={() => { setShowModal(true); setCreateError(''); }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium"
-          style={{ backgroundColor: TEAL }}
+          style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
         <Plus size={16} />
         {t('pharmacyOwner.addBranch')}
@@ -141,7 +141,7 @@ export default function BranchManagementPage() {
                   <td className="px-5 py-4 text-sm">
                     {b.manager?.email
                         ? <span className="font-medium" style={{ color: TEAL }}>{b.manager.email}</span>
-                      : <span className="text-amber-500 font-medium">{t('common.unassigned')}</span>
+                      : <span className="text-[#D3CC00] font-medium">{t('common.unassigned')}</span>
                     }
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-400">—</td>
