@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { isPatientEnabled } from '@/lib/features';
+import StatusBadge from '@/components/shared/StatusBadge';
 
 interface Patient {
   id: string;
@@ -393,15 +394,12 @@ export default function PharmacyPatientsPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-extrabold text-gray-900 mb-2 text-lg">{order.total.toLocaleString()} <span className="text-sm font-bold">RWF</span></p>
-                  <span className={`text-xs px-3 py-1 rounded-full font-bold inline-block ${
-                    order.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border border-green-100' :
-                    order.status === 'ACCEPTED' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                    'bg-orange-50 text-orange-700 border border-orange-100'
-                  }`}>
-                    {order.status === 'COMPLETED' ? t('patientPageUI.completed') || 'Completed' :
-                     order.status === 'ACCEPTED' ? t('patientPageUI.accepted') || 'Accepted' : 
-                     t('patientPageUI.pending') || 'Pending'}
-                  </span>
+                  <StatusBadge
+                    status={order.status}
+                    label={order.status === 'COMPLETED' ? t('patientPageUI.completed') || 'Completed' :
+                           order.status === 'ACCEPTED' ? t('patientPageUI.accepted') || 'Accepted' :
+                           t('patientPageUI.pending') || 'Pending'}
+                  />
                 </div>
               </div>
             ))}

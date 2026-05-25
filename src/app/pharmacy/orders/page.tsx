@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback} from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon, FunnelIcon, EyeIcon } from '@heroicons/react/24/outline';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
@@ -191,7 +192,6 @@ const branches = data?.branches ?? [];
             </tr>
           ) : (
               filtered.map((order: any) => {
-                const sc = STATUS_COLORS[order.status] ?? { bg: '#F3F4F6', text: '#374151' };
                 return (
                   <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-medium text-gray-800">
@@ -204,12 +204,7 @@ const branches = data?.branches ?? [];
                     {order.total?.toLocaleString()} RWF
                     </td>
                   <td className="px-5 py-4">
-                    <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ backgroundColor: sc.bg, color: sc.text }}
-                      >
-                      {order.status}
-                      </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
                     {order.staffName ?? '—'}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { api, unwrapData } from '@/lib/api';
 import dynamic from 'next/dynamic';
 
@@ -58,13 +59,11 @@ export default function BranchManagementPage() {
     setSubmitting(false);
   };
 
-  const statusStyle = (s: string) => {
-    switch (s) {
-      case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active' };
-      case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup' };
-      case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval' };
-      default:         return { bg: '#F3F4F6', text: '#6B7280', label: s ?? '—' };
-    }
+  const branchStatusLabel = (s: string) => {
+    if (s === 'APPROVED') return 'Active';
+    if (s === 'INVITED') return 'Pending Setup';
+    if (s === 'PENDING') return 'Pending Approval';
+    return s ?? '—';
   };
 
   return (
@@ -130,7 +129,6 @@ export default function BranchManagementPage() {
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.noData')}</td></tr>
           ) : (
               filtered.map((b: any) => {
-                const st = statusStyle(b.branchStatus);
                 return (
                   <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-semibold text-gray-800">{b.name}</td>
@@ -143,12 +141,7 @@ export default function BranchManagementPage() {
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-400">—</td>
                   <td className="px-5 py-4">
-                    <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ backgroundColor: st.bg, color: st.text }}
-                      >
-                      {st.label}
-                      </span>
+                    <StatusBadge status={b.branchStatus} label={branchStatusLabel(b.branchStatus)} />
                   </td>
                   <td className="px-5 py-4">
                     <button

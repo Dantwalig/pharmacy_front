@@ -6,6 +6,7 @@ import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
@@ -13,12 +14,6 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:  'bg-yellow-100 text-yellow-800',
-  APPROVED: 'bg-green-100 text-green-800',
-  REJECTED: 'bg-red-100 text-red-800',
-};
 
 type Tab = 'queue' | 'history';
 
@@ -186,9 +181,7 @@ export default function StaffPrescriptionsPage() {
                         ? `${p.patient.firstName} ${p.patient.lastName}`
                         : `Prescription #${p.id.slice(0, 8)}`}
                     </p>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {p.status}
-                    </span>
+                    <StatusBadge status={p.status} />
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-gray-500">

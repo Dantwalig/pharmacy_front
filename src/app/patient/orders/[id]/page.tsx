@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import type { Order } from '@/types';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import toast from 'react-hot-toast';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
@@ -164,12 +165,7 @@ export default function OrderDetailsPage() {
             </h1>
           <p className="text-teal-100">{new Date(order.createdAt).toLocaleString()}</p>
         </div>
-        <span className={`inline-block px-6 py-3 rounded-xl text-sm font-bold shadow-lg ${
-            order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
-            order.status === 'CANCELLED' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'
-          }`}>
-          {t(STATUS_LABEL_KEYS[order.status] ?? 'orders2.statusPending')}
-          </span>
+        <StatusBadge status={order.status} label={t(STATUS_LABEL_KEYS[order.status] ?? 'orders2.statusPending')} size="md" />
       </div>
 
       {order.status !== 'CANCELLED' && (
@@ -341,7 +337,7 @@ export default function OrderDetailsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
         <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders2.prescriptionInfo')}</h2>
         <div className="space-y-2 text-gray-700 dark:text-gray-300">
-          <p><strong>{t('orders2.status')}</strong> <span className={`font-semibold ${order.prescription.status === 'APPROVED' ? 'text-green-600' : 'text-yellow-600'}`}>{order.prescription.status}</span></p>
+          <p className="flex items-center gap-2"><strong>{t('orders2.status')}</strong> <StatusBadge status={order.prescription.status} /></p>
           {order.prescription.fileUrl && (
               <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-brand-navy hover:text-brand-teal underline">
               {t('orders2.viewPrescription')}

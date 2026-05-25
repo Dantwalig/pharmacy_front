@@ -6,6 +6,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { PharmacyLocation } from '@/features/map/pharmacyData';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   MapPinIcon,
   PhoneIcon,
@@ -105,15 +106,11 @@ export default function NearbyPharmacyList({
                       <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">
                         {pharmacy.name}
                       </h4>
-                      <span
-                        className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          isOpen
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                        }`}
-                      >
-                        {isOpen ? t('search.openStatus') : t('search.closedStatus')}
-                      </span>
+                      <StatusBadge
+                        status={pharmacy.status}
+                        label={isOpen ? t('search.openStatus') : t('search.closedStatus')}
+                        className="shrink-0"
+                      />
                     </div>
 
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">

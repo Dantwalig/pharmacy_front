@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { ClockIcon } from '@heroicons/react/24/outline';
 
 
@@ -18,14 +19,6 @@ interface AttendanceRecord {
   clockInApprover?: { firstName: string; lastName: string };
   clockOutApprover?: { firstName: string; lastName: string };
 }
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:     'bg-yellow-100 text-yellow-800',
-  APPROVED:    'bg-blue-100 text-blue-800',
-  CLOCKED_OUT: 'bg-orange-100 text-orange-800',
-  COMPLETED:   'bg-green-100 text-green-800',
-  REJECTED:    'bg-red-100 text-red-800',
-};
 
 const STATUS_KEYS: Record<string, string> = {
   PENDING: 'attendance.statusPending',
@@ -107,9 +100,7 @@ export default function StaffAttendancePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <p className="font-semibold text-gray-900 text-sm">{formatDate(record.clockInTime)}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                      {t(STATUS_KEYS[record.status] || 'attendance.statusPending')}
-                    </span>
+                    <StatusBadge status={record.status} label={t(STATUS_KEYS[record.status] || 'attendance.statusPending')} />
                   </div>
 
                   <div className="flex gap-6 text-sm text-gray-600">

@@ -13,6 +13,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
   BuildingStorefrontIcon,
@@ -355,13 +356,7 @@ export default function SuperAdminDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    pharmacy.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                    pharmacy.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
-                    {pharmacy.status}
-                  </span>
+                  <StatusBadge status={pharmacy.status} />
                   <button
                     onClick={() => setLocationModal(pharmacy)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all bg-brand-teal"

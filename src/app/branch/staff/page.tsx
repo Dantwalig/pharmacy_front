@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   UserGroupIcon,
   PlusIcon,
@@ -145,13 +146,7 @@ export default function BranchStaffPage() {
                     </p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      member.status === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                    {member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                    </span>
+                  <StatusBadge status={member.status} label={member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')} />
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">

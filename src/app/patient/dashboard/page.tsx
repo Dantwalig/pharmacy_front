@@ -20,6 +20,7 @@ import {
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { fetchPharmacyLocations } from '@/services/pharmacies';
 import { PharmacyLocation, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/features/map/pharmacyData';
 import { MapSkeleton } from '@/components/map/MapStates';
@@ -288,15 +289,6 @@ export default function PatientDashboard() {
               const pharmacyName = order.pharmacy?.name ?? '—';
               const branchName = order.branch?.name ?? '';
 
-              const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
-                PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-                ACCEPTED:  { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-                PREPARING: { bg: '#FEF3C7', color: '#D97706', dot: '#F59E0B' },
-                COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-                DELIVERED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-                CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
-              };
-              const s = statusMap[order.status] ?? statusMap.PENDING;
 
               return (
                 <Link key={order.id} href={`/patient/orders/${order.id}`}>
@@ -327,13 +319,7 @@ export default function PatientDashboard() {
                       <p className="font-bold text-gray-900 text-lg">
                         {order.total?.toLocaleString()} RWF
                       </p>
-                      <span
-                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase"
-                        style={{ background: s.bg, color: s.color }}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
-                        {getStatusLabel(order.status)}
-                      </span>
+                      <StatusBadge status={order.status} label={getStatusLabel(order.status)} className="mt-2" />
                     </div>
                   </div>
                 </Link>

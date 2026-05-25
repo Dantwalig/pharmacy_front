@@ -6,6 +6,7 @@ import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ShoppingCartIcon,
   ChevronDownIcon,
@@ -17,17 +18,6 @@ import { useAuth } from '@/context/AuthContext';
 import CashierOrdersView from '@/components/staff/CashierOrdersView';
 import { Order, OrderStatus } from '@/types';
 import { useFetch } from '@/hooks/useFetch';
-
-const STATUS_STYLES: Record<string, { pill: string; label: string }> = {
-  PENDING:          { pill: 'bg-orange-100 text-orange-700',  label: 'PENDING'           },
-  ACCEPTED:         { pill: 'bg-blue-100 text-blue-700',      label: 'ACCEPTED'          },
-  PREPARING:        { pill: 'bg-indigo-100 text-indigo-700',  label: 'PREPARING'         },
-  READY_FOR_PICKUP: { pill: 'bg-teal-100 text-teal-700',      label: 'READY FOR PICKUP'  },
-  OUT_FOR_DELIVERY: { pill: 'bg-amber-100 text-amber-700',    label: 'OUT FOR DELIVERY'  },
-  DELIVERED:        { pill: 'bg-green-100 text-green-700',    label: 'DELIVERED'         },
-  COMPLETED:        { pill: 'bg-green-100 text-green-700',    label: 'COMPLETED'         },
-  CANCELLED:        { pill: 'bg-red-100 text-red-700',        label: 'CANCELLED'         },
-};
 
 const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
   PENDING:          ['ACCEPTED'],
@@ -191,8 +181,6 @@ export default function StaffOrdersPage() {
             const isExpanded  = expanded === order.id;
             const nextStatuses = NEXT_STATUSES[order.status] ?? [];
             const isUpdating  = updatingId === order.id;
-            const statusStyle = STATUS_STYLES[order.status] ?? { pill: 'bg-gray-100 text-gray-600', label: order.status };
-
             return (
               <div key={order.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
 
@@ -218,9 +206,7 @@ export default function StaffOrdersPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <p className="text-sm font-bold text-gray-900 hidden sm:block">{fmt(order.total)}</p>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle.pill}`}>
-                      {statusStyle.label}
-                    </span>
+                    <StatusBadge status={order.status} />
                     <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
                 </button>

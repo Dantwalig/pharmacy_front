@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 interface AttendanceRecord {
@@ -28,13 +29,6 @@ interface AttendanceRecord {
   clockOutApprover?: { firstName: string; lastName: string };
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:     'bg-yellow-100 text-yellow-800',
-  APPROVED:    'bg-blue-100 text-blue-800',
-  CLOCKED_OUT: 'bg-orange-100 text-orange-800',
-  COMPLETED:   'bg-emerald-100 text-emerald-800',
-  REJECTED:    'bg-red-100 text-red-800',
-};
 
 export default function BranchAttendancePage() {
   const { t } = useTranslation();
@@ -155,9 +149,7 @@ export default function BranchAttendancePage() {
                     {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '—'}
                     </td>
                   <td className="px-5 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                      {record.status.replace(/_/g, ' ')}
-                      </span>
+                    <StatusBadge status={record.status} />
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1">

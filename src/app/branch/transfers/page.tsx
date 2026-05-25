@@ -7,15 +7,9 @@ import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { LockClosedIcon, PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:   'bg-yellow-100 text-yellow-800',
-  APPROVED:  'bg-blue-100 text-blue-800',
-  REJECTED:  'bg-red-100 text-red-800',
-  SHIPPED:   'bg-orange-100 text-orange-800',
-  COMPLETED: 'bg-green-100 text-green-800',
-};
 
 type Tab = 'outgoing' | 'incoming';
 
@@ -338,9 +332,7 @@ export default function BranchTransfersPage() {
                         ? `To: ${t.toBranch?.name ?? t.toBranchId}`
                         : `From: ${t.fromBranch?.name ?? t.fromBranchId}`}
                     </p>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[t.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {t.status}
-                    </span>
+                    <StatusBadge status={t.status} />
                   </div>
                   <p className="text-xs text-gray-500">Requested: {formatDate(t.createdAt)}</p>
                   {t.notes && <p className="text-xs text-gray-500 italic">{t.notes}</p>}

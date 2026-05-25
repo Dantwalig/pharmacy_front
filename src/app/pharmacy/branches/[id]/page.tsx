@@ -7,6 +7,7 @@ import { ArrowLeftIcon, CurrencyDollarIcon, UsersIcon, EnvelopeIcon, CubeIcon, N
 import { api } from '@/lib/api';
 import type { BranchDetail } from '@/types';
 import { getErrorMessage } from '@/lib/errorHandler';
+import StatusBadge from '@/components/shared/StatusBadge';
 
 export default function BranchDetailPage() {
   const { t } = useTranslation();
@@ -121,15 +122,12 @@ export default function BranchDetailPage() {
     },
   ];
 
-  const statusBadge = () => {
-    switch (branch.branchStatus) {
-      case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active' };
-      case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup' };
-      case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval' };
-      default:         return { bg: '#F3F4F6', text: '#6B7280', label: branch.branchStatus ?? '—' };
-    }
+  const branchStatusLabel = (s: string) => {
+    if (s === 'APPROVED') return 'Active';
+    if (s === 'INVITED') return 'Pending Setup';
+    if (s === 'PENDING') return 'Pending Approval';
+    return s ?? '—';
   };
-  const badge = statusBadge();
 
   return (
     <div className="space-y-6">
@@ -149,12 +147,7 @@ export default function BranchDetailPage() {
         <p className="mt-1 text-white/70">{branch.address}</p>
         {branch.phone && <p className="mt-0.5 text-white/50 text-sm">{branch.phone}</p>}
         </div>
-      <span
-          className="px-3 py-1 rounded-full text-xs font-semibold mt-1"
-          style={{ backgroundColor: badge.bg, color: badge.text }}
-        >
-        {badge.label}
-        </span>
+      <StatusBadge status={branch.branchStatus} label={branchStatusLabel(branch.branchStatus)} />
     </div>
 
     {/* Stats */}
@@ -186,16 +179,7 @@ export default function BranchDetailPage() {
                 <p className="text-sm font-medium text-gray-800">{s.firstName} {s.lastName}</p>
                 <p className="text-xs text-gray-500">{s.user?.email}</p>
               </div>
-              <span
-                  className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={
-                    s.status === 'ACTIVE'
-                      ? { backgroundColor: '#D1FAE5', color: '#065F46' }
-                      : { backgroundColor: '#F3F4F6', color: '#6B7280' }
-                  }
-                >
-                {s.status}
-                </span>
+              <StatusBadge status={s.status} />
             </div>
           ))}
           </div>

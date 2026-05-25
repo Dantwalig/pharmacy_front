@@ -2,6 +2,7 @@
 'use client';
 
 import { PharmacyLocation } from '@/features/map/pharmacyData';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { MapPinIcon, PhoneIcon, ClockIcon, StarIcon } from '@heroicons/react/24/outline';
 
 
@@ -40,16 +41,11 @@ export default function PharmacyPopup({ pharmacy, onViewDetails, onClose }: Prop
       {/* Body */}
       <div className="p-4 space-y-3">
         {/* Status badge */}
-        <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-            isOpen
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-              : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-          }`}
-        >
-          <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-red-400'}`} />
-          {isOpen ? 'Open Now' : 'Closed'}
-        </span>
+        <StatusBadge
+          status={pharmacy.status}
+          label={isOpen ? 'Open Now' : 'Closed'}
+          withDot
+        />
 
         {/* Address */}
         <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">

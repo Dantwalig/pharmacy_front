@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import type { PharmacyDetail } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
   ArrowLeftIcon,
@@ -25,10 +26,11 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  PENDING:  { bg: '#FEF3C7', text: '#92400E', label: 'Pending Review' },
-  APPROVED: { bg: '#D1FAE5', text: '#065F46', label: 'Approved' },
-  REJECTED: { bg: '#FEE2E2', text: '#991B1B', label: 'Rejected' },
+const getStatusLabel = (s: string) => {
+  if (s === 'PENDING') return 'Pending Review';
+  if (s === 'APPROVED') return 'Approved';
+  if (s === 'REJECTED') return 'Rejected';
+  return s;
 };
 
 export default function SuperAdminPharmacyDetailPage() {
@@ -127,8 +129,6 @@ export default function SuperAdminPharmacyDetailPage() {
 
   if (!pharmacy) return null;
 
-  const status = STATUS_STYLES[pharmacy.status ?? ''] ?? { bg: '#F3F4F6', text: '#374151', label: pharmacy.status ?? 'Unknown' };
-
   // Registration number fields from the Prisma schema
   const registrationNumbers = [
     { label: 'RDB Certificate Number',        value: pharmacy.rdbCertificate,       docType: 'rdb' },
@@ -157,12 +157,11 @@ export default function SuperAdminPharmacyDetailPage() {
               {pharmacy.createdAt && `Submitted ${new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}
             </p>
           </div>
-          <span
-            className="px-4 py-2 rounded-xl text-sm font-bold"
-            style={{ backgroundColor: status.bg, color: status.text }}
-          >
-            {status.label}
-          </span>
+          <StatusBadge
+            status={pharmacy.status ?? ''}
+            label={getStatusLabel(pharmacy.status ?? '')}
+            size="md"
+          />
         </div>
 
         {/* Quick stats from _count */}
