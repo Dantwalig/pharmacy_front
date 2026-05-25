@@ -4,12 +4,9 @@ import { useFetch } from '@/hooks/useFetch';
 import { useState, useEffect, useCallback} from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Eye } from 'lucide-react';
+import { MagnifyingGlassIcon, FunnelIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_CHECKOUT' | 'COMPLETED' | 'REJECTED';
 
@@ -102,7 +99,7 @@ const branches = data?.branches ?? [];
     {/* Filters */}
       <div className="flex items-center gap-3">
       <div className="flex-1 relative">
-        <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
         <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -111,7 +108,7 @@ const branches = data?.branches ?? [];
           />
       </div>
       <div className="flex items-center gap-2">
-        <Filter size={16} className="text-gray-400" />
+        <FunnelIcon className="w-4 h-4 text-gray-400" />
         <select
             value={branch}
             onChange={e => setBranch(e.target.value)}
@@ -227,7 +224,7 @@ const branches = data?.branches ?? [];
                         onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
                         className="flex items-center gap-1.5 px-3 py-1.5 border border-[#0284C7] rounded-lg text-sm text-[#0284C7] hover:bg-gray-50"
                       >
-                      <Eye size={14} />
+                      <EyeIcon className="w-[14px] h-[14px]" />
                       {t('common.view')}
                       </button>
                   </td>

@@ -3,14 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, X } from 'lucide-react';
+import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { api, unwrapData } from '@/lib/api';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 export default function BranchManagementPage() {
   const { t } = useTranslation();
@@ -87,7 +84,7 @@ export default function BranchManagementPage() {
     {/* Toolbar */}
       <div className="flex items-center justify-between gap-3">
       <div className="relative flex-1 max-w-sm">
-        <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
         <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -100,7 +97,7 @@ export default function BranchManagementPage() {
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium"
           style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
-        <Plus size={16} />
+        <PlusIcon className="w-4 h-4" />
         {t('pharmacyOwner.addBranch')}
         </button>
     </div>
@@ -140,7 +137,7 @@ export default function BranchManagementPage() {
                   <td className="px-5 py-4 text-sm text-gray-500">{b.address}</td>
                   <td className="px-5 py-4 text-sm">
                     {b.manager?.email
-                        ? <span className="font-medium" style={{ color: TEAL }}>{b.manager.email}</span>
+                        ? <span className="font-medium text-brand-teal">{b.manager.email}</span>
                       : <span className="text-[#D3CC00] font-medium">{t('common.unassigned')}</span>
                     }
                     </td>
@@ -156,8 +153,7 @@ export default function BranchManagementPage() {
                   <td className="px-5 py-4">
                     <button
                         onClick={() => router.push(`/pharmacy/branches/${b.id}`)}
-                        className="text-sm font-medium hover:underline"
-                        style={{ color: NAVY }}
+                        className="text-sm font-medium hover:underline text-brand-navy"
                       >
                       {t('common.viewDetails')}
                       </button>
@@ -181,7 +177,7 @@ export default function BranchManagementPage() {
               className="text-gray-400 hover:text-gray-600"
               aria-label={t('common.close') || 'Close'}
             >
-              <X size={20} />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
           <div className="space-y-4">
@@ -238,8 +234,7 @@ export default function BranchManagementPage() {
             <button
                 onClick={handleAdd}
                 disabled={submitting || !form.name || !form.address || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
-                style={{ backgroundColor: TEAL }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 bg-brand-teal"
               >
               {submitting ? t('common.saving') : t('common.add')}
               </button>
