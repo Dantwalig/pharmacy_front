@@ -2,7 +2,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, Clock, Lock, LogOut, X, BarChart2, Package, ArrowLeftRight, Map } from 'lucide-react';
+import { 
+  Squares2X2Icon, UsersIcon, ClockIcon, ChartBarIcon, CubeIcon, 
+  ArrowsRightLeftIcon, MapIcon, LockClosedIcon, XMarkIcon, ArrowRightOnRectangleIcon 
+} from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 
 interface BranchSidebarProps {
