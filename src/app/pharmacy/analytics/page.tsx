@@ -267,14 +267,14 @@ export default function PharmacyAnalyticsPage() {
             <h2 className="text-base font-bold text-gray-900">{t('analytics.revenueByBranch')}</h2>
             <span className="text-xs text-blue-500 font-medium">{currentMonthLabel}</span>
           </div>
-          {s.monthlyComparison.length > 0 ? (
+          {s.revenueByBranch.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={s.monthlyComparison} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={s.revenueByBranch} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
                 <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
-                  {s.monthlyComparison.map((_: any, i: number) => (
+                  {s.revenueByBranch.map((_: any, i: number) => (
                     <Cell key={i} fill={i === 0 ? '#1746A2' : '#6B84A8'} />
                   ))}
                 </Bar>
