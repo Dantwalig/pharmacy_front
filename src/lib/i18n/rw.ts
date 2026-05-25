@@ -68,6 +68,7 @@ export const rw = {
     changePassword: 'Hindura Ijambo Ryibanga',
     showPassword: 'Erekana Ijambo Ryibanga',
     hidePassword: 'Gukura Ijambo Ryibanga',
+    editProfile: 'Hindura Umwirondoro',
   },
   verify: {
     title: 'Emeza Imeli Yawe',
@@ -292,6 +293,8 @@ export const rw = {
     proceedToCheckout: 'Komeza Kwishyura',
     continueShopping: 'Komeza Kugura',
     itemAdded: 'Ikintu cyongeweho mu gasanduku',
+    reviewItems: 'Reba ibintu byawe byahiswemo',
+    suggestedMeds: 'Reba imiti yasugerwa hano:',
   },
   checkout: {
     title: 'Kwishyura',
@@ -1082,6 +1085,14 @@ export const rw = {
     paymentCompleted: 'Kwishyura byarangiye neza!',
     viewPrescription: 'Reba Urwandiko',
     prescriptionInfo: 'Amakuru y\'Urwandiko',
+    filterBy: 'Hitamo',
+    searchByMedication: 'Shakisha ibyatumijwe n\'imiti...',
+    orderId: 'Nimero y\'Itumiza',
+    time: 'Igihe',
+    quantity: 'Umubare',
+    amountRwf: 'Amafaranga(Rwf)',
+    searchForMedication: 'Shakisha imiti',
+    manageOrder: 'Gucunga Itumiza',
   },
   checkout2: {
     cartEmpty: 'Agasanduku kawe kari ubusa',

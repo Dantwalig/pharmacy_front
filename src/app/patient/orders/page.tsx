@@ -13,13 +13,13 @@ import {
   MapPinIcon,
   PhoneIcon,
   CheckCircleIcon,
-  ClockIcon,
-  ArchiveBoxIcon,
-  ChevronRightIcon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
   CubeIcon,
   BanknotesIcon,
   TruckIcon,
   BuildingStorefrontIcon,
+  FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
@@ -368,6 +368,8 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -387,9 +389,15 @@ export default function OrdersPage() {
   const completedCount = orders.filter((o) => COMPLETED_STATUSES.includes(o.status)).length;
 
   const filteredOrders = orders.filter((order) => {
-    if (filter === 'pending') return PENDING_STATUSES.includes(order.status);
-    if (filter === 'completed') return COMPLETED_STATUSES.includes(order.status);
-    return true;
+    const matchesFilter =
+      filter === 'pending' ? PENDING_STATUSES.includes(order.status) :
+      filter === 'completed' ? COMPLETED_STATUSES.includes(order.status) :
+      true;
+    const matchesSearch = !searchQuery.trim() ||
+      order.orderItems?.some((item: any) =>
+        item.medication?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    return matchesFilter && matchesSearch;
   });
 
   if (loading) {
@@ -402,180 +410,126 @@ export default function OrdersPage() {
 
   return (
     <>
-      <div className="space-y-6 pb-8">
+      <div className="space-y-5 pb-8">
 
         {/* Page Header */}
-        <div className="relative bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] rounded-3xl shadow-xl overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-          <div className="absolute -bottom-10 -left-6 w-52 h-52 rounded-full bg-white/5" />
-          <div className="relative p-8 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                <ClipboardDocumentListIcon className="w-6 h-6 text-white" />
+        <div className="bg-[#EBF5FF] rounded-2xl p-8">
+          <h1 className="text-2xl font-bold text-[#1E3A5F] mb-1">{t('orders2.myOrders')}</h1>
+          <p className="text-sm" style={{ color: '#3B82F6' }}>{t('orders2.trackManage')}</p>
+        </div>
+
+        {/* Filter + Search bar */}
+        <div className="flex items-center gap-3">
+          {/* Filter dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"
+            >
+              <FunnelIcon className="w-4 h-4 text-gray-500" />
+              {t('orders2.filterBy')}
+              <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+            </button>
+            {showFilter && (
+              <div className="absolute top-full left-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-100 z-20">
+                {(['all', 'pending', 'completed'] as FilterType[]).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => { setFilter(f); setShowFilter(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl transition-colors ${filter === f ? 'text-[#1E4D8C] font-semibold bg-blue-50' : 'text-gray-700'}`}
+                  >
+                    {f === 'all' ? `${t('orders2.orderAll')} (${allCount})` : f === 'pending' ? `${t('orders2.orderActive')} (${pendingCount})` : `${t('orders2.orderCompleted')} (${completedCount})`}
+                  </button>
+                ))}
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight">{t('orders2.myOrders')}</h1>
+            )}
+          </div>
+
+          {/* Search */}
+          <div className="flex-1 relative">
+            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t('orders2.searchByMedication')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#2D9B8A] bg-white shadow-sm transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Orders Table */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('orders2.orderId')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('common.date')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('orders2.time')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('orders.medications')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('orders2.quantity')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('orders2.amountRwf')}</th>
+                  <th className="text-left px-5 py-3.5 text-sm font-medium text-gray-600">{t('common.status')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order: any, idx: number) => {
+                  const meta = getStatusMeta(order.status as OrderStatus, t);
+                  const date = new Date(order.createdAt);
+                  const firstItem = order.orderItems?.[0];
+                  const totalQty = order.orderItems?.reduce((s: number, i: any) => s + (i.quantity || 0), 0);
+                  return (
+                    <tr
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-5 py-4 text-sm font-medium text-gray-900">
+                        #{order.orderNumber || idx + 1}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-medium text-gray-900">{firstItem?.medication?.name || order.pharmacy?.name || '—'}</p>
+                        {firstItem?.medication?.dosage && (
+                          <p className="text-xs text-gray-400">{firstItem.medication.dosage}</p>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">{totalQty ?? '—'}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-900">{order.total?.toLocaleString()}</td>
+                      <td className="px-5 py-4">
+                        <span
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+                          style={{ backgroundColor: meta.bg, color: meta.textColor }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: meta.dot }} />
+                          {meta.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredOrders.length === 0 && (
+            <div className="text-center py-16">
+              <div className="flex flex-col items-center gap-2">
+                <svg className="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M4 6h16M4 10h16M4 14h10M4 18h6M15 15l2 2 4-4" />
+                </svg>
+                <p className="text-gray-400 text-sm font-medium">{t('orders2.searchForMedication')}</p>
+              </div>
             </div>
-            <p className="text-blue-100 text-sm pl-1">{t('orders2.trackManage')}</p>
-          </div>
+          )}
         </div>
-
-        {/* Quick Action Filter Buttons */}
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={() => setFilter('all')}
-            className={`relative flex flex-col items-center justify-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 ${
-              filter === 'all'
-                ? 'border-[#1E4D8C] bg-linear-to-br from-[#1E4D8C] to-[#2763b0] text-white shadow-lg scale-[1.02]'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#1E4D8C]/40 hover:shadow-md'
-            }`}
-          >
-            <ArchiveBoxIcon className={`w-6 h-6 ${filter === 'all' ? 'text-white' : 'text-[#1E4D8C] dark:text-blue-400'}`} />
-            <span className={`text-2xl font-extrabold leading-none ${filter === 'all' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-              {allCount}
-            </span>
-            <span className={`text-xs font-semibold ${filter === 'all' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              {t('orders2.orderAll')}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setFilter('pending')}
-            className={`relative flex flex-col items-center justify-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 ${
-              filter === 'pending'
-                ? 'border-amber-500 bg-linear-to-br from-amber-500 to-amber-600 text-white shadow-lg scale-[1.02]'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-amber-400 hover:shadow-md'
-            }`}
-          >
-            <ClockIcon className={`w-6 h-6 ${filter === 'pending' ? 'text-white' : 'text-amber-500'}`} />
-            <span className={`text-2xl font-extrabold leading-none ${filter === 'pending' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-              {pendingCount}
-            </span>
-            <span className={`text-xs font-semibold ${filter === 'pending' ? 'text-amber-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              {t('orders2.orderActive')}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setFilter('completed')}
-            className={`relative flex flex-col items-center justify-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 ${
-              filter === 'completed'
-                ? 'border-emerald-500 bg-linear-to-br from-emerald-500 to-emerald-600 text-white shadow-lg scale-[1.02]'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-emerald-400 hover:shadow-md'
-            }`}
-          >
-            <CheckCircleIcon className={`w-6 h-6 ${filter === 'completed' ? 'text-white' : 'text-emerald-500'}`} />
-            <span className={`text-2xl font-extrabold leading-none ${filter === 'completed' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-              {completedCount}
-            </span>
-            <span className={`text-xs font-semibold ${filter === 'completed' ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'}`}>
-              {t('orders2.orderCompleted')}
-            </span>
-          </button>
-        </div>
-
-        {/* Section label */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">
-            {filter === 'all' ? t('orders2.allOrders') : filter === 'pending' ? t('orders2.inProgressOrders') : t('orders2.completedOrders')}
-            <span className="ml-2 text-sm font-normal text-gray-400">({filteredOrders.length})</span>
-          </h2>
-        </div>
-
-        {/* Orders List */}
-        {filteredOrders.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4">
-              <ClipboardDocumentListIcon className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-800 dark:text-gray-200 text-base font-bold mb-1">{t('orders2.noOrdersFound')}</p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {filter === 'pending'
-                ? t('orders2.noActiveOrders')
-                : filter === 'completed'
-                ? t('orders2.noCompletedOrders')
-                : t('orders2.ordersWillAppearOnce')}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredOrders.map((order: any) => {
-              const meta = getStatusMeta(order.status as OrderStatus, t);
-              const date = new Date(order.createdAt);
-              return (
-                <button
-                  key={order.id}
-                  onClick={() => setSelectedOrder(order)}
-                  className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-[#2D9B8A]/30 transition-all duration-200 overflow-hidden group active:scale-[0.99]"
-                >
-                  <div className="flex">
-                    <div
-                      className="w-1.5 shrink-0 rounded-l-2xl"
-                      style={{ backgroundColor: meta.color }}
-                    />
-                    <div className="flex-1 p-4 sm:p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <p className="text-xs font-bold text-gray-400 tracking-wide uppercase">
-                              #{order.orderNumber || order.id?.slice(0, 8)}
-                            </p>
-                            <span
-                              className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: meta.bg, color: meta.textColor }}
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: meta.dot }} />
-                              {meta.label}
-                            </span>
-                          </div>
-
-                          <p className="font-bold text-gray-900 dark:text-white text-base leading-snug mb-1">
-                            {order.pharmacy?.name}
-                          </p>
-
-                          <div className="flex flex-wrap gap-1.5 mb-3">
-                            {order.orderItems?.slice(0, 2).map((item: any) => (
-                              <span
-                                key={item.id}
-                                className="text-xs bg-blue-50 dark:bg-blue-900/30 text-[#1E4D8C] dark:text-blue-300 px-2.5 py-1 rounded-lg font-medium"
-                              >
-                                {item.medication?.name} ×{item.quantity}
-                              </span>
-                            ))}
-                            {(order.orderItems?.length ?? 0) > 2 && (
-                              <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2.5 py-1 rounded-lg font-medium">
-                                +{order.orderItems.length - 2} more
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <p className="text-xs text-gray-400">
-                              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </p>
-                            <span className="text-xs text-gray-300 dark:text-gray-600">•</span>
-                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                              {order.orderItems?.length ?? 0} item{(order.orderItems?.length ?? 0) !== 1 ? 's' : ''}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          <p className="text-lg font-extrabold text-[#1E4D8C] dark:text-blue-400 leading-none">
-                            {order.total?.toLocaleString()}
-                            <span className="text-xs font-bold text-gray-400 ml-1">RWF</span>
-                          </p>
-                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-[#2D9B8A] flex items-center justify-center transition-colors">
-                            <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {selectedOrder && (
