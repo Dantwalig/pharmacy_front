@@ -4,7 +4,7 @@ The web frontend for the Ubwenge Lab pharmacy platform — a multi-role
 application that connects patients, pharmacies, branches, on-site staff, and
 platform administrators around medication ordering, inventory, and fulfilment.
 
-> Internal Ubwenge Lab project. License pending.
+> Internal Ubwenge Lab project. Proprietary — © Ubwenge Lab. All rights reserved. See [LICENSE](LICENSE).
 
 ---
 
@@ -23,6 +23,7 @@ platform administrators around medication ordering, inventory, and fulfilment.
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Security](#security)
+- [License](#license)
 
 ---
 
@@ -223,3 +224,9 @@ the translation workflow, and the pull-request checklist.
 
 See [`SECURITY.md`](SECURITY.md) for how to report a vulnerability and a summary
 of the app's security model.
+
+## License
+
+Proprietary. Copyright © Ubwenge Lab. All rights reserved. See
+[`LICENSE`](LICENSE). Not for use, copying, or distribution outside Ubwenge Lab
+without prior written permission.
