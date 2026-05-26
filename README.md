@@ -4,29 +4,6 @@ The web frontend for the Ubwenge Lab pharmacy platform — a multi-role
 application that connects patients, pharmacies, branches, on-site staff, and
 platform administrators around medication ordering, inventory, and fulfilment.
 
-> Internal Ubwenge Lab project. Proprietary — © Ubwenge Lab. All rights reserved. See [LICENSE](LICENSE).
-
----
-
-## Table of contents
-
-- [Overview](#overview)
-- [The five portals](#the-five-portals)
-- [Tech stack](#tech-stack)
-- [Getting started](#getting-started)
-- [Environment variables](#environment-variables)
-- [Available scripts](#available-scripts)
-- [Project structure](#project-structure)
-- [Architecture highlights](#architecture-highlights)
-- [Conventions](#conventions)
-- [Internationalization](#internationalization)
-- [Documentation](#documentation)
-- [Maintainers](#maintainers)
-- [Contributing](#contributing)
-- [Security](#security)
-- [License](#license)
-
----
 
 ## Overview
 
@@ -39,7 +16,6 @@ token.
 The app talks to a separate backend API (not in this repo) over HTTP, using a
 JWT access/refresh token scheme stored in cookies.
 
----
 
 ## The five portals
 
@@ -51,7 +27,6 @@ JWT access/refresh token scheme stored in cookies.
 | **Staff** | `/staff/*` | Pharmacists, cashiers, nurses | Day-to-day order/prescription handling; first login forces a password change |
 | **Super-admin** | `/super-admin/*` | Platform administrators | Approves pharmacies/branches, reviews locations, platform analytics |
 
----
 
 ## Tech stack
 
@@ -70,7 +45,6 @@ JWT access/refresh token scheme stored in cookies.
 | Notifications | `react-hot-toast` |
 | Linting | ESLint 9 (`eslint-config-next`) |
 
----
 
 ## Getting started
 
@@ -104,7 +78,6 @@ Open [http://localhost:3000](http://localhost:3000).
 > `NEXT_PUBLIC_ENABLE_PATIENT_FEATURES=true` in `.env.local`, or append
 > `?dev_mode=true` to any URL to enable it locally for 7 days.
 
----
 
 ## Environment variables
 
@@ -117,7 +90,6 @@ browser. Copy [`.env.example`](.env.example) to `.env.local` and adjust.
 | `NEXT_PUBLIC_ENABLE_PATIENT_FEATURES` | No | `false` | Set to `true` to expose the `/patient/*` portal. The `dev_mode` cookie also bypasses this locally. |
 | `NEXT_PUBLIC_SUPPORT_EMAIL` | No | `info@ubwengelab.rw` | Support contact surfaced in the UI |
 
----
 
 ## Available scripts
 
@@ -131,7 +103,6 @@ browser. Copy [`.env.example`](.env.example) to `.env.local` and adjust.
 > `npm run build` runs a full TypeScript pass. Treat a clean build as the bar
 > for merging.
 
----
 
 ## Project structure
 
@@ -165,45 +136,29 @@ src/
 └── DESIGN_TOKENS.md        # Brand tokens & UI conventions
 ```
 
----
 
 ## Architecture highlights
 
-- **Role-based routing at the edge.** `src/middleware.tsx` runs on every
-  `/patient`, `/pharmacy`, `/branch`, `/staff`, and `/super-admin` request. It
-  reads the session token, derives the user's role and account status, and
-  redirects anyone who doesn't belong.
-- **Status-aware pharmacy access.** Pharmacy accounts route differently based
-  on `PENDING` / `REJECTED` / `APPROVED` application status.
-- **Centralised API layer.** All requests go through the shared axios instance
-  in `src/lib/api.ts`, which attaches the access token and transparently
-  refreshes it on a `401` using the refresh token.
-- **Auth context.** `AuthContext` exposes `login`, `logout`, and the current
-  user, and handles post-login routing per role.
+- **Role-based routing at the edge.** `src/middleware.tsx` runs on every `/patient`, `/pharmacy`, `/branch`, `/staff`, and `/super-admin` request. It reads the session token, derives the user's role and account status, and redirects anyone who doesn't belong.
+- **Status-aware pharmacy access.** Pharmacy accounts route differently based on `PENDING` / `REJECTED` / `APPROVED` application status.
+- **Centralised API layer.** All requests go through the shared axios instance in `src/lib/api.ts`, which attaches the access token and transparently refreshes it on a `401` using the refresh token.
+- **Auth context.** `AuthContext` exposes `login`, `logout`, and the current user, and handles post-login routing per role.
 
 For a deeper walkthrough, see [`docs/architecture.md`](docs/architecture.md).
 
----
 
 ## Conventions
 
-- **Design tokens & UI patterns** are documented in
-  [`src/DESIGN_TOKENS.md`](src/DESIGN_TOKENS.md). Use brand token utilities
-  (`bg-brand-navy`, `text-brand-teal`, …) rather than raw hex values.
-- **Status pills** use the shared `StatusBadge`
-  (`src/components/shared/StatusBadge.tsx`) — don't hand-roll status colours.
+- **Design tokens & UI patterns** are documented in [`src/DESIGN_TOKENS.md`](src/DESIGN_TOKENS.md). Use brand token utilities (`bg-brand-navy`, `text-brand-teal`, …) rather than raw hex values.
+- **Status pills** use the shared `StatusBadge` (`src/components/shared/StatusBadge.tsx`) — don't hand-roll status colours.
 - **Icons** come from Heroicons; size them with Tailwind (`w-5 h-5`).
 
----
 
 ## Internationalization
 
-The UI ships in **English, French, and Kinyarwanda**. Strings live in
-`src/lib/i18n/{en,fr,rw}.ts` and are accessed with the `useTranslation` hook.
-See [`docs/i18n.md`](docs/i18n.md) for how to add or change strings, including
-the review workflow for French and Kinyarwanda.
+- The UI ships in **English, French, and Kinyarwanda**. Strings live in `src/lib/i18n/{en,fr,rw}.ts` and are accessed with the `useTranslation` hook.
+- See [`docs/i18n.md`](docs/i18n.md) for how to add or change strings, including the review workflow for French and Kinyarwanda.
 
----
 
 ## Documentation
 
@@ -214,7 +169,6 @@ the review workflow for French and Kinyarwanda.
 | [`docs/support-tickets-api-spec.md`](docs/support-tickets-api-spec.md) | Support tickets API contract |
 | [`src/DESIGN_TOKENS.md`](src/DESIGN_TOKENS.md) | Brand tokens and UI conventions |
 
----
 
 ## Maintainers
 
@@ -229,16 +183,12 @@ repository's **Contributors** tab.
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch naming, commit conventions,
-the translation workflow, and the pull-request checklist.
+- See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch naming, commit conventions, the translation workflow, and the pull-request checklist.
 
 ## Security
 
-See [`SECURITY.md`](SECURITY.md) for how to report a vulnerability and a summary
-of the app's security model.
+- See [`SECURITY.md`](SECURITY.md) for how to report a vulnerability and a summary of the app's security model.
 
 ## License
 
-Proprietary. Copyright © Ubwenge Lab. All rights reserved. See
-[`LICENSE`](LICENSE). Not for use, copying, or distribution outside Ubwenge Lab
-without prior written permission.
+- Proprietary. Copyright © Ubwenge Lab. All rights reserved. See [`LICENSE`](LICENSE). Not for use, copying, or distribution outside Ubwenge Lab without prior written permission.
