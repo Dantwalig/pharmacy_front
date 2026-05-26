@@ -1,10 +1,11 @@
 'use client';
 
-import {useFetch} from '@/hooks/useFetch';
-import {useCallback, useEffect, useState } from 'react';
+import { useFetch } from '@/hooks/useFetch';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
   UserGroupIcon,
@@ -74,9 +75,7 @@ export default function BranchDashboardPage() {
   const staffCount = data?.staffCount ?? 0;
 
   useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadDashboard'));
-    }
+    if (error) toast.error(t('errors.failedToLoadDashboard'));
   }, [error, t]);
 
   const approveClockIn = async (id: string) => {
@@ -85,8 +84,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/approve-clock-in`, {});
       toast.success(t('success.clockInApproved'));
       await refetch();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -96,8 +95,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockInRejected'));
       await refetch();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -107,8 +106,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/approve-clock-out`, {});
       toast.success(t('success.clockOutApproved'));
       await refetch();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToApprove'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -118,8 +117,8 @@ export default function BranchDashboardPage() {
       await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
       toast.success(t('success.clockOutRejected'));
       await refetch();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToReject'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setActionLoading(null); }
   };
 
@@ -137,13 +136,11 @@ export default function BranchDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero banner — matches pharmacy owner pattern */}
       <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
         <h1 className="text-2xl lg:text-3xl font-bold">{t('dashboard.branchDashboard')}</h1>
         <p className="mt-1 text-white/70">{t('dashboard.todayOverview')}</p>
       </div>
 
-      {/* Stat cards — inline navy/teal, same pattern as pharmacy owner */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => {
           const Icon = s.icon;
@@ -165,7 +162,6 @@ export default function BranchDashboardPage() {
         })}
       </div>
 
-      {/* Pending clock-ins and clock-outs */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Pending Clock-Ins */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">

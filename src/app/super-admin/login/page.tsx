@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { setAuthTokens } from '@/lib/auth';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
@@ -36,9 +37,8 @@ export default function SuperAdminLoginPage() {
 
       // Redirect to super admin dashboard
       router.push('/super-admin/dashboard');
-    } catch (error: any) {
-      console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Invalid secret key');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

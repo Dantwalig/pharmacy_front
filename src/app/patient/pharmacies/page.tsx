@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -33,16 +33,19 @@ export default function BrowsePharmaciesPage() {
       setLoading(true);
       const res = await api.get('/pharmacies');
       setPharmacies(res.data);
-    } catch (error) {
-      console.error('Failed to fetch pharmacies:', error);
+    } catch {
+      // Pharmacy list stays empty on failure
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPharmacies = pharmacies.filter((pharmacy) =>
-  pharmacy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pharmacy.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPharmacies = useMemo(
+    () => pharmacies.filter((pharmacy) =>
+      pharmacy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pharmacy.address.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [pharmacies, searchQuery]
   );
 
   if (loading) {

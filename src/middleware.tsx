@@ -7,8 +7,7 @@ function decodeToken(token: string): { role?: string; pharmacyStatus?: string; s
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const decoded = JSON.parse(atob(base64));
     return decoded;
-  } catch (error){
-    console.error("Token decoding failed:", error);
+  } catch {
     return null;
   }
 }

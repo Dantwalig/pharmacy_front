@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
@@ -21,8 +23,8 @@ export default function StaffEditMedicationPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [med, setMed] = useState<any>(null);
-  const [form, setForm] = useState<any>({});
+  const [med, setMed] = useState<MedicationDetail | null>(null);
+  const [form, setForm] = useState<MedicationForm>({} as MedicationForm);
 
   useEffect(() => {
     if (user?.role === 'CASHIER') router.replace('/staff/inventory');
@@ -41,10 +43,12 @@ export default function StaffEditMedicationPage() {
         category: data.category || FDA_CATEGORIES[0],
         chemicalName: data.chemicalName || '',
         description: data.description || '',
-        price: data.price || '',
-        quantity: data.quantity || '',
-        lowStockThreshold: data.lowStockThreshold ?? 10,
+        price: String(data.price || ''),
+        quantity: String(data.quantity || ''),
+        lowStockThreshold: String(data.lowStockThreshold ?? 10),
         requiresPrescription: data.requiresPrescription || false,
+        manufacturer: data.manufacturer || '',
+        expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString().split('T')[0] : '',
       });
     } catch {
       toast.error(t('errors.failedToLoadMedication'));
@@ -63,15 +67,15 @@ export default function StaffEditMedicationPage() {
         category: form.category,
         chemicalName: form.chemicalName || undefined,
         description: form.description || undefined,
-        price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
+        price: parseFloat(form.price ?? '0'),
+        quantity: parseInt(form.quantity ?? '0'),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
       toast.success(t('success.medicationUpdated'));
       router.push('/staff/inventory');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('errors.failedToLoad'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }

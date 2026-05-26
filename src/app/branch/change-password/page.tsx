@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function BranchChangePasswordPage() {
@@ -46,10 +47,8 @@ export default function BranchChangePasswordPage() {
       });
       toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.message || t('branch.failedToChangePassword')
-      );
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

@@ -9,10 +9,6 @@ import Cookies from 'js-cookie';
 export const isPatientEnabled = (): boolean => {
   // Check environment variable
   const envEnabled = process.env.NEXT_PUBLIC_ENABLE_PATIENT_FEATURES === 'true';
-  // Diagnostic log (only in development)
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    // console.log('[Features] Patient features enabled:', envEnabled);
-  }
   if (envEnabled) return true;
 
 

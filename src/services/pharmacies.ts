@@ -49,7 +49,6 @@ export async function fetchPharmacyLocations(signal?: AbortSignal): Promise<Phar
     if (error instanceof Error && error.name === 'AbortError') {
       throw error;
     }
-    console.error('Error fetching global locations:', error);
     throw new Error('Failed to load pharmacy locations. Please try again.');
   }
 }
@@ -80,7 +79,6 @@ export async function fetchNearbyPharmacies(
       throw error;
     }
     const errorMessage = error instanceof Error ? error.message : 'Failed to load nearby pharmacies';
-    console.error('Error fetching nearby locations:', error);
     throw new Error(errorMessage);
   }
 }
@@ -106,7 +104,6 @@ export async function fetchPharmacyById(id: string, signal?: AbortSignal): Promi
       throw error;
     }
     const errorMessage = error instanceof Error ? error.message : 'Failed to load pharmacy details';
-    console.error('Error fetching pharmacy by ID:', error);
     throw new Error(errorMessage);
   }
 }

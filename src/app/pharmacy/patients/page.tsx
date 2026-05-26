@@ -124,9 +124,7 @@ export default function PharmacyPatientsPage() {
   const totalPatients = data?.totalPatients ?? 0;
 
   useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadPatients'));
-    }
+    if (error) toast.error(t('errors.failedToLoadPatients'));
   }, [error, t]);
 
   const filteredPatients = patients.filter(patient => {
@@ -548,11 +546,15 @@ export default function PharmacyPatientsPage() {
       {/* Header Banner */}
       <div 
         className="rounded-2xl shadow-sm p-10 text-white relative overflow-hidden"
-        style={{ background: 'linear-gradient(90deg, #1A365D 0%, #1E40AF 100%)' }}
+        style={{ background: '#E0F2FE' }}
       >
         <div className="relative z-10">
-          <h1 className="text-4xl font-black mb-3">{t('patients.pageTitle') || 'Patients'}</h1>
-          <p className="text-blue-100 text-lg">{t('patientPageUI.browseAllPatients') || 'Browse all patients who ordered from your pharmacy.'}</p>
+          <h1 className="text-4xl font-black mb-3" style={{ color: '#1E3A8A' }}>
+            {t('patients.pageTitle') || 'Patients'}
+          </h1>
+          <p className="text-blue-100 text-lg" style={{ color: '#38BDF8' }}>
+            {t('patientPageUI.browseAllPatients') || 'Browse all patients who ordered from your pharmacy.'}
+          </p>
         </div>
         {/* Optional decorative background elements could go here */}
       </div>

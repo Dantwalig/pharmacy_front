@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import type { MedicationDetail, MedicationForm } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import PharmacyTopbar from '@/components/pharmacy/PharmacyTopbar';
@@ -12,6 +13,7 @@ import PharmacySidebar from '@/components/pharmacy/PharmacySidebar';
 import SupportBot from '@/components/shared/SupportBot';
 import { ArrowLeftIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 
 export default function EditMedicationPage() {
@@ -22,8 +24,8 @@ export default function EditMedicationPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [med, setMed] = useState<any>(null);
-  const [form, setForm] = useState<any>({});
+  const [med, setMed] = useState<MedicationDetail | null>(null);
+  const [form, setForm] = useState<MedicationForm>({} as MedicationForm);
 
   useEffect(() => { fetchMedication(); }, [params.id]);
 
@@ -55,16 +57,16 @@ export default function EditMedicationPage() {
         category: form.category,
         chemicalName: form.dosage || undefined,
         description: form.description || undefined,
-        price: parseFloat(form.unitPrice),       // correct field name
-        quantity: parseInt(form.quantityInStock), // correct field name
+        price: parseFloat(form.unitPrice ?? '0'),
+        quantity: parseInt(form.quantityInStock ?? '0'),
         lowStockThreshold: parseInt(form.lowStockThreshold),
         requiresPrescription: form.requiresPrescription,
       });
       toast.success(t('success.medicationUpdated'));
       setEditing(false);
       fetchMedication();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Update failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setSaving(false); }
   };
 
@@ -75,8 +77,8 @@ export default function EditMedicationPage() {
       await api.delete(`/medications/${params.id}`);
       toast.success(t('success.medicationRemoved'));
       router.push('/pharmacy/inventory');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Delete failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setDeleting(false); }
   };
 
@@ -94,8 +96,9 @@ export default function EditMedicationPage() {
 
   if (!med) return null;
 
-  const stockStatus = form.quantityInStock == 0 ? 'out' :
-    form.quantityInStock <= (form.lowStockThreshold || 10) ? 'low' : 'ok';
+  const qty = Number(form.quantityInStock ?? 0);
+  const stockStatus = qty === 0 ? 'out' :
+    qty <= Number(form.lowStockThreshold || 10) ? 'low' : 'ok';
 
   return (
     <div className="flex min-h-screen bg-gray-50">

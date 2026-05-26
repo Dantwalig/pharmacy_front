@@ -120,7 +120,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       ) : (
         <div className="space-y-3">
           {filtered.map((o) => {
-            const itemCount = o.orderItems.reduce((s, it) => s + it.quantity, 0);
+            const itemCount = (o.orderItems ?? []).reduce((s, it) => s + it.quantity, 0);
             const isPaid = advancedIds.has(o.id);
             const isPaymentTab = tab === 'pending_payment';
 
@@ -184,7 +184,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       <CashierPOSModal
         open={!!activeOrder}
         onClose={() => setActiveOrder(null)}
-        order={activeOrder}
+        order={activeOrder as any}
         cashierName={cashierName}
         onAdvance={(id) => {
           setAdvancedIds((prev) => new Set(prev).add(id));

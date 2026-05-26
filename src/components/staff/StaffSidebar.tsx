@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Clock, Lock, User, LogOut, X, ShoppingCart, Package, ClipboardList, ShieldAlert, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Clock, Lock, User, LogOut, X, Package, ClipboardList, ShieldAlert, CreditCard } from 'lucide-react';
 import { isPatientEnabled } from '@/lib/features';
 import { useAuth } from '@/context/AuthContext';
 
@@ -15,18 +15,17 @@ interface StaffSidebarProps {
 export default function StaffSidebar({ open = false, onClose }: StaffSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isCashier = user?.role === 'CASHIER';
 
   const nav = [
-    { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard'),                                              show: true },
-    { href: '/staff/orders',          icon: CreditCard,      label: t('cashier.paymentsNav'),                                         show: isCashier },
-    { href: '/staff/orders',          icon: ShoppingCart,    label: t('staff.orders'),                                                 show: !isCashier },
-    { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory'),                                              show: true },
-    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions') + (isPatientEnabled() ? '' : ' (Soon)'), show: !isCashier },
-    { href: '/staff/attendance',      icon: Clock,           label: t('staff.attendance'),                                             show: true },
-    { href: '/staff/profile',         icon: User,            label: t('staff.profile'),                                                show: true },
-    { href: '/staff/change-password', icon: Lock,            label: t('staff.changePassword'),                                        show: true },
+    { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard'),      show: true },
+    { href: '/staff/orders',          icon: CreditCard,      label: t('cashier.paymentsNav'),  show: isCashier },
+    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions'),  show: !isCashier },
+    { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory'),      show: true },
+    { href: '/staff/attendance',      icon: Clock,           label: t('staff.attendance'),     show: true },
+    { href: '/staff/profile',         icon: User,            label: t('staff.profile'),        show: true },
+    { href: '/staff/change-password', icon: Lock,            label: t('staff.changePassword'), show: true },
   ].filter(item => item.show);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
@@ -71,7 +70,10 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
       {/* Footer */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <LogOut size={18} />

@@ -50,7 +50,6 @@ export default function BranchAnalyticsPage() {
         api.get('/orders/pharmacy-orders', { signal }),
         api.get('/attendance/summary', { signal }),
       ]);
-
       return {
         orders: Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? [],
         attendanceSummary: attRes.data,
@@ -68,9 +67,7 @@ export default function BranchAnalyticsPage() {
   const attendanceSummary = data?.attendanceSummary ?? null;
 
   useEffect(() => {
-    if (error) {
-      toast.error(t('errors.failedToLoadAnalytics'));
-    }
+    if (error) toast.error(t('errors.failedToLoadAnalytics'));
   }, [error, t]);
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;

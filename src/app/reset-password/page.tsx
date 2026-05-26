@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, MapPinIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { t } from 'i18next';
@@ -59,8 +60,8 @@ function ResetPasswordForm() {
       await authApi.resetPassword({ email, resetCode: codeStr, newPassword, confirmPassword });
       toast.success(t('resetPassword.success'));
       setTimeout(() => router.push('/login'), 1500);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('resetPassword.error'));
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally { setLoading(false); }
   };
 

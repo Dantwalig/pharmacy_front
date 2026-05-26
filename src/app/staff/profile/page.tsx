@@ -1,14 +1,20 @@
-// frontend/src/app/staff/profile/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import {
+  PencilSquareIcon,
+  DocumentTextIcon,
+  PhotoIcon,
+  EyeIcon,
+  ExclamationCircleIcon,
+  CheckIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 interface StaffProfile {
   id: string;
@@ -20,6 +26,9 @@ interface StaffProfile {
   dateOfBirth?: string;
   status: string;
   createdAt: string;
+  licenseUrl?: string;
+  licenseExpiry?: string;
+  nationalIdExpiry?: string;
   user: { email: string; role: string };
   branch: {
     name: string;
@@ -30,20 +39,48 @@ interface StaffProfile {
   permissions?: { permissions: string[] };
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  PHARMACIST: 'bg-blue-100 text-blue-800',
-  CASHIER: 'bg-blue-100 text-blue-800',
-  NURSE: 'bg-blue-100 text-blue-800',
-};
+interface EditForm {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+function ReadField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+      <div className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 font-medium">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function EditField({
+  label, value, onChange, disabled = false,
+}: {
+  label: string; value: string; onChange: (v: string) => void; disabled?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        disabled={disabled}
+        className="w-full px-3 py-2.5 bg-white border-2 border-blue-300 rounded-lg text-sm text-gray-800 font-medium outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-500"
+      />
+    </div>
+  );
+}
 
 export default function StaffProfilePage() {
   const { t } = useTranslation();
-  const router = useRouter();
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', phone: '' });
-  const [saveLoading, setSaveLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<EditForm>({ firstName: '', lastName: '', phone: '' });
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
@@ -53,12 +90,12 @@ export default function StaffProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await api.get('/staff/profile/me'); // GET /staff/profile/me
+      const res = await api.get('/staff/profile/me');
       setProfile(res.data);
-      setFormData({
-        firstName: res.data.firstName,
-        lastName: res.data.lastName,
-        phone: res.data.phone || '',
+      setForm({
+        firstName: res.data.firstName ?? '',
+        lastName: res.data.lastName ?? '',
+        phone: res.data.phone ?? '',
       });
     } catch (error) {
       console.error('Failed to load profile:', error);
@@ -67,55 +104,94 @@ export default function StaffProfilePage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleEdit = () => {
+    if (!profile) return;
+    setForm({ firstName: profile.firstName, lastName: profile.lastName, phone: profile.phone ?? '' });
+    setIsEditing(true);
+    setIsFormDirty(false);
+    setSaveError(null);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setSaveError(null);
+  };
+
+  const handleInputChange = (field: keyof EditForm, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
     setIsFormDirty(true);
     setSaveError(null);
   };
 
   const handleSave = async () => {
-    setSaveLoading(true);
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      toast.error(t('form.firstLastRequired'));
+      return;
+    }
+    setSaving(true);
     setSaveError(null);
     try {
-      // Gap 1: Profile edit is broken. Backend update endpoint is being implemented.
-      await api.put('/staff/profile/me', formData);
-      toast.success(t('success.profileUpdated'));
+      // Gap 1 Integration: Handle potential 404/405 from unimplemented backend endpoint
+      const res = await api.put('/staff/profile/me', {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        phone: form.phone.trim() || undefined,
+      });
+      setProfile(res.data);
       setIsEditing(false);
-      fetchProfile();
+      toast.success(t('profile.updateSuccess'));
     } catch (err: any) {
       const status = err.response?.status;
       if (status === 404 || status === 405) {
         setSaveError("Profile editing is temporarily unavailable the backend update endpoint is being implemented.");
         setIsFormDirty(false); // Disable button until next change
       } else {
-        toast.error(err.response?.data?.message || t('profile2.failedToUpdate'));
+        toast.error(getErrorMessage(err));
       }
     } finally {
-      setSaveLoading(false);
+      setSaving(false);
     }
   };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
   if (!profile) return <div className="text-center py-20 text-gray-500">{t('profile2.profileNotFound')}</div>;
 
-  const permissions: string[] = profile.permissions?.permissions || [];
+  const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase();
+  const memberSince = new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const isApproved = profile.status === 'ACTIVE';
+  const roleLabel = profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase();
+
+  const documents = [
+    {
+      label: t('staffPages.pharmacistLicense'),
+      expiry: profile.licenseExpiry
+        ? `${t('staffPages.docExpires')} ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : `${t('staffPages.docExpires')} —`,
+      url: profile.licenseUrl ?? null,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: t('staffPages.nationalIdCert'),
+      expiry: profile.nationalIdExpiry
+        ? `${t('staffPages.docExpired')} ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : profile.nationalId ? `${t('staffPages.docIdPrefix')} ${profile.nationalId}` : t('staffPages.noDocOnFile'),
+      url: null,
+      icon: PhotoIcon,
+    },
+  ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="rounded-2xl p-6 text-white flex justify-between items-center" style={{ backgroundColor: '#1E4D8C' }}>
-        <div>
-          <h1 className="text-2xl font-bold">{t('staff.profile')}</h1>
-          <p className="mt-1 text-white/70">{t('profile2.yourPersonalAndBranch')}</p>
-        </div>
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all"
-          >
-            {t('common.edit')}
-          </button>
-        )}
+    <div className="max-w-6xl mx-auto space-y-5 p-4 lg:p-6">
+
+      {/* ── Hero ── */}
+      <div
+        className="rounded-2xl px-8 py-8"
+        style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
+      >
+        <h1 className="text-3xl font-extrabold text-gray-900">{t('profile2.myProfile')}</h1>
+        <p className="mt-1 text-gray-500 text-sm">
+          {profile.branch.pharmacy.name} / {roleLabel}
+        </p>
       </div>
 
       {saveError && (
@@ -125,144 +201,187 @@ export default function StaffProfilePage() {
         </div>
       )}
 
-      {/* Identity card */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <div className="flex items-center gap-5 mb-6">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0F7F6' }}>
-            <UserCircleIcon className="w-10 h-10" style={{ color: '#2D9B8A' }} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              {profile.firstName} {profile.lastName}
-            </h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[profile.user.role] || 'bg-gray-100 text-gray-700'}`}>
-                {t(`roles.${profile.user.role.toLowerCase()}`, { defaultValue: profile.user.role })}
+      {/* ── Two-column layout ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5 items-start">
+
+        {/* ── Left: Identity card ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center text-center">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3 relative"
+            style={{ background: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)' }}
+          >
+            {initials}
+            <span className="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-white shadow">
+              <span className="w-3.5 h-3.5 rounded-full bg-blue-400 flex items-center justify-center">
+                <EyeIcon className="w-2 h-2 text-white" />
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${profile.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+            </span>
+          </div>
+
+          <p className="font-bold text-gray-900 text-base">{profile.firstName} {profile.lastName}</p>
+          <p className="text-gray-400 text-sm mt-0.5">{roleLabel}</p>
+
+          <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            {isApproved ? t('common.active') : profile.status}
+          </span>
+
+          <div className="mt-5 w-full space-y-3 text-sm">
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.pharmacy')}</p>
+              <p className="font-semibold text-gray-800 mt-0.5">{profile.branch.pharmacy.name}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.branch')}</p>
+              <p className="font-semibold text-gray-800 mt-0.5">{profile.branch.name}</p>
+            </div>
+            {(profile.phone || profile.branch.phone) && (
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{t('form.phone')}</p>
+                <p className="font-semibold text-gray-800 mt-0.5">{profile.phone || profile.branch.phone}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Right: stacked cards ── */}
+        <div className="space-y-5">
+
+          {/* Personal Information */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-gray-900 text-base">{t('profile2.personalInfo')}</h2>
+
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    <XMarkIcon className="w-3.5 h-3.5" />
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || (saveError ? true : !isFormDirty)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50 transition-opacity hover:opacity-90"
+                    style={{ background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' }}
+                  >
+                    {saving
+                      ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      : <CheckIcon className="w-3.5 h-3.5" />}
+                    {t('common.save')}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleEdit}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold transition-opacity hover:opacity-90"
+                  style={{ background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' }}
+                >
+                  <PencilSquareIcon className="w-3.5 h-3.5" />
+                  {t('pharmacyOwner.editProfile')}
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {isEditing ? (
+                <>
+                  <EditField label={t('profile2.firstName')} value={form.firstName} onChange={v => handleInputChange('firstName', v)} />
+                  <EditField label={t('profile2.lastName')} value={form.lastName} onChange={v => handleInputChange('lastName', v)} />
+                  <EditField label={t('staffPages.phoneNumberLabel')} value={form.phone} onChange={v => handleInputChange('phone', v)} />
+                  <EditField label={t('staffPages.emailAddressLabel')} value={profile.user.email} onChange={() => { }} disabled />
+                </>
+              ) : (
+                <>
+                  <ReadField label={t('staffPages.fullName')} value={`${profile.firstName} ${profile.lastName}`} />
+                  <ReadField label={t('staffPages.emailAddressLabel')} value={profile.user.email} />
+                  <ReadField label={t('staffPages.phoneNumberLabel')} value={profile.phone || '—'} />
+                  <ReadField label={t('form.role')} value={roleLabel} />
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Registration Details */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-gray-900 text-base">{t('pharmacyOwner.registrationDetails')}</h2>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                 }`}>
-                {profile.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
+                <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                {isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
               </span>
             </div>
-          </div>
-        </div>
 
-        {isEditing ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-medium">{t('form.firstName')}</label>
-                <input
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': '#2D9B8A' } as any}
-                />
+            <div className="space-y-0 text-sm divide-y divide-gray-50">
+              {[
+                { label: t('pharmacyOwner.pharmacyName'), value: profile.branch.pharmacy.name },
+                { label: t('form.branch'), value: profile.branch.name },
+                { label: t('staffMgmt.memberSince'), value: memberSince },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between py-2.5">
+                  <p className="text-gray-400 font-medium">{label}</p>
+                  <p className="font-semibold text-gray-800">{value}</p>
+                </div>
+              ))}
+              <div className="flex items-center justify-between py-2.5">
+                <p className="text-gray-400 font-medium">{t('staffPages.licenseStatus')}</p>
+                <p className={`font-semibold ${isApproved ? 'text-gray-800' : 'text-orange-500'}`}>
+                  {isApproved ? t('staffPages.licenseValid') : t('staffPages.actionRequired')}
+                </p>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-medium">{t('form.lastName')}</label>
-                <input
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': '#2D9B8A' } as any}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-500 font-medium">{t('form.phone')}</label>
-              <input
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': '#2D9B8A' } as any}
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => { setIsEditing(false); setSaveError(null); }}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saveLoading || !isFormDirty}
-                className="flex-1 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50"
-                style={{ backgroundColor: '#2D9B8A' }}
-              >
-                {saveLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : t('common.save')}
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {[
-              { label: t('form.email'), value: profile.user.email },
-              { label: t('form.phone'), value: profile.phone || '—' },
-              { label: t('form.nationalId'), value: profile.nationalId || '—' },
-              { label: t('form.gender'), value: profile.gender || '—' },
-              { label: t('form.dateOfBirth'), value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : '—' },
-              { label: t('staffMgmt.memberSince'), value: new Date(profile.createdAt).toLocaleDateString() },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-xs text-gray-500">{label}</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100 mt-0.5">{value}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Branch info */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('form.branch')}</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-xs text-gray-500">{t('form.pharmacy')}</p>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.pharmacy.name}</p>
+          {/* Submitted Documents */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="font-bold text-gray-900 text-base mb-4">{t('pharmacyOwner.submittedDocuments')}</h2>
+
+            <div className="space-y-3">
+              {documents.map(({ label, expiry, url, icon: Icon }) => (
+                <div key={label} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50">
+                      <Icon className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{expiry}</p>
+                    </div>
+                  </div>
+                  {url ? (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
+                    >
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      {t('common.view')}
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-gray-400 text-xs font-semibold">
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      {t('common.view')}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-100">
+              <ExclamationCircleIcon className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-700">
+                {t('pharmacyOwner.documentsNotice')}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-gray-500">{t('form.branch')}</p>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.name}</p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-xs text-gray-500">{t('form.address')}</p>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{profile.branch.address}</p>
-          </div>
+
         </div>
       </div>
-
-      {/* Permissions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-          {t('staff.myPermissions')}
-          <span className="ml-2 text-sm font-normal text-gray-500">({t('staff.permissionsGranted', { count: permissions.length })})</span>
-        </h3>
-        {permissions.length === 0 ? (
-          <p className="text-gray-400 text-sm">{t('profile2.noPermissionsAssigned')}</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {permissions.map((perm) => (
-              <span key={perm} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ backgroundColor: '#F0F7F6', color: '#2D9B8A' }}>
-                {perm.replace(/_/g, ' ')}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Change password */}
-      <button
-        onClick={() => router.push('/staff/change-password')}
-        className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-medium text-sm transition-all"
-      >
-        <LockClosedIcon className="w-4 h-4" />
-        {t('staff.changePassword')}
-      </button>
     </div>
   );
 }

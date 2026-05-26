@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import type { PharmacyProfile } from '@/types';
+import { getErrorMessage } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { SUPPORT_EMAIL } from '@/lib/constants';
@@ -16,7 +18,7 @@ export default function PharmacyRejectedPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [pharmacyData, setPharmacyData] = useState<any>(null);
+  const [pharmacyData, setPharmacyData] = useState<PharmacyProfile | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -70,8 +72,8 @@ export default function PharmacyRejectedPage() {
         rdbCertificate: res.data.rdbCertificate || '',
         pharmacyLicense: res.data.pharmacyLicense || '',
       });
-    } catch (error) {
-      console.error('Failed to load pharmacy data:', error);
+    } catch {
+      // Form stays with default empty values
     }
   };
 
@@ -84,8 +86,8 @@ export default function PharmacyRejectedPage() {
       toast.success(t('success.applicationResubmitted'));
       // Refresh user data to update status
       window.location.href = '/pending-approval';
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to resubmit application');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

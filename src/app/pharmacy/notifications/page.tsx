@@ -46,8 +46,8 @@ export default function PharmacyNotificationsPage() {
       const res = await api.get('/notifications?userType=pharmacy');
       setNotifications(res.data);
       setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+    } catch {
+      // Notifications stay stale on polling failure
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -65,11 +65,9 @@ export default function PharmacyNotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-      ));
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch {
+      // stale on failure is acceptable
     }
   };
 
@@ -150,8 +148,8 @@ export default function PharmacyNotificationsPage() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('notifications2.notifications')}</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-[#1B4080]">{t('notifications2.notifications')}</h1>
+          <p className="mt-1 text-[#35BAF5]">
             {unreadCount > 0 ? `${unreadCount} unread notifications` : 'You are all caught up'}
           </p>
         </div>
@@ -169,12 +167,12 @@ export default function PharmacyNotificationsPage() {
             </span>
           </div>
 
-          <button
+          {/* <button
             onClick={markAllAsRead}
             className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium hover:bg-gray-100 rounded-lg transition-colors"
           >
             Mark all as read
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -221,8 +219,9 @@ export default function PharmacyNotificationsPage() {
         ] as const).map(({ id, label, icon: Icon, count }) => (
           <button key={id} onClick={() => setFilter(id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              filter === id ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-            }`}>
+              filter === id ? 'text-white' : 'text-gray-700 hover:bg-gray-100'
+            }`}
+            style={filter === id ? { background: 'linear-gradient(90deg, #0284C7, #38BDF8)' } : {}}>
             <Icon className="w-4 h-4" />
             {label} ({count})
           </button>

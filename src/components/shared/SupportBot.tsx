@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { XMarkIcon, ChatBubbleOvalLeftEllipsisIcon, PhoneIcon, DocumentTextIcon, ChevronRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { SUPPORT_EMAIL } from '@/lib/constants';
 
 interface SupportBotProps {
@@ -55,13 +56,13 @@ export default function SupportBot({ open: openProp, onOpen, onClose }: SupportB
       const ref: string | undefined =
         response.data?.ticketNumber ?? response.data?.id;
       setTicketRef(ref ?? 'OK');
-    } catch (err: any) {
-      const status = err?.response?.status;
+    } catch (error: unknown) {
+      const status = (error as any)?.response?.status;
       if (!status || status >= 500 || status === 404) {
         // Endpoint not yet deployed — show graceful pending confirmation
         setTicketRef('PENDING');
       } else {
-        setError(err?.response?.data?.message ?? t('supportBot.submitError'));
+        setError(getErrorMessage(error));
       }
     } finally {
       setIsSubmitting(false);
