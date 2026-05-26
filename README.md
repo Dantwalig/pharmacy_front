@@ -77,6 +77,18 @@ Open: http://localhost:3000
 | NEXT_PUBLIC_ENABLE_PATIENT_FEATURES | false | Enables patient portal |
 | NEXT_PUBLIC_SUPPORT_EMAIL | info@ubwengelab.rw | Support contact |
 
+### Backend API environments
+
+`NEXT_PUBLIC_API_URL` points at whichever backend you're developing against.
+The known targets (also listed as commented toggles in
+[`.env.example`](.env.example) — uncomment the one you need):
+
+| Environment | URL |
+|---|---|
+| Local | `http://localhost:4000/api` |
+| Hosted (Render) | `https://pharmacy-backend-hmir.onrender.com/api` |
+| Ubwenge Lab server | `http://evuze.ubwengelab.rw/api` |
+
 ---
 
 ## Scripts
