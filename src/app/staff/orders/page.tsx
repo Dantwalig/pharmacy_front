@@ -15,24 +15,24 @@ const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
 const STATUS_STYLES: Record<string, string> = {
-  PENDING:           'bg-yellow-100 text-yellow-800',
-  ACCEPTED:          'bg-blue-100 text-blue-800',
-  PREPARING:         'bg-indigo-100 text-indigo-800',
-  READY_FOR_PICKUP:  'bg-teal-100 text-teal-800',
-  OUT_FOR_DELIVERY:  'bg-orange-100 text-orange-800',
-  DELIVERED:         'bg-green-100 text-green-800',
-  COMPLETED:         'bg-green-100 text-green-800',
-  CANCELLED:         'bg-red-100 text-red-800',
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  ACCEPTED: 'bg-blue-100 text-blue-800',
+  PREPARING: 'bg-indigo-100 text-indigo-800',
+  READY_FOR_PICKUP: 'bg-teal-100 text-teal-800',
+  OUT_FOR_DELIVERY: 'bg-orange-100 text-orange-800',
+  DELIVERED: 'bg-green-100 text-green-800',
+  COMPLETED: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-red-100 text-red-800',
 };
 
 // Statuses a pharmacist can move an order to from its current status
 const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
-  PENDING:          ['ACCEPTED'],
-  ACCEPTED:         ['PREPARING'],
-  PREPARING:        ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
+  PENDING: ['ACCEPTED'],
+  ACCEPTED: ['PREPARING'],
+  PREPARING: ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
   READY_FOR_PICKUP: ['COMPLETED'],
   OUT_FOR_DELIVERY: ['DELIVERED'],
-  DELIVERED:        ['COMPLETED'],
+  DELIVERED: ['COMPLETED'],
 };
 
 
@@ -78,7 +78,11 @@ export default function StaffOrdersPage() {
       );
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
+      if (err.response?.status === 400 && err.response?.data?.message?.includes('Cannot transition')) {
+        toast.error("Status transition not yet available backend is being updated. Please try again shortly.");
+      } else {
+        toast.error(err.response?.data?.message || t('orders2.failedToUpdate'));
+      }
     } finally {
       setUpdatingId(null);
     }
@@ -107,10 +111,10 @@ export default function StaffOrdersPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: t('orders2.orderTotal'),     value: orders.length,                                               dark: false },
-          { label: t('orders2.orderPending'),   value: orders.filter(o => o.status === 'PENDING').length,           dark: false },
-          { label: t('orders2.orderActive'),    value: orders.filter(o => ['ACCEPTED','PREPARING','READY_FOR_PICKUP','OUT_FOR_DELIVERY'].includes(o.status)).length, dark: false },
-          { label: t('orders2.orderCompleted'), value: orders.filter(o => ['COMPLETED','DELIVERED'].includes(o.status)).length, dark: true },
+          { label: t('orders2.orderTotal'), value: orders.length, dark: false },
+          { label: t('orders2.orderPending'), value: orders.filter(o => o.status === 'PENDING').length, dark: false },
+          { label: t('orders2.orderActive'), value: orders.filter(o => ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'].includes(o.status)).length, dark: false },
+          { label: t('orders2.orderCompleted'), value: orders.filter(o => ['COMPLETED', 'DELIVERED'].includes(o.status)).length, dark: true },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-5 flex items-center justify-between"
             style={{ backgroundColor: s.dark ? NAVY : TEAL }}>
@@ -131,9 +135,8 @@ export default function StaffOrdersPage() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              filter === s ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === s ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             style={filter === s ? { backgroundColor: TEAL } : {}}
           >
             {s === 'all' ? t('orders2.orderAll') : s.replace(/_/g, ' ')}
@@ -231,24 +234,44 @@ export default function StaffOrdersPage() {
                     )}
 
                     {/* Status update actions */}
-                    {nextStatuses.length > 0 && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('orders2.updateStatus')}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {nextStatuses.map(s => (
-                            <button
-                              key={s}
-                              onClick={() => handleStatusUpdate(order.id, s)}
-                              disabled={isUpdating}
-                              className="px-4 py-2 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50"
-                              style={{ backgroundColor: TEAL }}
-                            >
-                              {isUpdating ? t('orders2.updating') : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
-                            </button>
-                          ))}
+                    <div className="pt-2 border-t border-gray-100">
+                      {(nextStatuses.length > 0 || order.status === 'PENDING') && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('orders2.updateStatus')}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {nextStatuses.map(s => (
+                              <button
+                                key={s}
+                                onClick={() => handleStatusUpdate(order.id, s)}
+                                disabled={isUpdating}
+                                className="px-4 py-2 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50"
+                                style={{ backgroundColor: TEAL }}
+                              >
+                                {isUpdating ? t('orders2.updating') : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
+                              </button>
+                            ))}
+
+                            {/* Gap 2: Reject / Cancel Button Workaround */}
+                            {order.status === 'PENDING' && (
+                              <button
+                                onClick={() => handleStatusUpdate(order.id, 'CANCELLED' as OrderStatus)}
+                                disabled={isUpdating}
+                                className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-all disabled:opacity-50"
+                              >
+                                {isUpdating ? t('orders2.updating') : 'Reject / Cancel Order'}
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+
+                      {/* Info text for ACCEPTED/PREPARING */}
+                      {['ACCEPTED', 'PREPARING'].includes(order.status) && (
+                        <p className="text-xs text-gray-400 mt-2 italic">
+                          Cancellation at this stage requires a manager action.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

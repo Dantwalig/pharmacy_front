@@ -31,11 +31,11 @@ interface StaffProfile {
 }
 
 const STATUS_INFO_COLORS: Record<string, { color: string; dot: string }> = {
-  PENDING:     { color: 'bg-yellow-50 text-yellow-700 border-yellow-200',  dot: 'bg-yellow-400'  },
-  APPROVED:    { color: 'bg-green-50 text-green-700 border-green-200',     dot: 'bg-green-400'   },
-  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-400'  },
-  COMPLETED:   { color: 'bg-blue-50 text-blue-700 border-blue-200',        dot: 'bg-blue-400'    },
-  REJECTED:    { color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-400'     },
+  PENDING: { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-400' },
+  APPROVED: { color: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-400' },
+  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400' },
+  COMPLETED: { color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-400' },
+  REJECTED: { color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-400' },
 };
 
 export default function StaffDashboardPage() {
@@ -44,11 +44,11 @@ export default function StaffDashboardPage() {
   const isCashier = user?.role === 'CASHIER';
 
   const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
-    PENDING:     { label: t('staff.statusWaitingApproval'),   ...STATUS_INFO_COLORS.PENDING     },
-    APPROVED:    { label: t('staff.statusActiveShift'),       ...STATUS_INFO_COLORS.APPROVED    },
-    CLOCKED_OUT: { label: t('staff.statusClockOutPending'),   ...STATUS_INFO_COLORS.CLOCKED_OUT },
-    COMPLETED:   { label: t('dashboard.completed') ?? 'Shift completed', ...STATUS_INFO_COLORS.COMPLETED  },
-    REJECTED:    { label: t('staff.statusRejected'),          ...STATUS_INFO_COLORS.REJECTED    },
+    PENDING: { label: t('staff.statusWaitingApproval'), ...STATUS_INFO_COLORS.PENDING },
+    APPROVED: { label: t('staff.statusActiveShift'), ...STATUS_INFO_COLORS.APPROVED },
+    CLOCKED_OUT: { label: t('staff.statusClockOutPending'), ...STATUS_INFO_COLORS.CLOCKED_OUT },
+    COMPLETED: { label: t('dashboard.completed') ?? 'Shift completed', ...STATUS_INFO_COLORS.COMPLETED },
+    REJECTED: { label: t('staff.statusRejected'), ...STATUS_INFO_COLORS.REJECTED },
   };
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
@@ -72,12 +72,12 @@ export default function StaffDashboardPage() {
       setTodayShift(shiftRes.data);
 
       const allOrders = Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? [];
-      
+
       const todayStr = new Date().toDateString();
       const todaysOrders = allOrders.filter((o: any) => new Date(o.createdAt).toDateString() === todayStr);
-      
+
       setTransactionsToday(todaysOrders.length);
-      
+
       const totalSales = todaysOrders.reduce((sum: number, o: any) => sum + (Number(o.total) || 0), 0);
       setGrossSales(totalSales);
 
@@ -100,7 +100,7 @@ export default function StaffDashboardPage() {
           };
         });
 
-        setRecentActivities(mappedActivities);
+      setRecentActivities(mappedActivities);
     } catch (error) {
       console.error('Failed to load dashboard:', error);
     } finally {
@@ -111,22 +111,40 @@ export default function StaffDashboardPage() {
   const handleClockIn = async () => {
     setActionLoading(true);
     try {
-      await api.post('/attendance/clock-in', {});
+      const response = await api.post('/attendance/clock-in', {});
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Clock-in Request Payload:', {});
+        console.log('Clock-in Response:', response);
+      }
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockIn'));
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Clock-in Error:', err.response?.data || err);
+      }
+      const backendMsg = err.response?.data?.message;
+      const errorMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg;
+      toast.error(errorMsg || t('dashboard.failedToClockIn'));
     } finally { setActionLoading(false); }
   };
 
   const handleClockOut = async () => {
     setActionLoading(true);
     try {
-      await api.post('/attendance/clock-out', {});
+      const response = await api.post('/attendance/clock-out', {});
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Clock-out Request Payload:', {});
+        console.log('Clock-out Response:', response);
+      }
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || t('dashboard.failedToClockOut'));
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Clock-out Error:', err.response?.data || err);
+      }
+      const backendMsg = err.response?.data?.message;
+      const errorMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg;
+      toast.error(errorMsg || t('dashboard.failedToClockOut'));
     } finally { setActionLoading(false); }
   };
 
@@ -229,135 +247,135 @@ export default function StaffDashboardPage() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('dashboard.todayShift')}</h2>
 
-        {!todayShift ? (
-          <div className="text-center py-6">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F6' }}>
-              <ClockIcon className="w-8 h-8" style={{ color: TEAL }} />
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-1">{t('dashboard.notClockedIn')}</p>
-            <p className="text-gray-400 text-sm mb-6">{t('dashboard.clickToStart')}</p>
-            <button
-              onClick={handleClockIn}
-              disabled={actionLoading}
-              className="text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
-              style={{ backgroundColor: TEAL }}
-              aria-label="Clock in to start shift"
-            >
-              {actionLoading
-                ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <ClockIcon className="w-5 h-5" />}
-              {t('staff.clockIn')}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {shiftInfo && (
-              <div className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${shiftInfo.color}`}>
-                <span className={`w-3 h-3 rounded-full shrink-0 ${shiftInfo.dot}`} />
-                <span className="font-medium text-sm">{shiftInfo.label}</span>
+            {!todayShift ? (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F6' }}>
+                  <ClockIcon className="w-8 h-8" style={{ color: TEAL }} />
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-1">{t('dashboard.notClockedIn')}</p>
+                <p className="text-gray-400 text-sm mb-6">{t('dashboard.clickToStart')}</p>
+                <button
+                  onClick={handleClockIn}
+                  disabled={actionLoading}
+                  className="text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
+                  style={{ backgroundColor: TEAL }}
+                  aria-label="Clock in to start shift"
+                >
+                  {actionLoading
+                    ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <ClockIcon className="w-5 h-5" />}
+                  {t('staff.clockIn')}
+                </button>
               </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p className="text-xs text-gray-500 mb-1">{t('staff.clockIn')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
-                {todayShift.clockInApprover && (
-                  <p className="text-xs mt-1" style={{ color: TEAL }}>
-                    {t('dashboard.approvedBy', { name: todayShift.clockInApprover.firstName })}
-                  </p>
+            ) : (
+              <div className="space-y-4">
+                {shiftInfo && (
+                  <div className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${shiftInfo.color}`}>
+                    <span className={`w-3 h-3 rounded-full shrink-0 ${shiftInfo.dot}`} />
+                    <span className="font-medium text-sm">{shiftInfo.label}</span>
+                  </div>
                 )}
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
-                {todayShift.totalHours && (
-                  <p className="text-xs text-blue-600 mt-1">{t('dashboard.hoursWorkedLabel', { hours: todayShift.totalHours.toFixed(1) })}</p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">{t('staff.clockIn')}</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockInTime)}</p>
+                    {todayShift.clockInApprover && (
+                      <p className="text-xs mt-1" style={{ color: TEAL }}>
+                        {t('dashboard.approvedBy', { name: todayShift.clockInApprover.firstName })}
+                      </p>
+                    )}
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">{t('staff.clockOut')}</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatTime(todayShift.clockOutTime)}</p>
+                    {todayShift.totalHours && (
+                      <p className="text-xs text-blue-600 mt-1">{t('dashboard.hoursWorkedLabel', { hours: todayShift.totalHours.toFixed(1) })}</p>
+                    )}
+                  </div>
+                </div>
+
+                {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
+                  <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                    <p className="text-xs text-red-600 font-medium">{t('dashboard.rejectionReason', { reason: todayShift.rejectionReason })}</p>
+                  </div>
                 )}
-              </div>
-            </div>
 
-            {todayShift.status === 'REJECTED' && todayShift.rejectionReason && (
-              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                <p className="text-xs text-red-600 font-medium">{t('dashboard.rejectionReason', { reason: todayShift.rejectionReason })}</p>
-              </div>
-            )}
+                {todayShift.status === 'APPROVED' && (
+                  <button
+                    onClick={handleClockOut}
+                    disabled={actionLoading}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    aria-label="Clock out to end shift"
+                  >
+                    {actionLoading
+                      ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      : <ClockIcon className="w-5 h-5" />}
+                    {t('staff.clockOut')}
+                  </button>
+                )}
 
-            {todayShift.status === 'APPROVED' && (
-              <button
-                onClick={handleClockOut}
-                disabled={actionLoading}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                aria-label="Clock out to end shift"
-              >
-                {actionLoading
-                  ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <ClockIcon className="w-5 h-5" />}
-                {t('staff.clockOut')}
-              </button>
-            )}
-
-            {todayShift.status === 'REJECTED' && (
-              <button
-                onClick={handleClockIn}
-                disabled={actionLoading}
-                className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: TEAL }}
-              >
-                {actionLoading
-                  ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <ClockIcon className="w-5 h-5" />}
-                {t('dashboard.tryAgain')}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-      </div>
-
-      {/* Right Column: Recent Activity Table */}
-      <div className="lg:col-span-2">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.recentActivity')}</h2>
-            <Link href="/staff/orders" className="text-sm font-medium hover:underline" style={{ color: TEAL }}>{t('common.viewAll')}</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
-                <tr>
-                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
-                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
-                  <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
-                  <th scope="col" className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
-                  <th scope="col" className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                {recentActivities.map((activity, i) => (
-                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <td className="px-5 py-4 font-medium text-gray-900 dark:text-gray-100">{activity.id}</td>
-                    <td className="px-5 py-4 text-gray-600 dark:text-gray-300">{activity.type}</td>
-                    <td className="px-5 py-4 text-gray-500 dark:text-gray-400">{activity.time}</td>
-                    <td className="px-5 py-4 text-right font-medium text-gray-900 dark:text-gray-100">{activity.amount}</td>
-                    <td className="px-5 py-4 text-center">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ring-1 ring-inset ${activity.color}`}>
-                        {activity.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {recentActivities.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
-                 {t('dashboard.noRecentActivity')}
+                {todayShift.status === 'REJECTED' && (
+                  <button
+                    onClick={handleClockIn}
+                    disabled={actionLoading}
+                    className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: TEAL }}
+                  >
+                    {actionLoading
+                      ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      : <ClockIcon className="w-5 h-5" />}
+                    {t('dashboard.tryAgain')}
+                  </button>
+                )}
               </div>
             )}
           </div>
         </div>
+
+        {/* Right Column: Recent Activity Table */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+              <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.recentActivity')}</h2>
+              <Link href="/staff/orders" className="text-sm font-medium hover:underline" style={{ color: TEAL }}>{t('common.viewAll')}</Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.transactionId')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.type')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium">{t('dashboard.time')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-right">{t('dashboard.amount')}</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-center">{t('common.status')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                  {recentActivities.map((activity, i) => (
+                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <td className="px-5 py-4 font-medium text-gray-900 dark:text-gray-100">{activity.id}</td>
+                      <td className="px-5 py-4 text-gray-600 dark:text-gray-300">{activity.type}</td>
+                      <td className="px-5 py-4 text-gray-500 dark:text-gray-400">{activity.time}</td>
+                      <td className="px-5 py-4 text-right font-medium text-gray-900 dark:text-gray-100">{activity.amount}</td>
+                      <td className="px-5 py-4 text-center">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ring-1 ring-inset ${activity.color}`}>
+                          {activity.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {recentActivities.length === 0 && (
+                <div className="p-8 text-center text-gray-500">
+                  {t('dashboard.noRecentActivity')}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
