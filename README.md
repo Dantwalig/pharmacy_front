@@ -21,6 +21,7 @@ platform administrators around medication ordering, inventory, and fulfilment.
 - [Conventions](#conventions)
 - [Internationalization](#internationalization)
 - [Documentation](#documentation)
+- [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [Security](#security)
 - [License](#license)
@@ -214,6 +215,17 @@ the review workflow for French and Kinyarwanda.
 | [`src/DESIGN_TOKENS.md`](src/DESIGN_TOKENS.md) | Brand tokens and UI conventions |
 
 ---
+
+## Maintainers
+
+| Role | GitHub |
+|---|---|
+| Frontend team lead | [@tresor-01](https://github.com/tresor-01) |
+
+[@tresor-01](https://github.com/tresor-01) is the lead maintainer and primary
+reviewer for this repository — tag him on pull requests that need review or
+sign-off. The full list of people who've worked on the project is on the
+repository's **Contributors** tab.
 
 ## Contributing
 

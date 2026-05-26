@@ -94,6 +94,8 @@ Keys must exist in all three files so nothing falls back silently.
 - Link any related issue.
 - Keep the description specific — list the screens/flows a reviewer should
   check.
+- Pull requests are reviewed by the frontend team lead,
+  [@tresor-01](https://github.com/tresor-01) — tag him for review or sign-off.
 
 ## Reporting bugs & requesting features
 
