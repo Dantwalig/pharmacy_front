@@ -1,47 +1,52 @@
 # Security Policy
 
+`pharmacy_front` handles patient, prescription, and pharmacy data, so security
+matters here. If you've found a problem, thank you for disclosing it
+responsibly — here's how to reach us.
+
 ## Reporting a vulnerability
 
-If you discover a security vulnerability in `pharmacy_front`, please report it
-**privately**. Do not open a public GitHub issue, pull request, or discussion,
-as that could expose the issue before it is fixed.
+Please report it **privately**. Don't open a public issue, pull request, or
+discussion — that could expose the problem before there's a fix.
 
-- Email: **info@ubwengelab.rw**
-- Include: a description of the issue, steps to reproduce, the affected
-  area/route, and the potential impact.
+Reach out directly to one of the project leads:
 
-We will acknowledge your report, investigate, and keep you informed of the
-remediation progress. Please give us a reasonable window to address the issue
-before any public disclosure.
+- **Robert** — project lead
+- **Tresor** — frontend lead ([@tresor-01](https://github.com/tresor-01))
 
-## Supported versions
+It helps to include:
 
-This is an actively developed internal product. Only the latest version
-deployed from the `main` branch is supported. Fixes are applied forward; we do
-not patch older builds.
+- **What and where** — the issue, and the route, screen, or file it affects
+- **How to reproduce it** — clear steps
+- **Impact** — what someone could do with it
 
-## Security model (summary)
-
-A short overview of how the frontend handles security. For the full picture,
-see [`docs/architecture.md`](docs/architecture.md).
-
-- **Authentication** uses JWT access and refresh tokens stored in cookies. The
-  access token is short-lived; the refresh token is longer-lived.
-- **Token refresh** is handled automatically by the API layer
-  (`src/lib/api.ts`): on a `401`, it attempts a refresh and retries the request
-  once, and clears the session and redirects to login if that fails.
-- **Route authorization** is enforced by edge middleware
-  (`src/middleware.tsx`), which routes users by role
-  (`PATIENT`, `PHARMACY`, `BRANCH_MANAGER`, `PHARMACIST`, `CASHIER`, `NURSE`,
-  `SUPER_ADMIN`) and, for pharmacies, by account status
-  (`PENDING` / `REJECTED` / `APPROVED`).
-- **The frontend is not the security boundary.** Client-side checks are for UX;
-  the backend API is the authoritative enforcer of authentication,
-  authorization, and data access. Never rely on the frontend alone to protect a
-  resource.
+We'll acknowledge your report, investigate, and keep you posted on the fix.
+Please give us a reasonable window to patch it before any public disclosure.
 
 ## Scope
 
-This policy covers the `pharmacy_front` web application. Vulnerabilities in the
-backend API or third-party dependencies should be reported through the same
-channel so we can coordinate a fix.
+This policy covers the **`pharmacy_front`** web app. If you spot something in the
+backend API or a third-party dependency, report it the same way and we'll
+coordinate the fix with the right people.
+
+## Supported versions
+
+Only the latest version deployed from `main` is supported — we fix forward
+rather than patching older builds.
+
+## How the frontend handles security
+
+A quick map of the moving parts — full detail lives in
+[`docs/architecture.md`](docs/architecture.md):
+
+- **Authentication** — JWT access and refresh tokens stored in cookies. The
+  access token is short-lived; the refresh token lasts longer.
+- **Token refresh** — automatic in `src/lib/api.ts`: on a `401` it refreshes
+  once and retries the request, or clears the session and redirects to login.
+- **Route access** — edge middleware (`src/middleware.tsx`) gates every portal
+  by role (patient, pharmacy, branch, staff, super-admin) and, for pharmacies,
+  by account status (pending / rejected / approved).
+- **The frontend is not the security boundary** — client-side checks exist for
+  UX. The backend API is the authoritative enforcer of authentication,
+  authorization, and data access, so never rely on the frontend alone to protect
+  a resource.
