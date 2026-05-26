@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
