@@ -1,10 +1,6 @@
-# Pharmacy Front
+## Overview
 
 Frontend for the Ubwenge Lab pharmacy platform — a multi-role system connecting patients, pharmacies, branches, staff, and administrators for medication ordering, inventory, and fulfilment.
-
----
-
-## Overview
 
 **`pharmacy_front`** is a Next.js (App Router) application serving five distinct roles from a single codebase. Each role has its own portal, enforced at the edge using middleware based on the user’s session token.
 
@@ -96,48 +92,50 @@ Open: http://localhost:3000
 
 ## Project Structure
 
+```
 src/
-├── app/
-│   ├── patient/
-│   ├── pharmacy/
-│   ├── branch/
-│   ├── staff/
-│   ├── super-admin/
-│   └── login/
+├── app/                    # App Router — one folder per route
+│   ├── patient/            # Patient portal (feature-flagged)
+│   ├── pharmacy/           # Pharmacy owner portal
+│   ├── branch/             # Branch manager portal
+│   ├── staff/              # Pharmacist / cashier / nurse portal
+│   ├── super-admin/        # Platform admin portal
+│   ├── login/ signup/ ...  # Public auth & onboarding routes
+│   └── layout.tsx          # Root layout (providers, i18n, toasts)
 ├── components/
-│   ├── shared/
-│   ├── map/
-│   ├── guards/
-│   └── <portal>/
-├── context/
-├── hooks/
+│   ├── shared/             # Cross-portal components (StatusBadge, LoadingSpinner, …)
+│   ├── map/                # Leaflet map building blocks
+│   ├── guards/             # Client-side route guards
+│   └── <portal>/           # Per-portal sidebars, topbars, views
+├── context/                # React context providers (AuthContext, CartContext)
+├── hooks/                  # Reusable hooks (useFetch, useGeolocation, …)
 ├── lib/
-│   ├── api.ts
-│   ├── auth.ts
-│   ├── i18n/
-│   └── constants.ts
-├── services/
-├── types/
-├── middleware.tsx
-└── DESIGN_TOKENS.md
+│   ├── api.ts              # axios instance + auth API + token refresh
+│   ├── auth.ts             # token & cached-user helpers
+│   ├── constants.ts        # shared constants (FDA categories, polling, …)
+└── DESIGN_TOKENS.md        # Brand tokens & UI conventions
+```
 
 ---
 
 ## Architecture Highlights
 
-- Edge-based role routing via middleware
-- Status-aware pharmacy onboarding (PENDING, REJECTED, APPROVED)
-- Centralized Axios API layer with automatic token refresh
-- Auth context managing session + role-based routing
+
+- **Role-based routing at the edge.** `src/middleware.tsx` runs on every `/patient`, `/pharmacy`, `/branch`, `/staff`, and `/super-admin` request. It reads the session token, derives the user's role and account status, and redirects anyone who doesn't belong.
+- **Status-aware pharmacy access.** Pharmacy accounts route differently based on `PENDING` / `REJECTED` / `APPROVED` application status.
+- **Centralised API layer.** All requests go through the shared axios instance in `src/lib/api.ts`, which attaches the access token and transparently refreshes it on a `401` using the refresh token.
+- **Auth context.** `AuthContext` exposes `login`, `logout`, and the current user, and handles post-login routing per role.
+
+For a deeper walkthrough, see [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
 ## Conventions
 
-- Use design tokens from DESIGN_TOKENS.md
-- Use StatusBadge for all status UI
-- Use Heroicons for icons only
-
+- **Design tokens & UI patterns** are documented in [`src/DESIGN_TOKENS.md`](src/DESIGN_TOKENS.md). Use brand token utilities (`bg-brand-navy`, `text-brand-teal`, …) rather than raw hex values.
+- **Status pills** use the shared `StatusBadge` (`src/components/shared/StatusBadge.tsx`) — don't hand-roll status colours.
+- **Icons** come from Heroicons; size them with Tailwind (`w-5 h-5`).
+  
 ---
 
 ## Internationalization
@@ -163,19 +161,4 @@ Supported languages:
 Lead: @tresor-01
 
 ---
-
-## Contributing
-
-See CONTRIBUTING.md
-
----
-
-## Security
-
-See SECURITY.md
-
----
-
-## License
-
-Proprietary — Ubwenge Lab.
+> Internal Ubwenge Lab project. Proprietary — © Ubwenge Lab. All rights reserved. See [LICENSE](LICENSE).
