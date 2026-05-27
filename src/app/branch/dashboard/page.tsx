@@ -42,6 +42,8 @@ interface PendingAttendance {
 export default function BranchDashboardPage() {
   const { t } = useTranslation();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const fetchDashboardData = useCallback(
     async (signal: AbortSignal) => {
@@ -89,11 +91,13 @@ export default function BranchDashboardPage() {
     } finally { setActionLoading(null); }
   };
 
-  const rejectClockIn = async (id: string) => {
+  const rejectClockIn = async (id: string, reason: string) => {
     setActionLoading(id + '-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
+      await api.put(`/attendance/${id}/reject-clock-in`, { reason });
       toast.success(t('success.clockInRejected'));
+      setRejectingId(null);
+      setRejectReason('');
       await refetch();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
@@ -111,11 +115,13 @@ export default function BranchDashboardPage() {
     } finally { setActionLoading(null); }
   };
 
-  const rejectClockOut = async (id: string) => {
+  const rejectClockOut = async (id: string, reason: string) => {
     setActionLoading(id + '-out-reject');
     try {
-      await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
+      await api.put(`/attendance/${id}/reject-clock-out`, { reason });
       toast.success(t('success.clockOutRejected'));
+      setRejectingId(null);
+      setRejectReason('');
       await refetch();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
@@ -199,27 +205,54 @@ export default function BranchDashboardPage() {
                         {formatTime(record.clockInTime)}
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => approveClockIn(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                            style={{ borderColor: TEAL, color: TEAL }}
-                            title={t('branch.approve')}
-                            aria-label={`Approve clock in for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => rejectClockIn(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                            title={t('branch.reject')}
-                            aria-label={`Reject clock in for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {rejectingId === record.id + '-in' ? (
+                          <div className="space-y-1.5 w-56 text-left ml-auto">
+                            <textarea
+                              rows={2}
+                              value={rejectReason}
+                              onChange={e => setRejectReason(e.target.value)}
+                              placeholder={t('prescriptions.rejectionReasonPlaceholder')}
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none"
+                            />
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                                className="flex-1 py-1 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                              >
+                                {t('common.cancel')}
+                              </button>
+                              <button
+                                onClick={() => rejectClockIn(record.id, rejectReason)}
+                                disabled={!!actionLoading}
+                                className="flex-1 py-1 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                              >
+                                {t('branch.reject')}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => approveClockIn(record.id)}
+                              disabled={!!actionLoading}
+                              className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                              style={{ borderColor: TEAL, color: TEAL }}
+                              title={t('branch.approve')}
+                              aria-label={`Approve clock in for ${record.staff.firstName} ${record.staff.lastName}`}
+                            >
+                              <CheckCircleIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => { setRejectingId(record.id + '-in'); setRejectReason(''); }}
+                              disabled={!!actionLoading}
+                              className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
+                              title={t('branch.reject')}
+                              aria-label={`Reject clock in for ${record.staff.firstName} ${record.staff.lastName}`}
+                            >
+                              <XCircleIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -265,27 +298,54 @@ export default function BranchDashboardPage() {
                         {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => approveClockOut(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
-                            style={{ borderColor: TEAL, color: TEAL }}
-                            title={t('branch.approve')}
-                            aria-label={`Approve clock out for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => rejectClockOut(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                            title={t('branch.reject')}
-                            aria-label={`Reject clock out for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {rejectingId === record.id + '-out' ? (
+                          <div className="space-y-1.5 w-56 text-left ml-auto">
+                            <textarea
+                              rows={2}
+                              value={rejectReason}
+                              onChange={e => setRejectReason(e.target.value)}
+                              placeholder={t('prescriptions.rejectionReasonPlaceholder')}
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none"
+                            />
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                                className="flex-1 py-1 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                              >
+                                {t('common.cancel')}
+                              </button>
+                              <button
+                                onClick={() => rejectClockOut(record.id, rejectReason)}
+                                disabled={!!actionLoading}
+                                className="flex-1 py-1 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                              >
+                                {t('branch.reject')}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => approveClockOut(record.id)}
+                              disabled={!!actionLoading}
+                              className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border hover:bg-gray-50"
+                              style={{ borderColor: TEAL, color: TEAL }}
+                              title={t('branch.approve')}
+                              aria-label={`Approve clock out for ${record.staff.firstName} ${record.staff.lastName}`}
+                            >
+                              <CheckCircleIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => { setRejectingId(record.id + '-out'); setRejectReason(''); }}
+                              disabled={!!actionLoading}
+                              className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
+                              title={t('branch.reject')}
+                              aria-label={`Reject clock out for ${record.staff.firstName} ${record.staff.lastName}`}
+                            >
+                              <XCircleIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

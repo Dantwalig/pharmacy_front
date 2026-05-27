@@ -40,6 +40,8 @@ export default function BranchAttendancePage() {
   const { t } = useTranslation();
   const [actionId, setActionId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const fetchAttendanceData = useCallback(
     async (signal: AbortSignal) => {
@@ -56,19 +58,35 @@ export default function BranchAttendancePage() {
     if (error) toast.error(t('errors.failedToLoadAttendance'));
   }, [error, t]);
 
-  const handleAction = async (
+  const handleApprove = async (
     id: string,
-    action: 'approve-clock-in' | 'reject-clock-in' | 'approve-clock-out' | 'reject-clock-out',
-    currentStatus: string
+    action: 'approve-clock-in' | 'approve-clock-out',
   ) => {
     const actionKey = id + '-' + action;
-    const isReject = action.includes('reject');
-    const reason = isReject ? prompt('Reason for rejection (optional):') ?? '' : '';
-
     setActionId(actionKey);
     try {
-      await api.put(`/attendance/${id}/${action}`, isReject ? { reason } : {});
-      toast.success(isReject ? t('attendance.rejected') : t('attendance.approved'));
+      await api.put(`/attendance/${id}/${action}`, {});
+      toast.success(t('attendance.approved'));
+      await refetch();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReject = async (
+    id: string,
+    action: 'reject-clock-in' | 'reject-clock-out',
+    reason: string,
+  ) => {
+    const actionKey = id + '-' + action;
+    setActionId(actionKey);
+    try {
+      await api.put(`/attendance/${id}/${action}`, { reason });
+      toast.success(t('attendance.rejected'));
+      setRejectingId(null);
+      setRejectReason('');
       await refetch();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
@@ -164,45 +182,99 @@ export default function BranchAttendancePage() {
                     <div className="flex items-center justify-end gap-1">
                       {/* Pending clock-in: approve or reject */}
                         {record.status === 'PENDING' && (
-                          <>
-                          <button
-                              onClick={() => handleAction(record.id, 'approve-clock-in', record.status)}
-                              disabled={!!actionId}
-                              className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
-                              title={t('attendance.approveClockIn')}
-                            >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                              onClick={() => handleAction(record.id, 'reject-clock-in', record.status)}
-                              disabled={!!actionId}
-                              className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
-                              title={t('attendance.rejectClockIn')}
-                            >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </>
+                          rejectingId === record.id + '-in' ? (
+                            <div className="space-y-1.5 w-48 text-left">
+                              <textarea
+                                rows={2}
+                                value={rejectReason}
+                                onChange={e => setRejectReason(e.target.value)}
+                                placeholder={t('prescriptions.rejectionReasonPlaceholder')}
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none"
+                              />
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                                  className="flex-1 py-1 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                                >
+                                  {t('common.cancel')}
+                                </button>
+                                <button
+                                  onClick={() => handleReject(record.id, 'reject-clock-in', rejectReason)}
+                                  disabled={!!actionId}
+                                  className="flex-1 py-1 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                                >
+                                  {t('branch.reject')}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleApprove(record.id, 'approve-clock-in')}
+                                disabled={!!actionId}
+                                className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
+                                title={t('attendance.approveClockIn')}
+                              >
+                                <CheckCircleIcon className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => { setRejectingId(record.id + '-in'); setRejectReason(''); }}
+                                disabled={!!actionId}
+                                className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
+                                title={t('attendance.rejectClockIn')}
+                              >
+                                <XCircleIcon className="w-4 h-4" />
+                              </button>
+                            </>
+                          )
                       )}
                         {/* Clocked-out: approve or reject clock-out */}
                         {record.status === 'CLOCKED_OUT' && (
-                          <>
-                          <button
-                              onClick={() => handleAction(record.id, 'approve-clock-out', record.status)}
-                              disabled={!!actionId}
-                              className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
-                              title={t('attendance.approveClockOut')}
-                            >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                              onClick={() => handleAction(record.id, 'reject-clock-out', record.status)}
-                              disabled={!!actionId}
-                              className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
-                              title={t('attendance.rejectClockOut')}
-                            >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </>
+                          rejectingId === record.id + '-out' ? (
+                            <div className="space-y-1.5 w-48 text-left">
+                              <textarea
+                                rows={2}
+                                value={rejectReason}
+                                onChange={e => setRejectReason(e.target.value)}
+                                placeholder={t('prescriptions.rejectionReasonPlaceholder')}
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-red-400 resize-none"
+                              />
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                                  className="flex-1 py-1 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                                >
+                                  {t('common.cancel')}
+                                </button>
+                                <button
+                                  onClick={() => handleReject(record.id, 'reject-clock-out', rejectReason)}
+                                  disabled={!!actionId}
+                                  className="flex-1 py-1 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                                >
+                                  {t('branch.reject')}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleApprove(record.id, 'approve-clock-out')}
+                                disabled={!!actionId}
+                                className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg disabled:opacity-50"
+                                title={t('attendance.approveClockOut')}
+                              >
+                                <CheckCircleIcon className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => { setRejectingId(record.id + '-out'); setRejectReason(''); }}
+                                disabled={!!actionId}
+                                className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg disabled:opacity-50"
+                                title={t('attendance.rejectClockOut')}
+                              >
+                                <XCircleIcon className="w-4 h-4" />
+                              </button>
+                            </>
+                          )
                       )}
                         {/* No actions for APPROVED, COMPLETED, REJECTED */}
                         {['APPROVED', 'COMPLETED', 'REJECTED'].includes(record.status) && (
