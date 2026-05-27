@@ -5,6 +5,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { PENDING_STATUSES, COMPLETED_STATUSES } from '@/lib/constants';
+import { getOrderItems } from '@/lib/orderUtils';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -34,14 +36,6 @@ type OrderStatus =
 
 type FilterType = 'all' | 'pending' | 'completed';
 
-const COMPLETED_STATUSES: OrderStatus[] = ['DELIVERED', 'CANCELLED'];
-const PENDING_STATUSES: OrderStatus[] = [
-  'PENDING',
-  'ACCEPTED',
-  'PREPARING',
-  'OUT_FOR_DELIVERY',
-  'READY_FOR_PICKUP',
-];
 
 function getStatusMeta(status: OrderStatus, t: (key: string) => string) {
   switch (status) {
@@ -219,10 +213,10 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Medications */}
           <div className="px-6 py-5">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              {t('orders.medications')} ({order.orderItems?.length || 0} {t('orders2.items').toLowerCase()})
+              {t('orders.medications')} ({getOrderItems(order).length} {t('orders2.items').toLowerCase()})
             </h3>
             <div className="space-y-3">
-              {order.orderItems?.map((item: any) => (
+              {getOrderItems(order).map((item: any) => (
                 <div key={item.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl p-3.5">
                   <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-teal-100 dark:from-blue-900/40 dark:to-teal-900/40 rounded-xl flex items-center justify-center shrink-0">
                     <CubeIcon className="w-5 h-5 text-[#1E4D8C] dark:text-blue-400" />
@@ -533,7 +527,7 @@ export default function OrdersPage() {
                           </p>
 
                           <div className="flex flex-wrap gap-1.5 mb-3">
-                            {order.orderItems?.slice(0, 2).map((item: any) => (
+                            {getOrderItems(order).slice(0, 2).map((item: any) => (
                               <span
                                 key={item.id}
                                 className="text-xs bg-blue-50 dark:bg-blue-900/30 text-[#1E4D8C] dark:text-blue-300 px-2.5 py-1 rounded-lg font-medium"
@@ -541,9 +535,9 @@ export default function OrdersPage() {
                                 {item.medication?.name} ×{item.quantity}
                               </span>
                             ))}
-                            {(order.orderItems?.length ?? 0) > 2 && (
+                            {getOrderItems(order).length > 2 && (
                               <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2.5 py-1 rounded-lg font-medium">
-                                +{order.orderItems.length - 2} more
+                                +{getOrderItems(order).length - 2} more
                               </span>
                             )}
                           </div>
@@ -554,7 +548,7 @@ export default function OrdersPage() {
                             </p>
                             <span className="text-xs text-gray-300 dark:text-gray-600">•</span>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                              {order.orderItems?.length ?? 0} item{(order.orderItems?.length ?? 0) !== 1 ? 's' : ''}
+                              {getOrderItems(order).length} item{getOrderItems(order).length !== 1 ? 's' : ''}
                             </p>
                           </div>
                         </div>
