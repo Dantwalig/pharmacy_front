@@ -29,7 +29,7 @@ export default function BranchInventoryPage() {
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: medications = [], loading } = useFetch<any[]>(
+  const { data, loading } = useFetch<any[]>(
     async (signal) => {
       try {
         const res = await api.get('/medications/pharmacy/my-medications', { signal });
@@ -46,6 +46,8 @@ export default function BranchInventoryPage() {
     },
     []
   ) as any;
+
+  const medications = data ?? [];
 
   const filtered = medications.filter((m: any) => {
     const matchSearch = !searchTerm ||

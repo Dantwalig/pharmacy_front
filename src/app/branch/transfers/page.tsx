@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
@@ -26,10 +26,31 @@ export default function BranchTransfersPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('outgoing');
   const [backendReady, setBackendReady] = useState(true);
-  const [showForm, setShowForm] = useState(false);
   const [branches, setBranches] = useState<any[]>([]);
   const [medications, setMedications] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [myBranchId, setMyBranchId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get('/branches/my-branch-details')
+      .then(res => setMyBranchId(res.data?.id || null))
+      .catch(() => {});
+  }, []);
+
+  const handleUpdateStatus = async (transferId: string, status: string) => {
+    setUpdatingId(transferId);
+    try {
+      await api.patch(`/stock-transfers/${transferId}/status`, { status });
+      toast.success(`Transfer status updated to ${status}`);
+      refetch();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const [form, setForm] = useState({
     toBranchId: '',
@@ -59,16 +80,14 @@ export default function BranchTransfersPage() {
 
   const fetchFormData = async () => {
     try {
-      // These two calls are used to populate the transfer request form dropdowns.
-      // GET /medications/pharmacy/my-medications → needs Role.BRANCH_MANAGER (backend pending)
-      // There is no public endpoint to list other branches — backend team needs to expose one,
-      // e.g. GET /branches/pharmacy-branches → returns all branches in the same pharmacy
-      const [medsRes] = await Promise.all([
-        api.get('/medications/pharmacy/my-medications'),
+      const [medsRes, branchesRes] = await Promise.all([
+        api.get('/medications/pharmacy/my-medications').catch(() => ({ data: [] })),
+        api.get('/branches/pharmacy-branches').catch(() => ({ data: [] })),
       ]);
       setMedications(Array.isArray(medsRes.data) ? medsRes.data : []);
+      setBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
     } catch {
-      // If 403, medications won't load — user will see empty dropdown with a note
+      // General catch-all
     }
   };
 
@@ -120,8 +139,8 @@ export default function BranchTransfersPage() {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const outgoing = transfers.filter((t: any) => t.direction === 'outgoing' || t.isOutgoing);
-  const incoming = transfers.filter((t: any) => t.direction === 'incoming' || t.isIncoming);
+  const outgoing = transfers.filter((t: any) => t.fromBranchId === myBranchId);
+  const incoming = transfers.filter((t: any) => t.toBranchId === myBranchId);
   const displayed = tab === 'outgoing' ? outgoing : incoming;
 
   return (
@@ -361,6 +380,69 @@ export default function BranchTransfersPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Actions */}
+                {backendReady && (
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0 self-center">
+                    {/* If current branch is B (toBranchId, receiver of the request, sender of the stock) */}
+                    {t.toBranchId === myBranchId && t.status === 'PENDING' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(t.id, 'APPROVED')}
+                          disabled={updatingId === t.id}
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(t.id, 'REJECTED')}
+                          disabled={updatingId === t.id}
+                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+
+                    {/* If current branch is B (toBranchId, sender of the stock) and status is APPROVED */}
+                    {t.toBranchId === myBranchId && t.status === 'APPROVED' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(t.id, 'SHIPPED')}
+                        disabled={updatingId === t.id}
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                      >
+                        Ship Transfer
+                      </button>
+                    )}
+
+                    {/* If current branch is A (fromBranchId, initiator, receiver of the stock) and status is SHIPPED */}
+                    {t.fromBranchId === myBranchId && t.status === 'SHIPPED' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(t.id, 'COMPLETED')}
+                        disabled={updatingId === t.id}
+                        className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                      >
+                        Complete / Receive
+                      </button>
+                    )}
+
+                    {/* If current branch is A (fromBranchId, initiator) and status is PENDING */}
+                    {t.fromBranchId === myBranchId && t.status === 'PENDING' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(t.id, 'REJECTED')}
+                        disabled={updatingId === t.id}
+                        className="px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                      >
+                        Cancel Request
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -48,14 +48,17 @@ export default function PharmacyDetailsPage() {
   };
 
   const handleAddToCart = (medication: Medication) => {
+    const resolvedPharmacyId = medication.pharmacyId || pharmacy?.pharmacyId || pharmacy?.id || '';
+    const resolvedBranchId = pharmacy?.pharmacyId ? pharmacy.id : (medication.branchId || medication.branch?.id || branchId);
+
     addToCart({
       medicationId: medication.id,
       name: medication.name,
       price: medication.price,
       quantity: 1,
-      pharmacyId: pharmacy?.id || '',
+      pharmacyId: resolvedPharmacyId,
       pharmacyName: pharmacy?.name || '',
-      branchId: medication.branchId || medication.branch?.id || branchId,
+      branchId: resolvedBranchId,
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });

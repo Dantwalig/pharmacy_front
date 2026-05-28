@@ -628,6 +628,7 @@ export const fr = {
     editMedication: 'Modifier le medicament',
     transfers: 'Transferts de stock',
     transfersSubtitle: 'Demander et gerer les transferts de medicaments entre agences',
+    networkMap: 'Carte du réseau',
     requestTransfer: 'Demander un transfert',
     outgoing: 'Sortant',
     incoming: 'Entrant',

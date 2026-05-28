@@ -57,13 +57,15 @@ export default function StaffOrdersPage() {
   const [rejectReason, setRejectReason]       = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  const { data: fetchedOrders = [], loading, error } = useFetch<Order[]>(
+  const { data, loading, error } = useFetch<Order[]>(
     async (signal) => {
       const res = await api.get('/orders/pharmacy-orders', { signal });
       return unwrapData<Order>(res.data);
     },
     []
   );
+
+  const fetchedOrders = data ?? [];
 
   useEffect(() => { setOrders(fetchedOrders ?? []); }, [fetchedOrders]);
   useEffect(() => { if (error) toast.error(t('errors.failedToLoadOrders')); }, [error, t]);

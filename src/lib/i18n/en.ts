@@ -628,6 +628,7 @@ export const en = {
     editMedication: 'Edit Medication',
     transfers: 'Stock Transfers',
     transfersSubtitle: 'Request and manage medication transfers between branches',
+    networkMap: 'Network Map',
     requestTransfer: 'Request Transfer',
     outgoing: 'Outgoing',
     incoming: 'Incoming',

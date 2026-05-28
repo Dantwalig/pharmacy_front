@@ -19,7 +19,7 @@ export default function BranchManagementPage() {
   const [search, setSearch]     = useState('');
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm]          = useState({ name: '', address: '', branchManagerEmail: '', latitude: undefined as number | undefined, longitude: undefined as number | undefined });
+  const [form, setForm]          = useState({ name: '', address: '', phone: '', branchManagerEmail: '', latitude: undefined as number | undefined, longitude: undefined as number | undefined });
   const [submitting, setSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [createError, setCreateError] = useState('');
@@ -51,7 +51,7 @@ export default function BranchManagementPage() {
     try {
       await api.post('/branches/create', form);
       setShowModal(false);
-      setForm({ name: '', address: '', branchManagerEmail: '', latitude: undefined, longitude: undefined });
+      setForm({ name: '', address: '', phone: '', branchManagerEmail: '', latitude: undefined, longitude: undefined });
       setCreateSuccess('Branch added successfully.');
       setTimeout(() => setCreateSuccess(''), 4000);
       load(true);
@@ -215,6 +215,17 @@ export default function BranchManagementPage() {
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('common.phone')} *
+              </label>
+              <input
+                value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="e.g. +250788000000"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+              />
+            </div>
 
             <LocationPicker
               latitude={form.latitude}
@@ -237,9 +248,8 @@ export default function BranchManagementPage() {
               </button>
             <button
                 onClick={handleAdd}
-                disabled={submitting || !form.name || !form.address || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
-                style={{ backgroundColor: TEAL }}
+                disabled={submitting || !form.name || !form.address || !form.phone || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 bg-brand-teal"
               >
               {submitting ? t('common.saving') : t('common.add')}
               </button>

@@ -628,6 +628,7 @@ export const rw = {
     editMedication: 'Hindura Umuti',
     transfers: 'Guhereza Imiti',
     transfersSubtitle: 'Saba no gucunga guhereza imiti hagati y\'amashami',
+    networkMap: 'Ikarita y\'Amashami',
     requestTransfer: 'Saba Guhereza',
     outgoing: 'Igifite',
     incoming: 'Ikigerwa',

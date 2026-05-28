@@ -42,6 +42,7 @@ export interface Medication {
   description?: string;
   quantity: number;
   pharmacy?: Pharmacy;
+  pharmacyId?: string;
   branchId?: string;
   branch?: Branch;
 }
@@ -61,6 +62,7 @@ export interface Pharmacy {
   logoUrl?: string;
   latitude?: number;
   longitude?: number;
+  pharmacyId?: string;
   medications: Medication[];
 }
 

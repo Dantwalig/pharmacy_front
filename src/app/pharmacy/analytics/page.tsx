@@ -167,7 +167,7 @@ export default function PharmacyAnalyticsPage() {
   const a = { ...MOCK_ANALYTICS, ...analytics };
   const s = {
     revenueByBranch:    stats?.revenueByBranch    ?? MOCK_STATS.revenueByBranch,
-    monthlyComparison:  stats?.monthlyComparison  ?? MOCK_STATS.monthlyComparison,
+    monthlyComparison:  stats?.revenueByBranch    ?? MOCK_STATS.revenueByBranch,
     revenueOverTime:    stats?.revenueOverTime     ?? MOCK_STATS.revenueOverTime,
   };
 

@@ -45,13 +45,15 @@ export default function BranchStaffPage() {
   const router = useRouter();
   const [actionId, setActionId] = useState<string | null>(null);
 
-  const { data: staff = [], loading, refetch } = useFetch<StaffMember[]>(
+  const { data, loading, refetch } = useFetch<StaffMember[]>(
     async (signal) => {
       const res = await api.get('/staff', { signal });
       return res.data;
     },
     []
   ) as any;
+
+  const staff = data ?? [];
 
   const handleResendCredentials = async (staffId: string, email: string) => {
     if (!confirm(t('staffMgmt.resendConfirm', { email }))) return;

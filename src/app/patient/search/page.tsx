@@ -138,7 +138,7 @@ export default function SearchPage() {
       name: med.name,
       price: med.price,
       quantity: 1,
-      pharmacyId: med.pharmacy?.id || '',
+      pharmacyId: med.pharmacyId || med.pharmacy?.id || '',
       branchId: med.branchId || med.branch?.id || '',
       pharmacyName: med.pharmacy?.name || '',
       requiresPrescription: med.requiresPrescription,

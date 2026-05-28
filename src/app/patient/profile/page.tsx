@@ -18,7 +18,18 @@ export default function PatientProfilePage() {
   const [tab, setTab] = useState<Tab>('profile');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '', address: '', dateOfBirth: '', gender: 'MALE' });
+  const [profile, setProfile] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    dateOfBirth: '',
+    gender: 'MALE',
+    insuranceProvider: '',
+    insurancePolicy: '',
+    insuranceMemberId: '',
+    insuranceCoverage: 0,
+  });
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showPwd, setShowPwd] = useState(false);
 
@@ -30,10 +41,16 @@ export default function PatientProfilePage() {
       const res = await api.get('/patients/profile');
       const d = res.data;
       setProfile({
-        firstName: d.firstName || '', lastName: d.lastName || '',
-        phone: d.phone || '', address: d.address || '',
+        firstName: d.firstName || '',
+        lastName: d.lastName || '',
+        phone: d.phone || '',
+        address: d.address || '',
         dateOfBirth: d.dateOfBirth ? new Date(d.dateOfBirth).toISOString().split('T')[0] : '',
         gender: d.gender || 'MALE',
+        insuranceProvider: d.insuranceProvider || '',
+        insurancePolicy: d.insurancePolicy || '',
+        insuranceMemberId: d.insuranceMemberId || '',
+        insuranceCoverage: d.insuranceCoverage ?? 0,
       });
     } catch { toast.error(t('errors.failedToLoadProfile')); }
     finally { setLoading(false); }
@@ -43,7 +60,10 @@ export default function PatientProfilePage() {
     e.preventDefault(); setSaving(true);
     try {
       // Correct endpoint: PUT /patients/profile
-      await api.put('/patients/profile', profile);
+      await api.put('/patients/profile', {
+        ...profile,
+        insuranceCoverage: parseInt(profile.insuranceCoverage.toString()) || 0,
+      });
       toast.success(t('success.profileUpdated'));
     } catch (error: unknown) { toast.error(getErrorMessage(error)); }
     finally { setSaving(false); }
@@ -133,6 +153,34 @@ export default function PatientProfilePage() {
           <label className="block text-xs font-semibold text-gray-600 mb-1">{t('profile2.address')}</label>
           <textarea value={profile.address} onChange={e => setProfile({...profile, address: e.target.value})} rows={2} className={`${inputCls} resize-none`} />
         </div>
+
+        <div className="border-t border-gray-100 pt-4 space-y-4">
+          <h3 className="text-sm font-bold text-gray-900">Insurance Settings</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Insurance Provider</label>
+              <select value={profile.insuranceProvider} onChange={e => setProfile({...profile, insuranceProvider: e.target.value})} className={inputCls}>
+                <option value="">None / Private Pay</option>
+                <option value="RSSB">RSSB</option>
+                <option value="MMI">MMI</option>
+                <option value="RADIANT">RADIANT</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Insurance Coverage (%)</label>
+              <input type="number" min="0" max="100" value={profile.insuranceCoverage} onChange={e => setProfile({...profile, insuranceCoverage: parseInt(e.target.value) || 0})} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Policy / Card Number</label>
+              <input type="text" value={profile.insurancePolicy} onChange={e => setProfile({...profile, insurancePolicy: e.target.value})} className={inputCls} placeholder="Policy number" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Member ID</label>
+              <input type="text" value={profile.insuranceMemberId} onChange={e => setProfile({...profile, insuranceMemberId: e.target.value})} className={inputCls} placeholder="Member ID" />
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
               className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
