@@ -18,7 +18,7 @@ import Link from 'next/link';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
-const CLOCK_IN_COLOR  = '#007434';
+const CLOCK_IN_COLOR = '#007434';
 const CLOCK_OUT_COLOR = '#08007C';
 
 interface CurrentAttendance {
@@ -40,11 +40,11 @@ interface StaffProfile {
 }
 
 const STATUS_INFO_COLORS: Record<string, { color: string; dot: string }> = {
-  PENDING:     { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-400'  },
-  APPROVED:    { color: 'bg-green-50 text-green-700 border-green-200',    dot: 'bg-green-400'   },
-  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400'  },
-  COMPLETED:   { color: 'bg-blue-50 text-blue-700 border-blue-200',       dot: 'bg-blue-400'    },
-  REJECTED:    { color: 'bg-red-50 text-red-700 border-red-200',          dot: 'bg-red-400'     },
+  PENDING: { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-400' },
+  APPROVED: { color: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-400' },
+  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400' },
+  COMPLETED: { color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-400' },
+  REJECTED: { color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-400' },
 };
 
 function HeartbeatIcon({ className }: { className?: string }) {
@@ -60,19 +60,19 @@ export default function StaffDashboardPage() {
   const { user } = useAuth();
 
   const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
-    PENDING:     { label: t('staff.statusWaitingApproval'),                          ...STATUS_INFO_COLORS.PENDING     },
-    APPROVED:    { label: t('staff.statusActiveShift'),                              ...STATUS_INFO_COLORS.APPROVED    },
-    CLOCKED_OUT: { label: t('staff.statusClockOutPending'),                          ...STATUS_INFO_COLORS.CLOCKED_OUT },
-    COMPLETED:   { label: t('dashboard.completed') ?? 'Shift completed',             ...STATUS_INFO_COLORS.COMPLETED   },
-    REJECTED:    { label: t('staff.statusRejected'),                                 ...STATUS_INFO_COLORS.REJECTED    },
+    PENDING: { label: t('staff.statusWaitingApproval'), ...STATUS_INFO_COLORS.PENDING },
+    APPROVED: { label: t('staff.statusActiveShift'), ...STATUS_INFO_COLORS.APPROVED },
+    CLOCKED_OUT: { label: t('staff.statusClockOutPending'), ...STATUS_INFO_COLORS.CLOCKED_OUT },
+    COMPLETED: { label: t('dashboard.completed') ?? 'Shift completed', ...STATUS_INFO_COLORS.COMPLETED },
+    REJECTED: { label: t('staff.statusRejected'), ...STATUS_INFO_COLORS.REJECTED },
   };
 
-  const [profile, setProfile]                 = useState<StaffProfile | null>(null);
-  const [todayShift, setTodayShift]           = useState<CurrentAttendance | null>(null);
-  const [loading, setLoading]                 = useState(true);
-  const [actionLoading, setActionLoading]     = useState(false);
+  const [profile, setProfile] = useState<StaffProfile | null>(null);
+  const [todayShift, setTodayShift] = useState<CurrentAttendance | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [transactionsToday, setTransactionsToday] = useState(0);
-  const [grossSales, setGrossSales]           = useState(0);
+  const [grossSales, setGrossSales] = useState(0);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
   useEffect(() => { fetchData(); }, []);
@@ -109,7 +109,7 @@ export default function StaffDashboardPage() {
         toast.error(`Orders failed: ${ordersRes.reason?.response?.data?.message ?? ordersRes.reason?.message ?? 'unknown error'}`);
       }
 
-      const todayStr   = new Date().toDateString();
+      const todayStr = new Date().toDateString();
       const todaysOrders = allOrders.filter((o: any) => new Date(o.createdAt).toDateString() === todayStr);
 
       setTransactionsToday(todaysOrders.length);
@@ -122,15 +122,15 @@ export default function StaffDashboardPage() {
           .map((o: any) => {
             let statusColor = 'text-gray-600 bg-gray-50 ring-gray-200';
             if (['COMPLETED', 'DELIVERED'].includes(o.status)) statusColor = 'text-green-600 bg-green-50 ring-green-200';
-            if (['PENDING'].includes(o.status))                statusColor = 'text-yellow-600 bg-yellow-50 ring-yellow-200';
-            if (['CANCELLED'].includes(o.status))              statusColor = 'text-red-600 bg-red-50 ring-red-200';
+            if (['PENDING'].includes(o.status)) statusColor = 'text-yellow-600 bg-yellow-50 ring-yellow-200';
+            if (['CANCELLED'].includes(o.status)) statusColor = 'text-red-600 bg-red-50 ring-red-200';
             return {
-              id:     o.id.slice(0, 8).toUpperCase(),
-              type:   o.prescription ? t('staff.prescription') : t('staff.order'),
+              id: o.id.slice(0, 8).toUpperCase(),
+              type: o.prescription ? t('staff.prescription') : t('staff.order'),
               amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
-              time:   new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               status: o.status.replace(/_/g, ' '),
-              color:  statusColor,
+              color: statusColor,
             };
           })
       );
@@ -142,22 +142,40 @@ export default function StaffDashboardPage() {
   const handleClockIn = async () => {
     setActionLoading(true);
     try {
-      await api.post('/attendance/clock-in', {});
+      const response = await api.post('/attendance/clock-in', {});
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Clock-in Request Payload:', {});
+        console.log('Clock-in Response:', response);
+      }
       toast.success(t('dashboard.clockInRequest'));
       fetchData();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
+    } catch (err: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Clock-in Error:', err.response?.data || err);
+      }
+      const backendMsg = err.response?.data?.message;
+      const errorMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg;
+      toast.error(errorMsg || getErrorMessage(err));
     } finally { setActionLoading(false); }
   };
 
   const handleClockOut = async () => {
     setActionLoading(true);
     try {
-      await api.post('/attendance/clock-out', {});
+      const response = await api.post('/attendance/clock-out', {});
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Clock-out Request Payload:', {});
+        console.log('Clock-out Response:', response);
+      }
       toast.success(t('dashboard.clockOutRequest'));
       fetchData();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
+    } catch (err: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Clock-out Error:', err.response?.data || err);
+      }
+      const backendMsg = err.response?.data?.message;
+      const errorMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg;
+      toast.error(errorMsg || getErrorMessage(err));
     } finally { setActionLoading(false); }
   };
 
@@ -173,9 +191,9 @@ export default function StaffDashboardPage() {
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  const shiftInfo      = todayShift ? STATUS_INFO[todayShift.status] : null;
-  const canClockOut    = todayShift?.status === 'APPROVED';
-  const clockedIn      = !!todayShift && todayShift.status !== 'REJECTED';
+  const shiftInfo = todayShift ? STATUS_INFO[todayShift.status] : null;
+  const canClockOut = todayShift?.status === 'APPROVED';
+  const clockedIn = !!todayShift && todayShift.status !== 'REJECTED';
 
   const spinner = <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />;
 
@@ -383,6 +401,7 @@ export default function StaffDashboardPage() {
             </div>
           )}
         </div>
+
       </div>
 
       {/* ── Recent Activity (full width) ── */}
