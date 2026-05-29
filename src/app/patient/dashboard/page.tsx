@@ -171,7 +171,7 @@ export default function PatientDashboard() {
           <Link
             href="/patient/search"
             className="inline-flex items-center text-white font-semibold text-base transition-all hover:opacity-90"
-            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
+            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
           >
             <MapPinIcon className="w-5 h-5" />
             {t('dashboard.browseNearbyPharmacies')}
@@ -230,7 +230,7 @@ export default function PatientDashboard() {
           <Link
             href="/patient/search"
             className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
-            style={{ background: NAVY }}
+            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
           >
             {t('common.viewAll')} →
           </Link>

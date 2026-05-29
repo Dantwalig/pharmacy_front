@@ -66,6 +66,7 @@ export const en = {
     security: 'Security',
     orders: 'Orders',
     changePassword: 'Change Password',
+    editProfile: 'Edit Profile',
   },
   verify: {
     title: 'Verify Your Email',
@@ -274,6 +275,8 @@ export const en = {
     proceedToCheckout: 'Proceed to Checkout',
     continueShopping: 'Continue Shopping',
     itemAdded: 'Item added to cart',
+    reviewItems: 'Review your selected items',
+    suggestedMeds: 'Explore the suggested medications below:',
   },
   medications: {
     title: 'Search Medications',
@@ -1082,6 +1085,14 @@ export const en = {
     paymentCompleted: 'Payment completed successfully!',
     viewPrescription: 'View Prescription',
     prescriptionInfo: 'Prescription Information',
+    filterBy: 'Filter By',
+    searchByMedication: 'Search orders by medication...',
+    orderId: 'Order ID',
+    time: 'Time',
+    quantity: 'Quantity',
+    amountRwf: 'Amount(Rwf)',
+    searchForMedication: 'Search for medication',
+    manageOrder: 'Manage Order',
   },
   checkout2: {
     cartEmpty: 'Your cart is empty',

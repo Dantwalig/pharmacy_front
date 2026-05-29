@@ -132,8 +132,8 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
-        <h1 className="text-3xl font-bold">{t('checkout.title')}</h1>
+      <div className="bg-[#EBF5FF] rounded-2xl p-8">
+        <h1 className="text-3xl font-bold text-[#1E3A5F]">{t('checkout.title')}</h1>
       </div>
       <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl m-6 shadow-sm p-12 text-center">
         <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -152,9 +152,9 @@ export default function CheckoutPage() {
       <ArrowLeftIcon className="w-4 h-4" /> {t('checkout2.backToCart')}
       </button>
 
-    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
-      <h1 className="text-3xl font-bold mb-1">{t('checkout.title')}</h1>
-      <p className="text-blue-100">{t('checkout.subtitle')}</p>
+    <div className="bg-[#EBF5FF] rounded-2xl p-8">
+      <h1 className="text-3xl font-bold mb-1 text-[#1E3A5F]">{t('checkout.title')}</h1>
+      <p style={{ color: '#3B82F6' }}>{t('checkout.subtitle')}</p>
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-2 gap-4">
             {(['PICKUP', 'DELIVERY'] as const).map(type => (
                 <button key={type} onClick={() => setOrderType(type)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${orderType === type ? 'border-[#2563EB] bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
                 <span className="text-3xl">{type === 'PICKUP' ? '' : ''}</span>
                 <span className="font-semibold text-sm text-gray-800">{type === 'PICKUP' ? t('checkout.pickup') : t('checkout.delivery')}</span>
                 <span className="text-xs text-gray-500">{type === 'PICKUP' ? t('checkout2.free') : '+1,000 RWF'}</span>
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
                 { value: 'CARD', label: 'Debit / Credit Card', emoji: '' },
                 { value: 'INSURANCE', label: t('checkout2.insurancePayment'), emoji: '' },
               ].map(opt => (
-                <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}>
+                <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === opt.value ? 'border-[#2563EB] bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
                 <input
                     type="radio"
                     name="payment"
@@ -290,13 +290,13 @@ export default function CheckoutPage() {
               <span>{t('checkout2.delivery')}</span><span>{deliveryFee > 0 ? `${deliveryFee.toLocaleString()} RWF` : t('checkout2.free')}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>{t('cart.total')}</span><span className="text-blue-600">{total.toLocaleString()} RWF</span>
+              <span>{t('cart.total')}</span><span className="text-[#2563EB] font-bold">{total.toLocaleString()} RWF</span>
             </div>
           </div>
           <button
               onClick={handlePlaceOrder}
               disabled={loading || (hasPrescription && !prescriptionId)}
-              className="w-full mt-4 bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] text-white py-3.5 rounded-xl font-bold text-sm hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-4 text-white py-3.5 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-sm disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
             >
             {loading
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('checkout2.placingOrder')}</>

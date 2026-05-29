@@ -102,18 +102,18 @@ export default function PharmacyDetailsPage() {
         </button>
 
       {/* Pharmacy Header */}
-        <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl shadow-xl p-8 text-white">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-4">{pharmacy.name}</h1>
+      <div className="bg-[#EBF5FF] rounded-2xl p-8">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1E3A5F]">{pharmacy.name}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3">
-            <MapPinIcon className="w-6 h-6 mt-0.5 shrink-0" />
-            <span className="text-blue-100">{pharmacy.address}</span>
+            <MapPinIcon className="w-5 h-5 mt-0.5 shrink-0 text-[#2D9B8A]" />
+            <span className="text-gray-600 text-sm">{pharmacy.address}</span>
           </div>
           <div className="flex items-center gap-3">
-            <PhoneIcon className="w-6 h-6 shrink-0" />
-            <a href={`tel:${pharmacy.phone}`} className="text-blue-100 hover:text-white font-medium underline">
+            <PhoneIcon className="w-5 h-5 shrink-0 text-[#2D9B8A]" />
+            <a href={`tel:${pharmacy.phone}`} className="text-gray-600 hover:text-[#1E3A5F] font-medium text-sm">
               {pharmacy.phone}
-              </a>
+            </a>
           </div>
         </div>
       </div>
@@ -137,9 +137,10 @@ export default function PharmacyDetailsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all ${
                   selectedCategory === category
-                    ? 'bg-linear-to-r from-[#2D9B8A] to-[#207a6c] text-white shadow-lg'
+                    ? 'text-white shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
+                style={selectedCategory === category ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)' } : {}}
               >
               {category}
               </button>
@@ -202,7 +203,7 @@ export default function PharmacyDetailsPage() {
                   </div>
                   <button
                       onClick={() => handleAddToCart(medication)}
-                      className="bg-linear-to-r from-[#2D9B8A] to-[#207a6c] text-white px-4 py-3 rounded-xl font-semibold hover:from-[#207a6c] hover:to-[#185e53] transition-all shadow-lg flex items-center gap-2"
+                      className="text-white px-4 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-sm flex items-center gap-2" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
                     >
                     <ShoppingCartIcon className="w-5 h-5" />
                     {t('medications.addToCart')}

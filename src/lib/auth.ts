@@ -45,11 +45,16 @@ export const clearUserCache = (): void => {
 };
 
 export const getUserFromToken = (): User | null => {
+  const token = getAccessToken();
+  if (!token) {
+    if (typeof window !== 'undefined') {
+      clearUserCache();
+    }
+    return null;
+  }
+
   const cachedUser = getCachedUser();
   if (cachedUser) return cachedUser;
-
-  const token = getAccessToken();
-  if (!token) return null;
 
   try {
     const decoded = jwtDecode<DecodedToken>(token);
