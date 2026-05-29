@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { UserCircleIcon, LockClosedIcon, BellIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, LockClosedIcon, BellIcon, EyeIcon, EyeSlashIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Tab = 'profile' | 'security' | 'notifications';
 
@@ -62,15 +62,18 @@ export default function PatientProfilePage() {
     finally { setSaving(false); }
   };
 
-  const inputCls = "w-full px-3 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D9B8A] focus:border-[#2D9B8A] outline-none text-sm";
+  const inputCls = "w-full px-3 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none text-sm";
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-    <div className="bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] rounded-2xl p-8 text-white">
-      <h1 className="text-3xl font-bold mb-1">{t('profile2.myProfile')}</h1>
-      <p className="text-blue-100 text-sm">{t('profile2.manageSettings')}</p>
+    <div className="bg-[#EBF5FF] rounded-2xl p-8">
+      <h1 className="text-3xl font-bold mb-1 text-[#1E3A5F]">{t('profile2.myProfile')}</h1>
+      <p className="text-sm mb-4" style={{ color: '#3B82F6' }}>{t('profile2.manageSettings')}</p>
+      <button onClick={() => setTab('profile')} className="inline-flex items-center gap-2 px-4 py-2 border border-[#1E4D8C] text-[#1E4D8C] rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+        <PencilSquareIcon className="w-4 h-4" /> {t('common.editProfile')}
+      </button>
     </div>
 
     {/* Tab Nav */}
@@ -81,7 +84,8 @@ export default function PatientProfilePage() {
           { id: 'notifications', label: t('notifications2.notifications'), icon: BellIcon },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'bg-[#2D9B8A] text-white shadow' : 'bg-white text-gray-700 hover:shadow-md'}`}>
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === id ? 'text-white shadow' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:shadow-sm'}`}
+            style={tab === id ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)' } : {}}>
           <Icon className="w-4 h-4" /> {label}
           </button>
       ))}
@@ -135,7 +139,7 @@ export default function PatientProfilePage() {
         </div>
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
+              className="px-6 py-2.5 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2 hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
             {saving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>{t('common.saving')}</> : t('common.saveChanges')}
             </button>
         </div>
@@ -165,7 +169,7 @@ export default function PatientProfilePage() {
         ))}
           <div className="flex justify-end">
           <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-[#2D9B8A] hover:bg-[#207a6c] text-white rounded-lg text-sm font-semibold disabled:opacity-50">
+              className="px-6 py-2.5 text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
             {saving ? t('common.changing') : t('common.changePassword')}
             </button>
         </div>
@@ -189,7 +193,7 @@ export default function PatientProfilePage() {
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked className="sr-only peer" />
-              <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2D9B8A]"></div>
+              <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0688CA]"></div>
             </label>
           </div>
         ))}

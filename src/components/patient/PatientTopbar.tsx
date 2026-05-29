@@ -61,7 +61,7 @@ export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
         <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors" aria-label="View shopping cart">
           <ShoppingCartIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
               {cartCount}
               </span>
           )}

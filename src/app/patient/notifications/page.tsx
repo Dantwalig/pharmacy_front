@@ -7,6 +7,21 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { POLLING_INTERVAL_MS } from '@/lib/constants';
+import {
+  BellIcon,
+  ShoppingBagIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  ShoppingCartIcon,
+  CheckCircleIcon,
+  BeakerIcon,
+  TruckIcon,
+  ArchiveBoxIcon,
+  GiftIcon,
+  XCircleIcon,
+  ClipboardDocumentListIcon,
+  NoSymbolIcon,
+} from '@heroicons/react/24/outline';
 
 
 type NotificationCategory = 'all' | 'orders' | 'prescriptions' | 'alerts';
@@ -28,23 +43,22 @@ const getCategory = (type: string): Omit<NotificationCategory, 'all'> => {
   return 'alerts';
 };
 
-// Maps notification type → { icon background color, icon emoji, label }
-const getTypeConfig = (type: string) => {
+// Maps notification type → { icon background color, icon component, label }
+const getTypeConfig = (type: string): { bg: string; color: string; icon: React.ElementType; label: string } => {
   switch (type) {
-    case 'ORDER_PLACED':           return { bg: '#EEF2FF', color: '#4F46E5', emoji: '🛒',  label: 'ORDER UPDATE' };
-    case 'ORDER_ACCEPTED':         return { bg: '#ECFDF5', color: '#059669', emoji: '✅',  label: 'ORDER UPDATE' };
-    case 'ORDER_PREPARING':        return { bg: '#FFF7ED', color: '#EA580C', emoji: '⚗️',  label: 'ORDER UPDATE' };
-    case 'ORDER_OUT_FOR_DELIVERY': return { bg: '#EFF6FF', color: '#2563EB', emoji: '🚚',  label: 'ORDER UPDATE' };
-    case 'ORDER_READY_FOR_PICKUP': return { bg: '#F0FAFA', color: '#0D9488', emoji: '📦',  label: 'ORDER UPDATE' };
-    case 'ORDER_DELIVERED':        return { bg: '#ECFDF5', color: '#16A34A', emoji: '🎉',  label: 'ORDER UPDATE' };
-    case 'ORDER_CANCELLED':        return { bg: '#FEF2F2', color: '#DC2626', emoji: '❌',  label: 'ORDER UPDATE' };
-    case 'PRESCRIPTION_APPROVED':  return { bg: '#FFF7ED', color: '#EA580C', emoji: '📋',  label: 'PRESCRIPTION' };
-    case 'PRESCRIPTION_REJECTED':  return { bg: '#FEF2F2', color: '#DC2626', emoji: '🚫',  label: 'PRESCRIPTION' };
-    default:                       return { bg: '#F3F4F6', color: '#6B7280', emoji: '🔔',  label: 'ALERT' };
+    case 'ORDER_PLACED':           return { bg: '#EEF2FF', color: '#4F46E5', icon: ShoppingCartIcon,          label: 'ORDER UPDATE' };
+    case 'ORDER_ACCEPTED':         return { bg: '#ECFDF5', color: '#059669', icon: CheckCircleIcon,            label: 'ORDER UPDATE' };
+    case 'ORDER_PREPARING':        return { bg: '#FFF7ED', color: '#EA580C', icon: BeakerIcon,                 label: 'ORDER UPDATE' };
+    case 'ORDER_OUT_FOR_DELIVERY': return { bg: '#EFF6FF', color: '#2563EB', icon: TruckIcon,                  label: 'ORDER UPDATE' };
+    case 'ORDER_READY_FOR_PICKUP': return { bg: '#F0FAFA', color: '#0D9488', icon: ArchiveBoxIcon,             label: 'ORDER UPDATE' };
+    case 'ORDER_DELIVERED':        return { bg: '#ECFDF5', color: '#16A34A', icon: GiftIcon,                   label: 'ORDER UPDATE' };
+    case 'ORDER_CANCELLED':        return { bg: '#FEF2F2', color: '#DC2626', icon: XCircleIcon,                label: 'ORDER UPDATE' };
+    case 'PRESCRIPTION_APPROVED':  return { bg: '#FFF7ED', color: '#EA580C', icon: ClipboardDocumentListIcon,  label: 'PRESCRIPTION' };
+    case 'PRESCRIPTION_REJECTED':  return { bg: '#FEF2F2', color: '#DC2626', icon: NoSymbolIcon,               label: 'PRESCRIPTION' };
+    default:                       return { bg: '#F3F4F6', color: '#6B7280', icon: BellIcon,                   label: 'ALERT' };
   }
 };
 
-const NAVY = '#1E3A5F';
 const TEAL = '#2D9B8A';
 
 export default function PatientNotificationsPage() {
@@ -142,19 +156,19 @@ export default function PatientNotificationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
+    <div className="min-h-screen bg-white p-4 lg:p-6">
       <div className="max-w-3xl mx-auto space-y-6">
 
         {/* ── Header card ──────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-start justify-between mb-1">
-            <h1 className="text-3xl font-bold" style={{ color: NAVY }}>
+            <h1 className="text-3xl font-bold" style={{ color: '#0688CA' }}>
               {t('notifications2.notifications')}
             </h1>
             <button
               onClick={handleMarkAllAsRead}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors hover:bg-gray-50"
-              style={{ borderColor: NAVY, color: NAVY }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
             >
               {/* checkmark icon */}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,15 +195,15 @@ export default function PatientNotificationsPage() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={
                   activeCategory === tab.id
-                    ? { backgroundColor: NAVY, color: '#fff' }
+                    ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)', color: '#fff' }
                     : { backgroundColor: '#F3F4F6', color: '#374151' }
                 }
               >
                 {/* tab icon */}
-                {tab.id === 'all'           && <span>🔔</span>}
-                {tab.id === 'orders'        && <span>🛒</span>}
-                {tab.id === 'prescriptions' && <span>📋</span>}
-                {tab.id === 'alerts'        && <span>⚠️</span>}
+                {tab.id === 'all'           && <BellIcon className="w-4 h-4" />}
+                {tab.id === 'orders'        && <ShoppingBagIcon className="w-4 h-4" />}
+                {tab.id === 'prescriptions' && <DocumentTextIcon className="w-4 h-4" />}
+                {tab.id === 'alerts'        && <ExclamationTriangleIcon className="w-4 h-4" />}
                 {tab.label}
               </button>
             ))}
@@ -208,7 +222,7 @@ export default function PatientNotificationsPage() {
         </div>
 
         {/* ── Notification section header ───────────────────────────────── */}
-        <h2 className="text-xl font-bold px-1" style={{ color: NAVY }}>
+        <h2 className="text-xl font-bold px-1" style={{ color: '#0688CA' }}>
           {activeCategory === 'all'           ? t('notifications2.allNotifications')
           : activeCategory === 'orders'        ? t('notifications2.ordersNotifications')
           : activeCategory === 'prescriptions' ? t('notifications2.prescriptionsNotifications')
@@ -218,7 +232,7 @@ export default function PatientNotificationsPage() {
         {/* ── Notification cards ────────────────────────────────────────── */}
         {filteredNotifications.length === 0 ? (
           <div className="bg-white rounded-2xl p-16 text-center shadow-sm">
-            <p className="text-5xl mb-4">🔔</p>
+            <BellIcon className="w-14 h-14 mx-auto mb-4" style={{ color: '#0688CA' }} />
             <p className="text-gray-400 font-medium">
               {notifications.length === 0
                 ? t('notifications2.noNotificationsYet')
@@ -262,10 +276,10 @@ export default function PatientNotificationsPage() {
                   <div className="flex gap-4">
                     {/* Icon badge */}
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                       style={{ backgroundColor: cfg.bg }}
                     >
-                      {cfg.emoji}
+                      {(() => { const CfgIcon = cfg.icon; return <CfgIcon className="w-6 h-6" style={{ color: cfg.color }} />; })()}
                     </div>
 
                     <div className="flex-1 min-w-0 pr-6">
@@ -297,7 +311,7 @@ export default function PatientNotificationsPage() {
                           <button
                             onClick={e => { e.stopPropagation(); if (n.orderId) router.push(`/patient/orders/${n.orderId}`); }}
                             className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: NAVY }}
+                            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
                           >
                             Track Courier
                           </button>
@@ -315,7 +329,7 @@ export default function PatientNotificationsPage() {
                           <button
                             onClick={e => { e.stopPropagation(); router.push(`/patient/prescriptions/${n.prescriptionId}`); }}
                             className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: NAVY }}
+                            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
                           >
                             View Prescription
                           </button>

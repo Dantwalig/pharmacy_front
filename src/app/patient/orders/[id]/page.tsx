@@ -156,17 +156,17 @@ export default function OrderDetailsPage() {
       </button>
 
     {/* Order Header */}
-      <div className="bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] rounded-2xl shadow-xl p-8 text-white">
+    <div className="bg-[#EBF5FF] rounded-2xl p-8">
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl font-bold mb-2 text-[#1E3A5F]">
             {t('orders.orderNumber')}: #{order.orderNumber || order.id.slice(0, 8)}
-            </h1>
-          <p className="text-teal-100">{new Date(order.createdAt).toLocaleString()}</p>
+          </h1>
+          <p style={{ color: '#3B82F6' }}>{new Date(order.createdAt).toLocaleString()}</p>
         </div>
-        <span className={`inline-block px-6 py-3 rounded-xl text-sm font-bold shadow-lg ${
-            order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-500 text-white' :
-            order.status === 'CANCELLED' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'
+        <span className={`inline-block px-6 py-3 rounded-xl text-sm font-bold ${
+            order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+            order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
           }`}>
           {t(STATUS_LABEL_KEYS[order.status] ?? 'orders2.statusPending')}
           </span>
@@ -181,10 +181,13 @@ export default function OrderDetailsPage() {
                 const isCurrent = order.status === status || (order.status === 'COMPLETED' && index === statusSteps.length - 1);
                 return (
                   <div key={status} className="flex flex-col items-center flex-1">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'bg-white text-[#1E4D8C] shadow-lg' : 'bg-white/30 text-white/70'} ${isCurrent ? 'ring-4 ring-white/50 scale-110' : ''}`}>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${isComplete ? 'text-white shadow-sm' : 'bg-gray-200 text-gray-500'} ${isCurrent ? 'ring-4 ring-blue-200 scale-110' : ''}`}
+                    style={isComplete ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)' } : {}}
+                  >
                     {isComplete ? '✓' : index + 1}
-                    </div>
-                  <p className="text-xs mt-2 text-center text-white/90 font-medium">{t(STATUS_LABEL_KEYS[status] ?? status)}</p>
+                  </div>
+                  <p className={`text-xs mt-2 text-center font-medium ${isComplete ? 'text-[#1E3A5F]' : 'text-gray-400'}`}>{t(STATUS_LABEL_KEYS[status] ?? status)}</p>
                 </div>
               );
               })}
@@ -193,11 +196,11 @@ export default function OrderDetailsPage() {
       )}
 
         {order.status === 'CANCELLED' && order.cancellationReason && (
-          <div className="mt-6 bg-red-500/20 backdrop-blur-sm rounded-xl p-4 border border-red-300/30">
-          <p className="text-sm font-semibold mb-1">{t('orders2.cancellationReason')}</p>
-          <p className="text-sm text-white/90">{order.cancellationReason}</p>
-        </div>
-      )}
+          <div className="mt-6 bg-red-50 rounded-xl p-4 border border-red-200">
+            <p className="text-sm font-semibold mb-1 text-red-700">{t('orders2.cancellationReason')}</p>
+            <p className="text-sm text-red-600">{order.cancellationReason}</p>
+          </div>
+        )}
       </div>
 
     {/* Pharmacy Info */}
@@ -305,7 +308,7 @@ export default function OrderDetailsPage() {
                 <button
                   onClick={handlePayment}
                   disabled={processingPayment}
-                  className="w-full bg-linear-to-r from-[#1E4D8C] to-[#1a3d6f] hover:from-[#1a3d6f] hover:to-[#0f2444] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
+                  className="w-full text-white py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
                 >
                   {processingPayment ? t('orders.processing') : `${t('orders.payNow').replace('{amount}', order.total.toLocaleString())}`}
                 </button>
@@ -325,7 +328,7 @@ export default function OrderDetailsPage() {
                 <button
                   onClick={handleVerifyOtp}
                   disabled={processingPayment || !otp}
-                  className="w-full bg-linear-to-r from-[#2D9B8A] to-[#207a6c] hover:from-[#207a6c] hover:to-[#185e53] text-white py-2.5 rounded-lg font-bold text-sm shadow transition-all disabled:opacity-50"
+                  className="w-full text-white py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
                 >
                   {processingPayment ? t('orders.verifying') : t('orders.submitOtp')}
                 </button>
