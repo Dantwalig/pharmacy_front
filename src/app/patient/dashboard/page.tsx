@@ -8,6 +8,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { PENDING_STATUSES } from '@/lib/constants';
+import { getOrderItems } from '@/lib/orderUtils';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
@@ -81,7 +83,7 @@ export default function PatientDashboard() {
           ['COMPLETED', 'DELIVERED'].includes(o.status)
         ).length,
         pendingOrders: orders.filter((o) =>
-          ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)
+          PENDING_STATUSES.includes(o.status)
         ).length,
       });
       setRecentOrders(orders.slice(0, 5));
@@ -289,7 +291,7 @@ export default function PatientDashboard() {
         {recentOrders.length > 0 ? (
           <div className="flex flex-col" style={{ gap: '20px' }}>
             {recentOrders.map((order) => {
-              const firstItem = order.items?.[0] ?? order.orderItems?.[0];
+              const firstItem = getOrderItems(order)[0];
               const medName = firstItem?.medication?.name ?? 'Medication';
               const medImage = firstItem?.medication?.imageUrl;
               const pharmacyName = order.pharmacy?.name ?? '—';

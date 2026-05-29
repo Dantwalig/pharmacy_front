@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { getOrderItems } from '@/lib/orderUtils';
 import type { Order } from '@/types';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -226,7 +227,7 @@ export default function OrderDetailsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
       <h2 className="font-bold text-xl mb-4 text-gray-800 dark:text-gray-100">{t('orders.medications')}</h2>
       <div className="space-y-4">
-        {order.orderItems?.map((item: any) => (
+        {getOrderItems(order).map((item: any) => (
             <div key={item.id} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
             <div className="flex-1">
               <p className="font-semibold text-gray-800 dark:text-gray-100">{item.medication.name}</p>

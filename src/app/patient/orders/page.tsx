@@ -5,14 +5,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { PENDING_STATUSES, COMPLETED_STATUSES } from '@/lib/constants';
+import { getOrderItems } from '@/lib/orderUtils';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
-  ClipboardDocumentListIcon,
   XMarkIcon,
   MapPinIcon,
   PhoneIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
   CubeIcon,
@@ -34,14 +34,6 @@ type OrderStatus =
 
 type FilterType = 'all' | 'pending' | 'completed';
 
-const COMPLETED_STATUSES: OrderStatus[] = ['DELIVERED', 'CANCELLED'];
-const PENDING_STATUSES: OrderStatus[] = [
-  'PENDING',
-  'ACCEPTED',
-  'PREPARING',
-  'OUT_FOR_DELIVERY',
-  'READY_FOR_PICKUP',
-];
 
 function getStatusMeta(status: OrderStatus, t: (key: string) => string) {
   switch (status) {
@@ -219,10 +211,10 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           {/* Medications */}
           <div className="px-6 py-5">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              {t('orders.medications')} ({order.orderItems?.length || 0} {t('orders2.items').toLowerCase()})
+              {t('orders.medications')} ({getOrderItems(order).length} {t('orders2.items').toLowerCase()})
             </h3>
             <div className="space-y-3">
-              {order.orderItems?.map((item: any) => (
+              {getOrderItems(order).map((item: any) => (
                 <div key={item.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl p-3.5">
                   <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-teal-100 dark:from-blue-900/40 dark:to-teal-900/40 rounded-xl flex items-center justify-center shrink-0">
                     <CubeIcon className="w-5 h-5 text-[#1E4D8C] dark:text-blue-400" />
