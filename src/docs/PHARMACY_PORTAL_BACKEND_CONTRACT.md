@@ -1,162 +1,482 @@
-This document lists frontend workarounds applied in the Pharmacy Owner Portal because of backend gaps. It also specifies the exact request/response shapes the frontend expects so the backend team can fix them and remove the workarounds.
+# Pharmacy Owner Portal — Backend Contract
 
-Summary of gaps and frontend workarounds
+This document records frontend workarounds applied in the Pharmacy Owner Portal due to backend inconsistencies. Each gap includes the problem, frontend workaround, requested backend changes, example response shapes where applicable, and verification criteria.
 
- src/app/pharmacy/orders/page.tsx:
-Gap 1 — Missing endpoint: GET /branches/my-branches (Should be remaoved)
-- Problem: The frontend previously called `GET /branches/my-branches` to populate the Branch filter on the Orders page. The endpoint was unavailable to the Orders page during integration.Frontend implemented a fallback that derives branch options from order data.
-- Frontend workaround: The Orders page now derives branch options from the orders returned by `GET /orders/pharmacy-orders`.
-  - Implementation: extract unique { id, name } pairs from `orders.map(o => o.branch)` or fallback to `o.branchId` when `branch` object is not present.
-  - Temporary behavior: If the order does not include nested `branch.name`, the UI will use the raw `branchId` (or first 8 chars) as the label.
-- Requested backend fix: Implement `GET /branches/my-branches` or include branch details on order responses 
+---
 
-Gap 2 — Missing status enum value: READY_FOR_CHECKOUT
-- Problem: The frontend shows a tab `READY_FOR_CHECKOUT` but the backend does not have this enum value. The backend uses `READY_FOR_PICKUP` to represent the same business state.
-- Frontend workaround: The Orders page was updated to display `READY_FOR_PICKUP` instead of `READY_FOR_CHECKOUT`. For backwards compatibility where UI code still references `READY_FOR_CHECKOUT`, the frontend maps that key to `READY_FOR_PICKUP` when counting/filtering.
+# 1. Quick Summary 
 
-Canonical order statuses the frontend expects (per current backend schema):
-PENDING | ACCEPTED | PREPARING | READY_FOR_PICKUP | OUT_FOR_DELIVERY | DELIVERED | COMPLETED | CANCELLED
+| 1   | Branch list missing                  | `src/app/pharmacy/orders/page.tsx`    | `GET /branches/my-branches` or `GET /orders/pharmacy-orders` | High     |
+| 2   | READY_FOR_CHECKOUT mismatch          | `src/app/pharmacy/orders/page.tsx`    | OrderStatus enum                                             | Medium   |
+| 3   | Missing patient/staff display fields | `src/app/pharmacy/orders/page.tsx`    | `GET /orders/pharmacy-orders`                                | High     |
+| 4   | Owner name missing                   | `src/app/pharmacy/dashboard/page.tsx` | `GET /pharmacies/profile/me`                                 | Medium   |
+| 5   | Analytics response shape mismatch    | `src/app/pharmacy/analytics/page.tsx` | `GET /pharmacies/dashboard/stats`                            | Medium   |
+| 6   | Inventory dosage naming mismatch     | `src/app/pharmacy/inventory/page.tsx` | Inventory APIs                                               | Low      |
+| 7   | Missing patient profile fields       | `src/app/pharmacy/patients/page.tsx`  | `GET /pharmacies/dashboard/patients`                         | Medium   |
+| 8   | Missing prescription matrix          | `src/app/pharmacy/patients/page.tsx`  | `GET /pharmacies/dashboard/patients`                         | Medium   |
+| 9   | Incomplete order sub-object records  | `src/app/pharmacy/patients/page.tsx`  | `GET /pharmacies/dashboard/patients`                         | Low      |
+| 10  | Order timestamp consistency          | `src/app/pharmacy/patients/page.tsx`  | `GET /pharmacies/dashboard/patients`                         | Low      |
+| 11  | Notification scope issue             | Notifications module                  | Notifications APIs                                           | High     |
+| 12  | Missing orderId on notifications     | Notifications module                  | Notifications APIs                                           | Medium   |
+| 13  | Missing OUT_OF_STOCK classification  | Notifications module                  | Notifications APIs                                           | Medium   |
 
+---
 
-Gap 3 — Patient/Staff fields are nested (not flat patientName/staffName)
-- Problem: The Orders response used by the frontend does not contain flat `patientName` or `staffName` fields. Instead, the backend returns nested objects: `patient: { firstName, lastName, phone, ... }`. There is no `staff` relation included on orders by default. Frontend code that referenced `order.patientName` and `order.staffName` showed blank values.
-- Frontend workaround: The Orders page now derives the displayed names from nested fields:
-  - Patient full name: `${order.patient?.firstName ?? ''} ${order.patient?.lastName ?? ''}`.trim() || '—'
-  - Staff full name: if `order.staff` exists, use `${order.staff?.firstName} ${order.staff?.lastName}`.trim(); otherwise fall back to `order.staffName` (if present) or `order.branchId` (first 8 chars) as a temporary stand-in.
-- Search/update behavior: The orders search now checks the derived patient/staff names (nested fields) rather than flat `patientName`/`staffName` strings.
+# 2. High Priority Gaps
 
-Notes on response wrapping:
-- Some backend endpoints return payload either as `res.data.data` or directly as `res.data`. The frontend handles both shapes (`res.data?.data ?? res.data`). Please keep responses compatible with that pattern or standardize on `{ data: ... }`.
+## Gap 1 — Branch List Missing (Orders Page)
 
-Additional findings discovered during analysis
-- Several frontend pages call endpoints under `/pharmacies/dashboard/*` (dashboard, analytics, patients). Ensure those endpoints follow consistent shapes.
-- The branches listing page (`GET /branches/my-branches`) is already used by other pages (e.g., Branch Management). Adding this endpoint or returning branch info on orders will benefit multiple UI areas.
+### Problem
 
-Files patched in the frontend
-- `src/app/pharmacy/orders/page.tsx`
-  - Removed call to `GET /branches/my-branches` and derive branches from orders as a temporary workaround.
-  - Replaced `READY_FOR_CHECKOUT` tab with `READY_FOR_PICKUP` and mapped counts accordingly.
-  - Derive `patient` and `staff` display names from nested objects and updated search to use derived names.
+The Orders page previously relied on `GET /branches/my-branches` to populate the branch filter. During integration, the endpoint was unavailable, resulting in an empty filter dropdown.
 
-Testing checklist for backend team
-- Provide `GET /branches/my-branches` returning an array of branch objects (id, name, address, manager.email, branchStatus).
-- Update `GET /orders/pharmacy-orders` to include `branch: { id, name }` and `staff` (if available) in each order object, or document why they cannot be included.
-- Confirm canonical `OrderStatus` values and, if `READY_FOR_CHECKOUT` is intended, add it to the enum or document the mapping.
+### Frontend Workaround
 
-*src/app/pharmacy/dashboard/page.tsx:*
-Gap 4 — Missing ownerName field on Pharmacy profile response
-- Problem: The Dashboard page greeting displays `"Hello, {ownerName}"` but the `GET /pharmacies/profile/me` endpoint returns a Pharmacy object with only `representativeName` (optional field). When `representativeName` is null or undefined, the greeting displays with an empty name.
-- Frontend workaround: The Dashboard page now checks if `representativeName` is missing and, if so, makes an additional call to `GET /users/me` to fetch the authenticated user's profile. It then derives the owner name from `profile.firstName + profile.lastName` (or `firstName + lastName` depending on response shape) and sets it as `ownerName` in the profile data structure.
-  - Implementation: After fetching `/pharmacies/profile/me`, if `representativeName` is falsy, call `/users/me` and derive the full name from available user fields.
-  - Fallback: If both sources are unavailable, the greeting will display without a name (graceful degradation).
-- Requested backend fix: Update `GET /pharmacies/profile/me` response to include the pharmacy owner's name from the User relationship. Either:
-  1. Rename the `representativeName` field in the Pharmacy schema to `ownerName` (if `representativeName` is not used elsewhere), or
-  2. Add an `ownerName` field that is computed from the associated User's `firstName + lastName`, or
-  3. Include the full User object or User name fields in the pharmacy profile response.
+**File:** `src/app/pharmacy/orders/page.tsx`
 
+Branch options are derived from loaded orders by extracting unique branch identifiers and names. When a branch object is unavailable, the frontend falls back to `branchId`.
 
-Files patched in the frontend
-- `src/app/pharmacy/dashboard/page.tsx`
-  - Added conditional fetch to `GET /users/me` if `representativeName` is missing.
-  - Derives owner name from user profile fields and stores it as `ownerName`.
+### Requested Backend Changes
 
+Implement either:
 
-Gap 5 - Pharmacy Analytics response shape mismatch
-- Problem: The Analytics page charts need stable display-ready data, but the current backend shape differs from what the UI originally modeled:
-  1. `GET /pharmacies/dashboard/stats` returns `revenueOverTime` as a flat array of `{ month, revenue }`.
-  2. The UI trend control needs tabbed buckets for `3M`, `6M`, and `1Y`.
-  3. `revenueByBranch` currently returns `{ name, revenue }` without `percentage`, but the donut legend displays a percentage for each branch.
-  4. `monthlyComparison` is referenced in frontend types/mock setup, but the backend stats response does not return it. The current chart uses `revenueByBranch` instead.
-  5. `targetRevenue` was previously coming from mock frontend data only, not from the backend.
-- Frontend workaround:
-  - Normalize `revenueOverTime` so the page accepts either the current flat backend array or a future tabbed object shape. For the flat array, the frontend derives `3M`, `6M`, and `1Y` with `slice(-3)`, `slice(-6)`, and `slice(-12)`.
-  - Normalize `revenueByBranch` and derive `percentage` from branch revenue totals when it is missing.
-  - Stop using mock analytics values as live fallback data; default missing analytics values to zero/empty arrays so the page does not show fake business metrics.
-- Requested backend fix: Return display-ready analytics stats in a single consistent contract.
-
-
-Files patched in the frontend
-- `src/app/pharmacy/analytics/page.tsx`
-  - Added normalization for `revenueOverTime` flat-array vs. tabbed-object response shapes.
-  - Added normalization for `revenueByBranch`, including frontend-derived percentages.
-  - Replaced mock analytics fallback values with zero/empty defaults to avoid displaying fake metrics.
-
-
-Inventory Medication Response
-
-Frontend expects:
-- dosage
-
-Backend provides:
-- chemicalName
-
-Frontend workaround:
-- dosage ?? chemicalName
-
-Backend recommendation:
-- expose dosage field or align naming across API responses.
-
-
-pharmacy_front\src\app\pharmacy\branches\page.tsx:
-
-Missing Aggregated Metrics in Branch List
-* **Frontend Workaround:** Formatted column entries to handle fallback defaults (`—`) to protect system architecture from N+1 query loops.
-* **Expected API Target:**
-  ```json
-  GET /branches/my-branches
-
-Invited/Pending Manager Mapping Context
-Frontend Workaround: Introduced fallback string checking (b.manager?.email ?? b.branchManagerEmail) to accurately display invited contacts before their user profile creation has completed.
-
-Expected Payload Behavior: Ensure manager objects or their mapped tracking variants persist unified fields regardless of inviting registration state.
-
-
-* **Frontend Workaround:** Implemented an aggressive fallback unwrap logic (`res.data?.data ?? res.data`) within the data fetcher layer to keep the portal interface resilient against wrapper changes.
-* **Expected API Target:**
-  ```json
-  GET /pharmacies/dashboard/patients
-
+```http
+GET /branches/my-branches
 ```
 
-## Gap 7: Missing Extended Patient Profile Information
+or include branch information in:
 
-* **Frontend Workaround:** Populated fallback placeholders (`—` and `ACTIVE`) for essential CRM display data fields across both table views and contextual profile side-drawers.
-* **Expected API Target:**
-```json
-GET /pharmacies/dashboard/patients
-
+```http
+GET /orders/pharmacy-orders
 ```
 
+### Recommended Response Shape
 
-* **Required Addition:** Provide missing schema properties for `gender`, `dateOfBirth`, `address`, `city`, `postalCode`, `registeredDate`, `preferredBranch`, and `memberStatus` directly on the object.
-
-## Gap 8: Missing Patient Prescription Matrix
-
-* **Frontend Workaround:** Hardcoded an empty array safeguard (`p.prescriptions ?? []`) to prevent immediate component rendering failures when navigating between demographic tabs.
-* **Expected API Target:**
 ```json
-GET /pharmacies/dashboard/patients
-
+{
+  "id": "o_123",
+  "branchId": "b_123",
+  "branch": {
+    "id": "b_123",
+    "name": "MedPlus Main"
+  }
+}
 ```
 
+### Verification
 
-* **Required Addition:** Include an array of attached active/historical items containing `id`, `rxNumber`, `uploadedDate`, and `type`.
+* Branch dropdown is populated.
+* Branch filtering works correctly.
 
-## Gap 9: Incomplete Order Sub-Object Records
+---
 
-* **Frontend Workaround:** Generated dynamic client-side item count string structures (`${o.itemCount ?? 0} item(s)`) and text fallbacks to keep search filtering from causing code crashes.
-* **Expected API Target:**
+## Gap 2 — READY_FOR_CHECKOUT Status Mismatch
+
+### Problem
+
+The frontend previously displayed a `READY_FOR_CHECKOUT` tab while the backend uses `READY_FOR_PICKUP`.
+
+### Frontend Workaround
+
+**File:** `src/app/pharmacy/orders/page.tsx`
+
+All UI references were mapped from `READY_FOR_CHECKOUT` to `READY_FOR_PICKUP`.
+
+### Requested Backend Changes
+
+Confirm `READY_FOR_PICKUP` as the canonical value and update API documentation accordingly, or provide a compatibility alias if necessary.
+
+### Verification
+
+* Order counts appear correctly under READY_FOR_PICKUP.
+* No orphaned READY_FOR_CHECKOUT status exists.
+
+---
+
+## Gap 3 — Missing Patient and Staff Display Fields
+
+### Problem
+
+Frontend originally expected flat `patientName` and `staffName` fields. Backend returns nested patient data and frequently omits staff information.
+
+### Frontend Workaround
+
+**File:** `src/app/pharmacy/orders/page.tsx`
+
+* Patient names are derived from `patient.firstName` and `patient.lastName`.
+* Staff names are derived from available staff data or temporary fallbacks.
+* Search logic was updated to work with derived values.
+
+### Requested Backend Changes
+
+Include:
+
 ```json
-GET /pharmacies/dashboard/patients
+{
+  "patient": {
+    "id": "",
+    "firstName": "",
+    "lastName": "",
+    "phone": "",
+    "email": ""
+  },
+  "staff": {
+    "id": "",
+    "firstName": "",
+    "lastName": ""
+  },
+  "branch": {
+    "id": "",
+    "name": ""
+  }
+}
+```
 
+within order responses.
 
-* **Required Addition:** Replace standard item integer values with a calculated text summary string (`itemsSummary`) embedded directly inside the `orders` sub-objects.
+### Verification
 
-## Gap 10: Nullable Order Timestamp Breakdown
+* Patient names render correctly.
+* Search works using patient names.
+* Staff information is consistently displayed.
 
-* **Frontend Workaround:** Wrapped date conversions in strict conditional checks to prevent runtime formatting errors when patients have no prior purchases.
-* **Expected API Target:**
+---
+
+## Gap 4 — Owner Name Missing
+
+### Problem
+
+The dashboard greeting expects an owner name, but `GET /pharmacies/profile/me` only returns `representativeName`, which may be null.
+
+### Frontend Workaround
+
+**File:** `src/app/pharmacy/dashboard/page.tsx`
+
+When `representativeName` is unavailable, the frontend performs an additional request to:
+
+```http
+GET /users/me
+```
+
+and derives the display name.
+
+### Requested Backend Changes
+
+Return either:
+
 ```json
-GET /pharmacies/dashboard/patients
+{
+  "ownerName": "Jean Doe"
+}
+```
 
-* **Required Addition:** Ensure `lastOrderDate` consistently updates as a valid ISO 8601 string or safely defaults to `null`.
+or a nested user object containing name fields.
+
+### Verification
+
+* Dashboard greeting displays owner name.
+* No secondary user lookup is required.
+
+---
+
+# 3. Medium / Low Priority Gaps
+
+## Gap 5 — Analytics Response Shape Mismatch
+
+### Problem
+
+Analytics charts require display-ready data, but the backend currently returns a flat structure.
+
+### Frontend Workaround
+
+**File:** `src/app/pharmacy/analytics/page.tsx`
+
+* Revenue data is transformed into 3M, 6M, and 1Y buckets.
+* Percentages are calculated for branch revenue breakdowns.
+* Missing values default to safe empty states.
+
+### Requested Backend Changes
+
+```json
+{
+  "revenueOverTime": {
+    "3M": [],
+    "6M": [],
+    "1Y": []
+  },
+  "revenueByBranch": [
+    {
+      "name": "",
+      "revenue": 0,
+      "percentage": 0
+    }
+  ]
+}
+```
+
+### Verification
+
+* Analytics render without client-side normalization.
+* Branch percentages are provided by the API.
+
+---
+
+## Gap 6 — Inventory Dosage Naming Mismatch
+
+### Problem
+
+Frontend expects `dosage` while the backend returns `chemicalName`.
+
+### Frontend Workaround
+
+**File:** `src/app/pharmacy/inventory/page.tsx`
+
+```ts
+dosage ?? chemicalName
+```
+
+### Requested Backend Changes
+
+Standardize on a single field name across inventory APIs.
+
+### Verification
+
+* Medication dosage displays consistently.
+* No frontend fallback logic is required.
+
+---
+
+# 4. Patients API Gaps
+
+**Endpoint:** `GET /pharmacies/dashboard/patients`
+
+## Gap 7 — Missing Extended Patient Profile Fields
+
+### Frontend Workaround
+
+Fallback placeholders are displayed when data is unavailable.
+
+### Requested Backend Changes
+
+```json
+{
+  "gender": "",
+  "dateOfBirth": "",
+  "address": "",
+  "city": "",
+  "postalCode": "",
+  "registeredDate": "",
+  "preferredBranch": "",
+  "memberStatus": ""
+}
+```
+
+### Verification
+
+Patient profiles display complete demographic information.
+
+---
+
+## Gap 8 — Missing Prescription Matrix
+
+### Frontend Workaround
+
+```ts
+p.prescriptions ?? []
+```
+
+### Requested Backend Changes
+
+```json
+{
+  "prescriptions": [
+    {
+      "id": "",
+      "rxNumber": "",
+      "uploadedDate": "",
+      "type": ""
+    }
+  ]
+}
+```
+
+### Verification
+
+Prescription tabs load without requiring empty-array fallbacks.
+
+---
+
+## Gap 9 — Incomplete Order Sub-Object Records
+
+### Frontend Workaround
+
+```ts
+`${o.itemCount ?? 0} item(s)`
+```
+
+### Requested Backend Changes
+
+```json
+{
+  "itemsSummary": "3 item(s)"
+}
+```
+
+within patient order records.
+
+### Verification
+
+Order summaries render directly from API responses.
+
+---
+
+## Gap 10 — Order Timestamp Consistency
+
+### Frontend Workaround
+
+Date formatting is wrapped with null checks.
+
+### Requested Backend Changes
+
+```json
+{
+  "lastOrderDate": "2026-05-01T12:00:00Z"
+}
+```
+
+or
+
+```json
+{
+  "lastOrderDate": null
+}
+```
+
+### Verification
+
+Date formatting never encounters invalid values.
+
+---
+
+# 5. Notifications API Gaps
+
+## Gap 11 — Multi-Tenant Notification Scope Issue
+
+### Problem
+
+Pharmacy users receive empty notification lists because notification filtering does not correctly apply pharmacy tenancy rules.
+
+### Frontend Workaround
+
+```ts
+res.data?.data ?? res.data ?? []
+```
+
+### Requested Backend Changes
+
+```http
+GET /notifications?userType=pharmacy
+PUT /notifications/:id/read
+PUT /notifications/read-all?userType=pharmacy
+```
+
+must correctly return pharmacy-scoped notifications.
+
+### Verification
+
+Pharmacy users receive relevant notifications.
+
+---
+
+## Gap 12 — Missing orderId on Notifications
+
+### Frontend Workaround
+
+```ts
+if (notif.orderId) {
+  // navigate
+}
+```
+
+### Requested Backend Changes
+
+```json
+{
+  "orderId": "uuid"
+}
+```
+
+for all order-related notifications.
+
+### Verification
+
+Notification actions can navigate directly to associated orders.
+
+---
+
+## Gap 13 — Missing OUT_OF_STOCK Classification
+
+### Frontend Workaround
+
+```ts
+notif.title.toLowerCase().includes('out of stock')
+```
+
+### Requested Backend Changes
+
+```json
+{
+  "type": "OUT_OF_STOCK"
+}
+```
+
+instead of overloading:
+
+```json
+{
+  "type": "LOW_STOCK"
+}
+```
+
+### Verification
+
+Inventory notifications can be categorized reliably.
+
+---
+
+# 6. Frontend Changes Summary
+
+### `src/app/pharmacy/orders/page.tsx`
+
+* Branch filter derived from order data.
+* READY_FOR_CHECKOUT mapped to READY_FOR_PICKUP.
+* Patient and staff names derived from nested objects.
+* Search updated to support derived display values.
+
+### `src/app/pharmacy/dashboard/page.tsx`
+
+* Added fallback request to `GET /users/me`.
+* Derived owner name from user profile fields.
+
+### `src/app/pharmacy/analytics/page.tsx`
+
+* Added analytics normalization logic.
+* Derived branch revenue percentages.
+* Replaced mock values with safe defaults.
+
+### `src/app/pharmacy/inventory/page.tsx`
+
+* Added dosage field fallback support.
+
+### `src/app/pharmacy/patients/page.tsx`
+
+* Added resilience for missing profile fields.
+* Added prescription safeguards.
+* Added order summary fallbacks.
+* Added null-safe date handling.
+
+### Notifications
+
+* Added defensive payload unwrapping.
+* Added notification routing guards.
+* Added temporary OUT_OF_STOCK classification logic.
