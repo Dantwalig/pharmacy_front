@@ -1,7 +1,7 @@
 'use client';
 // src/app/(pharmacy)/orders/page.tsx
 import { useFetch } from '@/hooks/useFetch';
-import { useState, useEffect, useCallback} from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Eye } from 'lucide-react';
@@ -11,14 +11,14 @@ import toast from 'react-hot-toast';
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
-type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_CHECKOUT' | 'COMPLETED' | 'REJECTED';
+type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED';
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING:            { bg: '#FEF3C7', text: '#92400E' },
   ACCEPTED:           { bg: '#E0E7FF', text: '#3730A3' },
-  READY_FOR_CHECKOUT: { bg: '#DBEAFE', text: '#1E40AF' },
+  READY_FOR_PICKUP:   { bg: '#DBEAFE', text: '#1E40AF' },
   COMPLETED:          { bg: '#D1FAE5', text: '#065F46' },
-  REJECTED:           { bg: '#FEE2E2', text: '#991B1B' },
+  CANCELLED:           { bg: '#FEE2E2', text: '#991B1B' },
   'All Orders':       { bg: 'linear-gradient(to right, #0284C7, #38BDF8)', text: '#FFFFFF' },
 };
 
@@ -31,27 +31,31 @@ export default function PharmacyOrdersPage() {
   const [branch, setBranch]     = useState('');
 
   const fetchOrdersData = useCallback(
-  async (signal: AbortSignal) => {
-    const [ordRes, brRes] = await Promise.all([
-      api.get('/orders/pharmacy-orders', { signal }),
-      api.get('/branches/my-branches', { signal }),
-    ]);
-
-    return {
-      orders: ordRes.data?.data ?? ordRes.data ?? [],
-      branches: brRes.data?.data ?? brRes.data ?? [],
-    };
-  },
-  []
+    async (signal: AbortSignal) => {
+      const ordRes = await api.get('/orders/pharmacy-orders', { signal });
+      return {
+        orders: ordRes.data?.data ?? ordRes.data ?? [],
+      };
+    },
+    []
   );
 
   const { data, loading, error } = useFetch<{
-  orders: any[];
-  branches: any[];
-  }>(fetchOrdersData,[]);
+    orders: any[];
+  }>(fetchOrdersData, []);
 
-const orders = data?.orders ?? [];
-const branches = data?.branches ?? [];
+  const orders = data?.orders ?? [];
+
+  // Derive branch list from orders (workaround for missing /branches/my-branches endpoint)
+  const branches = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    for (const o of orders) {
+      const id = o.branch?.id ?? o.branchId ?? '';
+      const name = o.branch?.name ?? (o.branchId ? String(o.branchId) : '');
+      if (id) map.set(id, { id, name });
+    }
+    return Array.from(map.values());
+  }, [orders]);
 
   useEffect(() => {
      if (error) {
@@ -65,26 +69,33 @@ const branches = data?.branches ?? [];
     if (branch) res = res.filter(o => o.branchId === branch);
     if (search) {
       const q = search.toLowerCase();
-      res = res.filter(o =>
-      o.id?.toLowerCase().includes(q) ||
-        o.patientName?.toLowerCase().includes(q)
-      );
+      res = res.filter((o) => {
+        const patientName = `${o.patient?.firstName ?? ''} ${o.patient?.lastName ?? ''}`.trim().toLowerCase();
+        const staffName =o.staffName ??o.branchId?.slice(0, 8) ??'';
+
+        return (
+          (o.id ?? '').toString().toLowerCase().includes(q) ||
+          patientName.includes(q) ||
+          staffName.includes(q)
+        );
+      });
     }
     setFiltered(res);
   }, [orders, tab, branch, search]);
 
     const countFor = (s: TabKey) => {
       if (s === 'All Orders') return orders.length;
-      return orders.filter(o => o.status === s).length;
+      return orders.filter((o) => o.status === s).length;
     };
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'All Orders',         label: t('pharmacyOwner.allOrders') },
     { key: 'PENDING',            label: t('pharmacyOwner.pending') },
     { key: 'ACCEPTED',           label: t('pharmacyOwner.accepted') },
-    { key: 'READY_FOR_CHECKOUT', label: t('pharmacyOwner.readyForCheckout') },
+    // WORKAROUND
+    { key: 'READY_FOR_PICKUP',   label: t('pharmacyOwner.readyForPickup') },
     { key: 'COMPLETED',          label: t('pharmacyOwner.completedTab') },
-    { key: 'REJECTED',           label: t('pharmacyOwner.rejected') },
+    { key: 'CANCELLED',          label: t('pharmacyOwner.cancelled') },
   ];
 
   return (
@@ -200,9 +211,9 @@ const branches = data?.branches ?? [];
                   <td className="px-5 py-4 text-sm font-medium text-gray-800">
                     #{order.id?.slice(0, 8)}
                     </td>
-                  <td className="px-5 py-4 text-sm text-gray-700">
-                    {order.patientName ?? '—'}
-                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-700">
+                      {`${order.patient?.firstName ?? ''} ${order.patient?.lastName ?? ''}`.trim() || '—'}
+                      </td>
                   <td className="px-5 py-4 text-sm font-semibold" style={{ color: '#0284C7' }}>
                     {order.total?.toLocaleString()} RWF
                     </td>
@@ -215,7 +226,11 @@ const branches = data?.branches ?? [];
                       </span>
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {order.staffName ?? '—'}
+                    {(
+                      (order.staff?.firstName || order.staff?.lastName)
+                        ? `${order.staff?.firstName ?? ''} ${order.staff?.lastName ?? ''}`.trim()
+                        : order.staffName ?? (order.branchId ? String(order.branchId).slice(0, 8) : '—')
+                    ) || '—'}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
                     {order.createdAt

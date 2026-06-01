@@ -34,13 +34,13 @@ export default function BranchManagementPage() {
     } catch {
       setFetchError(true);
     }
-    setLoading(false);
+    loading && setLoading(false);
   };
 
   useEffect(() => { load(false); }, []);
 
   const filtered = branches.filter(b =>
-  !search ||
+    !search ||
     b.name?.toLowerCase().includes(search.toLowerCase()) ||
     b.address?.toLowerCase().includes(search.toLowerCase())
   );
@@ -72,45 +72,45 @@ export default function BranchManagementPage() {
 
   return (
     <div className="space-y-6">
-    {createSuccess && (
+      {createSuccess && (
         <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>
-        {createSuccess}
+          {createSuccess}
         </div>
-    )}
+      )}
 
       {/* Hero */}
       <div className="rounded-2xl p-8 text-white" style={{ backgroundColor: '#E0F2FE' }}>
-      <h1 className="text-3xl font-bold text-[#1E3A8A]">{t('pharmacyOwner.branchManagementTitle')}</h1>
-      <p className="mt-1 text-[#35BAF5]">{t('pharmacyOwner.branchManagementSubtitle')}</p>
-    </div>
+        <h1 className="text-3xl font-bold text-[#1E3A8A]">{t('pharmacyOwner.branchManagementTitle')}</h1>
+        <p className="mt-1 text-[#35BAF5]">{t('pharmacyOwner.branchManagementSubtitle')}</p>
+      </div>
 
-    {/* Toolbar */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between gap-3">
-      <div className="relative flex-1 max-w-sm">
-        <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-        <input
+        <div className="relative flex-1 max-w-sm">
+          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={t('pharmacyOwner.searchBranches')}
             className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
-      </div>
-      <button
+        </div>
+        <button
           onClick={() => { setShowModal(true); setCreateError(''); }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium"
           style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
-        <Plus size={16} />
-        {t('pharmacyOwner.addBranch')}
+          <Plus size={16} />
+          {t('pharmacyOwner.addBranch')}
         </button>
-    </div>
+      </div>
 
-    {/* Table */}
+      {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-100">
-            {[
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              {[
                 t('pharmacyOwner.branchName'),
                 t('pharmacyOwner.location'),
                 t('pharmacyOwner.manager'),
@@ -119,134 +119,140 @@ export default function BranchManagementPage() {
                 t('common.actions'),
               ].map(h => (
                 <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                {h}
+                  {h}
                 </th>
-            ))}
+              ))}
             </tr>
-        </thead>
-        <tbody>
-          {loading ? (
+          </thead>
+          <tbody>
+            {loading ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.loading')}</td></tr>
-          ) : fetchError ? (
+            ) : fetchError ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400 text-sm">{t('errors.failedToLoadBranches')}</td></tr>
-          ) : filtered.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.noData')}</td></tr>
-          ) : (
+            ) : (
               filtered.map((b: any) => {
                 const st = statusStyle(b.branchStatus);
+                const managerDisplay = b.manager?.email ?? b.branchManagerEmail;
+                const monthlyRevenue = b.monthlyRevenue ?? null;
+
                 return (
                   <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="px-5 py-4 text-sm font-semibold text-gray-800">{b.name}</td>
-                  <td className="px-5 py-4 text-sm text-gray-500">{b.address}</td>
-                  <td className="px-5 py-4 text-sm">
-                    {b.manager?.email
-                        ? <span className="font-medium" style={{ color: TEAL }}>{b.manager.email}</span>
-                      : <span className="text-[#D3CC00] font-medium">{t('common.unassigned')}</span>
-                    }
+                    <td className="px-5 py-4 text-sm font-semibold text-gray-800">{b.name}</td>
+                    <td className="px-5 py-4 text-sm text-gray-500">{b.address}</td>
+                    <td className="px-5 py-4 text-sm">
+                      {managerDisplay ? (
+                        <span className="font-medium" style={{ color: TEAL }}>{managerDisplay}</span>
+                      ) : (
+                        <span className="text-[#D3CC00] font-medium">{t('common.unassigned')}</span>
+                      )}
                     </td>
-                  <td className="px-5 py-4 text-sm text-gray-400">—</td>
-                  <td className="px-5 py-4">
-                    <span
+                    <td className="px-5 py-4 text-sm text-gray-400">
+                      {monthlyRevenue !== null ? `${monthlyRevenue.toLocaleString()} RWF` : '—'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
                         className="px-2.5 py-1 rounded-full text-xs font-semibold"
                         style={{ backgroundColor: st.bg, color: st.text }}
                       >
-                      {st.label}
+                        {st.label}
                       </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <button
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
                         onClick={() => router.push(`/pharmacy/branches/${b.id}`)}
                         className="text-sm font-medium hover:underline"
                         style={{ color: NAVY }}
                       >
-                      {t('common.viewDetails')}
+                        {t('common.viewDetails')}
                       </button>
-                  </td>
-                </tr>
-              );
+                    </td>
+                  </tr>
+                );
               })
             )}
           </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
 
-    {/* Add Branch Modal */}
+      {/* Add Branch Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold text-gray-900">{t('pharmacyOwner.addBranch')}</h2>
-            <button 
-              onClick={() => setShowModal(false)} 
-              className="text-gray-400 hover:text-gray-600"
-              aria-label={t('common.close') || 'Close'}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('pharmacyOwner.branchName')} *
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-gray-900">{t('pharmacyOwner.addBranch')}</h2>
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="text-gray-400 hover:text-gray-600"
+                aria-label={t('common.close') || 'Close'}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('pharmacyOwner.branchName')} *
                 </label>
-              <input
+                <input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
                 />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('pharmacyOwner.location')} *
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('pharmacyOwner.location')} *
                 </label>
-              <input
+                <input
                   value={form.address}
                   onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
                 />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Manager Email *
-              </label>
-              <input
-                value={form.branchManagerEmail}
-                onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Manager Email *
+                </label>
+                <input
+                  value={form.branchManagerEmail}
+                  onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                />
+              </div>
+
+              <LocationPicker
+                latitude={form.latitude}
+                longitude={form.longitude}
+                onChange={(lat, lng) => setForm(f => ({ ...f, latitude: lat, longitude: lng }))}
+                required={true}
+                label="Pin Branch Location"
+                height="240px"
               />
             </div>
-
-            <LocationPicker
-              latitude={form.latitude}
-              longitude={form.longitude}
-              onChange={(lat, lng) => setForm(f => ({ ...f, latitude: lat, longitude: lng }))}
-              required={true}
-              label="Pin Branch Location"
-              height="240px"
-            />
-          </div>
-          {createError && (
+            {createError && (
               <p className="mt-4 text-sm" style={{ color: '#92400E' }}>{createError}</p>
-          )}
+            )}
             <div className="flex gap-3 mt-4">
-            <button
+              <button
                 onClick={() => { setShowModal(false); setCreateError(''); }}
                 className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-              {t('common.cancel')}
+                {t('common.cancel')}
               </button>
-            <button
+              <button
                 onClick={handleAdd}
                 disabled={submitting || !form.name || !form.address || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
                 style={{ backgroundColor: TEAL }}
               >
-              {submitting ? t('common.saving') : t('common.add')}
+                {submitting ? t('common.saving') : t('common.add')}
               </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
-);
+  );
 }
