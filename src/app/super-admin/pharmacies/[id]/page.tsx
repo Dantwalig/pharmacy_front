@@ -152,12 +152,12 @@ export default function SuperAdminPharmacyDetailPage() {
       </button>
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #f0f9ff 100%)' }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-white/60 text-sm mb-1">{t('superAdminPages.pharmacyApplication')}</p>
-            <h1 className="text-2xl lg:text-3xl font-bold">{pharmacy.name}</h1>
-            <p className="text-white/70 mt-1 text-sm">
+            <p className="text-sm mb-1" style={{ color: '#4B7BAE' }}>{t('superAdminPages.pharmacyApplication')}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#1E3A5F' }}>{pharmacy.name}</h1>
+            <p className="mt-1 text-sm" style={{ color: '#4B7BAE' }}>
               {pharmacy.createdAt && `Submitted ${new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}
             </p>
           </div>
@@ -171,12 +171,12 @@ export default function SuperAdminPharmacyDetailPage() {
 
         {/* Quick stats from _count */}
         {pharmacy._count && (
-          <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-white/20">
-            <div className="flex items-center gap-2 text-white/80 text-sm">
+          <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-blue-100">
+            <div className="flex items-center gap-2 text-sm" style={{ color: '#4B7BAE' }}>
               <ArchiveBoxIcon className="w-4 h-4" />
               {pharmacy._count.medications} medications listed
             </div>
-            <div className="flex items-center gap-2 text-white/80 text-sm">
+            <div className="flex items-center gap-2 text-sm" style={{ color: '#4B7BAE' }}>
               <ShoppingCartIcon className="w-4 h-4" />
               {pharmacy._count.orders} orders total
             </div>
