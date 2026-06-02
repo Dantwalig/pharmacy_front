@@ -151,8 +151,8 @@ export default function SuperAdminDashboard() {
       name: t('superAdmin.totalPharmacies'),
       value: analytics?.totalPharmacies || 0,
       icon: BuildingStorefrontIcon,
-      textColor: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      textColor: 'text-blue-600',
+      bgColor: 'bg-blue-100',
     },
     {
       name: t('superAdmin.pendingPharmacies'),
@@ -166,24 +166,24 @@ export default function SuperAdminDashboard() {
       name: t('superAdmin.totalPatients'),
       value: analytics?.totalPatients || 0,
       icon: UserGroupIcon,
-      textColor: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      textColor: 'text-teal-600',
+      bgColor: 'bg-teal-100',
     },
     {
       name: t('superAdmin.platformRevenue'),
       value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
       icon: CurrencyDollarIcon,
-      textColor: 'text-green-600',
-      bgColor: 'bg-green-100',
+      textColor: 'text-pink-600',
+      bgColor: 'bg-pink-100',
     },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">{t('superAdmin.title')}</h1>
-        <p className="text-gray-500 mt-1">Welcome back, Super Admin! Here's what's happening today.</p>
+      <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #f0f9ff 100%)' }}>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('superAdmin.title')}</h1>
+        <p className="text-sm mt-1" style={{ color: '#4B7BAE' }}>Welcome back, Super Admin! Here's what's happening today.</p>
       </div>
 
       {/* Stats Grid */}
@@ -431,12 +431,12 @@ export default function SuperAdminDashboard() {
 
         {/* Platform Overview */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Platform Overview</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-6">{t('superAdmin.title')}</h2>
           <div className="space-y-3">
             {[
-              { icon: CheckCircleIcon, color: 'text-green-500', label: 'Approved Pharmacies', value: analytics?.approvedPharmacies || 0 },
-              { icon: ShoppingCartIcon, color: 'text-blue-500', label: 'Total Orders', value: analytics?.totalOrders || 0 },
-              { icon: CheckCircleIcon, color: 'text-teal-500', label: 'Completed Orders', value: analytics?.completedOrders || 0 },
+              { icon: CheckCircleIcon, color: 'text-green-500', label: t('analytics.approvedPharmacies'), value: analytics?.approvedPharmacies || 0 },
+              { icon: ShoppingCartIcon, color: 'text-blue-500',  label: t('analytics.totalOrders'),        value: analytics?.totalOrders || 0 },
+              { icon: CheckCircleIcon, color: 'text-sky-500',    label: t('analytics.completedOrders'),    value: analytics?.completedOrders || 0 },
             ].map(({ icon: Icon, color, label, value }) => (
               <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center gap-3">
@@ -447,7 +447,7 @@ export default function SuperAdminDashboard() {
               </div>
             ))}
             <div className="flex items-center justify-between p-4 rounded-xl text-white"
-              style={{ background: `linear-gradient(135deg, ${TEAL}, #1a8a7a)` }}>
+              style={{ background: 'linear-gradient(135deg, #0284C7, #38BDF8)' }}>
               <div className="flex items-center gap-3">
                 <CurrencyDollarIcon className="w-5 h-5" />
                 <span className="text-sm">{t('superAdminPages.totalRevenue')}</span>
@@ -459,7 +459,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* System Status */}
-      <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${TEAL}, #1a8a7a)` }}>
+      <div className="rounded-2xl p-6 text-white" style={{ background: 'linear-gradient(135deg, #0284C7, #38BDF8)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
