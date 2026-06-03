@@ -107,12 +107,28 @@ export default function PharmacyDashboard() {
       api.get('/pharmacies/dashboard/weekly-revenue', { signal: s }),
       api.get('/pharmacies/profile/me',               { signal: s }),
     ])
-      .then(([sRes, aRes, dRes, wRes, pRes]) => {
+      .then(async ([sRes, aRes, dRes, wRes, pRes]) => {
         const st = sRes.data?.data  ?? sRes.data;
         const an = aRes.data?.data  ?? aRes.data;
         const dr = dRes.data?.data  ?? dRes.data;
         const wr = wRes.data?.data  ?? wRes.data;
-        const pr = pRes.data?.data  ?? pRes.data;
+        let pr = pRes.data?.data  ?? pRes.data;
+
+        // Workaround: If representativeName is missing, fetch user profile to get name
+        if (!pr?.representativeName) {
+          try {
+            const userRes = await api.get('/users/me', { signal: s });
+            const userData = userRes.data?.data ?? userRes.data;
+            if (userData?.profile?.firstName || userData?.firstName) {
+              pr = {
+                ...pr,
+                ownerName: `${userData.profile?.firstName || userData.firstName || ''} ${userData.profile?.lastName || userData.lastName || ''}`.trim(),
+              };
+            }
+          } catch {
+          }
+        }
+
         setStats(st);
         setAnalytics(an);
         setDailyRevenue(dr);

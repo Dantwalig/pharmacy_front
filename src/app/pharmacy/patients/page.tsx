@@ -35,7 +35,7 @@ interface Patient {
   phone: string;
   totalOrders: number;
   totalSpent: number;
-  lastOrderDate: string;
+  lastOrderDate: string | null;
   gender: string;
   dateOfBirth: string;
   address: string;
@@ -107,9 +107,33 @@ export default function PharmacyPatientsPage() {
   const fetchPatientsData = useCallback(
     async (signal: AbortSignal) => {
       const res = await api.get('/pharmacies/dashboard/patients', { signal });
+     
+      const raw = res.data?.data ?? res.data;
+      const totalPatients = raw.totalPatients ?? 0;
+      const normalizedPatients = (raw.patients ?? []).map((p: any) => ({
+        ...p,
+        email: p.email ?? '',
+        phone: p.phone ?? '',
+        gender: p.gender ?? '—',
+        dateOfBirth: p.dateOfBirth ?? '—',
+        address: p.address ?? '—',
+        city: p.city ?? '—',
+        postalCode: p.postalCode ?? '—',
+        registeredDate: p.registeredDate ?? p.lastOrderDate ?? '—',
+        preferredBranch: p.preferredBranch ?? '—',
+        memberStatus: p.memberStatus ?? 'ACTIVE',
+        prescriptions: p.prescriptions ?? [], // Workaround: Backend provides no prescriptions yet
+        orders: (p.orders ?? []).map((o: any) => ({
+          ...o,
+          // Workaround to fallback 
+          orderNumber: o.orderNumber ?? o.id?.slice(0, 8) ?? '',
+          itemsSummary: o.itemsSummary ?? `${o.itemCount ?? 0} item(s)`,
+        })),
+      }));
+     
       return {
         patients: res.data.patients,
-        totalPatients: res.data.totalPatients,
+        totalPatients,
       };
     },
     []
@@ -719,7 +743,7 @@ export default function PharmacyPatientsPage() {
                   </td>
                   <td className="px-6 py-5 text-gray-500 font-semibold">{patient.phone}</td>
                   <td className="px-6 py-5 font-black text-gray-900 text-base">{patient.totalOrders}</td>
-                  <td className="px-6 py-5 text-gray-900 font-bold">{new Date(patient.lastOrderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td className="px-6 py-5 text-gray-900 font-bold">{patient.lastOrderDate ? (new Date(patient.lastOrderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) ) : ('—')} </td>
                   <td className="px-6 py-5 font-black text-blue-600 text-base">{patient.totalSpent.toLocaleString()}</td>
                   <td className="px-6 py-5">
                     <button 

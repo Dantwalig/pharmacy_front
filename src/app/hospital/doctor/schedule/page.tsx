@@ -79,8 +79,8 @@ export default function DoctorSchedulePage() {
                     <button
                         onClick={() => setViewMode('WEEK')}
                         className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-gray-500 hover:text-gray-800'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'text-gray-500 hover:text-gray-800'
                             }`}
                     >
                         Weekly Overview
@@ -88,8 +88,8 @@ export default function DoctorSchedulePage() {
                     <button
                         onClick={() => setViewMode('MONTH')}
                         className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-gray-500 hover:text-gray-800'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'text-gray-500 hover:text-gray-800'
                             }`}
                     >
                         Monthly View
@@ -135,8 +135,8 @@ export default function DoctorSchedulePage() {
                         return (
                             <div key={idx} className="flex flex-col gap-4">
                                 <div className={`text-center py-3 rounded-xl border transition-all ${isTodayDay
-                                        ? 'bg-blue-50 border-blue-200 shadow-sm'
-                                        : 'bg-white border-gray-100'
+                                    ? 'bg-blue-50 border-blue-200 shadow-sm'
+                                    : 'bg-white border-gray-100'
                                     }`}>
                                     <p className={`text-xs font-bold uppercase tracking-wider ${isTodayDay ? 'text-blue-600' : 'text-gray-400'}`}>
                                         {format(day, 'EEE')}
@@ -214,9 +214,9 @@ export default function DoctorSchedulePage() {
                                                     <div
                                                         key={e.id}
                                                         className={`w-4 h-4 rounded-full border border-white shadow-sm ${e.color === 'blue' ? 'bg-blue-400' :
-                                                                e.color === 'green' ? 'bg-emerald-400' :
-                                                                    e.color === 'orange' ? 'bg-orange-400' :
-                                                                        e.color === 'purple' ? 'bg-purple-400' : 'bg-red-400'
+                                                            e.color === 'green' ? 'bg-emerald-400' :
+                                                                e.color === 'orange' ? 'bg-orange-400' :
+                                                                    e.color === 'purple' ? 'bg-purple-400' : 'bg-red-400'
                                                             }`}
                                                     />
                                                 ))}

@@ -12,6 +12,7 @@ import {
   MapPinIcon,
   MapIcon,
   ListBulletIcon,
+  BeakerIcon,
 } from '@heroicons/react/24/outline';
 import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -184,12 +185,9 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div
-        className="rounded-2xl shadow-xl p-8 text-white"
-        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
-      >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('patient.findPharmacyAndMedicine')}</h1>
-        <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
+      <div className="bg-[#EBF5FF] rounded-2xl p-8">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-[#1E3A5F]">{t('patient.findPharmacyAndMedicine')}</h1>
+        <p className="text-lg" style={{ color: '#3B82F6' }}>{t('search.searchNearby')}</p>
       </div>
 
       {/* Search bar */}
@@ -212,8 +210,7 @@ export default function SearchPage() {
           </div>
           <button
             type="submit"
-            className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap"
-            style={{ background: TEAL }}
+            className="px-6 py-3 rounded-xl font-semibold border-2 border-gray-800 text-gray-800 bg-white hover:bg-gray-50 transition-all whitespace-nowrap"
           >
             {t('common.search')}
           </button>
@@ -229,7 +226,7 @@ export default function SearchPage() {
             className="px-6 py-3 rounded-xl font-semibold transition-all"
             style={
               activeTab === tab
-                ? { background: NAVY, color: '#fff' }
+                ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)', color: '#fff' }
                 : { background: '#e5e7eb', color: '#374151' }
             }
           >
@@ -363,13 +360,13 @@ export default function SearchPage() {
           )}
           {!medLoading && searched && medications.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow">
-              <p className="text-5xl mb-3">💊</p>
+              <BeakerIcon className="w-16 h-16 mx-auto mb-3 text-gray-300" />
               <p className="text-gray-500 text-lg">{t('search.noMedicationsFound')}</p>
             </div>
           )}
           {!searched && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow">
-              <p className="text-5xl mb-3">🔍</p>
+              <MagnifyingGlassIcon className="w-16 h-16 mx-auto mb-3 text-gray-300" />
               <p className="text-gray-500 text-lg">{t('search.enterMedicationName')}</p>
             </div>
           )}

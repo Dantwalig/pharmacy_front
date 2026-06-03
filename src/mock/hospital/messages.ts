@@ -2,69 +2,79 @@
 import { Conversation } from '@/types/hospital';
 
 export const MOCK_CONVERSATIONS: Conversation[] = [
-    {
-        id: '1',
-        senderName: 'Jean Paul Nsengimana',
-        role: 'Patient',
-        initials: 'JN',
-        lastMessage: 'Thank you Dr. Samuel. See you in the morning.',
-        timestamp: 'Yesterday',
-        unreadCount: 0,
-        messages: [
-            { id: 'm1', text: 'Hello Doctor, I have been feeling a bit dizzy today.', direction: 'RECEIVED', timestamp: 'Yesterday, 10:00 AM' },
-            { id: 'm2', text: 'Hello Jean Paul. Make sure to stay hydrated and rest.', direction: 'SENT', timestamp: 'Yesterday, 10:15 AM' },
-            { id: 'm3', text: 'Thank you Dr. Samuel. See you in the morning.', direction: 'RECEIVED', timestamp: 'Yesterday, 10:30 AM' },
-        ]
-    },
-    {
-        id: '2',
-        senderName: 'Alice Mukamana',
-        role: 'Pharmacist',
-        initials: 'AM',
-        lastMessage: 'Understood. Should I reduce the dose from tomorrow?',
-        timestamp: 'Today',
-        unreadCount: 1,
-        messages: [
-            { id: 'm4', text: 'Doctor, regarding the prescription for patient 402...', direction: 'RECEIVED', timestamp: 'Today, 08:00 AM' },
-            { id: 'm5', text: 'Yes, please proceed with the adjustment.', direction: 'SENT', timestamp: 'Today, 08:30 AM' },
-            { id: 'm6', text: 'Understood. Should I reduce the dose from tomorrow?', direction: 'RECEIVED', timestamp: 'Today, 09:00 AM' },
-        ]
-    },
-    {
-        id: '3',
-        senderName: 'Maurice Kwizera',
-        role: 'Patient',
-        initials: 'MK',
-        lastMessage: 'Yes, Glad to hear that, Maurice. Let\'s keep monitoring.',
-        timestamp: 'Yesterday',
-        unreadCount: 0,
-        messages: [
-            { id: 'm7', text: 'The pain in my leg has subsided significantly.', direction: 'RECEIVED', timestamp: 'Yesterday, 02:00 PM' },
-            { id: 'm8', text: 'Yes, Glad to hear that, Maurice. Let\'s keep monitoring.', direction: 'SENT', timestamp: 'Yesterday, 02:30 PM' },
-        ]
-    },
-    {
-        id: '4',
-        senderName: 'Kevine Mugisha',
-        role: 'Nurse',
-        initials: 'KM',
-        lastMessage: 'The patient in Room 4 is ready for consult.',
-        timestamp: '2 hours ago',
-        unreadCount: 0,
-        messages: [
-            { id: 'm9', text: 'The patient in Room 4 is ready for consult.', direction: 'RECEIVED', timestamp: '2 hours ago' },
-        ]
-    },
-    {
-        id: '5',
-        senderName: 'Angelique Umutoni',
-        role: 'Patient',
-        initials: 'AU',
-        lastMessage: 'I have uploaded my latest test results.',
-        timestamp: '1 day ago',
-        unreadCount: 0,
-        messages: [
-            { id: 'm10', text: 'I have uploaded my latest test results.', direction: 'RECEIVED', timestamp: '1 day ago' },
-        ]
-    }
+  {
+    id: 'conv-001',
+    senderName: 'Dr. Patrick Habimana',
+    role: 'General Medicine',
+    initials: 'PH',
+    lastMessage: 'Patient Claudine Uwimana labs are back. Malaria confirmed.',
+    timestamp: '2026-06-01T09:45:00Z',
+    unread: 2,
+    unreadCount: 2,
+    messages: [
+      { id: 'm-001', text: 'Good morning Alice. Did you review the triage notes for apt-002?', direction: 'RECEIVED', timestamp: '2026-06-01T08:10:00Z' },
+      { id: 'm-002', text: 'Yes, noted. Claudine has elevated temp and fatigue — waiting on labs.', direction: 'SENT', timestamp: '2026-06-01T08:25:00Z' },
+      { id: 'm-003', text: 'Patient Claudine Uwimana labs are back. Malaria confirmed.', direction: 'RECEIVED', timestamp: '2026-06-01T09:45:00Z' },
+      { id: 'm-004', text: 'Initiating artemether-lumefantrine. I will update the consultation notes.', direction: 'RECEIVED', timestamp: '2026-06-01T09:47:00Z' },
+    ],
+  },
+  {
+    id: 'conv-002',
+    senderName: 'Nurse Claudine Umutoni',
+    role: 'Cardiology Ward',
+    initials: 'CU',
+    lastMessage: 'Vitals done for apt-001. BP: 148/92, HR: 84.',
+    timestamp: '2026-06-01T08:35:00Z',
+    unread: 0,
+    unreadCount: 0,
+    messages: [
+      { id: 'm-005', text: 'Dr. Mutoni, patient Jean Bosco has arrived for his 8:30 appointment.', direction: 'RECEIVED', timestamp: '2026-06-01T08:28:00Z' },
+      { id: 'm-006', text: 'Thank you. Please complete triage and send me vitals before I call him in.', direction: 'SENT', timestamp: '2026-06-01T08:30:00Z' },
+      { id: 'm-007', text: 'Vitals done for apt-001. BP: 148/92, HR: 84.', direction: 'RECEIVED', timestamp: '2026-06-01T08:35:00Z' },
+      { id: 'm-008', text: 'Noted. I will see him now.', direction: 'SENT', timestamp: '2026-06-01T08:38:00Z' },
+    ],
+  },
+  {
+    id: 'conv-003',
+    senderName: 'Dr. Eric Nsanzimana',
+    role: 'Surgery',
+    initials: 'EN',
+    lastMessage: 'Theogene Murenzi booked for appendectomy on June 10.',
+    timestamp: '2026-06-01T07:55:00Z',
+    unread: 1,
+    unreadCount: 1,
+    messages: [
+      { id: 'm-009', text: 'Alice, can you refer Theogene Murenzi to me after your consult? Appendicitis suspected.', direction: 'RECEIVED', timestamp: '2026-06-01T07:40:00Z' },
+      { id: 'm-010', text: 'Will do. I will add a surgical referral note to his file.', direction: 'SENT', timestamp: '2026-06-01T07:50:00Z' },
+      { id: 'm-011', text: 'Theogene Murenzi booked for appendectomy on June 10.', direction: 'RECEIVED', timestamp: '2026-06-01T07:55:00Z' },
+    ],
+  },
+  {
+    id: 'conv-004',
+    senderName: 'Dr. Solange Ingabire',
+    role: 'Neurology',
+    initials: 'SI',
+    lastMessage: 'Can we discuss the Chantal Mukabutera post-stroke protocol?',
+    timestamp: '2026-05-31T16:20:00Z',
+    unread: 0,
+    unreadCount: 0,
+    messages: [
+      { id: 'm-012', text: 'Can we discuss the Chantal Mukabutera post-stroke protocol?', direction: 'RECEIVED', timestamp: '2026-05-31T16:20:00Z' },
+      { id: 'm-013', text: 'Sure, I will be free after 14:00 tomorrow. Let us meet in the ward.', direction: 'SENT', timestamp: '2026-05-31T16:45:00Z' },
+    ],
+  },
+  {
+    id: 'conv-005',
+    senderName: 'Hospital Admin — Jean Habimana',
+    role: 'Administration',
+    initials: 'JH',
+    lastMessage: 'Q2 staff performance reviews are due by June 15.',
+    timestamp: '2026-05-30T10:00:00Z',
+    unread: 0,
+    unreadCount: 0,
+    messages: [
+      { id: 'm-014', text: 'Good afternoon Dr. Mutoni. Q2 staff performance reviews are due by June 15.', direction: 'RECEIVED', timestamp: '2026-05-30T10:00:00Z' },
+      { id: 'm-015', text: 'Understood. I will submit the Cardiology ward review by June 12.', direction: 'SENT', timestamp: '2026-05-30T10:30:00Z' },
+    ],
+  },
 ];
