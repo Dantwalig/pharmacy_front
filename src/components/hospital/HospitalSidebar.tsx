@@ -6,14 +6,12 @@ import {
   LayoutDashboard,
   CalendarDays,
   ClipboardList,
-  XCircle,
+  Users,
   Clock,
   MessageSquare,
-  FileText,
-  Package,
+  Pill,
   Settings,
   DollarSign,
-  Users,
   Building2,
   BarChart2,
   LogOut,
@@ -21,17 +19,16 @@ import {
 } from 'lucide-react';
 
 const NAVY = '#1E3A5F';
-const TEAL = '#2D9B8A';
+const TEAL = '#38BDF8';
 
 const DOCTOR_NAV = [
   { href: '/hospital/doctor/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/hospital/doctor/appointments',  icon: CalendarDays,    label: 'Appointments' },
   { href: '/hospital/doctor/consultations', icon: ClipboardList,   label: 'Consultations' },
-  { href: '/hospital/doctor/refusals',      icon: XCircle,         label: 'Refusals' },
+  { href: '/hospital/doctor/patient',       icon: Users,           label: 'Patients' },
   { href: '/hospital/doctor/schedule',      icon: Clock,           label: 'Schedule' },
   { href: '/hospital/doctor/messages',      icon: MessageSquare,   label: 'Messages' },
-  { href: '/hospital/doctor/claims',        icon: FileText,        label: 'Claims' },
-  { href: '/hospital/doctor/inventory',     icon: Package,         label: 'Inventory' },
+  { href: '/hospital/doctor/prescription',  icon: Pill,            label: 'Prescriptions' },
   { href: '/hospital/doctor/settings',      icon: Settings,        label: 'Settings' },
 ];
 
