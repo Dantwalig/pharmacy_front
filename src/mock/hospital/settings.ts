@@ -14,6 +14,10 @@ export const MOCK_ADMIN_PROFILE: AdminProfile = {
   phone: '+250788000200',
 };
 
+// ── Added for the Admin Settings page (was not here before) ──────────────────
+// HospitalFee, HospitalAnnouncement, HospitalDepartment interfaces +
+// MOCK_HOSPITAL_FEES, MOCK_HOSPITAL_ANNOUNCEMENTS, MOCK_HOSPITAL_DEPARTMENTS
+
 export interface HospitalFee {
   id: string;
   service: string;
