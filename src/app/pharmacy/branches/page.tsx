@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { api, unwrapData } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
@@ -13,6 +14,7 @@ const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'
 export default function BranchManagementPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [branches, setBranches] = useState<any[]>([]);
   const [search, setSearch]     = useState('');
   const [loading, setLoading]   = useState(true);
@@ -45,6 +47,10 @@ export default function BranchManagementPage() {
 
   const handleAdd = async () => {
     setCreateError('');
+    if (user?.email && form.branchManagerEmail.toLowerCase() === user.email.toLowerCase()) {
+      setCreateError('Branch manager email cannot be the same as your own account email.');
+      return;
+    }
     setSubmitting(true);
     try {
       await api.post('/branches/create', form);
