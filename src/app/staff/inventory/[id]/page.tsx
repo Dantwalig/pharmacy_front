@@ -25,9 +25,8 @@ export default function StaffEditMedicationPage() {
   useEffect(() => {
     if (user?.role === 'CASHIER') router.replace('/staff/inventory');
   }, [user, router]);
-  if (user?.role === 'CASHIER') return null;
-
   useEffect(() => { fetchMedication(); }, [params.id]);
+  if (user?.role === 'CASHIER') return null;
 
   const fetchMedication = async () => {
     try {

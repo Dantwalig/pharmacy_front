@@ -128,17 +128,20 @@ if (error) {
     <div className="space-y-6">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white bg-slate-900">
+      <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #f0f9ff 100%)' }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">{t('superAdminPages.pharmacyApplications')}</h1>
-            <p className="mt-1 text-white/70">{t('superAdminPages.reviewVerify')}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('superAdminPages.pharmacyApplications')}</h1>
+            <p className="mt-1 text-sm" style={{ color: '#4B7BAE' }}>{t('superAdminPages.reviewVerify')}</p>
           </div>
           {pendingCount > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-400/20 border border-yellow-300/30">
-              <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-              <span className="text-yellow-200 text-sm font-semibold">{pendingCount} pending review</span>
-            </div>
+            <button
+              onClick={() => setFilter('PENDING')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold transition-all hover:shadow-sm"
+              style={{ borderColor: '#1E4D8C', color: '#1E4D8C', backgroundColor: 'white' }}
+            >
+              {pendingCount} Pending Review
+            </button>
           )}
         </div>
       </div>
@@ -219,16 +222,30 @@ if (error) {
 
       {/* Status filter tabs */}
       <div className="flex flex-wrap gap-2">
-        {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(s => (
+        {([
+          { value: 'ALL',      label: 'All Pharmacies' },
+          { value: 'PENDING',  label: 'Pending' },
+          { value: 'APPROVED', label: 'Approved' },
+          { value: 'REJECTED', label: 'Rejected' },
+        ] as const).map(s => (
           <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${filter === s ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-700'}`}
+            key={s.value}
+            onClick={() => setFilter(s.value)}
+            className="px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2"
+            style={filter === s.value
+              ? { background: 'linear-gradient(135deg, #0284C7, #38BDF8)', color: '#FFFFFF', border: 'none' }
+              : { backgroundColor: '#FFFFFF', color: '#374151', border: '1.5px solid #E5E7EB' }
+            }
           >
-            {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
-            {s === 'PENDING' && pendingCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>
+            {s.label}
+            {s.value === 'PENDING' && pendingCount > 0 && (
+              <span
+                className="px-1.5 py-0.5 rounded-full text-xs font-bold"
+                style={filter === 'PENDING'
+                  ? { backgroundColor: 'rgba(255,255,255,0.25)', color: '#fff' }
+                  : { backgroundColor: '#FEF3C7', color: '#92400E' }
+                }
+              >
                 {pendingCount}
               </span>
             )}
@@ -244,7 +261,7 @@ if (error) {
           <BuildingStorefrontIcon className="w-12 h-12 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-500 font-medium">{t('superAdminPages.noPharmaciesFound')}</p>
           <p className="text-gray-400 text-sm mt-1">
-            {hasActiveSearch ? t('superAdminPages.tryAdjustSearch') : t('superAdminPages.noApplicationsInCategory')}
+            {hasActiveSearch ? 'Try adjusting your search filters' : 'No applications in this category'}
           </p>
         </div>
       ) : (
@@ -253,7 +270,7 @@ if (error) {
             <table className="w-full text-sm">
               <thead style={{ backgroundColor: '#F8FAFC' }} className="border-b border-gray-100">
                 <tr>
-                  {[t('form.pharmacy'), t('superAdminPages.colRepresentative'), t('superAdminPages.colRdbCertificate'), t('superAdminPages.colLicenseNo'), t('superAdminPages.colBusinessReg'), t('common.status'), t('superAdminPages.colSubmitted'), t('common.actions')].map(h => (
+                  {['Pharmacy', 'Representative', 'RDB Cert', 'License No.', 'Business Reg.', t('common.status'), 'Submitted', t('common.actions')].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
@@ -267,7 +284,7 @@ if (error) {
                     {/* Pharmacy name */}
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 bg-slate-900">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ backgroundColor: '#1E3A5F' }}>
                           {p.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div>

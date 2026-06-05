@@ -10,16 +10,14 @@ import { useMedicationForm } from '@/hooks/useMedicationForm';
 import { FDA_CATEGORIES } from '@/lib/constants';
 
 export default function StaffAddMedicationPage() {
-  const { t }    = useTranslation();
-  const router   = useRouter();
+  const { t } = useTranslation();
+  const router = useRouter();
   const { user } = useAuth();
 
   // Cashiers cannot add medications — redirect immediately
   useEffect(() => {
     if (user?.role === 'CASHIER') router.replace('/staff/inventory');
   }, [user, router]);
-  if (user?.role === 'CASHIER') return null;
-
   const {
     form, setForm,
     loading,
@@ -27,6 +25,8 @@ export default function StaffAddMedicationPage() {
     branchName,
     handleSubmit,
   } = useMedicationForm('staff');
+
+  if (user?.role === 'CASHIER') return null;
 
   const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400 transition-colors';
   const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
