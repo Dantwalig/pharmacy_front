@@ -17,10 +17,6 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
-
 export default function BranchInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -86,7 +82,7 @@ export default function BranchInventoryPage() {
     <div className="space-y-6">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('branch.inventory')}</h1>
         <p className="mt-1 text-white/70">{t('branch.inventorySubtitle')}</p>
       </div>
@@ -116,13 +112,13 @@ export default function BranchInventoryPage() {
       {backendReady && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: t('inventory.totalItems'),  value: summaryStats.total,      color: NAVY },
-            { label: t('inventory.categories'),  value: summaryStats.categories,  color: TEAL },
-            { label: t('inventory.lowStock'),    value: summaryStats.lowStock,    color: '#92400E' },
-            { label: t('inventory.outOfStock'), value: summaryStats.outOfStock,  color: '#991B1B' },
+            { label: t('inventory.totalItems'),  value: summaryStats.total,      textClass: 'text-brand-navy' },
+            { label: t('inventory.categories'),  value: summaryStats.categories,  textClass: 'text-brand-teal' },
+            { label: t('inventory.lowStock'),    value: summaryStats.lowStock,    textClass: 'text-amber-800' },
+            { label: t('inventory.outOfStock'), value: summaryStats.outOfStock,  textClass: 'text-red-800' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-100">
-              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className={`text-2xl font-bold ${s.textClass}`}>{s.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
             </div>
           ))}
@@ -156,8 +152,7 @@ export default function BranchInventoryPage() {
             <button
               key={f}
               onClick={() => setStockFilter(f)}
-              className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
-              style={stockFilter === f ? { backgroundColor: TEAL, color: '#fff' } : { backgroundColor: '#F3F4F6', color: '#374151' }}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${stockFilter === f ? 'bg-brand-teal text-white' : 'bg-gray-100 text-gray-700'}`}
             >
               {f === 'ALL' ? t('inventory.stockAll') : f === 'LOW' ? t('inventory.stockLow') : t('inventory.stockOut')}
             </button>
@@ -166,8 +161,7 @@ export default function BranchInventoryPage() {
 
         <button
           onClick={() => router.push('/branch/inventory/add')}
-          className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0 bg-brand-teal"
         >
           <PlusIcon className="w-4 h-4" /> {t('branch.addMedication')}
         </button>
@@ -221,7 +215,7 @@ export default function BranchInventoryPage() {
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>
                     </td>
-                    <td className="px-4 py-3 font-semibold whitespace-nowrap" style={{ color: TEAL }}>
+                    <td className="px-4 py-3 font-semibold whitespace-nowrap text-brand-teal">
                       {Number(med.price ?? 0).toLocaleString()} RWF
                     </td>
                     <td className="px-4 py-3">
@@ -240,8 +234,7 @@ export default function BranchInventoryPage() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => router.push(`/branch/inventory/${med.id}`)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                        style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-brand-teal-light text-brand-teal"
                       >
                         <PencilIcon className="w-3.5 h-3.5" /> Edit
                       </button>

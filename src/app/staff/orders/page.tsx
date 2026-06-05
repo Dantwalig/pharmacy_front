@@ -6,6 +6,7 @@ import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ShoppingCartIcon,
   ChevronDownIcon,
@@ -18,27 +19,13 @@ import CashierOrdersView from '@/components/staff/CashierOrdersView';
 import { Order, OrderStatus } from '@/types';
 import { useFetch } from '@/hooks/useFetch';
 
-const TEAL = '#2D9B8A';
-const NAVY = '#1E4D8C';
-
-const STATUS_STYLES: Record<string, { pill: string; label: string }> = {
-  PENDING: { pill: 'bg-orange-100 text-orange-700', label: 'PENDING' },
-  ACCEPTED: { pill: 'bg-blue-100 text-blue-700', label: 'ACCEPTED' },
-  PREPARING: { pill: 'bg-indigo-100 text-indigo-700', label: 'PREPARING' },
-  READY_FOR_PICKUP: { pill: 'bg-teal-100 text-teal-700', label: 'READY FOR PICKUP' },
-  OUT_FOR_DELIVERY: { pill: 'bg-amber-100 text-amber-700', label: 'OUT FOR DELIVERY' },
-  DELIVERED: { pill: 'bg-green-100 text-green-700', label: 'DELIVERED' },
-  COMPLETED: { pill: 'bg-green-100 text-green-700', label: 'COMPLETED' },
-  CANCELLED: { pill: 'bg-red-100 text-red-700', label: 'CANCELLED' },
-};
-
 const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
-  PENDING: ['ACCEPTED'],
-  ACCEPTED: ['PREPARING'],
-  PREPARING: ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
+  PENDING:          ['ACCEPTED'],
+  ACCEPTED:         ['PREPARING'],
+  PREPARING:        ['READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
   READY_FOR_PICKUP: ['COMPLETED'],
   OUT_FOR_DELIVERY: ['DELIVERED'],
-  DELIVERED: ['COMPLETED'],
+  DELIVERED:        ['COMPLETED'],
 };
 
 function fmt(n: number) {
@@ -50,12 +37,12 @@ export default function StaffOrdersPage() {
   const { user } = useAuth();
   const isCashier = user?.role === 'CASHIER';
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState('all');
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [orders, setOrders]                   = useState<Order[]>([]);
+  const [filter, setFilter]                   = useState('all');
+  const [expanded, setExpanded]               = useState<string | null>(null);
+  const [updatingId, setUpdatingId]           = useState<string | null>(null);
   const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReason, setRejectReason]       = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
 
   const { data: fetchedOrders = [], loading, error } = useFetch<Order[]>(
@@ -75,15 +62,9 @@ export default function StaffOrdersPage() {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus });
       setOrders(prev => prev.map(o => o.id === orderId ? ({ ...o, status: newStatus } as Order) : o));
       toast.success(`Order marked as ${newStatus.replace(/_/g, ' ').toLowerCase()}`);
-    } catch (err: any) {
-      if (err.response?.status === 400 && err.response?.data?.message?.includes('Cannot transition')) {
-        toast.error("Status transition not yet available backend is being updated. Please try again shortly.");
-      } else {
-        toast.error(getErrorMessage(err));
-      }
-    } finally {
-      setUpdatingId(null);
-    }
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally { setUpdatingId(null); }
   };
 
   const handleRejectOrder = async () => {
@@ -115,10 +96,10 @@ export default function StaffOrdersPage() {
     ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'].includes(o.status)
   ).length;
   const completedCount = orders.filter(o => ['COMPLETED', 'DELIVERED'].includes(o.status)).length;
-  const pendingCount = orders.filter(o => o.status === 'PENDING').length;
+  const pendingCount   = orders.filter(o => o.status === 'PENDING').length;
 
   if (isCashier) return <CashierOrdersView orders={orders} loading={loading} />;
-  if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
+  if (loading)   return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   return (
     <div className="max-w-6xl mx-auto space-y-5 p-4 lg:p-6">
@@ -177,11 +158,11 @@ export default function StaffOrdersPage() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filter === s
-                ? 'text-white shadow-sm'
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              filter === s
+                ? 'bg-brand-teal text-white shadow-sm'
                 : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}
-            style={filter === s ? { backgroundColor: TEAL } : {}}
+            }`}
           >
             {s === 'all' ? t('orders2.orderAll') : s.replace(/_/g, ' ')}
           </button>
@@ -197,11 +178,9 @@ export default function StaffOrdersPage() {
       ) : (
         <div className="space-y-2">
           {filtered.map(order => {
-            const isExpanded = expanded === order.id;
+            const isExpanded  = expanded === order.id;
             const nextStatuses = NEXT_STATUSES[order.status] ?? [];
-            const isUpdating = updatingId === order.id;
-            const statusStyle = STATUS_STYLES[order.status] ?? { pill: 'bg-gray-100 text-gray-600', label: order.status };
-
+            const isUpdating  = updatingId === order.id;
             return (
               <div key={order.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
 
@@ -227,9 +206,7 @@ export default function StaffOrdersPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <p className="text-sm font-bold text-gray-900 hidden sm:block">{fmt(order.total)}</p>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle.pill}`}>
-                      {statusStyle.label}
-                    </span>
+                    <StatusBadge status={order.status} />
                     <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
                 </button>
@@ -256,7 +233,7 @@ export default function StaffOrdersPage() {
                       </div>
                       <div className="flex justify-between text-sm font-bold mt-3 pt-3 border-t border-gray-100">
                         <span className="text-gray-700">{t('cart.total')}</span>
-                        <span style={{ color: TEAL }}>{fmt(order.total)}</span>
+                        <span className="text-brand-teal">{fmt(order.total)}</span>
                       </div>
                     </div>
 
@@ -279,7 +256,7 @@ export default function StaffOrdersPage() {
                     )}
 
                     {/* Update status */}
-                    {(nextStatuses.length > 0 || order.status === 'PENDING') && (
+                    {(nextStatuses.length > 0 || ['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status)) && (
                       <div>
                         <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
                           {t('orders2.updateStatus')}
@@ -290,10 +267,11 @@ export default function StaffOrdersPage() {
                               key={s}
                               onClick={() => handleStatusUpdate(order.id, s)}
                               disabled={isUpdating}
-                              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 ${i === 0
+                              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 ${
+                                i === 0
                                   ? 'text-white'
                                   : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
+                              }`}
                               style={i === 0 ? { background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' } : {}}
                             >
                               {isUpdating
@@ -301,10 +279,7 @@ export default function StaffOrdersPage() {
                                 : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
                             </button>
                           ))}
-
-                          {/* Gap 2 Rejection Logic: Hidden for ACCEPTED/PREPARING based on contract but dev added a modal. 
-                              I will keep it for PENDING only to satisfy the original requirement of hiding it for advanced states. */}
-                          {order.status === 'PENDING' && (
+                          {['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status) && (
                             <button
                               onClick={() => {
                                 setRejectingOrderId(order.id);
@@ -319,13 +294,6 @@ export default function StaffOrdersPage() {
                           )}
                         </div>
                       </div>
-                    )}
-
-                    {/* Info text for ACCEPTED/PREPARING */}
-                    {['ACCEPTED', 'PREPARING'].includes(order.status) && (
-                      <p className="text-xs text-gray-400 mt-2 italic">
-                        Cancellation at this stage requires a manager action.
-                      </p>
                     )}
                   </div>
                 )}

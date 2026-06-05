@@ -6,9 +6,6 @@ import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { useMedicationForm } from '@/hooks/useMedicationForm';
 import { FDA_CATEGORIES } from '@/lib/constants';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 export default function BranchAddMedicationPage() {
   const { t }    = useTranslation();
   const router   = useRouter();
@@ -26,12 +23,11 @@ export default function BranchAddMedicationPage() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <button onClick={() => router.push('/branch/inventory')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}>
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
         <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
       </button>
 
-      <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 text-white bg-brand-navy">
         <h1 className="text-2xl font-bold">{t('branch.addMedication')}</h1>
         <p className="mt-1 text-white/70">{t('inventory.addMedicationBranchSubtitle')}</p>
       </div>
@@ -120,8 +116,7 @@ export default function BranchAddMedicationPage() {
             Cancel
           </button>
           <button type="submit" disabled={loading}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-            style={{ backgroundColor: TEAL }}>
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 bg-brand-teal">
             {loading ? t('branch.adding') : t('branch.addMedicationAction')}
           </button>
         </div>

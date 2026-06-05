@@ -1,12 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
+import { CameraIcon, DocumentTextIcon, PencilIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import type { PharmacyProfile } from '@/types';
 
 const BLUE = '#1B72C8';
-const NAVY = '#1E4D8C';
 
 function getInitials(name: string = '') {
   return name
@@ -92,7 +91,7 @@ export default function PharmacyProfilePage() {
         className="rounded-2xl p-6 lg:p-8"
         style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }}
       >
-        <h1 className="text-3xl lg:text-4xl font-bold" style={{ color: NAVY }}>
+        <h1 className="text-3xl lg:text-4xl font-bold text-brand-navy">
           {t('pharmacyOwner.myProfileTitle')}
         </h1>
         <p className="mt-1 text-sm text-gray-500">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
@@ -117,11 +116,10 @@ export default function PharmacyProfilePage() {
               {initials || '?'}
             </div>
             <button
-              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md"
-              style={{ backgroundColor: NAVY }}
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md bg-brand-navy"
               aria-label={t('pharmacyOwner.clickToUpdatePhoto')}
             >
-              <Camera size={13} />
+              <CameraIcon className="w-[13px] h-[13px]" />
             </button>
           </div>
 
@@ -166,7 +164,7 @@ export default function PharmacyProfilePage() {
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
                 >
-                  <Pencil size={13} />
+                  <PencilIcon className="w-[13px] h-[13px]" />
                   {t('pharmacyOwner.editProfile')}
                 </button>
               ) : (
@@ -272,7 +270,7 @@ export default function PharmacyProfilePage() {
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ backgroundColor: '#EBF4FF' }}
                 >
-                  <FileText size={18} style={{ color: NAVY }} />
+                  <DocumentTextIcon className="w-[18px] h-[18px] text-brand-navy" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-800">{doc.label}</p>
@@ -282,8 +280,7 @@ export default function PharmacyProfilePage() {
                 </div>
               </div>
               <button
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg border text-sm font-medium hover:bg-blue-50 transition-colors"
-                style={{ borderColor: NAVY, color: NAVY }}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-brand-navy text-brand-navy text-sm font-medium hover:bg-blue-50 transition-colors"
               >
                 {t('common.view')}
               </button>
@@ -293,7 +290,7 @@ export default function PharmacyProfilePage() {
 
         {/* Warning notice */}
         <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
-          <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+          <ExclamationCircleIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
           <p className="text-sm text-amber-700">{t('pharmacyOwner.documentsNotice')}</p>
         </div>
       </div>

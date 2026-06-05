@@ -11,10 +11,6 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { FDA_CATEGORIES } from '@/lib/constants';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
-
 export default function BranchEditMedicationPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -93,12 +89,11 @@ export default function BranchEditMedicationPage() {
     <div className="space-y-6 max-w-2xl mx-auto">
 
       <button onClick={() => router.push('/branch/inventory')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}>
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
         <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
       </button>
 
-      <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 text-white bg-brand-navy">
         <h1 className="text-2xl font-bold">{t('branch.editMedication')}</h1>
         <p className="mt-1 text-white/70">{med?.name}</p>
       </div>
@@ -186,8 +181,7 @@ export default function BranchEditMedicationPage() {
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-            style={{ backgroundColor: TEAL }}>
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 bg-brand-teal">
             {saving ? t('branch.saving') : t('common.saveChanges')}
           </button>
         </div>

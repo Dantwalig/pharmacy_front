@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   PencilSquareIcon,
   DocumentTextIcon,
@@ -76,52 +77,33 @@ function EditField({
 
 export default function StaffProfilePage() {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<StaffProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<EditForm>({ firstName: '', lastName: '', phone: '' });
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [isFormDirty, setIsFormDirty] = useState(false);
+  const [profile, setProfile]       = useState<StaffProfile | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [isEditing, setIsEditing]   = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [form, setForm]             = useState<EditForm>({ firstName: '', lastName: '', phone: '' });
 
   useEffect(() => {
-    fetchProfile();
+    api.get('/staff/profile/me')
+      .then(res => {
+        setProfile(res.data);
+        setForm({
+          firstName: res.data.firstName ?? '',
+          lastName:  res.data.lastName  ?? '',
+          phone:     res.data.phone     ?? '',
+        });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const res = await api.get('/staff/profile/me');
-      setProfile(res.data);
-      setForm({
-        firstName: res.data.firstName ?? '',
-        lastName: res.data.lastName ?? '',
-        phone: res.data.phone ?? '',
-      });
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEdit = () => {
     if (!profile) return;
     setForm({ firstName: profile.firstName, lastName: profile.lastName, phone: profile.phone ?? '' });
     setIsEditing(true);
-    setIsFormDirty(false);
-    setSaveError(null);
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setSaveError(null);
-  };
-
-  const handleInputChange = (field: keyof EditForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    setIsFormDirty(true);
-    setSaveError(null);
-  };
+  const handleCancel = () => setIsEditing(false);
 
   const handleSave = async () => {
     if (!form.firstName.trim() || !form.lastName.trim()) {
@@ -129,25 +111,17 @@ export default function StaffProfilePage() {
       return;
     }
     setSaving(true);
-    setSaveError(null);
     try {
-      // Gap 1 Integration: Handle potential 404/405 from unimplemented backend endpoint
       const res = await api.put('/staff/profile/me', {
         firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        phone: form.phone.trim() || undefined,
+        lastName:  form.lastName.trim(),
+        phone:     form.phone.trim() || undefined,
       });
       setProfile(res.data);
       setIsEditing(false);
       toast.success(t('profile.updateSuccess'));
-    } catch (err: any) {
-      const status = err.response?.status;
-      if (status === 404 || status === 405) {
-        setSaveError("Profile editing is temporarily unavailable the backend update endpoint is being implemented.");
-        setIsFormDirty(false); // Disable button until next change
-      } else {
-        toast.error(getErrorMessage(err));
-      }
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -156,26 +130,26 @@ export default function StaffProfilePage() {
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
   if (!profile) return <div className="text-center py-20 text-gray-500">{t('profile2.profileNotFound')}</div>;
 
-  const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase();
+  const initials    = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase();
   const memberSince = new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const isApproved = profile.status === 'ACTIVE';
-  const roleLabel = profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase();
+  const isApproved  = profile.status === 'ACTIVE';
+  const roleLabel   = profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase();
 
   const documents = [
     {
-      label: t('staffPages.pharmacistLicense'),
+      label:  t('staffPages.pharmacistLicense'),
       expiry: profile.licenseExpiry
         ? `${t('staffPages.docExpires')} ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : `${t('staffPages.docExpires')} —`,
-      url: profile.licenseUrl ?? null,
+      url:  profile.licenseUrl ?? null,
       icon: DocumentTextIcon,
     },
     {
-      label: t('staffPages.nationalIdCert'),
+      label:  t('staffPages.nationalIdCert'),
       expiry: profile.nationalIdExpiry
         ? `${t('staffPages.docExpired')} ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : profile.nationalId ? `${t('staffPages.docIdPrefix')} ${profile.nationalId}` : t('staffPages.noDocOnFile'),
-      url: null,
+      url:  null,
       icon: PhotoIcon,
     },
   ];
@@ -193,13 +167,6 @@ export default function StaffProfilePage() {
           {profile.branch.pharmacy.name} / {roleLabel}
         </p>
       </div>
-
-      {saveError && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          {saveError}
-        </div>
-      )}
 
       {/* ── Two-column layout ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5 items-start">
@@ -221,10 +188,11 @@ export default function StaffProfilePage() {
           <p className="font-bold text-gray-900 text-base">{profile.firstName} {profile.lastName}</p>
           <p className="text-gray-400 text-sm mt-0.5">{roleLabel}</p>
 
-          <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            {isApproved ? t('common.active') : profile.status}
-          </span>
+          <StatusBadge
+            status={isApproved ? 'ACTIVE' : profile.status}
+            label={isApproved ? t('common.active') : profile.status}
+            className="mt-2"
+          />
 
           <div className="mt-5 w-full space-y-3 text-sm">
             <div>
@@ -264,7 +232,7 @@ export default function StaffProfilePage() {
                   </button>
                   <button
                     onClick={handleSave}
-                    disabled={saving || (saveError ? true : !isFormDirty)}
+                    disabled={saving}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50 transition-opacity hover:opacity-90"
                     style={{ background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' }}
                   >
@@ -289,17 +257,17 @@ export default function StaffProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {isEditing ? (
                 <>
-                  <EditField label={t('profile2.firstName')} value={form.firstName} onChange={v => handleInputChange('firstName', v)} />
-                  <EditField label={t('profile2.lastName')} value={form.lastName} onChange={v => handleInputChange('lastName', v)} />
-                  <EditField label={t('staffPages.phoneNumberLabel')} value={form.phone} onChange={v => handleInputChange('phone', v)} />
-                  <EditField label={t('staffPages.emailAddressLabel')} value={profile.user.email} onChange={() => { }} disabled />
+                  <EditField label={t('profile2.firstName')}           value={form.firstName} onChange={v => setForm(f => ({ ...f, firstName: v }))} />
+                  <EditField label={t('profile2.lastName')}            value={form.lastName}  onChange={v => setForm(f => ({ ...f, lastName: v }))} />
+                  <EditField label={t('staffPages.phoneNumberLabel')}  value={form.phone}     onChange={v => setForm(f => ({ ...f, phone: v }))} />
+                  <EditField label={t('staffPages.emailAddressLabel')} value={profile.user.email} onChange={() => {}} disabled />
                 </>
               ) : (
                 <>
-                  <ReadField label={t('staffPages.fullName')} value={`${profile.firstName} ${profile.lastName}`} />
+                  <ReadField label={t('staffPages.fullName')}          value={`${profile.firstName} ${profile.lastName}`} />
                   <ReadField label={t('staffPages.emailAddressLabel')} value={profile.user.email} />
-                  <ReadField label={t('staffPages.phoneNumberLabel')} value={profile.phone || '—'} />
-                  <ReadField label={t('form.role')} value={roleLabel} />
+                  <ReadField label={t('staffPages.phoneNumberLabel')}  value={profile.phone || '—'} />
+                  <ReadField label={t('form.role')}                    value={roleLabel} />
                 </>
               )}
             </div>
@@ -309,18 +277,17 @@ export default function StaffProfilePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-gray-900 text-base">{t('pharmacyOwner.registrationDetails')}</h2>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                {isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
-              </span>
+              <StatusBadge
+                status={isApproved ? 'APPROVED' : 'PENDING'}
+                label={isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
+              />
             </div>
 
             <div className="space-y-0 text-sm divide-y divide-gray-50">
               {[
                 { label: t('pharmacyOwner.pharmacyName'), value: profile.branch.pharmacy.name },
-                { label: t('form.branch'), value: profile.branch.name },
-                { label: t('staffMgmt.memberSince'), value: memberSince },
+                { label: t('form.branch'),                value: profile.branch.name },
+                { label: t('staffMgmt.memberSince'),      value: memberSince },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between py-2.5">
                   <p className="text-gray-400 font-medium">{label}</p>

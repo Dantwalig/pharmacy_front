@@ -24,9 +24,6 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   loading: () => <MapSkeleton />,
 });
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 // Rwanda-wide: zoom out enough to see all provinces
 const RWANDA_CENTER: [number, number] = [-1.9403, 29.8739];
 const RWANDA_ZOOM = 8;
@@ -106,23 +103,23 @@ export default function SuperAdminMapPage() {
       )}
 
       {/* Pharmacy index list */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-y-auto flex-1" style={{ maxHeight: 300 }}>
-        <div className="p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h3 className="font-bold text-gray-800 text-sm">
-            {t('superAdminMap.pharmacyIndex')}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-y-auto flex-1" style={{ maxHeight: 300 }}>
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm">
+            Pharmacy Index
             <span className="ml-2 text-xs font-normal text-gray-400">
-              {filtered.length} {t('superAdminMap.shown')}
+              {filtered.length} shown
             </span>
           </h3>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-gray-50 dark:divide-gray-700">
           {loading
             ? [1, 2, 3, 4].map((i) => (
                 <div key={i} className="p-3 flex gap-3 animate-pulse">
-                  <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-gray-200 rounded w-3/4" />
-                    <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                    <div className="h-2.5 bg-gray-100 dark:bg-gray-600 rounded w-1/2" />
                   </div>
                 </div>
               ))
@@ -130,21 +127,17 @@ export default function SuperAdminMapPage() {
                 <button
                   key={p.id}
                   onClick={() => handleSelectPharmacy(p)}
-                  className={`w-full text-left p-3 flex items-center gap-3 transition-all hover:bg-gray-50 ${
-                    selectedId === p.id ? 'bg-blue-50' : ''
+                  className={`w-full text-left p-3 flex items-center gap-3 transition-all hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
+                    selectedId === p.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
                 >
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: p.isActive ? `${TEAL}20` : '#f3f4f6' }}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${p.isActive ? 'bg-brand-teal/10' : 'bg-gray-100'}`}
                   >
-                    <BuildingStorefrontIcon
-                      className="w-4 h-4"
-                      style={{ color: p.isActive ? TEAL : '#9ca3af' }}
-                    />
+                    🏥
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-gray-800 truncate">{p.name}</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">{p.name}</p>
                     <p className="text-xs text-gray-400 truncate">{p.region}</p>
                   </div>
                   <span
@@ -160,14 +153,17 @@ export default function SuperAdminMapPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #f0f9ff 100%)' }}>
+      <div
+        className="rounded-2xl shadow-xl p-8 text-white"
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-navy-dark))' }}
+      >
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#DBEAFE' }}>
-            <MapPinIcon className="w-8 h-8" style={{ color: '#1E4D8C' }} />
+          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+            <MapPinIcon className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('superAdminMap.title')}</h1>
-            <p className="text-sm mt-1" style={{ color: '#4B7BAE' }}>{t('superAdminMap.subtitle')}</p>
+            <h1 className="text-3xl font-bold">Global Pharmacy Map</h1>
+            <p className="text-blue-100 mt-1">All registered pharmacies across the E-Vuze platform</p>
           </div>
         </div>
       </div>
@@ -175,14 +171,14 @@ export default function SuperAdminMapPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { labelKey: 'superAdminMap.totalPharmacies', value: stats.total,    icon: BuildingStorefrontIcon, color: NAVY,       bg: `${NAVY}12` },
-          { labelKey: 'superAdminMap.active',          value: stats.active,   icon: CheckCircleIcon,        color: TEAL,       bg: `${TEAL}12` },
-          { labelKey: 'superAdminMap.inactive',        value: stats.inactive, icon: XCircleIcon,            color: '#ef4444',  bg: '#fef2f2'   },
-          { labelKey: 'superAdminMap.openNow',         value: stats.open,     icon: MapPinIcon,             color: '#f59e0b',  bg: '#fffbeb'   },
+          { label: 'Total Pharmacies', value: stats.total, icon: BuildingStorefrontIcon, color: '#1E4D8C', bg: '#1E4D8C12' },
+          { label: 'Active',           value: stats.active,   icon: CheckCircleIcon,        color: '#2D9B8A', bg: '#2D9B8A12' },
+          { label: 'Inactive',         value: stats.inactive, icon: XCircleIcon,            color: '#ef4444', bg: '#fef2f2' },
+          { label: 'Open Now',         value: stats.open,     icon: MapPinIcon,             color: '#f59e0b', bg: '#fffbeb' },
         ].map((s) => (
-          <div key={s.labelKey} className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
+          <div key={s.label} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">{t(s.labelKey)}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">{s.label}</p>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: s.bg }}>
                 <s.icon className="w-5 h-5" style={{ color: s.color }} />
               </div>
@@ -193,53 +189,43 @@ export default function SuperAdminMapPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-3 items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 flex flex-wrap gap-3 items-center">
         <FunnelIcon className="w-5 h-5 text-gray-400 shrink-0" />
         <div className="relative flex-1 min-w-[180px]">
           <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder={t('superAdminMap.searchPlaceholder')}
+            placeholder="Search pharmacy, area, region…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:ring-2"
-            style={{ '--tw-ring-color': TEAL } as any}
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2"
+            style={{ '--tw-ring-color': '#2D9B8A' } as any}
           />
         </div>
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-          {([
-            { value: 'all',    labelKey: 'superAdminMap.all'    },
-            { value: 'open',   labelKey: 'superAdminMap.open'   },
-            { value: 'closed', labelKey: 'superAdminMap.closed' },
-          ] as { value: FilterStatus; labelKey: string }[]).map(({ value: v, labelKey }) => (
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+          {(['all', 'open', 'closed'] as FilterStatus[]).map((v) => (
             <button
               key={v}
               onClick={() => setStatusFilter(v)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={statusFilter === v ? { background: 'linear-gradient(135deg, #0284C7, #38BDF8)', color: '#fff' } : { color: '#6b7280' }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${statusFilter === v ? 'bg-brand-navy text-white' : 'text-gray-500'}`}
             >
-              {t(labelKey)}
+              {v}
             </button>
           ))}
         </div>
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-          {([
-            { value: 'all',      labelKey: 'superAdminMap.all'      },
-            { value: 'active',   labelKey: 'superAdminMap.active'   },
-            { value: 'inactive', labelKey: 'superAdminMap.inactive' },
-          ] as { value: FilterActive; labelKey: string }[]).map(({ value: v, labelKey }) => (
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+          {(['all', 'active', 'inactive'] as FilterActive[]).map((v) => (
             <button
               key={v}
               onClick={() => setActiveFilter(v)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={activeFilter === v ? { background: 'linear-gradient(135deg, #0284C7, #38BDF8)', color: '#fff' } : { color: '#6b7280' }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${activeFilter === v ? 'bg-brand-teal text-white' : 'text-gray-500'}`}
             >
-              {t(labelKey)}
+              {v}
             </button>
           ))}
         </div>
         <span className="text-xs text-gray-400 ml-auto">
-          {t('superAdminMap.showing')} {filtered.length} / {allPharmacies.length}
+          Showing {filtered.length} / {allPharmacies.length}
         </span>
       </div>
 
@@ -270,14 +256,13 @@ export default function SuperAdminMapPage() {
 }
 
 function SelectPrompt() {
-  const { t } = useTranslation();
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 text-center">
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: `${NAVY}12` }}>
-        <BuildingStorefrontIcon className="w-7 h-7" style={{ color: NAVY }} />
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-brand-navy/10">
+        <BuildingStorefrontIcon className="w-7 h-7 text-brand-navy" />
       </div>
-      <p className="text-gray-700 font-semibold text-sm">{t('superAdminMap.selectPharmacy')}</p>
-      <p className="text-gray-400 text-xs mt-1">{t('superAdminMap.selectPrompt')}</p>
+      <p className="text-gray-700 dark:text-gray-200 font-semibold text-sm">Select a Pharmacy</p>
+      <p className="text-gray-400 text-xs mt-1">Click any map marker or index entry.</p>
     </div>
   );
 }
@@ -291,29 +276,18 @@ function DetailsPanel({
   onViewDetails: (id: string) => void;
   onClose: () => void;
 }) {
-  const { t } = useTranslation();
   const isOpen = pharmacy.status === 'OPEN';
-
-  const fields: [string, string | undefined | null][] = [
-    [t('superAdminMap.region'),      pharmacy.region],
-    [t('common.address'),            pharmacy.address],
-    [t('common.phone'),              pharmacy.phone],
-    [t('superAdminMap.hours'),       pharmacy.hours],
-    [t('superAdminMap.rating'),      pharmacy.rating ? `${pharmacy.rating} / 5` : '—'],
-    [t('superAdminMap.coordinates'), `${pharmacy.latitude.toFixed(4)}, ${pharmacy.longitude.toFixed(4)}`],
-  ];
-
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
       <div
         className="px-5 py-4 flex items-center justify-between text-white"
-        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-navy-dark))' }}
       >
         <p className="font-bold text-sm truncate">{pharmacy.name}</p>
-        <button
-          onClick={onClose}
+        <button 
+          onClick={onClose} 
           className="text-white/70 hover:text-white text-xl leading-none ml-2 shrink-0"
-          aria-label={t('common.close') || 'Close'}
+          aria-label="Close"
         >
           ×
         </button>
@@ -321,29 +295,33 @@ function DetailsPanel({
       <div className="p-4 space-y-3 text-sm">
         <span
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-            isOpen ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+            isOpen ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-red-50 text-red-600'
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-400' : 'bg-red-400'}`} />
-          {isOpen ? t('superAdminMap.openNow') : t('superAdminMap.closed')}
-          {' · '}
-          {pharmacy.isActive ? t('superAdminMap.active') : t('superAdminMap.inactive')}
+          {isOpen ? 'Open Now' : 'Closed'} · {pharmacy.isActive ? 'Active' : 'Inactive'}
         </span>
-        {fields.map(([label, value]) => (
+        {[
+          ['Address',     pharmacy.address],
+          ['Region',      pharmacy.region],
+          ['Phone',       pharmacy.phone],
+          ['Hours',       pharmacy.hours],
+          ['Rating',      pharmacy.rating ? `${pharmacy.rating} / 5` : '—'],
+          ['Coordinates', `${pharmacy.latitude.toFixed(4)}, ${pharmacy.longitude.toFixed(4)}`],
+        ].map(([label, value]) => (
           <div key={label} className="flex justify-between gap-3 text-xs">
             <span className="text-gray-400 font-medium shrink-0">{label}</span>
-            <span className="text-gray-700 text-right">{value || '—'}</span>
+            <span className="text-gray-700 dark:text-gray-200 text-right">{value}</span>
           </div>
         ))}
         <button
           onClick={() => onViewDetails(pharmacy.id)}
           className="w-full mt-1 py-2.5 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #0284C7, #38BDF8)' }}
+          style={{ background: 'linear-gradient(135deg, var(--color-brand-teal), #207a6c)' }}
         >
-          {t('superAdminMap.openFullProfile')} →
+          Open Full Profile →
         </button>
       </div>
     </div>
   );
 }
-

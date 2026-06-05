@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   UserGroupIcon,
   PlusIcon,
@@ -17,9 +18,6 @@ import {
   TrashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 interface StaffMember {
   id: string;
@@ -92,8 +90,7 @@ export default function BranchStaffPage() {
       </div>
       <button
           onClick={() => router.push('/branch/staff/new')}
-          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all bg-brand-teal"
         >
         <PlusIcon className="w-4 h-4" />
         {t('staffMgmt.addStaff')}
@@ -108,8 +105,7 @@ export default function BranchStaffPage() {
         <p className="text-gray-400 text-sm mt-1">{t('staffMgmt.addFirst')}</p>
         <button
             onClick={() => router.push('/branch/staff/new')}
-            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{ backgroundColor: TEAL }}
+            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all bg-brand-teal"
           >
           {t('staffMgmt.addStaffMember')}
           </button>
@@ -150,21 +146,14 @@ export default function BranchStaffPage() {
                     </p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      member.status === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                    {member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                    </span>
+                  <StatusBadge status={member.status} label={member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')} />
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => router.push(`/branch/staff/${member.id}`)}
-                        className="p-1.5 rounded-lg transition-all"
+                        className="p-1.5 rounded-lg transition-all text-brand-teal"
                         aria-label="View staff details"
-                        style={{ color: TEAL }}
                         title={t('staffMgmt.viewDetails')}
                       >
                       <EyeIcon className="w-4 h-4" />

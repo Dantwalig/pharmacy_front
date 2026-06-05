@@ -12,16 +12,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  MapPin, Navigation, GitBranch, RefreshCw,
-  AlertCircle, Building2, Eye, EyeOff, Users,
-} from 'lucide-react';
+  MapPinIcon, PaperAirplaneIcon, BuildingOffice2Icon, ArrowPathIcon,
+  ExclamationCircleIcon, EyeIcon, EyeSlashIcon, UsersIcon,
+} from '@heroicons/react/24/outline';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import type { MapMarker } from '@/components/map/BaseMap';
 import { MapSkeleton } from '@/components/map/MapStates';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 const RED  = '#EF4444';
 
 const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false });
@@ -57,7 +55,7 @@ function SisterCard({
           className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{ backgroundColor: active ? '#6366F133' : '#F3F4F6' }}
         >
-          <GitBranch size={14} style={{ color: active ? '#6366F1' : '#9CA3AF' }} />
+          <BuildingOffice2Icon className="w-[14px] h-[14px]" style={{ color: active ? '#6366F1' : '#9CA3AF' }} />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-gray-900 text-sm truncate">{branch.displayName}</p>
@@ -101,7 +99,7 @@ function CompetitorCard({
           className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{ backgroundColor: active ? '#FEE2E2' : '#FFF5F5' }}
         >
-          <Building2 size={14} style={{ color: active ? RED : '#FCA5A5' }} />
+          <BuildingOffice2Icon className="w-[14px] h-[14px]" style={{ color: active ? RED : '#FCA5A5' }} />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-gray-900 text-sm truncate">{branch.name}</p>
@@ -243,12 +241,11 @@ export default function BranchMapPage() {
 
       {/* Hero */}
       <div
-        className="rounded-2xl p-6 text-white flex items-start justify-between gap-4"
-        style={{ backgroundColor: NAVY }}
+        className="rounded-2xl p-6 text-white flex items-start justify-between gap-4 bg-brand-navy"
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Navigation size={18} className="text-white/70" />
+            <PaperAirplaneIcon className="w-[18px] h-[18px] text-white/70" />
             <p className="text-white/70 text-sm font-medium">Branch Location</p>
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold">Network Map</h1>
@@ -261,23 +258,23 @@ export default function BranchMapPage() {
           disabled={loading}
           className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm transition-all disabled:opacity-50"
         >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <ArrowPathIcon className={`w-[14px] h-[14px] ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {/* Stats */}
       <div className="flex flex-wrap gap-2">
         <StatPill label="Sister branches"  value={sisterBranches.length}      color="#6366F1" />
-        <StatPill label="On map"           value={sistersWithCoords.length}    color={TEAL}    />
+        <StatPill label="On map"           value={sistersWithCoords.length}    color="#2D9B8A" />
         <StatPill label="Competitors nearby" value={competitorsWithCoords.length} color={RED}  />
       </div>
 
       {error ? (
         <div className="flex items-center justify-center h-64 rounded-2xl border border-gray-100 bg-gray-50">
           <div className="text-center space-y-2">
-            <AlertCircle size={28} className="mx-auto text-gray-300" />
+            <ExclamationCircleIcon className="w-7 h-7 mx-auto text-gray-300" />
             <p className="text-sm text-gray-400">Failed to load map data.</p>
-            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>
+            <button onClick={load} className="text-xs font-medium underline text-brand-teal">
               Try again
             </button>
           </div>
@@ -302,7 +299,7 @@ export default function BranchMapPage() {
                     : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
                 }
               >
-                {showSisters ? <Eye size={12} /> : <EyeOff size={12} />}
+                {showSisters ? <EyeIcon className="w-3 h-3" /> : <EyeSlashIcon className="w-3 h-3" />}
                 Sister Branches
               </button>
 
@@ -316,8 +313,8 @@ export default function BranchMapPage() {
                     : { backgroundColor: '#fff',    borderColor: '#E5E7EB', color: '#9CA3AF' }
                 }
               >
-                {showCompetitors ? <Eye size={12} /> : <EyeOff size={12} />}
-                <Users size={12} />
+                {showCompetitors ? <EyeIcon className="w-3 h-3" /> : <EyeSlashIcon className="w-3 h-3" />}
+                <UsersIcon className="w-3 h-3" />
                 Competitors
                 {competitorsWithCoords.length > 0 && (
                   <span
@@ -338,7 +335,7 @@ export default function BranchMapPage() {
                 className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 gap-3"
                 style={{ height: '480px' }}
               >
-                <MapPin size={32} className="text-gray-200" />
+                <MapPinIcon className="w-8 h-8 text-gray-200" />
                 <p className="text-sm text-gray-400">No location data available.</p>
                 <p className="text-xs text-gray-300 text-center max-w-xs">
                   Ask your Pharmacy Owner to add coordinates to this branch.
@@ -364,15 +361,14 @@ export default function BranchMapPage() {
             {/* My branch info */}
             {managerBranch && (
               <div
-                className="rounded-2xl border p-4 space-y-3"
-                style={{ borderColor: TEAL, backgroundColor: '#F0FAFA' }}
+                className="rounded-2xl border border-brand-teal p-4 space-y-3"
+                style={{ backgroundColor: '#F0FAFA' }}
               >
                 <div className="flex items-center gap-2">
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: TEAL }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand-teal"
                   >
-                    <Navigation size={14} className="text-white" />
+                    <PaperAirplaneIcon className="w-[14px] h-[14px] text-white" />
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{managerBranch.displayName ?? managerBranch.name}</p>
@@ -451,7 +447,7 @@ export default function BranchMapPage() {
             {sistersNoCoords.length > 0 && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                 <div className="flex items-start gap-2">
-                  <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                  <ExclamationCircleIcon className="w-[14px] h-[14px] text-amber-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs font-semibold text-amber-700">
                       {sistersNoCoords.length} branch{sistersNoCoords.length > 1 ? 'es' : ''} missing coordinates
@@ -468,12 +464,12 @@ export default function BranchMapPage() {
             {selectedMarker && (
               <div className="rounded-2xl bg-white border border-gray-100 p-4 shadow-sm space-y-2">
                 <div className="flex items-center gap-2">
-                  <Building2
-                    size={14}
+                  <BuildingOffice2Icon
+                    className="w-[14px] h-[14px]"
                     style={{
                       color: selectedMarker.type === 'competitor' ? RED
                            : selectedMarker.type === 'sibling'    ? '#6366F1'
-                           : TEAL,
+                           : '#2D9B8A',
                     }}
                   />
                   <p className="font-bold text-gray-900 text-sm">{selectedMarker.label}</p>
@@ -483,14 +479,13 @@ export default function BranchMapPage() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <span
-                    className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                    style={
+                    className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                       selectedMarker.type === 'competitor'
-                        ? { backgroundColor: '#FEE2E2', color: '#991B1B' }
+                        ? 'bg-red-100 text-red-800'
                         : selectedMarker.type === 'sibling'
-                        ? { backgroundColor: '#EEF2FF', color: '#4338CA' }
-                        : { backgroundColor: `${TEAL}22`, color: TEAL }
-                    }
+                        ? 'bg-indigo-100 text-indigo-800'
+                        : 'bg-brand-teal/10 text-brand-teal'
+                    }`}
                   >
                     {selectedMarker.status}
                   </span>
