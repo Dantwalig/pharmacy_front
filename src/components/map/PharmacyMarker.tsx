@@ -4,8 +4,6 @@
 
 'use client';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 const GRAY = '#9ca3af';
 
 export type MarkerVariant = 'default' | 'selected' | 'inactive';
@@ -23,10 +21,10 @@ interface MarkerOptions {
 export function buildMarkerHtml({ status, selected = false, isActive = true }: MarkerOptions): string {
   const isOpen = status === 'OPEN' && isActive;
   const size = selected ? 44 : 32;
-  const fillColor = isOpen ? TEAL : GRAY;
-  const borderColor = selected ? '#ffffff' : isOpen ? NAVY : '#6b7280';
+  const fillColor = isOpen ? '#2D9B8A' : GRAY;
+  const borderColor = selected ? '#ffffff' : isOpen ? '#1E4D8C' : '#6b7280';
   const shadow = selected
-    ? `0 0 0 4px ${NAVY}55, 0 4px 16px rgba(0,0,0,0.4)`
+    ? `0 0 0 4px #1E4D8C55, 0 4px 16px rgba(0,0,0,0.4)`
     : '0 2px 8px rgba(0,0,0,0.25)';
 
   return `
@@ -64,7 +62,7 @@ export function buildMarkerHtml({ status, selected = false, isActive = true }: M
         position: absolute;
         inset: -6px;
         border-radius: 50% 50% 50% 0;
-        border: 2px solid ${TEAL};
+        border: 2px solid #2D9B8A;
         transform: rotate(-45deg);
         animation: markerPulse 1.2s ease-in-out infinite;
         opacity: 0.5;

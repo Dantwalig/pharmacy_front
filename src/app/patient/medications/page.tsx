@@ -50,9 +50,9 @@ export default function SearchMedications() {
 
   return (
     <div className="space-y-6">
-    <div className="bg-[#EBF5FF] rounded-2xl p-8">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-[#1E3A5F]">{t('medications.title')} </h1>
-      <p className="text-lg" style={{ color: '#3B82F6' }}>{t('medications.subtitle')}</p>
+    <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('medications.title')} </h1>
+      <p className="text-blue-100 text-lg">{t('medications.subtitle')}</p>
     </div>
 
     <form onSubmit={handleSearch} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
@@ -70,7 +70,7 @@ export default function SearchMedications() {
             />
         </div>
         <button type="submit" disabled={loading}
-            className="px-8 py-3 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
+            className="px-8 py-3 bg-linear-to-r from-brand-teal to-teal-500 text-white rounded-xl font-semibold hover:from-teal-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 whitespace-nowrap">
           {loading ? t('medications.searching') : t('common.search')}
           </button>
       </div>
@@ -87,9 +87,9 @@ export default function SearchMedications() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {medications.map((med: any) => (
                 <div key={med.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all transform hover:scale-105 overflow-hidden">
-                <div className="bg-[#EBF5FF] p-5">
-                  <h3 className="font-bold text-xl mb-1 text-[#1E3A5F]">{med.name}</h3>
-                  <p className="text-sm text-gray-500">{med.category}</p>
+                <div className="bg-linear-to-r from-brand-teal to-teal-500 p-6 text-white">
+                  <h3 className="font-bold text-xl mb-1">{med.name}</h3>
+                  <p className="text-sm opacity-90">{med.category}</p>
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
@@ -105,12 +105,12 @@ export default function SearchMedications() {
                   )}
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-[#1E4D8C] dark:text-blue-400">{med.price.toLocaleString()} RWF</span>
+                      <span className="text-2xl font-bold text-brand-navy dark:text-blue-400">{med.price.toLocaleString()} RWF</span>
                     </div>
                     <button
                         onClick={() => handleAddToCart(med)}
                         disabled={med.quantity === 0}
-                        className="w-full text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
+                        className="w-full bg-linear-to-r from-brand-teal to-teal-500 text-white py-3 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                       {med.quantity > 0 ? (<><ShoppingCartIcon className="w-5 h-5" />{t('medications.addToCart')}</>) : t('medications.outOfStock')}
                       </button>

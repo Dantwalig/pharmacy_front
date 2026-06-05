@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   MagnifyingGlassIcon,
   CheckCircleIcon,
@@ -16,14 +17,6 @@ import {
   BuildingStorefrontIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
-
-// Removed NAVY and TEAL constants in favor of Authority Theme (slate/rose)
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:  'bg-yellow-100 text-yellow-700',
-  APPROVED: 'bg-green-100 text-green-700',
-  REJECTED: 'bg-red-100 text-red-700',
-};
 
 function PharmaciesContent() {
   const router = useRouter();
@@ -330,9 +323,7 @@ if (error) {
 
                     {/* Status */}
                     <td className="px-4 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {p.status}
-                      </span>
+                      <StatusBadge status={p.status} />
                       {p.status === 'REJECTED' && p.rejectionReason && (
                         <p className="text-xs text-red-500 mt-1 max-w-[100px] truncate" title={p.rejectionReason}>
                           {p.rejectionReason}

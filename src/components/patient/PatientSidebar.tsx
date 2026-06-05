@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import {
   HomeIcon, MagnifyingGlassIcon, ShoppingCartIcon,
   ClipboardDocumentListIcon, BellIcon, UserCircleIcon,
-  ArrowRightOnRectangleIcon, XMarkIcon,
+  ArrowRightOnRectangleIcon, BuildingStorefrontIcon, XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
@@ -38,7 +37,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
   return (
     <aside className={`
-      w-64 bg-linear-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white
+      w-64 bg-linear-to-b from-brand-navy via-brand-navy-dark to-[#0f2444] text-white
       fixed left-0 top-0 bottom-0 shadow-2xl z-40 flex flex-col
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -46,16 +45,9 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
       {/* Header */}
       <div className="p-6 border-b border-white/10 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <Image
-            src="/E-Vuze Logo.svg"
-            alt="E-Vuze"
-            width={44}
-            height={44}
-            className="shrink-0"
-            unoptimized
-          />
+          <BuildingStorefrontIcon className="w-10 h-10 text-white" />
           <div>
-            <h1 className="text-2xl font-bold text-white">E-Vuze</h1>
+            <h1 className="text-2xl font-bold text-white">Evuze</h1>
             <p className="text-xs text-blue-200">{t('auth.healthcarePlatform')}</p>
           </div>
         </div>
@@ -70,14 +62,10 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
-            <Link
-              key={item.id}
-              href={item.href}
-              onClick={onClose}
+            <Link key={item.id} href={item.href} onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive ? 'text-white font-semibold shadow-lg' : 'hover:bg-white/10 hover:translate-x-1'
+                isActive ? 'bg-brand-teal text-white font-semibold shadow-lg' : 'hover:bg-white/10 hover:translate-x-1'
               }`}
-              style={isActive ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)' } : {}}
             >
               <Icon className="w-5 h-5 shrink-0" />
               <span className="text-sm">{t(item.nameKey)}</span>
