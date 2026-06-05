@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import StatusBadge from '@/components/shared/StatusBadge';
 import { getErrorMessage } from '@/lib/errorHandler';
 import {
   ArrowLeftIcon,
@@ -17,12 +16,22 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 
+const NAVY = '#1E4D8C';
+const TEAL = '#2D9B8A';
+
 const ROLE_COLORS: Record<string, string> = {
   PHARMACIST: 'bg-violet-100 text-violet-800',
   CASHIER:    'bg-blue-100 text-blue-800',
   NURSE:      'bg-pink-100 text-pink-800',
 };
 
+const STATUS_STYLES: Record<string, string> = {
+  PENDING:     'bg-yellow-100 text-yellow-800',
+  APPROVED:    'bg-blue-100 text-blue-800',
+  CLOCKED_OUT: 'bg-orange-100 text-orange-800',
+  COMPLETED:   'bg-green-100 text-green-800',
+  REJECTED:    'bg-red-100 text-red-800',
+};
 
 interface StaffDetail {
   id: string;
@@ -107,7 +116,8 @@ export default function StaffDetailPage() {
   if (!staff) return (
     <div className="space-y-4">
       <button onClick={() => router.push('/branch/staff')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
+        className="flex items-center gap-2 text-sm font-medium hover:underline"
+        style={{ color: NAVY }}>
         <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
@@ -120,18 +130,19 @@ export default function StaffDetailPage() {
     <div className="space-y-6">
       {/* Back */}
       <button onClick={() => router.push('/branch/staff')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy">
+        className="flex items-center gap-2 text-sm font-medium hover:underline"
+        style={{ color: NAVY }}>
         <ArrowLeftIcon className="w-4 h-4" /> {t('staffMgmt.backToStaff')}
       </button>
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-navy">
+      <div className="rounded-2xl p-6 bg-[#EBF4FF] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-            <UserCircleIcon className="w-9 h-9 text-white/80" />
+            <UserCircleIcon className="w-8 h-8 text-[#29ABE2]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{staff.firstName} {staff.lastName}</h1>
+            <h1 className="text-2xl font-bold text-[#1E3A5F]">{staff.firstName} {staff.lastName}</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white`}>
                 {staff.user.role}
@@ -145,7 +156,7 @@ export default function StaffDetailPage() {
         <button
           onClick={handleDeactivate}
           disabled={deactivating}
-          className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 disabled:opacity-50 transition-all self-start sm:self-center"
+          className="px-5 py-2.5 rounded-xl text-sm font-medium border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-50 transition-all self-start sm:self-center"
         >
           {deactivating ? t('staffMgmt.removing') : t('staffMgmt.removeFromBranch')}
         </button>
@@ -159,8 +170,9 @@ export default function StaffDetailPage() {
           { label: t('staffMgmt.totalHours'),       value: `${totalHours.toFixed(1)}h` },
         ].map((s, i) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-brand-teal-light">
-              <ClockIcon className="w-5 h-5 text-brand-teal" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+              style={{ backgroundColor: '#F0F7F6' }}>
+              <ClockIcon className="w-5 h-5" style={{ color: TEAL }} />
             </div>
             <p className="text-xs text-gray-500 mb-1">{s.label}</p>
             <p className="text-lg font-bold text-gray-900">{s.value}</p>
@@ -181,8 +193,9 @@ export default function StaffDetailPage() {
             { icon: ClockIcon,         label: t('staffMgmt.memberSince'), value: formatDate(staff.createdAt) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-brand-teal-light">
-                <Icon className="w-4 h-4 text-brand-teal" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                style={{ backgroundColor: '#F0F7F6' }}>
+                <Icon className="w-4 h-4" style={{ color: TEAL }} />
               </div>
               <div>
                 <p className="text-xs text-gray-500">{label}</p>
@@ -263,7 +276,9 @@ export default function StaffDetailPage() {
                       {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '—'}
                     </td>
                     <td className="px-5 py-3">
-                      <StatusBadge status={record.status} />
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'}`}>
+                        {record.status.replace(/_/g, ' ')}
+                      </span>
                       {record.rejectionReason && (
                         <p className="text-xs text-red-500 mt-0.5">{record.rejectionReason}</p>
                       )}

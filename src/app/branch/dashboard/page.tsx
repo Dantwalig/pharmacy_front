@@ -16,48 +16,32 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface AttendanceSummary {
-  total: number;
-  pending: number;
-  approved: number;
-  completed: number;
-  rejected: number;
-  totalHoursWorked: number;
+  total: number; pending: number; approved: number;
+  completed: number; rejected: number; totalHoursWorked: number;
 }
-
 interface PendingAttendance {
-  id: string;
-  status: string;
-  clockInTime: string;
-  clockOutTime?: string;
-  staff: {
-    firstName: string;
-    lastName: string;
-    user: { email: string; role: string };
-  };
+  id: string; status: string; clockInTime: string; clockOutTime?: string;
+  staff: { firstName: string; lastName: string; user: { email: string; role: string } };
 }
 
 export default function BranchDashboardPage() {
   const { t } = useTranslation();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchDashboardData = useCallback(
-    async (signal: AbortSignal) => {
-      const [summaryRes, clockInsRes, clockOutsRes, staffRes] = await Promise.all([
-        api.get('/attendance/summary', { signal }),
-        api.get('/attendance/pending-clock-ins', { signal }),
-        api.get('/attendance/pending-clock-outs', { signal }),
-        api.get('/staff', { signal }),
-      ]);
-
-      return {
-        summary: summaryRes.data,
-        pendingClockIns: clockInsRes.data,
-        pendingClockOuts: clockOutsRes.data,
-        staffCount: Array.isArray(staffRes.data) ? staffRes.data.length : 0,
-      };
-    },
-    []
-  );
+  const fetchDashboardData = useCallback(async (signal: AbortSignal) => {
+    const [summaryRes, clockInsRes, clockOutsRes, staffRes] = await Promise.all([
+      api.get('/attendance/summary',          { signal }),
+      api.get('/attendance/pending-clock-ins',  { signal }),
+      api.get('/attendance/pending-clock-outs', { signal }),
+      api.get('/staff',                        { signal }),
+    ]);
+    return {
+      summary:         summaryRes.data,
+      pendingClockIns:  clockInsRes.data,
+      pendingClockOuts: clockOutsRes.data,
+      staffCount: Array.isArray(staffRes.data) ? staffRes.data.length : 0,
+    };
+  }, []);
 
   const { data, loading, error, refetch } = useFetch<{
     summary: AttendanceSummary | null;
@@ -66,228 +50,120 @@ export default function BranchDashboardPage() {
     staffCount: number;
   }>(fetchDashboardData, []);
 
-  const summary = data?.summary ?? null;
-  const pendingClockIns = data?.pendingClockIns ?? [];
+  const summary         = data?.summary ?? null;
+  const pendingClockIns  = data?.pendingClockIns  ?? [];
   const pendingClockOuts = data?.pendingClockOuts ?? [];
-  const staffCount = data?.staffCount ?? 0;
+  const staffCount      = data?.staffCount ?? 0;
 
-  useEffect(() => {
-    if (error) toast.error(t('errors.failedToLoadDashboard'));
-  }, [error, t]);
+  useEffect(() => { if (error) toast.error(t('errors.failedToLoadDashboard')); }, [error, t]);
 
   const approveClockIn = async (id: string) => {
     setActionLoading(id);
-    try {
-      await api.put(`/attendance/${id}/approve-clock-in`, {});
-      toast.success(t('success.clockInApproved'));
-      await refetch();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally { setActionLoading(null); }
+    try { await api.put(`/attendance/${id}/approve-clock-in`, {}); toast.success(t('success.clockInApproved')); await refetch(); }
+    catch (e: unknown) { toast.error(getErrorMessage(e)); } finally { setActionLoading(null); }
   };
-
   const rejectClockIn = async (id: string) => {
     setActionLoading(id + '-reject');
-    try {
-      await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') });
-      toast.success(t('success.clockInRejected'));
-      await refetch();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally { setActionLoading(null); }
+    try { await api.put(`/attendance/${id}/reject-clock-in`, { reason: t('dashboard.rejectedByManager') }); toast.success(t('success.clockInRejected')); await refetch(); }
+    catch (e: unknown) { toast.error(getErrorMessage(e)); } finally { setActionLoading(null); }
   };
-
   const approveClockOut = async (id: string) => {
     setActionLoading(id + '-out');
-    try {
-      await api.put(`/attendance/${id}/approve-clock-out`, {});
-      toast.success(t('success.clockOutApproved'));
-      await refetch();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally { setActionLoading(null); }
+    try { await api.put(`/attendance/${id}/approve-clock-out`, {}); toast.success(t('success.clockOutApproved')); await refetch(); }
+    catch (e: unknown) { toast.error(getErrorMessage(e)); } finally { setActionLoading(null); }
   };
-
   const rejectClockOut = async (id: string) => {
     setActionLoading(id + '-out-reject');
-    try {
-      await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') });
-      toast.success(t('success.clockOutRejected'));
-      await refetch();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally { setActionLoading(null); }
+    try { await api.put(`/attendance/${id}/reject-clock-out`, { reason: t('dashboard.rejectedByManager') }); toast.success(t('success.clockOutRejected')); await refetch(); }
+    catch (e: unknown) { toast.error(getErrorMessage(e)); } finally { setActionLoading(null); }
   };
 
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (d: string) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
   const statCards = [
-    { label: t('dashboard.totalStaff'),       value: staffCount,                                          icon: UserGroupIcon,            dark: false },
-    { label: t('dashboard.pendingApprovals'), value: pendingClockIns.length + pendingClockOuts.length,    icon: ClockIcon,                dark: false },
-    { label: t('dashboard.activeToday'),      value: summary?.approved ?? 0,                              icon: ClipboardDocumentCheckIcon, dark: false },
-    { label: t('dashboard.hoursWorked'),      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`,  icon: CheckCircleIcon,          dark: true  },
+    { label: t('dashboard.totalStaff'),       value: staffCount,                                        icon: UserGroupIcon,              accent: '#29ABE2' },
+    { label: t('dashboard.pendingApprovals'), value: pendingClockIns.length + pendingClockOuts.length,  icon: ClockIcon,                  accent: '#F59E0B' },
+    { label: t('dashboard.activeToday'),      value: summary?.approved ?? 0,                            icon: ClipboardDocumentCheckIcon, accent: '#10B981' },
+    { label: t('dashboard.hoursWorked'),      value: `${(summary?.totalHoursWorked ?? 0).toFixed(1)}h`, icon: CheckCircleIcon,            accent: '#6366F1' },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
-        <h1 className="text-2xl lg:text-3xl font-bold">{t('dashboard.branchDashboard')}</h1>
-        <p className="mt-1 text-white/70">{t('dashboard.todayOverview')}</p>
+    <div className="space-y-5">
+      {/* Hero */}
+      <div className="rounded-2xl p-6 bg-[#EBF4FF]">
+        <h1 className="text-2xl font-bold text-[#1E3A5F]">{t('dashboard.branchDashboard')}</h1>
+        <p className="text-sm font-medium text-[#29ABE2] mt-1">{t('dashboard.todayOverview')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((s) => {
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {statCards.map(s => {
           const Icon = s.icon;
           return (
-            <div
-              key={s.label}
-              className={`rounded-2xl p-5 flex items-center justify-between ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
-            >
-              <div>
-                <p className="text-white/80 text-sm">{s.label}</p>
-                <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
+            <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: s.accent + '18' }}>
+                <Icon className="w-5 h-5" style={{ color: s.accent }} />
               </div>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
-                <Icon className="w-5 h-5 text-white" />
-              </div>
+              <p className="text-2xl font-bold text-[#1E3A5F]">{s.value}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
             </div>
           );
         })}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Pending Clock-Ins */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockIns')}</h2>
-            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white bg-brand-teal">
-              {pendingClockIns.length}
-            </span>
-          </div>
-          {pendingClockIns.length === 0 ? (
-            <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockIns')}</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
-                  <tr>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('common.name')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('form.role')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('staff.clockIn')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider text-right">{t('common.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {pendingClockIns.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="px-5 py-4">
-                        <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                          {record.staff.firstName} {record.staff.lastName}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-xs text-gray-500 capitalize">
-                        {record.staff.user.role.toLowerCase()}
-                      </td>
-                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">
-                        {formatTime(record.clockInTime)}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => approveClockIn(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border border-brand-teal text-brand-teal hover:bg-gray-50"
-                            title={t('branch.approve')}
-                            aria-label={`Approve clock in for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => rejectClockIn(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                            title={t('branch.reject')}
-                            aria-label={`Reject clock in for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Pending tables */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {[
+          { title: t('dashboard.pendingClockIns'),  records: pendingClockIns,  timeKey: 'clockInTime',  approveAct: approveClockIn,  rejectAct: rejectClockIn  },
+          { title: t('dashboard.pendingClockOuts'), records: pendingClockOuts, timeKey: 'clockOutTime', approveAct: approveClockOut, rejectAct: rejectClockOut },
+        ].map(section => (
+          <div key={section.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+              <h2 className="font-bold text-gray-800 text-sm">{section.title}</h2>
+              <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white" style={{ backgroundColor: '#29ABE2' }}>
+                {section.records.length}
+              </span>
             </div>
-          )}
-        </div>
-
-        {/* Pending Clock-Outs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('dashboard.pendingClockOuts')}</h2>
-            <span className="w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center text-white bg-brand-teal">
-              {pendingClockOuts.length}
-            </span>
-          </div>
-          {pendingClockOuts.length === 0 ? (
-            <p className="p-6 text-center text-gray-400 text-sm">{t('dashboard.noPendingClockOuts')}</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
-                  <tr>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('common.name')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('form.role')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider">{t('staff.clockOut')}</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-xs uppercase tracking-wider text-right">{t('common.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {pendingClockOuts.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="px-5 py-4">
-                        <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                          {record.staff.firstName} {record.staff.lastName}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-xs text-gray-500 capitalize">
-                        {record.staff.user.role.toLowerCase()}
-                      </td>
-                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">
-                        {record.clockOutTime ? formatTime(record.clockOutTime) : '—'}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => approveClockOut(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 rounded-lg transition-all disabled:opacity-50 bg-white border border-brand-teal text-brand-teal hover:bg-gray-50"
-                            title={t('branch.approve')}
-                            aria-label={`Approve clock out for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => rejectClockOut(record.id)}
-                            disabled={!!actionLoading}
-                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all disabled:opacity-50"
-                            title={t('branch.reject')}
-                            aria-label={`Reject clock out for ${record.staff.firstName} ${record.staff.lastName}`}
-                          >
-                            <XCircleIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+            {section.records.length === 0 ? (
+              <p className="px-5 py-10 text-center text-gray-400 text-sm">No pending requests</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50/60">
+                    <tr>
+                      {[t('common.name'), t('form.role'), 'Time', t('common.actions')].map(h => (
+                        <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {section.records.map(r => (
+                      <tr key={r.id} className="hover:bg-gray-50/60 transition-colors">
+                        <td className="px-5 py-3 font-semibold text-gray-900 text-xs">{r.staff.firstName} {r.staff.lastName}</td>
+                        <td className="px-5 py-3 text-xs text-gray-400 capitalize">{r.staff.user.role.toLowerCase()}</td>
+                        <td className="px-5 py-3 text-xs text-gray-500">{formatTime(r.clockInTime)}</td>
+                        <td className="px-5 py-3">
+                          <div className="flex gap-1.5">
+                            <button onClick={() => section.approveAct(r.id)} disabled={!!actionLoading}
+                              className="p-1.5 rounded-lg border border-emerald-200 text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 transition-colors">
+                              <CheckCircleIcon className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => section.rejectAct(r.id)} disabled={!!actionLoading}
+                              className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors">
+                              <XCircleIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
