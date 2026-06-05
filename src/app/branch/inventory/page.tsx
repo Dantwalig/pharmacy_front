@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -34,7 +34,7 @@ export default function BranchInventoryPage() {
       try {
         const res = await api.get('/medications/pharmacy/my-medications', { signal });
         setBackendReady(true);
-        return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+        return unwrapData(res.data);
       } catch (error: unknown) {
         if ((error as any)?.response?.status === 403) {
           setBackendReady(false);

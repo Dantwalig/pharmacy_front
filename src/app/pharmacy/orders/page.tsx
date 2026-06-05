@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback} from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Eye } from 'lucide-react';
-import { api } from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 const NAVY = '#1E4D8C';
@@ -38,8 +38,8 @@ export default function PharmacyOrdersPage() {
     ]);
 
     return {
-      orders: ordRes.data?.data ?? ordRes.data ?? [],
-      branches: brRes.data?.data ?? brRes.data ?? [],
+      orders: unwrapData(ordRes.data),
+      branches: unwrapData(brRes.data),
     };
   },
   []

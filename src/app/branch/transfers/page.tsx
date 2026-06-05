@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -63,7 +63,7 @@ export default function BranchTransfersPage() {
       try {
         const res = await api.get('/stock-transfers/branch', { signal });
         setBackendReady(true);
-        return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+        return unwrapData(res.data);
       } catch (error: unknown) {
         if ((error as any)?.response?.status === 403 || (error as any)?.response?.status === 404) {
           setBackendReady(false);

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
-import { api } from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import type { PharmacyProfile } from '@/types';
 
 const BLUE = '#1B72C8';
@@ -28,7 +28,7 @@ export default function PharmacyProfilePage() {
   useEffect(() => {
     api.get('/pharmacies/profile/me')
       .then(r => {
-        const d = r.data?.data ?? r.data;
+        const d = unwrapItem<PharmacyProfile>(r.data);
         setProfile(d);
         setOwnerName(d?.representativeName ?? d?.ownerName ?? d?.name ?? '');
       })

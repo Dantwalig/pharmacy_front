@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import type { PharmacyAnalytics, PharmacyStats } from '@/types';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
@@ -154,8 +154,8 @@ export default function PharmacyAnalyticsPage() {
       api.get('/pharmacies/dashboard/stats',     { signal: ctrl.signal }),
     ])
       .then(([aRes, sRes]) => {
-        setAnalytics(aRes.data?.data ?? aRes.data);
-        setStats(sRes.data?.data ?? sRes.data);
+        setAnalytics(unwrapItem<PharmacyAnalytics>(aRes.data));
+        setStats(unwrapItem<PharmacyStats>(sRes.data));
       })
       .catch(() => {})
       .finally(() => setLoading(false));

@@ -15,7 +15,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
+import api, { unwrapData, unwrapItem } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { FDA_CATEGORIES } from '@/lib/constants';
@@ -90,7 +90,7 @@ export function useMedicationForm(role: MedicationFormRole): UseMedicationFormRe
       api.get('/branches/my-branches')
         .then(res => {
           const list: { id: string; name: string }[] =
-            res.data?.data ?? res.data ?? [];
+            unwrapData(res.data);
           setBranches(list);
           // Auto-select when there is exactly one branch
           if (list.length === 1) {
@@ -105,7 +105,7 @@ export function useMedicationForm(role: MedicationFormRole): UseMedicationFormRe
       // branch { id, name, address, latitude, longitude } resolved from JWT server-side.
       api.get('/branches/my-branch-details')
         .then(res => {
-          const branch = res.data?.data ?? res.data;
+          const branch = unwrapItem<{ id: string; name: string }>(res.data);
           if (branch?.id)   setBranchId(branch.id);
           if (branch?.name) setBranchName(branch.name);
         })

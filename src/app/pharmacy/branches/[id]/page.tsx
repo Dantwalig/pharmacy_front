@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, DollarSign, Users, Mail, Package, Ban } from 'lucide-react';
-import { api } from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import type { BranchDetail } from '@/types';
 import { getErrorMessage } from '@/lib/errorHandler';
 
@@ -26,7 +26,7 @@ export default function BranchDetailPage() {
     const controller = new AbortController();
 
     api.get(`/branches/${id}`, { signal: controller.signal })
-      .then(r => setBranch(r.data?.data ?? r.data))
+      .then(r => setBranch(unwrapItem<BranchDetail>(r.data)))
       .catch((err) => {
         if (err?.code === 'ERR_CANCELED') return;
         const status = err?.response?.status;
@@ -51,7 +51,7 @@ export default function BranchDetailPage() {
       showMsg(t('pharmacyOwner.credentialsSent'), true);
       // Refresh so manager field updates
       const r = await api.get(`/branches/${id}`);
-      setBranch(r.data?.data ?? r.data);
+      setBranch(unwrapItem<BranchDetail>(r.data));
     } catch (error: unknown) {
       showMsg(getErrorMessage(error), false);
     } finally {

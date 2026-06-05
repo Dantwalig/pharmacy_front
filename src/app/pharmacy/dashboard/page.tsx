@@ -7,7 +7,7 @@ import {
   TrendingUp, TrendingDown, Users,
   Activity, GitBranch, DollarSign, AlertTriangle, Calendar, AlignJustify,
 } from 'lucide-react';
-import { api } from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import type { PharmacyStats, PharmacyAnalytics, DailyRevenue, WeeklyRevenue, PharmacyProfile } from '@/types';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -108,11 +108,11 @@ export default function PharmacyDashboard() {
       api.get('/pharmacies/profile/me',               { signal: s }),
     ])
       .then(([sRes, aRes, dRes, wRes, pRes]) => {
-        const st = sRes.data?.data  ?? sRes.data;
-        const an = aRes.data?.data  ?? aRes.data;
-        const dr = dRes.data?.data  ?? dRes.data;
-        const wr = wRes.data?.data  ?? wRes.data;
-        const pr = pRes.data?.data  ?? pRes.data;
+        const st = unwrapItem<PharmacyStats>(sRes.data);
+        const an = unwrapItem<PharmacyAnalytics>(aRes.data);
+        const dr = unwrapItem<DailyRevenue>(dRes.data);
+        const wr = unwrapItem<WeeklyRevenue>(wRes.data);
+        const pr = unwrapItem<PharmacyProfile>(pRes.data);
         setStats(st);
         setAnalytics(an);
         setDailyRevenue(dr);
