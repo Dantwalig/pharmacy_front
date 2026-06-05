@@ -6,6 +6,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { PharmacyLocation } from '@/features/map/pharmacyData';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   MapPinIcon,
   PhoneIcon,
@@ -14,8 +15,6 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 interface Props {
   pharmacies: PharmacyLocation[];
@@ -83,22 +82,20 @@ export default function NearbyPharmacyList({
               bg-white dark:bg-gray-800 rounded-2xl p-4 shadow cursor-pointer
               transition-all duration-200 hover:shadow-lg
               ${isSelected
-                ? 'ring-2 ring-offset-1 dark:ring-offset-gray-900'
+                ? 'ring-2 ring-brand-navy ring-offset-1 dark:ring-offset-gray-900'
                 : 'hover:scale-[1.01]'}
             `}
-            style={isSelected ? { ringColor: NAVY } as React.CSSProperties : {}}
           >
             {/* Inner ring via border when selected */}
             <div
               className={`rounded-xl ${isSelected ? 'p-0.5' : ''}`}
-              style={isSelected ? { background: `linear-gradient(135deg, ${NAVY}, ${TEAL})` } : {}}
+              style={isSelected ? { background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-teal))' } : {}}
             >
               <div className={`${isSelected ? 'bg-white dark:bg-gray-800 rounded-xl p-3' : ''}`}>
                 <div className="flex items-start gap-3">
                   {/* Icon */}
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl"
-                    style={{ background: isOpen ? `${TEAL}15` : '#f3f4f6' }}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl ${isOpen ? 'bg-brand-teal/10' : 'bg-gray-100'}`}
                   >
                     🏥
                   </div>
@@ -109,15 +106,11 @@ export default function NearbyPharmacyList({
                       <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">
                         {pharmacy.name}
                       </h4>
-                      <span
-                        className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          isOpen
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                        }`}
-                      >
-                        {isOpen ? t('search.openStatus') : t('search.closedStatus')}
-                      </span>
+                      <StatusBadge
+                        status={pharmacy.status}
+                        label={isOpen ? t('search.openStatus') : t('search.closedStatus')}
+                        className="shrink-0"
+                      />
                     </div>
 
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -132,8 +125,7 @@ export default function NearbyPharmacyList({
                       </span>
                       {pharmacy.distance !== undefined && (
                         <span
-                          className="font-semibold"
-                          style={{ color: TEAL }}
+                          className="font-semibold text-brand-teal"
                         >
                           {pharmacy.distance} km
                         </span>
@@ -163,8 +155,7 @@ export default function NearbyPharmacyList({
                             e.stopPropagation();
                             onViewDetails(pharmacy.id);
                           }}
-                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90"
-                          style={{ background: NAVY }}
+                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 bg-brand-navy"
                         >
                           {t('search.details')}
                           <ChevronRightIcon className="w-3 h-3" />

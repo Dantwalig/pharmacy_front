@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import type { Order } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 import { getErrorMessage } from '@/lib/errorHandler';
 
@@ -32,16 +33,6 @@ function getNextAction(status: string, type: string, t: (k: string) => string): 
   return { label: labels[next]?.label || `→ ${next}`, status: next, color: labels[next]?.color || 'bg-blue-600' };
 }
 
-const statusColor: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700',
-  ACCEPTED: 'bg-blue-100 text-blue-700',
-  PREPARING: 'bg-purple-100 text-purple-700',
-  OUT_FOR_DELIVERY: 'bg-indigo-100 text-indigo-700',
-  READY_FOR_PICKUP: 'bg-teal-100 text-teal-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  DELIVERED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-red-100 text-red-700',
-};
 
 export default function PharmacyOrderDetailPage() {
   const { t } = useTranslation();
@@ -105,16 +96,14 @@ export default function PharmacyOrderDetailPage() {
             </button>
 
           {/* Order Header */}
-            <div className="bg-linear-to-r from-[#1E4D8C] to-[#2563a8] rounded-2xl p-6 text-white">
+            <div className="bg-linear-to-r from-brand-navy to-[#2563a8] rounded-2xl p-6 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-blue-200 text-sm mb-1">Order #{order.orderNumber || order.id?.slice(0,8)}</p>
                 <h1 className="text-2xl font-bold">{order.patient?.firstName} {order.patient?.lastName}</h1>
                 <p className="text-blue-200 text-sm">{new Date(order.createdAt).toLocaleString()}</p>
               </div>
-              <span className={`px-4 py-2 rounded-xl text-sm font-bold ${statusColor[order.status] || 'bg-gray-100 text-gray-600'}`}>
-                {order.status?.replace(/_/g,' ')}
-                </span>
+              <StatusBadge status={order.status} size="md" />
             </div>
 
             {/* Progress */}
@@ -181,10 +170,7 @@ export default function PharmacyOrderDetailPage() {
               <h2 className="font-bold text-gray-900 mb-4"> Prescription</h2>
               {order.prescription ? (
                   <div className="space-y-2">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      order.prescription.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                      order.prescription.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>{order.prescription.status}</span>
+                  <StatusBadge status={order.prescription.status} />
                   {order.prescription.fileUrl && (
                       <div className="mt-3">
                       <a href={order.prescription.fileUrl} target="_blank" rel="noopener noreferrer"

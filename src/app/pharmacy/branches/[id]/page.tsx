@@ -3,13 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, DollarSign, Users, Mail, Package, Ban } from 'lucide-react';
+import { ArrowLeftIcon, CurrencyDollarIcon, UsersIcon, EnvelopeIcon, CubeIcon, NoSymbolIcon } from '@heroicons/react/24/outline';
 import api, { unwrapItem } from '@/lib/api';
 import type { BranchDetail } from '@/types';
 import { getErrorMessage } from '@/lib/errorHandler';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
+import StatusBadge from '@/components/shared/StatusBadge';
 
 export default function BranchDetailPage() {
   const { t } = useTranslation();
@@ -84,10 +82,9 @@ export default function BranchDetailPage() {
       <div className="space-y-4">
       <button
           onClick={() => router.push('/pharmacy/branches')}
-          className="flex items-center gap-2 text-sm font-medium hover:underline"
-          style={{ color: NAVY }}
+          className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy"
         >
-        <ArrowLeft size={16} />
+        <ArrowLeftIcon className="w-4 h-4" />
         {t('pharmacyOwner.backToBranches')}
         </button>
       <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
@@ -104,62 +101,53 @@ export default function BranchDetailPage() {
 
   const stats = [
     {
-      icon: DollarSign,
+      icon: CurrencyDollarIcon,
       label: t('common.monthly_revenue'),
       value: `RWF ${(branch.monthlyRevenue ?? 0).toLocaleString()}`,
     },
     {
-      icon: Users,
+      icon: UsersIcon,
       label: t('pharmacyOwner.staffMembers'),
       value: staffList.length,
     },
     {
-      icon: Mail,
+      icon: EnvelopeIcon,
       label: t('pharmacyOwner.manager'),
       value: managerEmail ?? t('common.unassigned'),
     },
     {
-      icon: Package,
+      icon: CubeIcon,
       label: 'Medications',
       value: `${branch.medicationCount ?? 0} SKUs`,
     },
   ];
 
-  const statusBadge = () => {
-    switch (branch.branchStatus) {
-      case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active' };
-      case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup' };
-      case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval' };
-      default:         return { bg: '#F3F4F6', text: '#6B7280', label: branch.branchStatus ?? '—' };
-    }
+  const branchStatusLabel = (s: string) => {
+    if (s === 'APPROVED') return 'Active';
+    if (s === 'INVITED') return 'Pending Setup';
+    if (s === 'PENDING') return 'Pending Approval';
+    return s ?? '—';
   };
-  const badge = statusBadge();
 
   return (
     <div className="space-y-6">
     {/* Back */}
       <button
         onClick={() => router.push('/pharmacy/branches')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy"
       >
-      <ArrowLeft size={16} />
+      <ArrowLeftIcon className="w-4 h-4" />
       {t('pharmacyOwner.backToBranches')}
       </button>
 
     {/* Hero */}
-      <div className="rounded-2xl p-8 text-white flex items-start justify-between" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-8 text-white flex items-start justify-between bg-brand-navy">
       <div>
         <h1 className="text-3xl font-bold">{branch.name}</h1>
         <p className="mt-1 text-white/70">{branch.address}</p>
         {branch.phone && <p className="mt-0.5 text-white/50 text-sm">{branch.phone}</p>}
         </div>
-      <span
-          className="px-3 py-1 rounded-full text-xs font-semibold mt-1"
-          style={{ backgroundColor: badge.bg, color: badge.text }}
-        >
-        {badge.label}
-        </span>
+      <StatusBadge status={branch.branchStatus} label={branchStatusLabel(branch.branchStatus)} />
     </div>
 
     {/* Stats */}
@@ -168,9 +156,8 @@ export default function BranchDetailPage() {
           const Icon = s.icon;
           return (
             <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                style={{ backgroundColor: '#F0F7F6' }}>
-              <Icon size={18} style={{ color: TEAL }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-brand-teal-light">
+              <Icon className="w-[18px] h-[18px] text-brand-teal" />
             </div>
             <p className="text-xs text-gray-500 mb-1">{s.label}</p>
             <p className="text-sm font-bold text-gray-900 truncate">{s.value}</p>
@@ -192,16 +179,7 @@ export default function BranchDetailPage() {
                 <p className="text-sm font-medium text-gray-800">{s.firstName} {s.lastName}</p>
                 <p className="text-xs text-gray-500">{s.user?.email}</p>
               </div>
-              <span
-                  className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={
-                    s.status === 'ACTIVE'
-                      ? { backgroundColor: '#D1FAE5', color: '#065F46' }
-                      : { backgroundColor: '#F3F4F6', color: '#6B7280' }
-                  }
-                >
-                {s.status}
-                </span>
+              <StatusBadge status={s.status} />
             </div>
           ))}
           </div>
@@ -235,8 +213,7 @@ export default function BranchDetailPage() {
               onClick={handleSendCredentials}
               disabled={sendingCreds || hasManager}
               title={hasManager ? 'Manager account already exists' : undefined}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ backgroundColor: TEAL }}
+              className="px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed bg-brand-teal"
             >
             {sendingCreds ? t('common.saving') : t('pharmacyOwner.sendCredentials')}
             </button>
@@ -263,7 +240,7 @@ export default function BranchDetailPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium"
             style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
           >
-          <Ban size={16} />
+          <NoSymbolIcon className="w-4 h-4" />
           {t('pharmacyOwner.disableBranch')}
           </button>
       </div>

@@ -243,15 +243,14 @@ export default function BranchMapPage() {
 
       {/* Hero */}
       <div
-        className="rounded-2xl p-6 text-white flex items-start justify-between gap-4"
-        style={{ backgroundColor: NAVY }}
+        className="rounded-2xl p-6 bg-[#EBF4FF] flex items-start justify-between gap-4"
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Navigation size={18} className="text-white/70" />
-            <p className="text-white/70 text-sm font-medium">Branch Location</p>
+            <Navigation size={18} className="text-[#29ABE2]" />
+            <p className="text-[#29ABE2] text-sm font-medium">Branch Location</p>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Network Map</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-[#1E3A5F]">Network Map</h1>
           <p className="mt-1 text-white/60 text-sm">
             Your branch, sister branches, and nearby competitors
           </p>
@@ -259,7 +258,7 @@ export default function BranchMapPage() {
         <button
           onClick={load}
           disabled={loading}
-          className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm transition-all disabled:opacity-50"
+          className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 text-sm transition-all disabled:opacity-50"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>

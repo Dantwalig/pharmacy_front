@@ -7,9 +7,17 @@ import { useTranslation } from 'react-i18next';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { authApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
-import { setAuthTokens, removeAuthTokens, getUserFromToken, cacheUserData, clearUserCache } from '@/lib/auth';
+import { 
+  setAuthTokens, 
+  removeAuthTokens, 
+  getUserFromToken, 
+  cacheUserData, 
+  clearUserCache,
+  getAccessToken,
+  getRefreshToken 
+} from '@/lib/auth';
 import { User } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -31,10 +39,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
-    const initAuth = () => {
-      const userData = getUserFromToken();
-      setUser(userData);
-      setLoading(false);
+    const initAuth = async () => {
+      try {
+        const token = getAccessToken();
+        const refreshToken = getRefreshToken();
+
+        if (!token && refreshToken) {
+          try {
+            const data = await authApi.refreshTokens();
+            const { accessToken, refreshToken: newRefreshToken, user: userData } = data;
+            setAuthTokens(accessToken, newRefreshToken || refreshToken);
+            if (userData) {
+              cacheUserData(userData);
+              setUser(userData);
+            } else {
+              const decodedUser = getUserFromToken();
+              setUser(decodedUser);
+            }
+          } catch (refreshErr) {
+            console.error("Auto-refresh failed on initialization:", refreshErr);
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+          }
+        } else {
+          const userData = getUserFromToken();
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error("Auth initialization failed:", err);
+        removeAuthTokens();
+        clearUserCache();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
     initAuth();
   }, []);
@@ -113,20 +152,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    let apiFailed = false;
-    try {
-      await api.post('/auth/logout');
-    } catch {
-      apiFailed = true;
-    } finally {
-      removeAuthTokens();
-      clearUserCache();
-      setUser(null);
-      router.push('/login');
-      if (apiFailed) {
-        toast.error('Could not reach server, but you have been logged out locally.');
-      } else {
-        toast.success(t('auth2.loggedOut') || 'Logged out successfully');
+    const token = getAccessToken();
+
+    // Clear local state instantly so the UI is responsive
+    removeAuthTokens();
+    clearUserCache();
+    setUser(null);
+    router.push('/login');
+    toast.success(t('auth2.loggedOut') || 'Logged out successfully');
+
+    if (token) {
+      try {
+        await api.post('/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.warn('Backend logout failed:', error);
       }
     }
   };

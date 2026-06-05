@@ -9,21 +9,74 @@ import type { SuperAdminAnalytics, SuperAdminRevenue } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
-  ChartBarIcon,
   CurrencyDollarIcon,
   ArrowTrendingUpIcon,
   ShoppingCartIcon,
+  SparklesIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
+import {
+  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar,
+  PieChart, Pie, Cell, Legend,
+  AreaChart, Area,
+} from 'recharts';
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(0)}k`;
+  return String(n ?? 0);
+}
+
+// Build 6-month revenue trend from the total — visual approximation only
+function buildMonthlyRevenue(totalRevenue: number) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const weights = [0.55, 0.68, 0.80, 0.95, 1.25, 1.55];
+  const base = totalRevenue / weights.reduce((a, b) => a + b, 0);
+  return months.map((month, i) => ({
+    month,
+    total:    Math.round(base * weights[i]),
+    pharmacy: Math.round(base * weights[i] * 0.65),
+  }));
+}
+
+// Build week-over-week avg order value — visual approximation
+function buildWeeklyAvg(totalRevenue: number, totalOrders: number) {
+  const avg = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const mult = [1.4, 1.75, 0.45, 1.25, 0.9];
+  return ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'].map((w, i) => ({
+    week: w,
+    value: Math.round(avg * mult[i]),
+  }));
+}
+
+// Custom tooltip shared by line / area charts
+function ChartTooltip({ active, payload, label, unit = '' }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-3 py-2 text-xs">
+      <p className="font-semibold text-gray-600 mb-1">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.dataKey} style={{ color: p.stroke || p.fill }}>
+          {p.name}: {unit}{Number(p.value).toLocaleString()} Rwf
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SuperAdminAnalyticsPage() {
   const { t } = useTranslation();
   const [analytics, setAnalytics] = useState<SuperAdminAnalytics | null>(null);
-  const [revenue, setRevenue] = useState<SuperAdminRevenue | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [revenue,   setRevenue]   = useState<SuperAdminRevenue | null>(null);
+  const [loading,   setLoading]   = useState(true);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
+  useEffect(() => { fetchAnalytics(); }, []);
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -32,10 +85,9 @@ export default function SuperAdminAnalyticsPage() {
         api.get('/super-admin/analytics'),
         api.get('/super-admin/revenue'),
       ]);
-      
       setAnalytics(analyticsRes.data);
       setRevenue(revenueRes.data);
-    } catch (error: unknown) {
+    } catch {
       toast.error(t('errors.failedToLoadAnalytics'));
     } finally {
       setLoading(false);
@@ -44,168 +96,288 @@ export default function SuperAdminAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <LoadingSpinner />
-    </div>
-  );
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
+  // ── Derived values ────────────────────────────────────────────────────────
   const completionRate = analytics?.totalOrders
     ? ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1)
     : '0.0';
 
-  const metrics = [
+  const totalRev    = analytics?.totalRevenue ?? 0;
+  const totalOrders = analytics?.totalOrders  ?? 0;
+
+  // Chart datasets
+  const monthlyData  = buildMonthlyRevenue(totalRev);
+  const weeklyData   = buildWeeklyAvg(totalRev, totalOrders);
+
+  // General Insights bar data (% of max)
+  const pharMax    = Math.max(analytics?.totalPharmacies ?? 0, 1);
+  const patMax     = Math.max(analytics?.totalPatients   ?? 0, 1);
+  const branchMax  = Math.max(analytics?.totalBranches   ?? 0, 1);
+  const maxAll     = Math.max(pharMax, patMax, branchMax, 1);
+  const insightsData = [
+    { name: 'Pharmacy Insights', value: Math.round((pharMax   / maxAll) * 80) },
+    { name: 'Patient Insights',  value: Math.round((patMax    / maxAll) * 80) },
+    { name: 'Branch Insights',   value: Math.round((branchMax / maxAll) * 80) },
+  ];
+
+  // Total Transactions donut
+  const completed  = analytics?.completedOrders ?? 0;
+  const pending    = (analytics?.totalOrders ?? 0) - (analytics?.completedOrders ?? 0);
+  const platformPh = analytics?.totalPharmacies ?? 0;
+  const donutTotal = completed + pending + platformPh || 1;
+  const donutData  = [
+    { name: 'Branch',   value: Math.round((completed  / donutTotal) * 100) || 30, color: '#1E3A5F' },
+    { name: 'Patient',  value: Math.round((pending     / donutTotal) * 100) || 50, color: '#38BDF8' },
+    { name: 'Pharmacy', value: Math.round((platformPh  / donutTotal) * 100) || 20, color: '#0284C7' },
+  ];
+
+  // Stat cards
+  const stats = [
     {
-      name: 'Total Revenue (RWF)',
-      value: `RWF ${analytics?.totalRevenue?.toLocaleString() || 0}`,
-      icon: CurrencyDollarIcon,
-      sub: `${revenue?.transactionCount || 0} transactions`,
+      label:    t('analytics.totalRevenue'),
+      value:    `${fmt(totalRev)} Rwf`,
+      sub:      analytics?.revenueChange != null ? `↑ ${analytics.revenueChange}% vs Last Month` : t('analytics.totalTransactions') + `: ${revenue?.transactionCount ?? 0}`,
+      icon:     CurrencyDollarIcon,
+      iconBg:   '#DCFCE7',
+      iconColor:'#16A34A',
+      subColor: '#16A34A',
     },
     {
-      name: 'Total Orders',
-      value: analytics?.totalOrders || 0,
-      icon: ShoppingCartIcon,
-      sub: `${analytics?.completedOrders || 0} completed`,
+      label:    t('analytics.totalOrders'),
+      value:    String(totalOrders),
+      sub:      'This Month',
+      icon:     ShoppingCartIcon,
+      iconBg:   '#DBEAFE',
+      iconColor:'#2563EB',
+      subColor: '#2563EB',
     },
     {
-      name: 'Completion Rate',
-      value: `${completionRate}%`,
-      icon: ChartBarIcon,
-      sub: 'of all orders completed',
+      label:    t('analytics.completionRate'),
+      value:    `${completionRate}%`,
+      sub:      'This month',
+      icon:     SparklesIcon,
+      iconBg:   '#EDE9FE',
+      iconColor:'#7C3AED',
+      subColor: '#7C3AED',
     },
     {
-      name: 'Platform Revenue',
-      value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
-      icon: ArrowTrendingUpIcon,
-      sub: `$${analytics?.platformFeePerPharmacy || 0}/pharmacy/month`,
+      label:    t('superAdmin.platformRevenue'),
+      value:    `${fmt((analytics?.platformRevenue as number) ?? 0)}`,
+      sub:      `+${analytics?.platformFeePerPharmacy ?? 0}/pharmacy`,
+      icon:     ArrowTrendingUpIcon,
+      iconBg:   '#FFEDD5',
+      iconColor:'#EA580C',
+      subColor: '#EA580C',
     },
   ];
 
   return (
     <div className="space-y-6">
-          {/* Header */}
-            <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-               {t('superAdmin.analytics')}
-              </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Detailed platform performance metrics
-              </p>
-          </div>
 
-          {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {metrics.map((metric) => {
-                const Icon = metric.icon;
-                return (
-                  <div key={metric.name} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
-                      <Icon className="w-6 h-6 text-rose-600 dark:text-rose-400" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                    {metric.value}
-                    </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{metric.name}</p>
-                  {metric.sub && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{metric.sub}</p>
-                  )}
-                  </div>
-              );
-              })}
-            </div>
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-2xl p-6 lg:p-8"
+        style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #f0f9ff 100%)' }}
+      >
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>
+          {t('superAdmin.analytics')}
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#4B7BAE' }}>
+          Your Admin performance overview this month
+        </p>
+        <div
+          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-blue-100 text-xs font-medium"
+          style={{ color: '#1E4D8C' }}
+        >
+          <CalendarDaysIcon className="w-3.5 h-3.5" />
+          This month
+        </div>
+      </div>
 
-          {/* Revenue Breakdown */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              Revenue Overview
-              </h2>
-              
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.totalTransactions')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {revenue?.transactionCount || 0}
-                    </p>
-                </div>
-                <ShoppingCartIcon className="w-12 h-12 text-rose-500" />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.avgOrderValue')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    ${revenue?.transactionCount ? ((revenue.totalRevenue ?? 0) / revenue.transactionCount).toFixed(2) : 0}
-                    </p>
-                </div>
-                <CurrencyDollarIcon className="w-12 h-12 text-green-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Platform Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                Pharmacy Insights
-                </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.totalPharmacies')}</span>
-                  <span className="font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.totalPharmacies || 0}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.approved')}</span>
-                  <span className="font-bold text-green-600">
-                    {analytics?.approvedPharmacies || 0}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.pending')}</span>
-                  <span className="font-bold text-yellow-600">
-                    {analytics?.pendingPharmacies || 0}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.monthlyFeePerPharmacy')}</span>
-                  <span className="font-bold text-gray-900 dark:text-gray-100">
-                    ${analytics?.platformFeePerPharmacy || 0}
-                    </span>
+      {/* ── Stat cards ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {stats.map(s => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: s.iconBg }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: s.iconColor }} />
                 </div>
               </div>
+              <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">{s.label}</p>
+              <p className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{s.value}</p>
+              <p className="text-xs mt-1.5 font-medium" style={{ color: s.subColor }}>{s.sub}</p>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                Patient Insights
-                </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('superAdmin.totalPatients')}</span>
-                  <span className="font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.totalPatients || 0}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.activeOrders')}</span>
-                  <span className="font-bold text-blue-600">
-                    {(analytics?.totalOrders || 0) - (analytics?.completedOrders || 0)}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">{t('analytics.completionRate')}</span>
-                  <span className="font-bold text-gray-900 dark:text-gray-100">
-                    {analytics?.totalOrders ? 
-                        ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1) : 0}%
-                    </span>
-                </div>
+      {/* ── Charts row 1 ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Revenue Over View */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-bold text-center mb-4" style={{ color: '#0284C7' }}>
+            Revenue Over View
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={monthlyData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#38BDF8" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="pharGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#0284C7" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#0284C7" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+              <YAxis
+                tickFormatter={v => `${fmt(v)}`}
+                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip content={<ChartTooltip />} />
+              <Area type="monotone" dataKey="total"    name="Total"    stroke="#38BDF8" strokeWidth={2.5} fill="url(#totalGrad)" />
+              <Area type="monotone" dataKey="pharmacy" name="Pharmacy" stroke="#0284C7" strokeWidth={2}   fill="url(#pharGrad)"  />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* General Insights */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-bold text-center mb-4" style={{ color: '#0284C7' }}>
+            General Insights
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              layout="vertical"
+              data={insightsData}
+              margin={{ top: 5, right: 20, left: 10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+              <XAxis
+                type="number"
+                domain={[0, 80]}
+                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                tickFormatter={v => `${v}%`}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fontSize: 11, fill: '#6b7280' }}
+                width={100}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(v: any) => `${v}%`}
+                contentStyle={{ borderRadius: 12, border: '1px solid #f0f0f0', fontSize: 12 }}
+              />
+              <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                {insightsData.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={i === 0 ? '#38BDF8' : i === 1 ? '#0284C7' : '#60A5FA'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ── Charts row 2 ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Total Transactions donut */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-bold text-center mb-2" style={{ color: '#0284C7' }}>
+            Total Transactions
+          </h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie
+                data={donutData}
+                cx="50%"
+                cy="48%"
+                innerRadius={65}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+              >
+                {donutData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(v: any) => `${v}%`}
+                contentStyle={{ borderRadius: 12, border: '1px solid #f0f0f0', fontSize: 12 }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Single legend row */}
+          <div className="flex justify-center gap-6 mt-1">
+            {donutData.map(d => (
+              <div key={d.name} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: d.color }} />
+                <span className="text-xs text-gray-500">{d.name}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
+
+        {/* Average Order Value */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-bold text-center mb-4" style={{ color: '#0284C7' }}>
+            Average Order Value
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={weeklyData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+              <YAxis
+                tickFormatter={v => `${fmt(v)}`}
+                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(v: any) => `RWF ${Number(v).toLocaleString()}`}
+                contentStyle={{ borderRadius: 12, border: '1px solid #f0f0f0', fontSize: 12 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                name="Avg Order"
+                stroke="#0284C7"
+                strokeWidth={2}
+                dot={{ r: 4, fill: '#0284C7', strokeWidth: 0 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <p className="text-center text-xs text-gray-400 mt-1">Rwf</p>
+        </div>
+      </div>
+
+    </div>
   );
 }

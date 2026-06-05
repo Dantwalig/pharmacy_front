@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import {
-  TrendingUp, TrendingDown, Users,
-  Activity, GitBranch, DollarSign, AlertTriangle, Calendar, AlignJustify,
-} from 'lucide-react';
+  ArrowTrendingUpIcon, ArrowTrendingDownIcon, UsersIcon,
+  BoltIcon, BuildingOffice2Icon, CurrencyDollarIcon, ExclamationTriangleIcon, CalendarIcon, Bars3BottomLeftIcon,
+} from '@heroicons/react/24/outline';
 import api, { unwrapItem } from '@/lib/api';
 import type { PharmacyStats, PharmacyAnalytics, DailyRevenue, WeeklyRevenue, PharmacyProfile } from '@/types';
 import {
@@ -14,8 +14,6 @@ import {
   Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend,
 } from 'recharts';
 
-const TEAL  = '#2D9B8A';
-const NAVY  = '#1E4D8C';
 const BLUE  = '#1B72C8';
 const BRANCH_COLORS = ['#2D9B8A', '#1E4D8C', '#F59E0B', '#8B5CF6', '#EF4444', '#10B981'];
 const SPARKLINE_COLORS = ['#2D9B8A', '#2D9B8A', '#F59E0B', '#10B981'];
@@ -33,7 +31,7 @@ function ChangeBadge({ value }: { value: number }) {
       className="inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full"
       style={{ backgroundColor: up ? '#D1FAE5' : '#FEF3C7', color: up ? '#065F46' : '#92400E' }}
     >
-      {up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+      {up ? <ArrowTrendingUpIcon className="w-[11px] h-[11px]" /> : <ArrowTrendingDownIcon className="w-[11px] h-[11px]" />}
       {Math.abs(value)}%
     </span>
   );
@@ -61,7 +59,7 @@ function EmptyState() {
   return (
     <div className="flex items-center justify-center h-48 text-gray-300 text-sm">
       <div className="text-center space-y-1">
-        <Activity size={28} className="mx-auto text-gray-200" />
+        <BoltIcon className="w-7 h-7 mx-auto text-gray-200" />
         <p>{t('dashboard.noDataYet')}</p>
       </div>
     </div>
@@ -107,12 +105,28 @@ export default function PharmacyDashboard() {
       api.get('/pharmacies/dashboard/weekly-revenue', { signal: s }),
       api.get('/pharmacies/profile/me',               { signal: s }),
     ])
-      .then(([sRes, aRes, dRes, wRes, pRes]) => {
+      .then(async ([sRes, aRes, dRes, wRes, pRes]) => {
         const st = unwrapItem<PharmacyStats>(sRes.data);
         const an = unwrapItem<PharmacyAnalytics>(aRes.data);
         const dr = unwrapItem<DailyRevenue>(dRes.data);
         const wr = unwrapItem<WeeklyRevenue>(wRes.data);
-        const pr = unwrapItem<PharmacyProfile>(pRes.data);
+        let pr  = unwrapItem<PharmacyProfile>(pRes.data);
+
+        // Workaround: backend sometimes omits representativeName — fall back to /users/me
+        if (!pr?.representativeName) {
+          try {
+            const userRes  = await api.get('/users/me', { signal: s });
+            const userData = unwrapItem(userRes.data) as any;
+            if (userData?.profile?.firstName || userData?.firstName) {
+              pr = {
+                ...pr,
+                ownerName: `${userData.profile?.firstName || userData.firstName || ''} ${userData.profile?.lastName || userData.lastName || ''}`.trim(),
+              } as PharmacyProfile;
+            }
+          } catch { /**/ }
+        }
+
+
         setStats(st);
         setAnalytics(an);
         setDailyRevenue(dr);
@@ -163,7 +177,7 @@ export default function PharmacyDashboard() {
     return (
       <div className="space-y-6">
         <div className="rounded-2xl p-8" style={{ background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)' }}>
-          <h1 className="text-3xl font-bold" style={{ color: NAVY }}>{t('pharmacyOwner.ownerOverview')}</h1>
+          <h1 className="text-3xl font-bold text-brand-navy">{t('pharmacyOwner.ownerOverview')}</h1>
           <p className="mt-1 text-gray-500 text-sm">{t('pharmacyOwner.ownerOverviewSubtitle')}</p>
         </div>
         <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
@@ -178,23 +192,23 @@ export default function PharmacyDashboard() {
 
   const overviewCards = [
     {
-      icon: GitBranch,
-      accentColor: NAVY,   iconLightBg: '#EEF2FF',
+      icon: BuildingOffice2Icon,
+      accentColor: '#1E4D8C', iconLightBg: '#EEF2FF',
       label: t('pharmacyOwner.totalBranches'),
       value: stats?.totalBranches ?? 0,
       sub: branchNames ? `↗ ${branchNames}` : undefined,
-      subColor: TEAL,
+      subColor: '#2D9B8A',
     },
     {
-      icon: Users,
-      accentColor: TEAL,   iconLightBg: '#E0F7F4',
+      icon: UsersIcon,
+      accentColor: '#2D9B8A', iconLightBg: '#E0F7F4',
       label: t('pharmacyOwner.totalEmployees'),
       value: stats?.totalEmployees ?? 0,
       sub: `↗ ${t('pharmacyOwner.allActive')}`,
-      subColor: TEAL,
+      subColor: '#2D9B8A',
     },
     {
-      icon: Calendar,
+      icon: CalendarIcon,
       accentColor: '#F59E0B', iconLightBg: '#FEF9E7',
       label: t('pharmacyOwner.monthlyRevenue'),
       value: `RWF ${fmt(stats?.monthlyRevenue ?? 0)}`,
@@ -202,7 +216,7 @@ export default function PharmacyDashboard() {
       subColor: '#F59E0B',
     },
     {
-      icon: DollarSign,
+      icon: CurrencyDollarIcon,
       accentColor: '#10B981', iconLightBg: '#E8FAF1',
       label: t('pharmacyOwner.totalRevenue'),
       value: `RWF ${fmt(stats?.totalRevenue ?? 0)}`,
@@ -275,11 +289,11 @@ export default function PharmacyDashboard() {
         </div>
 
         {pharmacyName && (
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3 text-brand-teal">
             {pharmacyName} — {t('pharmacyOwner.role').toUpperCase()}
           </p>
         )}
-        <h1 className="text-3xl lg:text-5xl font-extrabold leading-tight" style={{ color: NAVY }}>
+        <h1 className="text-3xl lg:text-5xl font-extrabold leading-tight text-brand-navy">
           {greeting},<br />{greetingName ? `${greetingName}.` : ''}
         </h1>
         <p className="mt-3 text-sm text-gray-500 max-w-md">{t('pharmacyOwner.performanceSubtitle')}</p>
@@ -288,7 +302,7 @@ export default function PharmacyDashboard() {
             className="mt-5 px-6 py-3 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm"
             style={{ backgroundColor: BLUE }}
           >
-            <AlignJustify size={15} />
+            <Bars3BottomLeftIcon className="w-[15px] h-[15px]" />
             {t('pharmacyOwner.viewAllOrders')}
           </button>
         </Link>
@@ -306,7 +320,7 @@ export default function PharmacyDashboard() {
                 color:           alert.level === 'warning' ? '#92400E' : '#1E40AF',
               }}
             >
-              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <ExclamationTriangleIcon className="w-4 h-4 mt-0.5 shrink-0" />
               <div>
                 <span className="font-semibold">{alert.branch}: </span>
                 {alert.msg}
@@ -330,7 +344,7 @@ export default function PharmacyDashboard() {
               <div className="h-1.5" style={{ backgroundColor: s.accentColor }} />
               <div className="p-5">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: s.iconLightBg }}>
-                  <Icon size={20} style={{ color: s.accentColor }} />
+                  <Icon className="w-5 h-5" style={{ color: s.accentColor }} />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mb-1">{s.value}</p>
                 <p className="text-sm text-gray-600">{s.label}</p>
@@ -467,7 +481,7 @@ export default function PharmacyDashboard() {
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={tickInterval} />
                 <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} width={52} />
                 <Tooltip content={<RevenueTooltip />} />
-                <Bar dataKey="revenue" name="Total Revenue" fill={TEAL} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenue" name="Total Revenue" fill="#2D9B8A" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <EmptyState />}
@@ -489,7 +503,7 @@ export default function PharmacyDashboard() {
                 <XAxis type="number" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} width={90} />
                 <Tooltip content={<RevenueTooltip />} />
-                <Bar dataKey="revenue" name="Revenue" fill={NAVY} radius={[0, 6, 6, 0]} />
+                <Bar dataKey="revenue" name="Revenue" fill="#1E4D8C" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <EmptyState />}

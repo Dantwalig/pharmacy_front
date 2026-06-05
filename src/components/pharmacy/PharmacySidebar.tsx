@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
-  LayoutDashboard, ClipboardList, GitBranch, Users, User,
-  LogOut, BarChart2, Package, Bell, X, Lock, Map,
-} from 'lucide-react';
+  Squares2X2Icon, ClipboardDocumentListIcon, BuildingOffice2Icon, UsersIcon, UserIcon,
+  ArrowRightOnRectangleIcon, ChartBarIcon, CubeIcon, BellIcon, XMarkIcon, LockClosedIcon, MapIcon,
+} from '@heroicons/react/24/outline';
 import { isPatientEnabled } from '@/lib/features';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,23 +21,22 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
   const { logout } = useAuth();
 
   const nav = [
-    { href: '/pharmacy/dashboard',     icon: LayoutDashboard, label: t('pharmacyOwner.dashboard') },
-    { href: '/pharmacy/orders',        icon: ClipboardList,   label: t('pharmacyOwner.orderOverview') },
-    { href: '/pharmacy/branches',      icon: GitBranch,       label: t('pharmacyOwner.branchManagement') },
-    { href: '/pharmacy/map',           icon: Map,             label: 'Branch Map' },
-    { href: '/pharmacy/inventory',     icon: Package,         label: t('pharmacyOwner.inventory') },
-    { href: '/pharmacy/patients',      icon: Users,           label: t('pharmacyOwner.patients') + (isPatientEnabled() ? '' : ' (Soon)') },
-    { href: '/pharmacy/analytics',     icon: BarChart2,       label: t('pharmacyOwner.analytics') },
-    { href: '/pharmacy/notifications', icon: Bell,            label: t('pharmacyOwner.notifications') },
-    { href: '/pharmacy/profile',       icon: User,            label: t('pharmacyOwner.profile') },
+    { href: '/pharmacy/dashboard',     icon: Squares2X2Icon,            label: t('pharmacyOwner.dashboard') },
+    { href: '/pharmacy/orders',        icon: ClipboardDocumentListIcon, label: t('pharmacyOwner.orderOverview') },
+    { href: '/pharmacy/branches',      icon: BuildingOffice2Icon,       label: t('pharmacyOwner.branchManagement') },
+    { href: '/pharmacy/map',           icon: MapIcon,                   label: 'Branch Map' },
+    { href: '/pharmacy/inventory',     icon: CubeIcon,                  label: t('pharmacyOwner.inventory') },
+    { href: '/pharmacy/patients',      icon: UsersIcon,                 label: t('pharmacyOwner.patients') + (isPatientEnabled() ? '' : ' (Soon)') },
+    { href: '/pharmacy/analytics',     icon: ChartBarIcon,              label: t('pharmacyOwner.analytics') },
+    { href: '/pharmacy/notifications', icon: BellIcon,                  label: t('pharmacyOwner.notifications') },
+    { href: '/pharmacy/profile',       icon: UserIcon,                  label: t('pharmacyOwner.profile') },
   ];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-72 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-      style={{ backgroundColor: '#1E4D8C' }}
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-72 transition-transform duration-300 bg-brand-navy ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
     >
       {/* Header */}
       <div className="px-6 py-7 border-b border-white/10 flex items-center justify-between shrink-0">
@@ -46,7 +45,7 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
           <p className="text-white/60 text-sm mt-0.5">{t('pharmacyOwner.portal')}</p>
         </div>
         <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close sidebar">
-          <X size={18} className="text-white/70" />
+          <XMarkIcon className="w-[18px] h-[18px] text-white/70" />
         </button>
       </div>
 
@@ -60,11 +59,11 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
               style={active ? { background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' } : {}}
             >
               <div className="flex items-center gap-3">
-                <Icon size={18} />
+                <Icon className="w-[18px] h-[18px]" />
                 {label}
               </div>
               {href === '/pharmacy/patients' && !isPatientEnabled() && (
-                <Lock size={14} className="text-white/40" />
+                <LockClosedIcon className="w-[14px] h-[14px] text-white/40" />
               )}
             </Link>
           );
@@ -74,11 +73,14 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
       {/* Footer */}
       <div className="px-5 pb-6 shrink-0">
         <button
-          onClick={logout}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-80"
           style={{ color: '#F26B6B' }}
         >
-          <LogOut size={17} />
+          <ArrowRightOnRectangleIcon className="w-[17px] h-[17px]" />
           {t('common.logout')}
         </button>
       </div>
