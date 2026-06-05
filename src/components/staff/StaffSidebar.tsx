@@ -15,7 +15,7 @@ interface StaffSidebarProps {
 export default function StaffSidebar({ open = false, onClose }: StaffSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isCashier = user?.role === 'CASHIER';
 
   const nav = [
@@ -70,7 +70,7 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
       {/* Footer */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+          onClick={logout}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <LogOut size={18} />
