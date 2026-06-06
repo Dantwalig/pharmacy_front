@@ -198,7 +198,6 @@ export interface PharmacyProfile {
   dateOfIncorporation?: string;
   rdbCertificate?: string;
   pharmacyLicense?: string;
-  logoUrl?: string;
   rejectionReason?: string | null;
   approvedAt?: string | null;
 }
