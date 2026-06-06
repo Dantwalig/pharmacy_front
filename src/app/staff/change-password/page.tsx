@@ -7,10 +7,12 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
 
 export default function StaffChangePasswordPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({ temp: false, new: false, confirm: false });
   const [form, setForm] = useState({
@@ -36,6 +38,7 @@ export default function StaffChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
+      updateUser({ requiresPasswordChange: false });
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (error: unknown) {
