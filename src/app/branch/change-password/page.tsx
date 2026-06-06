@@ -9,10 +9,12 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
 
 export default function BranchChangePasswordPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({
     current: false,
@@ -45,6 +47,7 @@ export default function BranchChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
+      updateUser({ requiresPasswordChange: false });
       toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
     } catch (error: unknown) {
