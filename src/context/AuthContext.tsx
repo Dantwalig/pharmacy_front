@@ -20,6 +20,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
+  setUserDirectly: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -135,6 +136,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser((prev: User | null) => (prev ? { ...prev, ...userData } : null));
   };
 
+  // Used by external login flows (e.g. Super Admin) that handle their own
+  // token storage but still need to hydrate the AuthContext user state so
+  // layout guards don't see null and redirect back to /login.
+  const setUserDirectly = (userData: User) => {
+    setUser(userData);
+  };
+
   const refreshUser = async () => {
     try {
       const currentUser = getUserFromToken();
@@ -172,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser, setUserDirectly }}>
     {children}
     </AuthContext.Provider>
 );
