@@ -157,12 +157,6 @@ export default function PharmacyProfilePage() {
         <p className="mt-1 text-sm text-gray-500">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
       </div>
 
-      {/* Section header */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">{t('pharmacyOwner.myProfileTitle')}</h2>
-        <p className="text-sm text-gray-500 mt-0.5">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Left: User card */}

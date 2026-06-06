@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -81,7 +81,7 @@ export default function BranchTransfersPage() {
   const fetchFormData = async () => {
     try {
       const [medsRes, branchesRes] = await Promise.all([
-        api.get('/medications/pharmacy/my-medications').catch(() => ({ data: [] })),
+        api.get('/medications/branch/my-medications').catch(() => ({ data: [] })),
         api.get('/branches/pharmacy-branches').catch(() => ({ data: [] })),
       ]);
       setMedications(Array.isArray(medsRes.data) ? medsRes.data : []);
@@ -110,8 +110,6 @@ export default function BranchTransfersPage() {
     }
     setSubmitting(true);
     try {
-      // BACKEND PENDING: POST /stock-transfers
-      // This endpoint does not exist yet. See comment in fetchTransfers above.
       await api.post('/stock-transfers', {
         toBranchId: form.toBranchId,
         notes: form.notes || undefined,
@@ -254,15 +252,9 @@ export default function BranchTransfersPage() {
               </select>
             ) : (
               <div className="px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50">
-                <p className="text-xs text-gray-500">
-                  Branch list requires a backend endpoint. The backend team needs to add
-                  <span className="font-mono font-bold mx-1">GET /branches/pharmacy-branches</span>
-                  accessible to Role.BRANCH_MANAGER. For now, enter the branch ID manually:
+                <p className="text-xs text-gray-400">
+                  No other branches found in your pharmacy. A destination branch must be active and approved.
                 </p>
-                <input type="text" required value={form.toBranchId}
-                  onChange={e => setForm(f => ({ ...f, toBranchId: e.target.value }))}
-                  placeholder={t('transfers.branchIdPlaceholder')}
-                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-400" />
               </div>
             )}
           </div>
