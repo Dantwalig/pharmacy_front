@@ -65,9 +65,11 @@ export default function StaffOrdersPage() {
     []
   );
 
-  const fetchedOrders = data ?? [];
-
-  useEffect(() => { setOrders(fetchedOrders ?? []); }, [fetchedOrders]);
+  useEffect(() => {
+    if (data) {
+      setOrders(data);
+    }
+  }, [data]);
   useEffect(() => { if (error) toast.error(t('errors.failedToLoadOrders')); }, [error, t]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {

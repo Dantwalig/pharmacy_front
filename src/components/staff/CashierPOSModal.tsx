@@ -20,7 +20,13 @@ export interface CashierOrder {
   id: string;
   status: string;
   total: number;
-  patient: { firstName: string; lastName: string };
+  patientPayment?: number;
+  patient: {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    user?: { phone?: string };
+  };
   orderItems: OrderItem[];
 }
 
@@ -46,12 +52,6 @@ function fmt(n: number) {
   return `RWF ${Number(n ?? 0).toLocaleString()}`;
 }
 
-// Stub until backend ships POST /payments/record
-async function mockRecordPayment(payload: object): Promise<{ receiptNumber: string }> {
-  await new Promise((r) => setTimeout(r, 800));
-  return { receiptNumber: `RCP-${Date.now().toString().slice(-6)}` };
-}
-
 export default function CashierPOSModal({
   open,
   onClose,
@@ -67,6 +67,7 @@ export default function CashierPOSModal({
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = useState('');
   const [reference, setReference] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [insuranceProvider, setInsuranceProvider] = useState('');
   const [policyNumber, setPolicyNumber] = useState('');
   const [notes, setNotes] = useState('');
@@ -82,6 +83,7 @@ export default function CashierPOSModal({
         setMethod('cash');
         setAmountReceived('');
         setReference('');
+        setPhoneNumber('');
         setInsuranceProvider('');
         setPolicyNumber('');
         setNotes('');
@@ -89,10 +91,12 @@ export default function CashierPOSModal({
         setReceipt(null);
       }, 200);
       return () => clearTimeout(timer);
+    } else if (order) {
+      setPhoneNumber(order.patient.phone || order.patient.user?.phone || '');
     }
-  }, [open]);
+  }, [open, order]);
 
-  const totalDue = order?.total ?? 0;
+  const totalDue = order ? (order.patientPayment ?? order.total) : 0;
   const change = useMemo(() => {
     if (method !== 'cash') return 0;
     const recv = Number(amountReceived);
@@ -127,6 +131,9 @@ export default function CashierPOSModal({
     if (method === 'insurance') {
       return insuranceProvider.trim().length > 0 && policyNumber.trim().length > 0;
     }
+    if (method === 'mtn_momo' || method === 'airtel_money') {
+      return phoneNumber.trim().length > 0;
+    }
     return true;
   })();
 
@@ -136,16 +143,17 @@ export default function CashierPOSModal({
     try {
       const payload = {
         orderId: order.id,
-        method: method.toUpperCase(),
-        amountReceived: method === 'cash' ? Number(amountReceived) : undefined,
-        referenceNumber: reference || undefined,
+        paymentMethod: method.toUpperCase(),
+        amountReceived: method === 'cash' ? Number(amountReceived) : totalDue,
+        phoneNumber: (method === 'mtn_momo' || method === 'airtel_money') ? phoneNumber : undefined,
         insuranceProvider: method === 'insurance' ? insuranceProvider : undefined,
         insurancePolicyNumber: method === 'insurance' ? policyNumber : undefined,
+        reference: reference || undefined,
         notes: notes || undefined,
       };
-      const res = await mockRecordPayment(payload);
+      const res = await api.post('/payments/record', payload);
       setReceipt({
-        receiptNumber: res.receiptNumber,
+        receiptNumber: res.data.receiptNumber,
         amount: totalDue,
         method:
           method === 'insurance'
@@ -371,6 +379,21 @@ export default function CashierPOSModal({
                           {fmt(change)}
                         </span>
                       </div>
+                    </div>
+                  )}
+
+                  {(method === 'mtn_momo' || method === 'airtel_money') && (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700">
+                        {t('cashier.phoneNumber') || 'Phone Number'} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 078XXXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                      />
                     </div>
                   )}
 

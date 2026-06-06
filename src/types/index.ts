@@ -78,6 +78,7 @@ export interface Order {
   status: OrderStatus;
   type: OrderType;
   total: number;
+  patientPayment?: number;
   paymentMethod: PaymentMethod;
   deliveryAddress?: string;
   // Two shapes exist: GET /orders/:id returns `items`, GET /orders/pharmacy-orders returns `orderItems`
