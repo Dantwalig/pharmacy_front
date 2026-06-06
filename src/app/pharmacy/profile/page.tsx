@@ -1,8 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera, FileText, Pencil, AlertCircle } from 'lucide-react';
-import { api } from '@/lib/api';
+import { Camera, FileText, Pencil, AlertCircle, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 import type { PharmacyProfile } from '@/types';
 
 const BLUE = '#1B72C8';
@@ -25,12 +27,18 @@ export default function PharmacyProfilePage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Profile picture state
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     api.get('/pharmacies/profile/me')
       .then(r => {
         const d = r.data?.data ?? r.data;
         setProfile(d);
         setOwnerName(d?.representativeName ?? d?.ownerName ?? d?.name ?? '');
+        setLogoUrl(d?.logoUrl ?? null);
       })
       .catch(() => { })
       .finally(() => setLoading(false));
@@ -41,9 +49,60 @@ export default function PharmacyProfilePage() {
     try {
       await api.put('/pharmacies/profile/me', { representativeName: ownerName });
       setEditing(false);
-    } catch { /* silently fail */ }
+      toast.success(t('common.changesSaved', 'Changes saved'));
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
     setSaving(false);
   };
+
+  // ── Profile picture upload ──────────────────────────────────────────────
+  const handlePhotoClick = () => {
+    // Programmatically open the hidden file input
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset the input so the same file can be re-selected after an error
+    e.target.value = '';
+    if (!file) return;
+
+    // Client-side validation: images only, max 5 MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t('upload.invalidImageType', 'Please upload a JPEG, PNG, or WebP image.'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t('upload.imageTooLarge', 'Image must be under 5 MB.'));
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      // Step 1: Upload file → base64 data URI via the shared upload endpoint
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await api.post('/upload/medication-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const newLogoUrl: string = uploadRes.data?.url;
+      if (!newLogoUrl) throw new Error('Upload response missing url');
+
+      // Step 2: Persist the URL on the pharmacy profile
+      await api.put('/pharmacies/profile/me', { logoUrl: newLogoUrl });
+
+      // Step 3: Update local state so the avatar reflects immediately
+      setLogoUrl(newLogoUrl);
+      toast.success(t('pharmacyOwner.photoUpdated', 'Profile photo updated.'));
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+  // ────────────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -98,7 +157,7 @@ export default function PharmacyProfilePage() {
         <p className="mt-1 text-sm text-gray-500">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
       </div>
 
-      {/* Section header (below hero) */}
+      {/* Section header */}
       <div>
         <h2 className="text-xl font-bold text-gray-900">{t('pharmacyOwner.myProfileTitle')}</h2>
         <p className="text-sm text-gray-500 mt-0.5">{t('pharmacyOwner.pharmacyOwnerBreadcrumb')}</p>
@@ -108,20 +167,46 @@ export default function PharmacyProfilePage() {
 
         {/* Left: User card */}
         <div className="bg-white rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center">
-          {/* Avatar */}
+
+          {/* Avatar with working upload button */}
           <div className="relative mb-3">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-bold select-none"
-              style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
-            >
-              {initials || '?'}
-            </div>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={ownerName || 'Profile photo'}
+                className="w-20 h-20 rounded-full object-cover select-none"
+              />
+            ) : (
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-bold select-none"
+                style={{ background: 'linear-gradient(135deg, #3BAAEF 0%, #1B72C8 100%)' }}
+              >
+                {initials || '?'}
+              </div>
+            )}
+
+            {/* Hidden file input — triggered by the camera button below */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              className="hidden"
+              aria-hidden="true"
+              onChange={handlePhotoChange}
+            />
+
+            {/* Camera button */}
             <button
-              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md"
+              onClick={handlePhotoClick}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: NAVY }}
               aria-label={t('pharmacyOwner.clickToUpdatePhoto')}
+              title={t('pharmacyOwner.clickToUpdatePhoto')}
             >
-              <Camera size={13} />
+              {uploadingPhoto
+                ? <Loader2 size={11} className="animate-spin" />
+                : <Camera size={13} />}
             </button>
           </div>
 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Clock, Lock, User, LogOut, X, Package, ClipboardList, ShieldAlert, CreditCard } from 'lucide-react';
 import { isPatientEnabled } from '@/lib/features';
 import { useAuth } from '@/context/AuthContext';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
 
 interface StaffSidebarProps {
   open?: boolean;
@@ -16,13 +17,15 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
   const pathname = usePathname();
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { can } = useStaffPermissions();
   const isCashier = user?.role === 'CASHIER';
 
   const nav = [
     { href: '/staff/dashboard',       icon: LayoutDashboard, label: t('staff.dashboard'),      show: true },
-    { href: '/staff/orders',          icon: CreditCard,      label: t('cashier.paymentsNav'),  show: isCashier },
-    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions'),  show: !isCashier },
-    { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory'),      show: true },
+    // Orders / Payments: cashiers need VIEW_PAYMENTS or PROCESS_PAYMENTS; pharmacists need VIEW_ORDERS
+    { href: '/staff/orders',          icon: CreditCard,      label: t('cashier.paymentsNav'),  show: isCashier && (can('VIEW_PAYMENTS') || can('PROCESS_PAYMENTS')) },
+    { href: '/staff/prescriptions',   icon: ClipboardList,   label: t('staff.prescriptions'),  show: !isCashier && can('VIEW_PRESCRIPTIONS') },
+    { href: '/staff/inventory',       icon: Package,         label: t('staff.inventory'),      show: can('VIEW_INVENTORY') },
     { href: '/staff/attendance',      icon: Clock,           label: t('staff.attendance'),     show: true },
     { href: '/staff/profile',         icon: User,            label: t('staff.profile'),        show: true },
     { href: '/staff/change-password', icon: Lock,            label: t('staff.changePassword'), show: true },

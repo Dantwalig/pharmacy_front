@@ -194,6 +194,7 @@ export interface PharmacyProfile {
   email?: string;
   phone?: string;
   address?: string;
+  logoUrl?: string;
   dateOfIncorporation?: string;
   rdbCertificate?: string;
   pharmacyLicense?: string;
