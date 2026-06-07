@@ -81,7 +81,12 @@ export default function SuperAdminDashboard() {
       setAnalytics(analyticsRes.data);
       setPendingPharmacies(pendingRes.data);
       setPendingBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
-      setUnverifiedLocations(Array.isArray(unverifiedRes.data) ? unverifiedRes.data : []);
+      const unverifiedData = Array.isArray(unverifiedRes.data) ? unverifiedRes.data : [];
+      setUnverifiedLocations(
+        unverifiedData.filter(
+          (p: any) => p.latitude !== null && p.latitude !== undefined && p.longitude !== null && p.longitude !== undefined
+        )
+      );
     } catch (error: unknown) {
       toast.error(t('errors.failedToLoadDashboard'));
     } finally {
