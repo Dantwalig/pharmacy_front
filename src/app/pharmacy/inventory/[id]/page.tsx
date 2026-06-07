@@ -113,7 +113,7 @@ export default function EditMedicationPage() {
             </button>
 
           {/* Header card */}
-            <div className="bg-linear-to-r from-[#1E4D8C] to-[#2563a8] rounded-2xl p-6 text-white flex items-start justify-between">
+            <div className="bg-linear-to-r from-brand-navy to-[#2563a8] rounded-2xl p-6 text-white flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1">{med.name}</h1>
               <p className="text-blue-200 text-sm">{med.category}</p>

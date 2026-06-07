@@ -47,7 +47,7 @@ export default function LoginPage() {
       </div>
 
       {/* Left Side - Blue Background with Info */}
-      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-12 flex-col justify-between text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-brand-navy via-[#2563a8] to-brand-navy-dark p-12 flex-col justify-between text-white">
         <div>
           {/* Logo */}
           <div className="mb-16">

@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useStaffPermissions } from '@/hooks/useStaffPermissions';
 import PermissionGate from '@/components/shared/PermissionGate';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
@@ -15,14 +16,6 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
-
-const TEAL = '#2D9B8A';
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:  'bg-yellow-100 text-yellow-800',
-  APPROVED: 'bg-green-100 text-green-800',
-  REJECTED: 'bg-red-100 text-red-800',
-};
 
 type Tab = 'queue' | 'history';
 
@@ -96,7 +89,7 @@ export default function StaffPrescriptionsPage() {
         style={{ background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)' }}
       >
         <h1 className="text-3xl font-extrabold text-gray-900">{t('prescriptions.prescriptionsTitle')}</h1>
-        <p className="mt-1 font-semibold" style={{ color: TEAL }}>
+        <p className="mt-1 font-semibold text-brand-teal">
           {t('prescriptions.prescriptionsSubtitle')}
         </p>
         <button
@@ -190,9 +183,7 @@ export default function StaffPrescriptionsPage() {
                         ? `${p.patient.firstName} ${p.patient.lastName}`
                         : `Prescription #${p.id.slice(0, 8)}`}
                     </p>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {p.status}
-                    </span>
+                    <StatusBadge status={p.status} />
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-gray-500">
@@ -220,7 +211,7 @@ export default function StaffPrescriptionsPage() {
 
                   {p.fileUrl && (
                     <a href={p.fileUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex text-xs font-medium underline mt-1" style={{ color: TEAL }}>
+                      className="inline-flex text-xs font-medium underline mt-1 text-brand-teal">
                       {t('prescriptions.viewFile')}
                     </a>
                   )}
@@ -261,8 +252,7 @@ export default function StaffPrescriptionsPage() {
                           <button
                             onClick={() => handleVerify(p.id)}
                             disabled={!!actionId}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50"
-                            style={{ backgroundColor: TEAL }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 bg-brand-teal"
                             aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
                           >
                             <CheckCircleIcon className="w-4 h-4" />

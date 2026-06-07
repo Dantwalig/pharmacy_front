@@ -210,7 +210,7 @@ export default function LocationPicker({
       {/* Map container */}
       <div
         ref={mapRef}
-        style={{ height, width: '100%', borderRadius: '0.75rem', border: hasPinned ? '2px solid #2D9B8A' : '2px solid #E5E7EB', overflow: 'hidden' }}
+        style={{ height, width: '100%', borderRadius: '0.75rem', border: hasPinned ? '2px solid var(--color-brand-teal)' : '2px solid #E5E7EB', overflow: 'hidden' }}
       />
 
       {/* Coordinate display */}
