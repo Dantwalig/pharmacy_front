@@ -19,6 +19,7 @@ import {
   LockClosedIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { openFile } from '@/lib/openFile';
 
 interface StaffProfile {
   id: string;
@@ -140,23 +141,23 @@ export default function StaffProfilePage() {
   const roleLabel   = profile.user.role.charAt(0) + profile.user.role.slice(1).toLowerCase();
 
   const documents = [
-    {
+    profile.licenseUrl ? {
       label:  t('staffPages.pharmacistLicense'),
       expiry: profile.licenseExpiry
         ? `${t('staffPages.docExpires')} ${new Date(profile.licenseExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : `${t('staffPages.docExpires')} —`,
-      url:  profile.licenseUrl ?? null,
+      url:  profile.licenseUrl,
       icon: DocumentTextIcon,
-    },
-    {
+    } : null,
+    profile.nationalId ? {
       label:  t('staffPages.nationalIdCert'),
       expiry: profile.nationalIdExpiry
         ? `${t('staffPages.docExpired')} ${new Date(profile.nationalIdExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-        : profile.nationalId ? `${t('staffPages.docIdPrefix')} ${profile.nationalId}` : t('staffPages.noDocOnFile'),
+        : `${t('staffPages.docIdPrefix')} ${profile.nationalId}`,
       url:  null,
       icon: PhotoIcon,
-    },
-  ];
+    } : null,
+  ].filter(Boolean) as { label: string; expiry: string; url: string | null; icon: React.ComponentType<{ className?: string }> }[];
 
   return (
     <div className="max-w-6xl mx-auto space-y-5 p-4 lg:p-6">
@@ -312,6 +313,9 @@ export default function StaffProfilePage() {
             <h2 className="font-bold text-gray-900 text-base mb-4">{t('pharmacyOwner.submittedDocuments')}</h2>
 
             <div className="space-y-3">
+              {documents.length === 0 && (
+                <p className="text-sm text-gray-400 py-2">{t('staffPages.noDocOnFile')}</p>
+              )}
               {documents.map(({ label, expiry, url, icon: Icon }) => (
                 <div key={label} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50">
                   <div className="flex items-center gap-3">
@@ -323,21 +327,15 @@ export default function StaffProfilePage() {
                       <p className="text-xs text-gray-400 mt-0.5">{expiry}</p>
                     </div>
                   </div>
-                  {url ? (
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {url && (
+                    <button
+                      type="button"
+                      onClick={() => openFile(url)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
                     >
                       <EyeIcon className="w-3.5 h-3.5" />
                       {t('common.view')}
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-gray-400 text-xs font-semibold">
-                      <EyeIcon className="w-3.5 h-3.5" />
-                      {t('common.view')}
-                    </span>
+                    </button>
                   )}
                 </div>
               ))}

@@ -137,10 +137,10 @@ export default function PharmacyProfilePage() {
   ];
 
   const docs = [
-    { label: t('pharmacyOwner.pharmacyLicense'), date: 'January 10, 2025' },
-    { label: t('pharmacyOwner.nationalId'), date: 'January 6, 2018' },
-    { label: t('pharmacyOwner.taxRegistration'), date: 'January 6, 2018' },
-  ];
+    profile?.pharmacyLicense ? { label: t('pharmacyOwner.pharmacyLicense'), value: profile.pharmacyLicense } : null,
+    profile?.rdbCertificate  ? { label: t('pharmacyOwner.nationalId'),       value: profile.rdbCertificate  } : null,
+    profile?.businessRegistration ? { label: t('pharmacyOwner.taxRegistration'), value: profile.businessRegistration } : null,
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <div className="space-y-6">
@@ -344,6 +344,9 @@ export default function PharmacyProfilePage() {
       <div className="bg-white rounded-2xl p-6 border border-gray-100">
         <h3 className="font-semibold text-gray-900 mb-4">{t('pharmacyOwner.submittedDocuments')}</h3>
         <div className="space-y-3">
+          {docs.length === 0 && (
+            <p className="text-sm text-gray-400 py-2">{t('staffPages.noDocOnFile')}</p>
+          )}
           {docs.map(doc => (
             <div
               key={doc.label}
@@ -357,17 +360,10 @@ export default function PharmacyProfilePage() {
                   <DocumentTextIcon className="w-[18px] h-[18px] text-brand-navy" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{doc.label}</p>
-                  <p className="text-xs text-gray-400">
-                    {t('pharmacyOwner.uploaded')}: {doc.date}
-                  </p>
+                  <p className="text-xs text-gray-400 font-medium">{doc.label}</p>
+                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{doc.value}</p>
                 </div>
               </div>
-              <button
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-brand-navy text-brand-navy text-sm font-medium hover:bg-blue-50 transition-colors"
-              >
-                {t('common.view')}
-              </button>
             </div>
           ))}
         </div>
