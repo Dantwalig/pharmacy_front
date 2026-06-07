@@ -9,10 +9,12 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
 
 export default function BranchChangePasswordPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({
     current: false,
@@ -45,6 +47,7 @@ export default function BranchChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
+      updateUser({ requiresPasswordChange: false });
       toast.success(t('form.passwordChanged'));
       router.push('/branch/dashboard');
     } catch (error: unknown) {
@@ -55,8 +58,8 @@ export default function BranchChangePasswordPage() {
   };
 
   return (
-    <div className="flex items-start justify-center min-h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-10 mt-8">
+    <div className="flex items-start justify-center min-h-[calc(100vh-80px)] bg-gray-50 p-6">
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-sm border border-gray-100 p-10 mt-8">
 
         {/* Security Setup badge */}
         <div className="mb-5">
@@ -66,10 +69,11 @@ export default function BranchChangePasswordPage() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-4xl font-extrabold text-[#1E3A5F] dark:text-white mb-3">
+        <span className="inline-block px-3 py-1 text-xs font-bold text-[#29ABE2] bg-[#EBF4FF] rounded-full mb-4 tracking-wider uppercase">Security Setup</span>
+        <h1 className="text-4xl font-extrabold text-[#1E3A5F] mb-3">
           Change Password
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
+        <p className="text-gray-500 text-sm mb-8">
           Please update your password to secure your branch manager account.
         </p>
 
@@ -77,7 +81,7 @@ export default function BranchChangePasswordPage() {
 
           {/* Current Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-[#1E3A5F] mb-2">
               Current Password
             </label>
             <div className="relative">
@@ -89,7 +93,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, tempPassword: e.target.value }))
                 }
                 placeholder="Enter current password"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
               />
               <button
                 type="button"
@@ -107,7 +111,7 @@ export default function BranchChangePasswordPage() {
 
           {/* New Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-[#1E3A5F] mb-2">
               New Password
             </label>
             <div className="relative">
@@ -120,7 +124,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, newPassword: e.target.value }))
                 }
                 placeholder="At least 8 characters"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
               />
               <button
                 type="button"
@@ -138,7 +142,7 @@ export default function BranchChangePasswordPage() {
 
           {/* Confirm New Password */}
           <div>
-            <label className="block text-sm font-semibold text-[#1E3A5F] dark:text-blue-300 mb-2">
+            <label className="block text-sm font-semibold text-[#1E3A5F] mb-2">
               Confirm New Password
             </label>
             <div className="relative">
@@ -150,7 +154,7 @@ export default function BranchChangePasswordPage() {
                   setForm(p => ({ ...p, confirmPassword: e.target.value }))
                 }
                 placeholder="Confirm your new password"
-                className="w-full px-4 py-3.5 pr-11 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
+                className="w-full px-4 py-3.5 pr-11 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
               />
               <button
                 type="button"

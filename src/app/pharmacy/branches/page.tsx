@@ -3,18 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, X } from 'lucide-react';
+import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { api, unwrapData } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 export default function BranchManagementPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [branches, setBranches] = useState<any[]>([]);
   const [search, setSearch]     = useState('');
   const [loading, setLoading]   = useState(true);
@@ -47,13 +47,34 @@ export default function BranchManagementPage() {
 
   const handleAdd = async () => {
     setCreateError('');
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(form.branchManagerEmail)) {
+      setCreateError(t('pharmacyOwner.enterValidEmail', 'Please enter a valid email address.'));
+      return;
+    }
+    if (user?.email && form.branchManagerEmail.toLowerCase() === user.email.toLowerCase()) {
+      setCreateError(t('pharmacyOwner.sameAsOwnerEmail', 'Branch manager email cannot be the same as your own account email.'));
+      return;
+    }
     setSubmitting(true);
     try {
-      await api.post('/branches/create', form);
+      const res = await api.post('/branches/create', form);
+      const branchId = res.data?.id;
+
       setShowModal(false);
       setForm({ name: '', address: '', phone: '', branchManagerEmail: '', latitude: undefined, longitude: undefined });
-      setCreateSuccess('Branch added successfully.');
-      setTimeout(() => setCreateSuccess(''), 4000);
+      // Auto-send manager invite email
+      if (branchId) {
+        try {
+          await api.post(`/branches/${branchId}/send-credentials`);
+          setCreateSuccess(t('pharmacyOwner.branchCreatedInviteSent', 'Branch created and invite email sent to manager.'));
+        } catch {
+          setCreateSuccess(t('pharmacyOwner.branchCreatedInviteFailed', 'Branch created, but invite email could not be sent. Use "Send Credentials" from branch details.'));
+        }
+      } else {
+        setCreateSuccess(t('pharmacyOwner.branchCreatedSuccess', 'Branch created successfully.'));
+      }
+      setTimeout(() => setCreateSuccess(''), 6000);
       load(true);
     } catch {
       setCreateError(t('pharmacyOwner.createError'));
@@ -61,20 +82,23 @@ export default function BranchManagementPage() {
     setSubmitting(false);
   };
 
-  const statusStyle = (s: string) => {
-    switch (s) {
-      case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active' };
-      case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup' };
-      case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval' };
-      default:         return { bg: '#F3F4F6', text: '#6B7280', label: s ?? '—' };
-    }
+  const branchStatusLabel = (s: string) => {
+    if (s === 'APPROVED') return 'Active';
+    if (s === 'INVITED') return 'Pending Setup';
+    if (s === 'PENDING') return 'Pending Approval';
+    return s ?? '—';
   };
 
   return (
     <div className="space-y-6">
     {createSuccess && (
-        <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>
-        {createSuccess}
+        <div
+          className="px-4 py-3 rounded-xl text-sm font-medium"
+          style={createSuccess.includes('could not')
+            ? { backgroundColor: '#FEF3C7', color: '#92400E' }
+            : { backgroundColor: '#D1FAE5', color: '#065F46' }}
+        >
+          {createSuccess}
         </div>
     )}
 
@@ -87,7 +111,7 @@ export default function BranchManagementPage() {
     {/* Toolbar */}
       <div className="flex items-center justify-between gap-3">
       <div className="relative flex-1 max-w-sm">
-        <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
         <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -100,7 +124,7 @@ export default function BranchManagementPage() {
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium"
           style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
-        <Plus size={16} />
+        <PlusIcon className="w-4 h-4" />
         {t('pharmacyOwner.addBranch')}
         </button>
     </div>
@@ -133,31 +157,24 @@ export default function BranchManagementPage() {
               <tr><td colSpan={6} className="py-12 text-center text-gray-400">{t('common.noData')}</td></tr>
           ) : (
               filtered.map((b: any) => {
-                const st = statusStyle(b.branchStatus);
                 return (
                   <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-semibold text-gray-800">{b.name}</td>
                   <td className="px-5 py-4 text-sm text-gray-500">{b.address}</td>
                   <td className="px-5 py-4 text-sm">
                     {b.manager?.email
-                        ? <span className="font-medium" style={{ color: TEAL }}>{b.manager.email}</span>
+                        ? <span className="font-medium text-brand-teal">{b.manager.email}</span>
                       : <span className="text-[#D3CC00] font-medium">{t('common.unassigned')}</span>
                     }
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-400">—</td>
                   <td className="px-5 py-4">
-                    <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ backgroundColor: st.bg, color: st.text }}
-                      >
-                      {st.label}
-                      </span>
+                    <StatusBadge status={b.branchStatus} label={branchStatusLabel(b.branchStatus)} />
                   </td>
                   <td className="px-5 py-4">
                     <button
                         onClick={() => router.push(`/pharmacy/branches/${b.id}`)}
-                        className="text-sm font-medium hover:underline"
-                        style={{ color: NAVY }}
+                        className="text-sm font-medium hover:underline text-brand-navy"
                       >
                       {t('common.viewDetails')}
                       </button>
@@ -181,7 +198,7 @@ export default function BranchManagementPage() {
               className="text-gray-400 hover:text-gray-600"
               aria-label={t('common.close') || 'Close'}
             >
-              <X size={20} />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
           <div className="space-y-4">
@@ -210,9 +227,11 @@ export default function BranchManagementPage() {
                 Manager Email *
               </label>
               <input
+                type="email"
                 value={form.branchManagerEmail}
                 onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="manager@example.com"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
             <div>
@@ -249,7 +268,8 @@ export default function BranchManagementPage() {
             <button
                 onClick={handleAdd}
                 disabled={submitting || !form.name || !form.address || !form.phone || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 bg-brand-teal"
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
+                style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
               >
               {submitting ? t('common.saving') : t('common.add')}
               </button>

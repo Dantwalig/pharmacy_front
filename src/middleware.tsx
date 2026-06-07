@@ -21,8 +21,14 @@ export function middleware(request: NextRequest) {
   const isPatientRoute    = pathname.startsWith('/patient');
   const isBranchRoute     = pathname.startsWith('/branch');
   const isStaffRoute      = pathname.startsWith('/staff');
+  // TODO: add hospital auth once login flow is confirmed — for now all /hospital/* routes are open
+  const isHospitalRoute   = pathname.startsWith('/hospital');
 
   if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute) {
+    return NextResponse.next();
+  }
+
+  if (isHospitalRoute) {
     return NextResponse.next();
   }
 

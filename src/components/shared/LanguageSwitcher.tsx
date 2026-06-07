@@ -2,11 +2,12 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
 
 export default function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const [mounted, setMounted] = useState(false);
 
   const languages = [
     { code: 'en', name: 'EN' },
@@ -19,13 +20,34 @@ export default function LanguageSwitcher() {
     localStorage.setItem('language', langCode);
   };
 
-  // Load saved language on mount
+  // Load saved language and set mounted on client
   useEffect(() => {
+    setMounted(true);
     const savedLang = localStorage.getItem('language');
     if (savedLang && ['en', 'fr', 'rw'].includes(savedLang)) {
       i18n.changeLanguage(savedLang);
     }
   }, [i18n]);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-1">
+        {languages.map((lang, index) => (
+          <div key={lang.code} className="flex items-center">
+            <button
+              disabled
+              className="px-2 py-1 text-sm font-semibold text-gray-400 dark:text-gray-500 cursor-default"
+            >
+              {lang.name}
+            </button>
+            {index < languages.length - 1 && (
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-1">

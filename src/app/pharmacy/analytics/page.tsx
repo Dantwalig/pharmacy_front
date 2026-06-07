@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -11,8 +12,6 @@ import {
   LineChart, Line, PieChart, Pie, Cell,
 } from 'recharts';
 
-const NAVY  = '#1E4D8C';
-const TEAL  = '#2D9B8A';
 const DONUT_COLORS = ['#2563EB', '#60A5FA', '#6B84A8', '#8B5CF6', '#EF4444'];
 
 const MOCK_ANALYTICS = {
@@ -128,7 +127,7 @@ function StatCard({ label, value, sub, subColor, icon }: {
 }) {
   return (
     <div className="bg-white rounded-2xl p-5 flex items-start gap-4 shadow-sm border border-gray-100">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${NAVY}12` }}>
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-navy/10">
         {icon}
       </div>
       <div className="min-w-0">
@@ -189,29 +188,29 @@ export default function PharmacyAnalyticsPage() {
   const statCards = [
     {
       label: t('analytics.totalRevenue'),
-      value: `${fmt(a.totalRevenue)} RWF`,
+      value: formatCurrency(a.totalRevenue),
       sub:   a.revenueChange != null ? `${a.revenueChange > 0 ? '+' : ''}${a.revenueChange}% ${t('analytics.vsLastMonth')}` : t('analytics.thisMonth'),
       subColor: a.revenueChange > 0 ? '#16A34A' : a.revenueChange < 0 ? '#DC2626' : undefined,
-      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     },
     {
       label: t('analytics.totalOrders'),
       value: a.totalOrders ?? 0,
       sub:   t('analytics.thisMonth'),
-      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
+      icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
     },
     {
       label: t('analytics.avgOrderValue2'),
-      value: `${fmt(a.avgOrderValue)} RWF`,
+      value: formatCurrency(a.avgOrderValue),
       sub:   a.avgValueChange != null ? `${a.avgValueChange > 0 ? '+' : ''}${a.avgValueChange}%` : '',
       subColor: a.avgValueChange > 0 ? '#16A34A' : a.avgValueChange < 0 ? '#DC2626' : undefined,
-      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+      icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
     },
     {
       label: t('analytics.itemsSold'),
       value: a.itemsSold ?? 0,
       sub:   t('analytics.units'),
-      icon: <svg className="w-5 h-5" fill="none" stroke={NAVY} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     },
   ];
 
@@ -253,7 +252,7 @@ export default function PharmacyAnalyticsPage() {
                     <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
               </PieChart>
             </ResponsiveContainer>
             <DonutLegend data={donutData} />
@@ -267,14 +266,14 @@ export default function PharmacyAnalyticsPage() {
             <h2 className="text-base font-bold text-gray-900">{t('analytics.revenueByBranch')}</h2>
             <span className="text-xs text-blue-500 font-medium">{currentMonthLabel}</span>
           </div>
-          {s.monthlyComparison.length > 0 ? (
+          {s.revenueByBranch.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={s.monthlyComparison} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={s.revenueByBranch} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
-                  {s.monthlyComparison.map((_: any, i: number) => (
+                  {s.revenueByBranch.map((_: any, i: number) => (
                     <Cell key={i} fill={i === 0 ? '#1746A2' : '#6B84A8'} />
                   ))}
                 </Bar>
@@ -296,21 +295,21 @@ export default function PharmacyAnalyticsPage() {
           <div className="space-y-4">
             <ProgressRow
               label={t('analytics.revenueGrowth')}
-              sub={`${fmt(a.totalRevenue)} RWF ${t('analytics.vsLastMonth')}`}
+              sub={`${formatCurrency(a.totalRevenue)} ${t('analytics.vsLastMonth')}`}
               change={a.revenueChange ?? 0}
-              color={NAVY}
+              color="#1E4D8C"
             />
             <ProgressRow
               label={t('analytics.orderGrowth')}
               sub={`${a.totalOrders ?? 0} ${t('analytics.totalOrders').toLowerCase()} ${t('analytics.thisMonth').toLowerCase()}`}
               change={a.ordersChange ?? 0}
-              color={TEAL}
+              color="#2D9B8A"
             />
             <ProgressRow
               label={t('analytics.avgOrderValue2')}
-              sub={`${fmt(a.avgOrderValue)} RWF avg`}
+              sub={`${formatCurrency(a.avgOrderValue)} avg`}
               change={a.avgValueChange ?? 0}
-              color={NAVY}
+              color="#1E4D8C"
             />
           </div>
 
@@ -335,7 +334,7 @@ export default function PharmacyAnalyticsPage() {
           {/* The Text Field */}
           <div className="leading-tight">
             {t('analytics.onTrackToHit')}{' '}
-            <span className="font-bold text-gray-900">{fmt(a.targetRevenue)} RWF</span>{' '}
+            <span className="font-bold text-gray-900">{formatCurrency(a.targetRevenue)}</span>{' '}
             {t('analytics.thisMonthDot')}
           </div>
         </div>
@@ -356,7 +355,7 @@ export default function PharmacyAnalyticsPage() {
                   onClick={() => setTrendTab(tab)}
                   className="px-3 py-1 rounded-md text-xs font-semibold transition-all"
                   style={trendTab === tab
-                    ? { backgroundColor: '#fff', color: NAVY, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
+                    ? { backgroundColor: '#fff', color: '#1E4D8C', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
                     : { color: '#9CA3AF' }}
                 >
                   {tab}
@@ -369,14 +368,13 @@ export default function PharmacyAnalyticsPage() {
               <LineChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
-                <Line type="monotone" dataKey="revenue" stroke={TEAL} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: TEAL }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Line type="monotone" dataKey="revenue" stroke="#2D9B8A" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#2D9B8A' }} />
               </LineChart>
             </ResponsiveContainer>
             {/* Annotation badge */}
             <div
-              className="absolute bottom-8 right-4 px-3 py-1 rounded-full text-white text-xs font-bold shadow-md pointer-events-none"
-              style={{ backgroundColor: NAVY }}
+              className="absolute bottom-8 right-4 px-3 py-1 rounded-full text-white text-xs font-bold shadow-md pointer-events-none bg-brand-navy"
             >
               {latestRevenue} {t('analytics.made')}
             </div>

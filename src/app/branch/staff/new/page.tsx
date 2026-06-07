@@ -123,53 +123,53 @@ export default function NewStaffPage() {
       <div className="flex items-center gap-3">
       <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-all"
         >
         <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
       </button>
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('staffMgmt.addStaffMember')}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('staffMgmt.addStaffMember')}</h1>
         <p className="text-sm text-gray-500">{t('staffMgmt.receiveCredentials')}</p>
       </div>
     </div>
 
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Personal Info */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('staffMgmt.personalInformation')}</h2>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="font-bold text-gray-900 mb-4">{t('staffMgmt.personalInformation')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.firstName')} *</label>
+            <label htmlFor="firstName" className="block text-xs font-semibold text-gray-700 mb-1">{t('signup.firstName')} *</label>
             <input id="firstName" required value={form.firstName} onChange={e => setForm(p => ({...p, firstName: e.target.value}))}
               placeholder= "e.g. John"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('signup.lastName')} *</label>
+            <label htmlFor="lastName" className="block text-xs font-semibold text-gray-700 mb-1">{t('signup.lastName')} *</label>
             <input id="lastName" required value={form.lastName} onChange={e => setForm(p => ({...p, lastName: e.target.value}))}
               placeholder= "e.g. Doe"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.email')} *</label>
+            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.email')} *</label>
             <input id="email" required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
               placeholder= "e.g. john.doe@example.com"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label htmlFor="phone" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.phone')}</label>
+            <label htmlFor="phone" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.phone')}</label>
             <input id="phone" value={form.phone} onChange={e => setForm(p => ({...p, phone: e.target.value}))}
-                placeholder= "e.g. +250788..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                placeholder= "e.g. +250788..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label htmlFor="nationalId" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.nationalId')}</label>
+            <label htmlFor="nationalId" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.nationalId')}</label>
             <input id="nationalId" value={form.nationalId} onChange={e => setForm(p => ({...p, nationalId: e.target.value}))}
-                placeholder= "e.g. PP123456789" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                placeholder= "e.g. PP123456789" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
           <div>
-            <label htmlFor="gender" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.gender')}</label>
+            <label htmlFor="gender" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.gender')}</label>
             <select id="gender" value={form.gender} onChange={e => setForm(p => ({...p, gender: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               <option value="">{t('form.select')}</option>
               <option>{t('form.male')}</option>
               <option>{t('form.female')}</option>
@@ -177,16 +177,16 @@ export default function NewStaffPage() {
             </select>
           </div>
           <div className="col-span-2">
-            <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('form.dateOfBirth')}</label>
-            <input id="dateOfBirth" type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.dateOfBirth')}</label>
+            <input id="dateOfBirth" type="date" value={form.dateOfBirth} max={new Date().toISOString().split('T')[0]} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
         </div>
       </div>
 
       {/* Role */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('form.role')} *</h2>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="font-bold text-gray-900 mb-4">{t('form.role')} *</h2>
         <div className="grid grid-cols-3 gap-3">
           {(['PHARMACIST', 'CASHIER', 'NURSE'] as const).map(role => (
               <button
@@ -195,8 +195,8 @@ export default function NewStaffPage() {
                 onClick={() => handleRoleChange(role)}
                 className={`py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
                   form.role === role
-                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
-                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
                 }`}
               >
               {role}
@@ -207,8 +207,8 @@ export default function NewStaffPage() {
       </div>
 
       {/* Permissions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="font-bold text-gray-900 mb-4">
           {t('staffMgmt.permissions')}
             <span className="ml-2 text-sm font-normal text-gray-500">({form.permissions.length} {t('staffMgmt.selected')})</span>
         </h2>
@@ -226,8 +226,8 @@ export default function NewStaffPage() {
                       onClick={() => togglePermission(perm)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         form.permissions.includes(perm)
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-gray-100 text-gray-500'
                       }`}
                     >
                     {perm.replace(/_/g, ' ')}
@@ -243,7 +243,7 @@ export default function NewStaffPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: '#2D9B8A' }}
+          className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 bg-brand-teal"
         >
         {loading ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.loading')}</>

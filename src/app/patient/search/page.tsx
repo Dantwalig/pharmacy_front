@@ -29,9 +29,6 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   loading: () => <MapSkeleton />,
 });
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 export default function SearchPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -88,7 +85,7 @@ export default function SearchPage() {
   const routes = (geoStatus === 'success' && coords && mapPharmacies.length > 0)
     ? mapPharmacies.slice(0, 3).filter(p => p.latitude && p.longitude).map(p => ({
         points: [coords, [p.latitude!, p.longitude!]] as [number, number][],
-        color: NAVY,
+        color: '#1E4D8C',
         weight: 3,
         dashed: true
       }))
@@ -153,8 +150,7 @@ export default function SearchPage() {
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
         {geoStatus === 'success' ? t('search.pharmaciesNearYou') : t('search.allPharmacies')}
         <span
-          className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full"
-          style={{ background: `${NAVY}15`, color: NAVY }}
+          className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full bg-brand-navy/10 text-brand-navy"
         >
           {mapPharmacies.length}
         </span>
@@ -164,16 +160,14 @@ export default function SearchPage() {
         <button
           onClick={() => setViewMode('map')}
           title="Map view"
-          className="p-2.5 rounded-xl transition-all"
-          style={viewMode === 'map' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
+          className={`p-2.5 rounded-xl transition-all ${viewMode === 'map' ? 'bg-brand-teal text-white' : 'bg-gray-200 text-gray-500'}`}
         >
           <MapIcon className="w-5 h-5" />
         </button>
         <button
           onClick={() => setViewMode('list')}
           title="List view"
-          className="p-2.5 rounded-xl transition-all"
-          style={viewMode === 'list' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
+          className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-brand-teal text-white' : 'bg-gray-200 text-gray-500'}`}
         >
           <ListBulletIcon className="w-5 h-5" />
         </button>
@@ -186,7 +180,7 @@ export default function SearchPage() {
       {/* Page header */}
       <div
         className="rounded-2xl shadow-xl p-8 text-white"
-        style={{ background: `linear-gradient(135deg, ${NAVY}, #1a3d6f)` }}
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-navy-dark))' }}
       >
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('patient.findPharmacyAndMedicine')}</h1>
         <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
@@ -207,13 +201,12 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2 transition-all"
-              style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
+              style={{ '--tw-ring-color': '#2D9B8A' } as React.CSSProperties}
             />
           </div>
           <button
             type="submit"
-            className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap"
-            style={{ background: TEAL }}
+            className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap bg-brand-teal"
           >
             {t('common.search')}
           </button>
@@ -226,12 +219,7 @@ export default function SearchPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-6 py-3 rounded-xl font-semibold transition-all"
-            style={
-              activeTab === tab
-                ? { background: NAVY, color: '#fff' }
-                : { background: '#e5e7eb', color: '#374151' }
-            }
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === tab ? 'bg-brand-navy text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             {tab === 'pharmacies' ? t('pharmacies.pharmacies') : t('medications.medications')}
           </button>
@@ -251,7 +239,7 @@ export default function SearchPage() {
           {geoStatus !== 'success' && geoStatus !== 'denied' && (
             <div
               className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white"
-              style={{ background: `linear-gradient(135deg, ${TEAL}, #207a6c)` }}
+              style={{ background: 'linear-gradient(135deg, var(--color-brand-teal), #207a6c)' }}
             >
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-8 h-8 shrink-0" />
@@ -265,8 +253,7 @@ export default function SearchPage() {
               <button
                 onClick={requestLocation}
                 disabled={geoStatus === 'loading'}
-                className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60"
-                style={{ color: TEAL }}
+                className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60 text-brand-teal"
               >
                 {geoStatus === 'loading' ? t('search.locating') : t('search.useMyLocation')}
               </button>
@@ -341,7 +328,7 @@ export default function SearchPage() {
                       <p className="text-sm text-gray-500">{t('search.availableAt')} {med.pharmacy?.name}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold" style={{ color: NAVY }}>
+                      <span className="text-2xl font-bold text-brand-navy">
                         RWF {med.price?.toLocaleString()}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
@@ -351,8 +338,7 @@ export default function SearchPage() {
                     <button
                       onClick={() => handleAddToCart(med)}
                       disabled={med.quantity === 0}
-                      className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40"
-                      style={{ background: TEAL }}
+                      className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40 bg-brand-teal"
                     >
                       {t('medications.addToCart')}
                     </button>

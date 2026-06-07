@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ClipboardDocumentListIcon,
   XMarkIcon,
@@ -45,22 +46,14 @@ const PENDING_STATUSES: OrderStatus[] = [
 
 function getStatusMeta(status: OrderStatus, t: (key: string) => string) {
   switch (status) {
-    case 'PENDING':
-      return { label: t('orders2.statusPending'), color: '#F59E0B', bg: '#FEF3C7', textColor: '#92400E', dot: '#F59E0B' };
-    case 'ACCEPTED':
-      return { label: t('orders2.statusAccepted'), color: '#3B82F6', bg: '#DBEAFE', textColor: '#1E40AF', dot: '#3B82F6' };
-    case 'PREPARING':
-      return { label: t('orders2.statusPreparing'), color: '#8B5CF6', bg: '#EDE9FE', textColor: '#5B21B6', dot: '#8B5CF6' };
-    case 'OUT_FOR_DELIVERY':
-      return { label: t('orders2.statusOutForDelivery'), color: '#06B6D4', bg: '#CFFAFE', textColor: '#155E75', dot: '#06B6D4' };
-    case 'READY_FOR_PICKUP':
-      return { label: t('orders2.statusReadyForPickup'), color: '#10B981', bg: '#D1FAE5', textColor: '#065F46', dot: '#10B981' };
-    case 'DELIVERED':
-      return { label: t('orders2.statusDelivered'), color: '#10B981', bg: '#D1FAE5', textColor: '#065F46', dot: '#10B981' };
-    case 'CANCELLED':
-      return { label: t('orders2.statusCancelled'), color: '#EF4444', bg: '#FEE2E2', textColor: '#991B1B', dot: '#EF4444' };
-    default:
-      return { label: status, color: '#6B7280', bg: '#F3F4F6', textColor: '#374151', dot: '#6B7280' };
+    case 'PENDING':          return { label: t('orders2.statusPending'),         sideBarClass: 'bg-amber-500'   };
+    case 'ACCEPTED':         return { label: t('orders2.statusAccepted'),        sideBarClass: 'bg-blue-500'    };
+    case 'PREPARING':        return { label: t('orders2.statusPreparing'),       sideBarClass: 'bg-purple-500'  };
+    case 'OUT_FOR_DELIVERY': return { label: t('orders2.statusOutForDelivery'),  sideBarClass: 'bg-cyan-500'    };
+    case 'READY_FOR_PICKUP': return { label: t('orders2.statusReadyForPickup'),  sideBarClass: 'bg-emerald-500' };
+    case 'DELIVERED':        return { label: t('orders2.statusDelivered'),       sideBarClass: 'bg-emerald-500' };
+    case 'CANCELLED':        return { label: t('orders2.statusCancelled'),       sideBarClass: 'bg-red-500'     };
+    default:                 return { label: status,                             sideBarClass: 'bg-gray-500'    };
   }
 }
 
@@ -102,7 +95,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
       <div className="relative bg-white dark:bg-gray-900 w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden">
 
         {/* Header */}
-        <div className="relative bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] p-6 text-white shrink-0">
+        <div className="relative bg-linear-to-r from-brand-navy to-brand-teal p-6 text-white shrink-0">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
@@ -145,7 +138,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
               <div className="relative">
                 <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-200 dark:bg-gray-700" />
                 <div
-                  className="absolute top-4 left-4 h-0.5 bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] transition-all duration-700"
+                  className="absolute top-4 left-4 h-0.5 bg-linear-to-r from-brand-navy to-brand-teal transition-all duration-700"
                   style={{ width: currentStepIndex >= 0 ? `${(currentStepIndex / (statusSteps.length - 1)) * (100 - 8)}%` : '0%' }}
                 />
                 <div className="relative flex justify-between">
@@ -158,9 +151,9 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                             done
-                              ? 'bg-linear-to-br from-[#1E4D8C] to-[#2D9B8A] border-transparent'
+                              ? 'bg-linear-to-br from-brand-navy to-brand-teal border-transparent'
                               : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600'
-                          } ${current ? 'ring-4 ring-[#2D9B8A]/30 scale-110' : ''}`}
+                          } ${current ? 'ring-4 ring-brand-teal/30 scale-110' : ''}`}
                         >
                           {done ? (
                             <CheckCircleSolid className="w-4 h-4 text-white" />
@@ -169,7 +162,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                           )}
                         </div>
                         <p
-                          className={`text-center mt-2 leading-tight ${done ? 'text-[#1E4D8C] dark:text-blue-400 font-semibold' : 'text-gray-400'}`}
+                          className={`text-center mt-2 leading-tight ${done ? 'text-brand-navy dark:text-blue-400 font-semibold' : 'text-gray-400'}`}
                           style={{ fontSize: '9px', maxWidth: '56px' }}
                         >
                           {meta.label}
@@ -195,20 +188,20 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           <div className="px-6 py-5">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('form.pharmacy')}</h3>
             <div className="flex items-start gap-4">
-              <div className="w-11 h-11 bg-linear-to-br from-[#1E4D8C] to-[#2D9B8A] rounded-2xl flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 bg-linear-to-br from-brand-navy to-brand-teal rounded-2xl flex items-center justify-center shrink-0">
                 <BuildingStorefrontIcon className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-gray-900 dark:text-white text-base">{order.pharmacy?.name}</p>
                 {order.pharmacy?.address && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-start gap-1.5 mt-1">
-                    <MapPinIcon className="w-4 h-4 shrink-0 mt-0.5 text-[#2D9B8A]" />
+                    <MapPinIcon className="w-4 h-4 shrink-0 mt-0.5 text-brand-teal" />
                     {order.pharmacy.address}
                   </p>
                 )}
                 {order.pharmacy?.phone && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1">
-                    <PhoneIcon className="w-4 h-4 text-[#2D9B8A]" />
+                    <PhoneIcon className="w-4 h-4 text-brand-teal" />
                     {order.pharmacy.phone}
                   </p>
                 )}
@@ -225,7 +218,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
               {order.orderItems?.map((item: any) => (
                 <div key={item.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl p-3.5">
                   <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-teal-100 dark:from-blue-900/40 dark:to-teal-900/40 rounded-xl flex items-center justify-center shrink-0">
-                    <CubeIcon className="w-5 h-5 text-[#1E4D8C] dark:text-blue-400" />
+                    <CubeIcon className="w-5 h-5 text-brand-navy dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-white text-sm">{item.medication?.name}</p>
@@ -236,7 +229,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
                       {t('orders.qty')}: {item.quantity} × {item.price?.toLocaleString()} RWF
                     </p>
                   </div>
-                  <p className="font-bold text-[#1E4D8C] dark:text-blue-400 text-sm shrink-0">
+                  <p className="font-bold text-brand-navy dark:text-blue-400 text-sm shrink-0">
                     {(item.price * item.quantity)?.toLocaleString()} RWF
                   </p>
                 </div>
@@ -251,7 +244,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 space-y-2">
                 {order.deliveryAddress && (
                   <div className="flex items-start gap-2">
-                    <MapPinIcon className="w-4 h-4 text-[#2D9B8A] shrink-0 mt-0.5" />
+                    <MapPinIcon className="w-4 h-4 text-brand-teal shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-700 dark:text-gray-300">{order.deliveryAddress}</p>
                   </div>
                 )}
@@ -287,7 +280,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
               )}
               <div className="border-t border-blue-200/60 dark:border-blue-800/50 pt-2.5 flex justify-between items-center">
                 <span className="font-bold text-gray-900 dark:text-white">{t('common.total')}</span>
-                <span className="text-xl font-extrabold bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
+                <span className="text-xl font-extrabold bg-linear-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent">
                   {order.total?.toLocaleString()} RWF
                 </span>
               </div>
@@ -315,21 +308,16 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
             <div className="px-6 py-5">
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('prescriptions.prescriptionsTitle')}</h3>
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {t('common.status')}:{' '}
-                  <span
-                    className="font-semibold"
-                    style={{ color: order.prescription.status === 'APPROVED' ? '#10B981' : '#F59E0B' }}
-                  >
-                    {order.prescription.status}
-                  </span>
+                <span className="text-sm text-gray-700 dark:text-gray-300 inline-flex items-center gap-2">
+                  {t('common.status')}:
+                  <StatusBadge status={order.prescription.status} />
                 </span>
                 {order.prescription.fileUrl && (
                   <a
                     href={order.prescription.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-semibold text-[#1E4D8C] dark:text-blue-400 hover:underline"
+                    className="text-sm font-semibold text-brand-navy dark:text-blue-400 hover:underline"
                   >
                     {t('common.view')} →
                   </a>
@@ -351,7 +339,7 @@ function OrderDetailDialog({ order, onClose }: { order: any; onClose: () => void
           </button>
           <Link
             href={`/patient/orders/${order.id}`}
-            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-white bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-white bg-linear-to-r from-brand-navy to-brand-teal hover:opacity-90 transition-opacity text-center flex items-center justify-center"
           >
             {t('orders2.manageOrder', 'Manage Order')}
           </Link>
@@ -405,7 +393,7 @@ export default function OrdersPage() {
       <div className="space-y-6 pb-8">
 
         {/* Page Header */}
-        <div className="relative bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] rounded-3xl shadow-xl overflow-hidden">
+        <div className="relative bg-linear-to-r from-brand-navy to-brand-teal rounded-3xl shadow-xl overflow-hidden">
           <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
           <div className="absolute -bottom-10 -left-6 w-52 h-52 rounded-full bg-white/5" />
           <div className="relative p-8 text-white">
@@ -425,11 +413,11 @@ export default function OrdersPage() {
             onClick={() => setFilter('all')}
             className={`relative flex flex-col items-center justify-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 ${
               filter === 'all'
-                ? 'border-[#1E4D8C] bg-linear-to-br from-[#1E4D8C] to-[#2763b0] text-white shadow-lg scale-[1.02]'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#1E4D8C]/40 hover:shadow-md'
+                ? 'border-brand-navy bg-linear-to-br from-brand-navy to-[#2763b0] text-white shadow-lg scale-[1.02]'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-brand-navy/40 hover:shadow-md'
             }`}
           >
-            <ArchiveBoxIcon className={`w-6 h-6 ${filter === 'all' ? 'text-white' : 'text-[#1E4D8C] dark:text-blue-400'}`} />
+            <ArchiveBoxIcon className={`w-6 h-6 ${filter === 'all' ? 'text-white' : 'text-brand-navy dark:text-blue-400'}`} />
             <span className={`text-2xl font-extrabold leading-none ${filter === 'all' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
               {allCount}
             </span>
@@ -505,13 +493,10 @@ export default function OrdersPage() {
                 <button
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-[#2D9B8A]/30 transition-all duration-200 overflow-hidden group active:scale-[0.99]"
+                  className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-brand-teal/30 transition-all duration-200 overflow-hidden group active:scale-[0.99]"
                 >
                   <div className="flex">
-                    <div
-                      className="w-1.5 shrink-0 rounded-l-2xl"
-                      style={{ backgroundColor: meta.color }}
-                    />
+                    <div className={`w-1.5 shrink-0 rounded-l-2xl ${meta.sideBarClass}`} />
                     <div className="flex-1 p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -519,13 +504,7 @@ export default function OrdersPage() {
                             <p className="text-xs font-bold text-gray-400 tracking-wide uppercase">
                               #{order.orderNumber || order.id?.slice(0, 8)}
                             </p>
-                            <span
-                              className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: meta.bg, color: meta.textColor }}
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: meta.dot }} />
-                              {meta.label}
-                            </span>
+                            <StatusBadge status={order.status} label={meta.label} />
                           </div>
 
                           <p className="font-bold text-gray-900 dark:text-white text-base leading-snug mb-1">
@@ -536,7 +515,7 @@ export default function OrdersPage() {
                             {order.orderItems?.slice(0, 2).map((item: any) => (
                               <span
                                 key={item.id}
-                                className="text-xs bg-blue-50 dark:bg-blue-900/30 text-[#1E4D8C] dark:text-blue-300 px-2.5 py-1 rounded-lg font-medium"
+                                className="text-xs bg-blue-50 dark:bg-blue-900/30 text-brand-navy dark:text-blue-300 px-2.5 py-1 rounded-lg font-medium"
                               >
                                 {item.medication?.name} ×{item.quantity}
                               </span>
@@ -560,11 +539,11 @@ export default function OrdersPage() {
                         </div>
 
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <p className="text-lg font-extrabold text-[#1E4D8C] dark:text-blue-400 leading-none">
+                          <p className="text-lg font-extrabold text-brand-navy dark:text-blue-400 leading-none">
                             {order.total?.toLocaleString()}
                             <span className="text-xs font-bold text-gray-400 ml-1">RWF</span>
                           </p>
-                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-[#2D9B8A] flex items-center justify-center transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-brand-teal flex items-center justify-center transition-colors">
                             <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
                           </div>
                         </div>

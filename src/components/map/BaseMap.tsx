@@ -28,12 +28,9 @@ interface BaseMapProps {
   className?: string;
 }
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 const MARKER_COLORS: Record<MapMarker['type'], string> = {
-  own:        TEAL,
-  hq:         NAVY,
+  own:        '#2D9B8A',
+  hq:         '#1E4D8C',
   sibling:    '#6366F1',
   competitor: '#EF4444',
 };
@@ -89,7 +86,7 @@ function buildDivMarkerHtml(color: string): string {
       <div style="
         width:${size}px;height:${size}px;
         background:${color};
-        border:3px solid ${NAVY};
+        border:3px solid #1E4D8C;
         border-radius:50% 50% 50% 0;
         transform:rotate(-45deg);
         box-shadow:0 2px 8px rgba(0,0,0,0.25);
@@ -193,7 +190,7 @@ export default function BaseMap({
       markers.forEach((m) => {
         if (!validCoord(m.lat) || !validCoord(m.lng)) return;
 
-        const color = MARKER_COLORS[m.type] ?? TEAL;
+        const color = MARKER_COLORS[m.type] ?? '#2D9B8A';
         const icon = L.divIcon({
           html: buildDivMarkerHtml(color),
           className: '',
@@ -219,7 +216,7 @@ export default function BaseMap({
             try {
               const line = L.polyline(
                 [[valid[i].lat, valid[i].lng], [valid[j].lat, valid[j].lng]],
-                { color: NAVY, weight: 1.5, opacity: 0.35, dashArray: '6 6' }
+                { color: '#1E4D8C', weight: 1.5, opacity: 0.35, dashArray: '6 6' }
               ).addTo(map);
               polylinesRef.current.push(line);
             } catch { }
@@ -231,7 +228,7 @@ export default function BaseMap({
       if (routes && routes.length > 0) {
         routes.forEach(r => {
           const line = L.polyline(r.points, {
-            color: r.color ?? NAVY,
+            color: r.color ?? '#1E4D8C',
             weight: r.weight ?? 3,
             opacity: 0.8,
             dashArray: r.dashed ? '8 8' : undefined,
@@ -313,8 +310,7 @@ export default function BaseMap({
       {/* Count badge */}
       {ready && validMarkers.length > 0 && (
         <div
-          className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-lg pointer-events-none"
-          style={{ background: NAVY }}
+          className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-lg pointer-events-none bg-brand-navy"
         >
           {validMarkers.length} {validMarkers.length === 1 ? 'Location' : 'Locations'}
         </div>
@@ -334,7 +330,7 @@ export default function BaseMap({
           })}
           {triangulate && (
             <div className="flex items-center gap-2 pt-0.5 border-t border-gray-100 mt-0.5">
-              <span className="w-5 border-t border-dashed shrink-0" style={{ borderColor: NAVY, opacity: 0.5 }} />
+              <span className="w-5 border-t border-dashed shrink-0 border-brand-navy opacity-50" />
               <span className="text-xs text-gray-500">Triangulation</span>
             </div>
           )}
@@ -348,7 +344,7 @@ export default function BaseMap({
             {/* Header — gradient with icon */}
             <div
               className="px-4 py-3 flex items-center justify-between text-white"
-              style={{ background: `linear-gradient(135deg, ${MARKER_COLORS[popupMarker.type] ?? TEAL}, ${NAVY})` }}
+              style={{ background: `linear-gradient(135deg, ${MARKER_COLORS[popupMarker.type] ?? '#2D9B8A'}, var(--color-brand-navy))` }}
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
@@ -384,8 +380,8 @@ export default function BaseMap({
                 <span
                   className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
                   style={{
-                    background: `${MARKER_COLORS[popupMarker.type] ?? TEAL}22`,
-                    color: MARKER_COLORS[popupMarker.type] ?? TEAL,
+                    background: `${MARKER_COLORS[popupMarker.type] ?? '#2D9B8A'}22`,
+                    color: MARKER_COLORS[popupMarker.type] ?? '#2D9B8A',
                   }}
                 >
                   {popupMarker.status}

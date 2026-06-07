@@ -7,10 +7,19 @@ import { useTranslation } from 'react-i18next';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { authApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
-import { setAuthTokens, removeAuthTokens, getUserFromToken, cacheUserData, clearUserCache } from '@/lib/auth';
-import { User } from '@/types';
+import { 
+  setAuthTokens, 
+  removeAuthTokens, 
+  getUserFromToken, 
+  cacheUserData, 
+  clearUserCache,
+  getAccessToken,
+  getRefreshToken 
+} from '@/lib/auth';
+import { User, DecodedToken } from '@/types';
+import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -20,6 +29,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
+  setUserDirectly: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,13 +41,99 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
-    const initAuth = () => {
-      const userData = getUserFromToken();
-      setUser(userData);
-      setLoading(false);
+    const initAuth = async () => {
+      try {
+        const token = getAccessToken();
+        const refreshToken = getRefreshToken();
+
+        if (!token && refreshToken) {
+          try {
+            const data = await authApi.refreshTokens();
+            const { accessToken, refreshToken: newRefreshToken, user: userData } = data;
+            setAuthTokens(accessToken, newRefreshToken || refreshToken);
+            if (userData) {
+              cacheUserData(userData);
+              setUser(userData);
+            } else {
+              const decodedUser = getUserFromToken();
+              setUser(decodedUser);
+            }
+          } catch (refreshErr) {
+            console.error("Auto-refresh failed on initialization:", refreshErr);
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+          }
+        } else {
+          const userData = getUserFromToken();
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error("Auth initialization failed:", err);
+        removeAuthTokens();
+        clearUserCache();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
     initAuth();
   }, []);
+
+  // Silent token refresh based on user activity to prevent session expiry during active use
+  useEffect(() => {
+    if (!user) return;
+
+    let lastCheckTime = 0;
+    const checkInterval = 30000; // Throttle checks to once every 30 seconds
+
+    const checkAndRefreshSession = async () => {
+      const now = Date.now();
+      if (now - lastCheckTime < checkInterval) return;
+      lastCheckTime = now;
+
+      try {
+        const token = getAccessToken();
+        if (!token) return;
+
+        const decoded = jwtDecode<DecodedToken>(token);
+        // exp is in seconds, convert to ms
+        const timeLeft = decoded.exp * 1000 - now;
+
+        // If less than 5 minutes left on the access token, refresh it proactively
+        if (timeLeft < 5 * 60 * 1000) {
+          console.log('Session token is expiring soon, refreshing...');
+          const data = await authApi.refreshTokens();
+          const { accessToken, refreshToken: newRefreshToken } = data;
+          setAuthTokens(accessToken, newRefreshToken || getRefreshToken() || '');
+        }
+      } catch (err) {
+        console.error('Silent session refresh failed:', err);
+      }
+    };
+
+    const handleActivity = () => {
+      checkAndRefreshSession();
+    };
+
+    // Listen to mouse moves, keystrokes, touches, and clicks to keep the session alive
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('click', handleActivity);
+
+    // Run once on load/state change
+    checkAndRefreshSession();
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -113,26 +209,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    let apiFailed = false;
-    try {
-      await api.post('/auth/logout');
-    } catch {
-      apiFailed = true;
-    } finally {
-      removeAuthTokens();
-      clearUserCache();
-      setUser(null);
-      router.push('/login');
-      if (apiFailed) {
-        toast.error('Could not reach server, but you have been logged out locally.');
-      } else {
-        toast.success(t('auth2.loggedOut') || 'Logged out successfully');
+    const token = getAccessToken();
+
+    // Clear local state instantly so the UI is responsive
+    removeAuthTokens();
+    clearUserCache();
+    setUser(null);
+    router.push('/login');
+    toast.success(t('auth2.loggedOut') || 'Logged out successfully');
+
+    if (token) {
+      try {
+        await api.post('/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.warn('Backend logout failed:', error);
       }
     }
   };
 
   const updateUser = (userData: Partial<User>) => {
     setUser((prev: User | null) => (prev ? { ...prev, ...userData } : null));
+  };
+
+  // Used by external login flows (e.g. Super Admin) that handle their own
+  // token storage but still need to hydrate the AuthContext user state so
+  // layout guards don't see null and redirect back to /login.
+  const setUserDirectly = (userData: User) => {
+    setUser(userData);
   };
 
   const refreshUser = async () => {
@@ -172,7 +277,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser, setUserDirectly }}>
     {children}
     </AuthContext.Provider>
 );
