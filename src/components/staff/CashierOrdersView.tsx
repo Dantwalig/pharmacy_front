@@ -9,6 +9,7 @@ import { Order } from '@/types';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
+import { formatCurrency } from '@/lib/currency';
 
 type CashierTab = 'pending_payment' | 'ready_pickup' | 'completed' | 'all';
 
@@ -30,9 +31,9 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
 
   const tabs: { key: CashierTab; label: string; icon: React.ElementType }[] = [
     { key: 'pending_payment', label: t('cashier.tabPendingPayment'), icon: CreditCard },
-    { key: 'ready_pickup',    label: t('cashier.tabReadyPickup'),    icon: Package },
-    { key: 'completed',       label: t('cashier.tabCompleted'),      icon: CheckCircle2 },
-    { key: 'all',             label: t('cashier.tabAll'),            icon: ListOrdered },
+    { key: 'ready_pickup', label: t('cashier.tabReadyPickup'), icon: Package },
+    { key: 'completed', label: t('cashier.tabCompleted'), icon: CheckCircle2 },
+    { key: 'all', label: t('cashier.tabAll'), icon: ListOrdered },
   ];
 
   const filtered = useMemo(() => {
@@ -42,10 +43,10 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       }
       switch (tab) {
         case 'pending_payment': return STATUS_PENDING_PAYMENT.includes(o.status);
-        case 'ready_pickup':    return STATUS_READY_PICKUP.includes(o.status);
-        case 'completed':       return STATUS_COMPLETED.includes(o.status);
-        case 'all':             return true;
-        default:                return true;
+        case 'ready_pickup': return STATUS_READY_PICKUP.includes(o.status);
+        case 'completed': return STATUS_COMPLETED.includes(o.status);
+        case 'all': return true;
+        default: return true;
       }
     });
   }, [tab, orders, advancedIds]);
@@ -73,10 +74,10 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: t('cashier.tabAll'),             value: orders.length,                                                          dark: false },
-          { label: t('cashier.tabPendingPayment'),  value: orders.filter((o) => STATUS_PENDING_PAYMENT.includes(o.status)).length, dark: false },
-          { label: t('cashier.tabReadyPickup'),     value: orders.filter((o) => STATUS_READY_PICKUP.includes(o.status)).length,    dark: false },
-          { label: t('cashier.tabCompleted'),       value: orders.filter((o) => STATUS_COMPLETED.includes(o.status)).length + advancedIds.size, dark: true },
+          { label: t('cashier.tabAll'), value: orders.length, dark: false },
+          { label: t('cashier.tabPendingPayment'), value: orders.filter((o) => STATUS_PENDING_PAYMENT.includes(o.status)).length, dark: false },
+          { label: t('cashier.tabReadyPickup'), value: orders.filter((o) => STATUS_READY_PICKUP.includes(o.status)).length, dark: false },
+          { label: t('cashier.tabCompleted'), value: orders.filter((o) => STATUS_COMPLETED.includes(o.status)).length + advancedIds.size, dark: true },
         ].map((s) => (
           <div
             key={s.label}
@@ -100,9 +101,8 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              tab === key ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === key ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             style={tab === key ? { backgroundColor: TEAL } : {}}
           >
             <Icon size={13} />
@@ -151,7 +151,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
                         {itemCount} {itemCount === 1 ? t('cashier.item') : t('cashier.items')}
                       </span>
                       <span className="font-semibold" style={{ color: NAVY }}>
-                        RWF {Number(o.total ?? 0).toLocaleString()}
+                        {formatCurrency(o.total)}
                       </span>
                       {isPaid && (
                         <span

@@ -24,12 +24,13 @@ import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { formatCurrency } from '@/lib/currency';
 
 const NAVY = '#1E4D8C';
 const TEAL = '#2D9B8A';
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  PENDING:  { bg: '#FEF3C7', text: '#92400E', label: 'Pending Review' },
+  PENDING: { bg: '#FEF3C7', text: '#92400E', label: 'Pending Review' },
   APPROVED: { bg: '#D1FAE5', text: '#065F46', label: 'Approved' },
   REJECTED: { bg: '#FEE2E2', text: '#991B1B', label: 'Rejected' },
 };
@@ -134,9 +135,9 @@ export default function SuperAdminPharmacyDetailPage() {
 
   // Registration number fields from the Prisma schema
   const registrationNumbers = [
-    { label: 'RDB Certificate Number',        value: pharmacy.rdbCertificate,       docType: 'rdb' },
-    { label: 'Pharmacy License Number',        value: pharmacy.pharmacyLicense,      docType: 'license' },
-    { label: 'Business Registration Number',   value: pharmacy.businessRegistration, docType: null },
+    { label: 'RDB Certificate Number', value: pharmacy.rdbCertificate, docType: 'rdb' },
+    { label: 'Pharmacy License Number', value: pharmacy.pharmacyLicense, docType: 'license' },
+    { label: 'Business Registration Number', value: pharmacy.businessRegistration, docType: null },
   ];
 
   return (
@@ -351,7 +352,7 @@ export default function SuperAdminPharmacyDetailPage() {
             <LocationPicker
               latitude={pharmacy.latitude}
               longitude={pharmacy.longitude}
-              onChange={() => {/* read-only view */}}
+              onChange={() => {/* read-only view */ }}
               label="Submitted GPS Coordinates"
               height="280px"
             />
@@ -475,7 +476,7 @@ export default function SuperAdminPharmacyDetailPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold" style={{ color: TEAL }}>
-                    {Number(order.total ?? 0).toLocaleString()} RWF
+                    {formatCurrency(order.total)}
                   </p>
                   <span className="text-xs text-gray-400">{order.status}</span>
                 </div>

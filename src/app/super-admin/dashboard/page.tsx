@@ -9,11 +9,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import LocationPicker from '@/components/shared/LocationPicker';
+import { formatCurrency } from '@/lib/currency';
 import {
   BuildingStorefrontIcon,
   UserGroupIcon,
@@ -171,7 +172,7 @@ export default function SuperAdminDashboard() {
     },
     {
       name: t('superAdmin.platformRevenue'),
-      value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
+      value: formatCurrency(analytics?.platformRevenue),
       icon: CurrencyDollarIcon,
       textColor: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -361,11 +362,10 @@ export default function SuperAdminDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    pharmacy.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${pharmacy.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
                     pharmacy.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
+                      'bg-red-100 text-red-700'
+                    }`}>
                     {pharmacy.status}
                   </span>
                   <button
@@ -452,7 +452,7 @@ export default function SuperAdminDashboard() {
                 <CurrencyDollarIcon className="w-5 h-5" />
                 <span className="text-sm">{t('superAdminPages.totalRevenue')}</span>
               </div>
-              <span className="text-xl font-bold">${analytics?.totalRevenue?.toLocaleString() || 0}</span>
+              <span className="text-xl font-bold">RWF {analytics?.totalRevenue?.toLocaleString() || 0}</span>
             </div>
           </div>
         </div>
@@ -514,7 +514,7 @@ export default function SuperAdminDashboard() {
               <LocationPicker
                 latitude={locationModal.latitude}
                 longitude={locationModal.longitude}
-                onChange={() => {/* read-only */}}
+                onChange={() => {/* read-only */ }}
                 label="Submitted GPS Location"
                 height="280px"
               />
