@@ -1,7 +1,7 @@
 'use client';
 import { useTranslation } from 'react-i18next';
 import { BellIcon, Bars3Icon, SunIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { useAuth } from '@/context/AuthContext';
 
 interface PharmacyTopbarProps {
@@ -11,18 +11,13 @@ interface PharmacyTopbarProps {
 }
 
 export default function PharmacyTopbar({ onMenuClick }: PharmacyTopbarProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const firstName = user?.profile?.firstName ?? '';
   const lastName  = user?.profile?.lastName  ?? '';
   const fullName  = [firstName, lastName].filter(Boolean).join(' ');
   const initials  = [firstName[0], lastName[0]].filter(Boolean).join('').toUpperCase();
-
-  const changeLanguage = (code: string) => {
-    i18n.changeLanguage(code);
-    localStorage.setItem('i18nextLng', code);
-  };
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
@@ -42,27 +37,7 @@ export default function PharmacyTopbar({ onMenuClick }: PharmacyTopbarProps) {
 
       {/* Right: language · sun · bell · user */}
       <div className="flex items-center gap-2 lg:gap-3">
-
-        {/* Language switcher */}
-        <div className="hidden md:flex items-center gap-1">
-          {SUPPORTED_LANGUAGES.map((lang, i) => (
-            <span key={lang.code} className="flex items-center">
-              <button
-                onClick={() => changeLanguage(lang.code)}
-                className={`text-sm font-medium transition-colors px-0.5 ${
-                  i18n.language === lang.code
-                    ? 'text-gray-900 font-semibold'
-                    : 'text-gray-400 hover:text-gray-700'
-                }`}
-              >
-                {lang.label}
-              </button>
-              {i < SUPPORTED_LANGUAGES.length - 1 && (
-                <span className="text-gray-300 mx-1 select-none">|</span>
-              )}
-            </span>
-          ))}
-        </div>
+        <LanguageSwitcher />
 
         {/* Sun icon */}
         <button 
