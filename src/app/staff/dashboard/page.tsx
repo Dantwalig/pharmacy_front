@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { useAuth } from '@/context/AuthContext';
 import {
   ClockIcon,
@@ -15,11 +16,6 @@ import {
   ShoppingBagIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-const CLOCK_IN_COLOR  = '#007434';
-const CLOCK_OUT_COLOR = '#08007C';
 
 interface CurrentAttendance {
   id: string;
@@ -39,14 +35,6 @@ interface StaffProfile {
   status: string;
 }
 
-const STATUS_INFO_COLORS: Record<string, { color: string; dot: string }> = {
-  PENDING:     { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', dot: 'bg-yellow-400'  },
-  APPROVED:    { color: 'bg-green-50 text-green-700 border-green-200',    dot: 'bg-green-400'   },
-  CLOCKED_OUT: { color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-400'  },
-  COMPLETED:   { color: 'bg-blue-50 text-blue-700 border-blue-200',       dot: 'bg-blue-400'    },
-  REJECTED:    { color: 'bg-red-50 text-red-700 border-red-200',          dot: 'bg-red-400'     },
-};
-
 function HeartbeatIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -59,12 +47,12 @@ export default function StaffDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const STATUS_INFO: Record<string, { label: string; color: string; dot: string }> = {
-    PENDING:     { label: t('staff.statusWaitingApproval'),                          ...STATUS_INFO_COLORS.PENDING     },
-    APPROVED:    { label: t('staff.statusActiveShift'),                              ...STATUS_INFO_COLORS.APPROVED    },
-    CLOCKED_OUT: { label: t('staff.statusClockOutPending'),                          ...STATUS_INFO_COLORS.CLOCKED_OUT },
-    COMPLETED:   { label: t('dashboard.completed') ?? 'Shift completed',             ...STATUS_INFO_COLORS.COMPLETED   },
-    REJECTED:    { label: t('staff.statusRejected'),                                 ...STATUS_INFO_COLORS.REJECTED    },
+  const SHIFT_STATUS_LABELS: Record<string, string> = {
+    PENDING:     t('staff.statusWaitingApproval'),
+    APPROVED:    t('staff.statusActiveShift'),
+    CLOCKED_OUT: t('staff.statusClockOutPending'),
+    COMPLETED:   t('dashboard.completed') ?? 'Shift completed',
+    REJECTED:    t('staff.statusRejected'),
   };
 
   const [profile, setProfile]                 = useState<StaffProfile | null>(null);
@@ -119,20 +107,13 @@ export default function StaffDashboardPage() {
         [...allOrders]
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5)
-          .map((o: any) => {
-            let statusColor = 'text-gray-600 bg-gray-50 ring-gray-200';
-            if (['COMPLETED', 'DELIVERED'].includes(o.status)) statusColor = 'text-green-600 bg-green-50 ring-green-200';
-            if (['PENDING'].includes(o.status))                statusColor = 'text-yellow-600 bg-yellow-50 ring-yellow-200';
-            if (['CANCELLED'].includes(o.status))              statusColor = 'text-red-600 bg-red-50 ring-red-200';
-            return {
-              id:     o.id.slice(0, 8).toUpperCase(),
-              type:   o.prescription ? t('staff.prescription') : t('staff.order'),
-              amount: `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
-              time:   new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              status: o.status.replace(/_/g, ' '),
-              color:  statusColor,
-            };
-          })
+          .map((o: any) => ({
+            id:        o.id.slice(0, 8).toUpperCase(),
+            type:      o.prescription ? t('staff.prescription') : t('staff.order'),
+            amount:    `${t('common.currency')} ${Number(o.total || 0).toLocaleString()}`,
+            time:      new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            rawStatus: o.status,
+          }))
       );
     } finally {
       setLoading(false);
@@ -173,7 +154,7 @@ export default function StaffDashboardPage() {
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  const shiftInfo      = todayShift ? STATUS_INFO[todayShift.status] : null;
+  const shiftLabel     = todayShift ? SHIFT_STATUS_LABELS[todayShift.status] : null;
   const canClockOut    = todayShift?.status === 'APPROVED';
   const clockedIn      = !!todayShift && todayShift.status !== 'REJECTED';
 
@@ -281,15 +262,14 @@ export default function StaffDashboardPage() {
           {!clockedIn ? (
             <div className="flex flex-col items-center text-center py-4">
               <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: '#F0FBF9' }}>
-                <ClockIcon className="w-7 h-7" style={{ color: TEAL }} />
+                <ClockIcon className="w-7 h-7 text-brand-teal" />
               </div>
               <p className="text-gray-700 font-medium text-sm">{t('dashboard.notClockedIn')}</p>
               <p className="text-gray-400 text-xs mt-1 mb-5">{t('dashboard.clickToStart')}</p>
               <button
                 onClick={handleClockIn}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: CLOCK_IN_COLOR }}
+                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 bg-green-700"
                 aria-label="Clock in to start shift"
               >
                 {actionLoading ? spinner : <ClockIcon className="w-4 h-4" />}
@@ -298,17 +278,14 @@ export default function StaffDashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {shiftInfo && (
-                <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border ${shiftInfo.color}`}>
-                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${shiftInfo.dot}`} />
-                  <span className="font-medium text-sm">{shiftInfo.label}</span>
-                </div>
+              {todayShift && shiftLabel && (
+                <StatusBadge status={todayShift.status} label={shiftLabel} size="md" />
               )}
               <div className="bg-gray-50 rounded-xl p-4">
                 <p className="text-xs text-gray-500 mb-1">{t('staff.clockIn')}</p>
                 <p className="text-xl font-bold text-gray-900">{formatTime(todayShift?.clockInTime)}</p>
                 {todayShift?.clockInApprover && (
-                  <p className="text-xs mt-1" style={{ color: TEAL }}>
+                  <p className="text-xs mt-1 text-brand-teal">
                     {t('dashboard.approvedBy', { name: todayShift.clockInApprover.firstName })}
                   </p>
                 )}
@@ -344,7 +321,7 @@ export default function StaffDashboardPage() {
           {!canClockOut ? (
             <div className="flex flex-col items-center text-center py-4">
               <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: '#EEF2FB' }}>
-                <ClockIcon className="w-7 h-7" style={{ color: NAVY }} />
+                <ClockIcon className="w-7 h-7 text-brand-navy" />
               </div>
               <p className="text-gray-700 font-medium text-sm">
                 {clockedIn ? t('staff.statusClockOutPending') : t('staffPages.notClockedOut')}
@@ -352,8 +329,7 @@ export default function StaffDashboardPage() {
               <p className="text-gray-400 text-xs mt-1 mb-5">{t('staffPages.clockOutAvailable')}</p>
               <button
                 disabled
-                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold opacity-40 cursor-not-allowed"
-                style={{ backgroundColor: CLOCK_OUT_COLOR }}
+                className="inline-flex items-center gap-2 px-7 h-[49px] rounded-xl text-white text-sm font-semibold opacity-40 cursor-not-allowed bg-indigo-900"
               >
                 <ClockIcon className="w-4 h-4" />
                 {t('staff.clockOut')}
@@ -373,8 +349,7 @@ export default function StaffDashboardPage() {
               <button
                 onClick={handleClockOut}
                 disabled={actionLoading}
-                className="w-full inline-flex items-center justify-center gap-2 h-[49px] rounded-xl text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: CLOCK_OUT_COLOR }}
+                className="w-full inline-flex items-center justify-center gap-2 h-[49px] rounded-xl text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity bg-indigo-900"
                 aria-label="Clock out to end shift"
               >
                 {actionLoading ? spinner : <ClockIcon className="w-4 h-4" />}
@@ -392,7 +367,7 @@ export default function StaffDashboardPage() {
             <ClockIcon className="w-5 h-5 text-gray-400" />
             <h2 className="font-bold text-gray-900">{t('dashboard.recentActivity')}</h2>
           </div>
-          <Link href="/staff/orders" className="text-sm font-medium hover:underline" style={{ color: TEAL }}>
+          <Link href="/staff/orders" className="text-sm font-medium hover:underline text-brand-teal">
             {t('common.viewAll')}
           </Link>
         </div>
@@ -415,9 +390,7 @@ export default function StaffDashboardPage() {
                   <td className="px-6 py-4 text-gray-500">{activity.time}</td>
                   <td className="px-6 py-4 text-right font-medium text-gray-900">{activity.amount}</td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset ${activity.color}`}>
-                      {activity.status}
-                    </span>
+                    <StatusBadge status={activity.rawStatus} />
                   </td>
                 </tr>
               ))}

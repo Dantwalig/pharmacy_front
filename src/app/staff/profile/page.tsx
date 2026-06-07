@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   PencilSquareIcon,
   DocumentTextIcon,
@@ -191,10 +192,11 @@ export default function StaffProfilePage() {
           <p className="font-bold text-gray-900 text-base">{profile.firstName} {profile.lastName}</p>
           <p className="text-gray-400 text-sm mt-0.5">{roleLabel}</p>
 
-          <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            {isApproved ? t('common.active') : profile.status}
-          </span>
+          <StatusBadge
+            status={isApproved ? 'ACTIVE' : profile.status}
+            label={isApproved ? t('common.active') : profile.status}
+            className="mt-2"
+          />
 
           <div className="mt-5 w-full space-y-3 text-sm">
             <div>
@@ -279,12 +281,10 @@ export default function StaffProfilePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-gray-900 text-base">{t('pharmacyOwner.registrationDetails')}</h2>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                {isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
-              </span>
+              <StatusBadge
+                status={isApproved ? 'APPROVED' : 'PENDING'}
+                label={isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
+              />
             </div>
 
             <div className="space-y-0 text-sm divide-y divide-gray-50">

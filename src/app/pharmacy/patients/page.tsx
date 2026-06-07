@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { isPatientEnabled } from '@/lib/features';
+import StatusBadge from '@/components/shared/StatusBadge';
 
 interface Patient {
   id: string;
@@ -35,7 +36,7 @@ interface Patient {
   phone: string;
   totalOrders: number;
   totalSpent: number;
-  lastOrderDate: string;
+  lastOrderDate: string | null;
   gender: string;
   dateOfBirth: string;
   address: string;
@@ -107,9 +108,33 @@ export default function PharmacyPatientsPage() {
   const fetchPatientsData = useCallback(
     async (signal: AbortSignal) => {
       const res = await api.get('/pharmacies/dashboard/patients', { signal });
+     
+      const raw = res.data?.data ?? res.data;
+      const totalPatients = raw.totalPatients ?? 0;
+      const normalizedPatients = (raw.patients ?? []).map((p: any) => ({
+        ...p,
+        email: p.email ?? '',
+        phone: p.phone ?? '',
+        gender: p.gender ?? '—',
+        dateOfBirth: p.dateOfBirth ?? '—',
+        address: p.address ?? '—',
+        city: p.city ?? '—',
+        postalCode: p.postalCode ?? '—',
+        registeredDate: p.registeredDate ?? p.lastOrderDate ?? '—',
+        preferredBranch: p.preferredBranch ?? '—',
+        memberStatus: p.memberStatus ?? 'ACTIVE',
+        prescriptions: p.prescriptions ?? [], // Workaround: Backend provides no prescriptions yet
+        orders: (p.orders ?? []).map((o: any) => ({
+          ...o,
+          // Workaround to fallback 
+          orderNumber: o.orderNumber ?? o.id?.slice(0, 8) ?? '',
+          itemsSummary: o.itemsSummary ?? `${o.itemCount ?? 0} item(s)`,
+        })),
+      }));
+     
       return {
         patients: res.data.patients,
-        totalPatients: res.data.totalPatients,
+        totalPatients,
       };
     },
     []
@@ -181,14 +206,14 @@ export default function PharmacyPatientsPage() {
   if (!isPatientEnabled()) {
     return (
       <div className="space-y-6">
-        <div className="bg-linear-to-r from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] rounded-2xl shadow-lg p-6 lg:p-8 text-white">
+        <div className="bg-linear-to-r from-brand-navy via-[#2563a8] to-brand-navy-dark rounded-2xl shadow-lg p-6 lg:p-8 text-white">
           <h1 className="text-2xl lg:text-3xl font-bold mb-2">{t('patients.patientsAndCustomers')}</h1>
           <p className="text-blue-100 text-sm lg:text-base">{t('patients.orderIntegration')}</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-12 lg:p-20 text-center">
           <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <LockClosedIcon className="w-10 h-10 text-[#1E4D8C]" />
+            <LockClosedIcon className="w-10 h-10 text-brand-navy" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('patients.featureArrivingSoon')}</h2>
           <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
@@ -393,15 +418,12 @@ export default function PharmacyPatientsPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-extrabold text-gray-900 mb-2 text-lg">{order.total.toLocaleString()} <span className="text-sm font-bold">RWF</span></p>
-                  <span className={`text-xs px-3 py-1 rounded-full font-bold inline-block ${
-                    order.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border border-green-100' :
-                    order.status === 'ACCEPTED' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                    'bg-orange-50 text-orange-700 border border-orange-100'
-                  }`}>
-                    {order.status === 'COMPLETED' ? t('patientPageUI.completed') || 'Completed' :
-                     order.status === 'ACCEPTED' ? t('patientPageUI.accepted') || 'Accepted' : 
-                     t('patientPageUI.pending') || 'Pending'}
-                  </span>
+                  <StatusBadge
+                    status={order.status}
+                    label={order.status === 'COMPLETED' ? t('patientPageUI.completed') || 'Completed' :
+                           order.status === 'ACCEPTED' ? t('patientPageUI.accepted') || 'Accepted' :
+                           t('patientPageUI.pending') || 'Pending'}
+                  />
                 </div>
               </div>
             ))}
@@ -719,7 +741,7 @@ export default function PharmacyPatientsPage() {
                   </td>
                   <td className="px-6 py-5 text-gray-500 font-semibold">{patient.phone}</td>
                   <td className="px-6 py-5 font-black text-gray-900 text-base">{patient.totalOrders}</td>
-                  <td className="px-6 py-5 text-gray-900 font-bold">{new Date(patient.lastOrderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td className="px-6 py-5 text-gray-900 font-bold">{patient.lastOrderDate ? (new Date(patient.lastOrderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) ) : ('—')} </td>
                   <td className="px-6 py-5 font-black text-blue-600 text-base">{patient.totalSpent.toLocaleString()}</td>
                   <td className="px-6 py-5">
                     <button 

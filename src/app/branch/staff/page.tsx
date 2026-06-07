@@ -1,202 +1,182 @@
-// frontend/src/app/branch/staff/page.tsx
-
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { getErrorMessage } from '@/lib/errorHandler';
+import api from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import {
-  UserGroupIcon,
-  PlusIcon,
-  ArrowPathIcon,
-  TrashIcon,
-  EyeIcon,
-} from '@heroicons/react/24/outline';
+import { PlusIcon, EyeIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { getErrorMessage } from '@/lib/errorHandler';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
+const ROLE_COLORS: Record<string, string> = {
+  CASHIER:    'bg-blue-100 text-blue-700',
+  PHARMACIST: 'bg-purple-100 text-purple-700',
+  NURSE:      'bg-pink-100 text-pink-700',
+};
 
 interface StaffMember {
   id: string;
   firstName: string;
   lastName: string;
   phone?: string;
-  nationalId?: string;
-  gender?: string;
   status: 'ACTIVE' | 'INACTIVE';
-  createdAt: string;
   user: { email: string; role: string };
   permissions?: { permissions: string[] };
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  PHARMACIST: 'bg-violet-100 text-violet-800',
-  CASHIER:    'bg-blue-100 text-blue-800',
-  NURSE:      'bg-pink-100 text-pink-800',
-};
-
 export default function BranchStaffPage() {
-  const { t } = useTranslation();
+  const { t }  = useTranslation();
   const router = useRouter();
-  const [actionId, setActionId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data, loading, refetch } = useFetch<StaffMember[]>(
-    async (signal) => {
-      const res = await api.get('/staff', { signal });
-      return res.data;
-    },
-    []
-  ) as any;
+  const fetchStaff = useCallback(async (signal: AbortSignal) => {
+    const res = await api.get('/staff', { signal });
+    return Array.isArray(res.data) ? res.data : [];
+  }, []);
 
-  const staff = data ?? [];
+  const { data: staff, loading, error, refetch } = useFetch<StaffMember[]>(fetchStaff, []);
 
-  const handleResendCredentials = async (staffId: string, email: string) => {
-    if (!confirm(t('staffMgmt.resendConfirm', { email }))) return;
-    setActionId(staffId + '-resend');
+  useEffect(() => { if (error) toast.error(t('errors.failedToLoadStaff')); }, [error, t]);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Remove ${name} from the branch?`)) return;
+    setDeletingId(id);
     try {
-      await api.post(`/staff/${staffId}/resend-credentials`); // POST /staff/:id/resend-credentials
-      toast.success(`Credentials resent to ${email}`);
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const handleDelete = async (staffId: string, name: string) => {
-    if (!confirm(t('staffMgmt.deleteConfirm', { name }))) return;
-    setActionId(staffId + '-delete');
-    try {
-      await api.delete(`/staff/${staffId}`); // DELETE /staff/:id
-      toast.success(t('success.staffMemberRemoved'));
+      await api.delete(`/staff/${id}`);
+      toast.success(`${name} removed`);
       refetch();
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     } finally {
-      setActionId(null);
+      setDeletingId(null);
     }
   };
 
   if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
 
-  return (
-    <div className="space-y-6">
-    {/* Header */}
-      <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('branch.staff')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{staff.length !== 1 ? t('staffMgmt.memberCountPlural', { count: staff.length }) : t('staffMgmt.memberCountSingular', { count: staff.length })}</p>
-      </div>
-      <button
-          onClick={() => router.push('/branch/staff/new')}
-          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-          style={{ backgroundColor: TEAL }}
-        >
-        <PlusIcon className="w-4 h-4" />
-        {t('staffMgmt.addStaff')}
-        </button>
-    </div>
+  const list = staff ?? [];
 
-    {/* Staff List */}
-      {staff.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-16 text-center">
-        <UserGroupIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500 font-medium">{t('staffMgmt.noStaffYet')}</p>
-        <p className="text-gray-400 text-sm mt-1">{t('staffMgmt.addFirst')}</p>
+  return (
+    <div className="space-y-5">
+      {/* Hero */}
+      <div className="rounded-2xl p-6 bg-[#EBF4FF] flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1E3A5F]">{t('staffMgmt.staffManagement')}</h1>
+          <p className="text-sm font-medium mt-1" style={{ color: '#29ABE2' }}>
+            {list.length} {t('staffMgmt.membersInBranch')}
+          </p>
+        </div>
         <button
-            onClick={() => router.push('/branch/staff/new')}
-            className="mt-4 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{ backgroundColor: TEAL }}
-          >
-          {t('staffMgmt.addStaffMember')}
-          </button>
+          onClick={() => router.push('/branch/staff/new')}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-sm transition-opacity hover:opacity-90 shrink-0"
+          style={{ backgroundColor: '#29ABE2' }}
+        >
+          <PlusIcon className="w-4 h-4" />
+          {t('staffMgmt.addStaff')}
+        </button>
       </div>
-    ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.name')}</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('form.role')}</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">{t('common.phone')}</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">{t('staffMgmt.permissions')}</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {staff.map((member: any) => (
-                <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                <td className="px-6 py-4">
-                  <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                    {member.firstName} {member.lastName}
-                    </p>
-                  <p className="text-xs text-gray-500">{member.user.email}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.user.role] || 'bg-gray-100 text-gray-700'}`}>
-                    {member.user.role}
-                    </span>
-                </td>
-                <td className="px-6 py-4 hidden md:table-cell">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{member.phone || '—'}</p>
-                </td>
-                <td className="px-6 py-4 hidden lg:table-cell">
-                  <p className="text-xs text-gray-500">
-                    {t('staffMgmt.permissionCount', { count: member.permissions?.permissions?.length ?? 0 })}
-                    </p>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      member.status === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                    {member.status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                    </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                        onClick={() => router.push(`/branch/staff/${member.id}`)}
-                        className="p-1.5 rounded-lg transition-all"
-                        aria-label="View staff details"
-                        style={{ color: TEAL }}
-                        title={t('staffMgmt.viewDetails')}
-                      >
-                      <EyeIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => handleResendCredentials(member.id, member.user.email)}
-                        disabled={!!actionId}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
-                        aria-label="Resend credentials"
-                        title={t('staffMgmt.resendCredentials')}
-                      >
-                      <ArrowPathIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
-                        disabled={!!actionId}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        // aria-label="Delete staff member"
-                        title={t('staffMgmt.removeStaffMember')}
-                      >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            </tbody>
-        </table>
+
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {list.length === 0 ? (
+          <div className="py-16 text-center text-gray-400 text-sm">
+            {t('staffMgmt.noStaffFound')}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {['NAME', 'ROLE', 'PHONE', 'PERMISSIONS', 'STATUS', 'ACTIONS'].map(h => (
+                    <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 tracking-wider">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {list.map(s => {
+                  const permCount = s.permissions?.permissions?.length ?? 0;
+                  return (
+                    <tr key={s.id} className="hover:bg-gray-50/60 transition-colors">
+                      {/* Name + email */}
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-gray-900">
+                          {s.firstName} {s.lastName}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">{s.user.email}</p>
+                      </td>
+
+                      {/* Role badge */}
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${ROLE_COLORS[s.user.role] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {s.user.role}
+                        </span>
+                      </td>
+
+                      {/* Phone */}
+                      <td className="px-6 py-4 text-gray-600">
+                        {s.phone ?? '—'}
+                      </td>
+
+                      {/* Permissions count */}
+                      <td className="px-6 py-4 text-gray-600">
+                        {permCount} {t('staffMgmt.permissions')}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          s.status === 'ACTIVE'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {s.status}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {/* View */}
+                          <button
+                            onClick={() => router.push(`/branch/staff/${s.id}`)}
+                            className="p-1.5 rounded-lg border border-gray-200 text-[#29ABE2] hover:bg-blue-50 transition-colors"
+                            title={t('common.view')}
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </button>
+
+                          {/* Reset / reassign (placeholder — navigates to detail) */}
+                          <button
+                            onClick={() => router.push(`/branch/staff/${s.id}`)}
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+                            title={t('staffMgmt.resetPassword')}
+                          >
+                            <ArrowPathIcon className="w-4 h-4" />
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleDelete(s.id, `${s.firstName} ${s.lastName}`)}
+                            disabled={deletingId === s.id}
+                            className="p-1.5 rounded-lg border border-gray-200 text-red-400 hover:bg-red-50 transition-colors disabled:opacity-50"
+                            title={t('staffMgmt.remove')}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    )}
     </div>
-);
+  );
 }

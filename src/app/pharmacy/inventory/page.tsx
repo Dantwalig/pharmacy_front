@@ -18,6 +18,7 @@ export default function PharmacyInventoryPage() {
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchTerm, setSearchTerm] = useState('');
+  
 
 
 const { data, loading, error } = useFetch<any[]>(
@@ -172,7 +173,7 @@ useEffect(() => {
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.dosage || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.dosage ?? med.chemicalName ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{med.manufacturer || '—'}</td>
                     <td className="px-4 py-3 font-semibold text-gray-600 whitespace-nowrap">{Number(price).toLocaleString()} RWF</td>
                     <td className="px-4 py-3">

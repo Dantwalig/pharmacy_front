@@ -2,13 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Package, CheckCircle2, ListOrdered, User, ShoppingCart } from 'lucide-react';
+import { CreditCardIcon, CubeIcon, CheckCircleIcon, QueueListIcon, UserIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import CashierPOSModal from './CashierPOSModal';
 import { useAuth } from '@/context/AuthContext';
 import { Order } from '@/types';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 type CashierTab = 'pending_payment' | 'ready_pickup' | 'completed' | 'all';
 
@@ -29,10 +26,10 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
   const [advancedIds, setAdvancedIds] = useState<Set<string>>(new Set());
 
   const tabs: { key: CashierTab; label: string; icon: React.ElementType }[] = [
-    { key: 'pending_payment', label: t('cashier.tabPendingPayment'), icon: CreditCard },
-    { key: 'ready_pickup',    label: t('cashier.tabReadyPickup'),    icon: Package },
-    { key: 'completed',       label: t('cashier.tabCompleted'),      icon: CheckCircle2 },
-    { key: 'all',             label: t('cashier.tabAll'),            icon: ListOrdered },
+    { key: 'pending_payment', label: t('cashier.tabPendingPayment'), icon: CreditCardIcon },
+    { key: 'ready_pickup',    label: t('cashier.tabReadyPickup'),    icon: CubeIcon },
+    { key: 'completed',       label: t('cashier.tabCompleted'),      icon: CheckCircleIcon },
+    { key: 'all',             label: t('cashier.tabAll'),            icon: QueueListIcon },
   ];
 
   const filtered = useMemo(() => {
@@ -57,7 +54,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: TEAL }} />
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin border-brand-teal" />
       </div>
     );
   }
@@ -65,7 +62,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('cashier.ordersTitle')}</h1>
         <p className="mt-1 text-white/70">{t('cashier.ordersSubtitle')}</p>
       </div>
@@ -80,15 +77,14 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
         ].map((s) => (
           <div
             key={s.label}
-            className="rounded-2xl p-5 flex items-center justify-between"
-            style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+            className={`rounded-2xl p-5 flex items-center justify-between ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
           >
             <div>
               <p className="text-white/80 text-sm">{s.label}</p>
               <p className="text-white text-2xl font-bold mt-1">{s.value}</p>
             </div>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/15">
-              <ShoppingCart size={20} className="text-white" />
+              <ShoppingCartIcon className="w-5 h-5 text-white" />
             </div>
           </div>
         ))}
@@ -101,11 +97,10 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
             key={key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              tab === key ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              tab === key ? 'bg-brand-teal text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
-            style={tab === key ? { backgroundColor: TEAL } : {}}
           >
-            <Icon size={13} />
+            <Icon className="w-[13px] h-[13px]" />
             {label}
           </button>
         ))}
@@ -114,7 +109,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       {/* Orders list */}
       {filtered.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-          <ShoppingCart size={48} className="text-gray-200 mx-auto mb-3" />
+          <ShoppingCartIcon className="w-12 h-12 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">{t('cashier.noOrders')}</p>
         </div>
       ) : (
@@ -132,8 +127,8 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
                 <div className="p-4 lg:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${NAVY}1a` }}>
-                        <User size={16} style={{ color: NAVY }} />
+                      <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 bg-brand-navy/10">
+                        <UserIcon className="w-4 h-4 text-brand-navy" />
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-gray-900 truncate">
@@ -147,16 +142,15 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
 
                     <div className="flex items-center gap-3 text-sm text-gray-500 flex-wrap">
                       <span className="inline-flex items-center gap-1">
-                        <Package size={13} />
+                        <CubeIcon className="w-[13px] h-[13px]" />
                         {itemCount} {itemCount === 1 ? t('cashier.item') : t('cashier.items')}
                       </span>
-                      <span className="font-semibold" style={{ color: NAVY }}>
+                      <span className="font-semibold text-brand-navy">
                         RWF {Number(o.total ?? 0).toLocaleString()}
                       </span>
                       {isPaid && (
                         <span
-                          className="px-2 py-0.5 rounded-full text-xs font-medium border"
-                          style={{ backgroundColor: `${TEAL}1a`, color: TEAL, borderColor: `${TEAL}4d` }}
+                          className="px-2 py-0.5 rounded-full text-xs font-medium border bg-brand-teal/10 text-brand-teal border-brand-teal/30"
                         >
                           {t('cashier.paid')}
                         </span>
@@ -167,10 +161,9 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
                   {isPaymentTab && !isPaid && (
                     <button
                       onClick={() => setActiveOrder(o)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 shrink-0"
-                      style={{ backgroundColor: TEAL }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 shrink-0 bg-brand-teal"
                     >
-                      <CreditCard size={15} />
+                      <CreditCardIcon className="w-[15px] h-[15px]" />
                       {t('cashier.processPayment')}
                     </button>
                   )}

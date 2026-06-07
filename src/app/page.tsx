@@ -57,9 +57,8 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
         <div className="text-center">
-          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{ borderColor: '#2D9B8A', borderTopColor: 'transparent' }} />
-          <p style={{ color: '#1E4D8C' }} className="font-medium">Loading your dashboard...</p>
+          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4 border-brand-teal border-t-transparent" />
+          <p className="font-medium text-brand-navy">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -69,9 +68,8 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
         <div className="text-center">
-          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{ borderColor: '#2D9B8A', borderTopColor: 'transparent' }} />
-          <p style={{ color: '#1E4D8C' }} className="font-medium">Redirecting you to the portal...</p>
+          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4 border-brand-teal border-t-transparent" />
+          <p className="font-medium text-brand-navy">Redirecting you to the portal...</p>
         </div>
       </div>
     );
@@ -83,18 +81,16 @@ export default function Home() {
       {/* NAV */}
       <nav className="flex items-center justify-between px-6 lg:px-12 py-4 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div>
-          <span className="text-2xl font-extrabold" style={{ color: '#1E4D8C' }}>Evuze</span>
-          <p className="text-xs font-medium" style={{ color: '#2D9B8A' }}>Healthcare Platform</p>
+          <span className="text-2xl font-extrabold text-brand-navy">Evuze</span>
+          <p className="text-xs font-medium text-brand-teal">Healthcare Platform</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login"
-            className="px-5 py-2 rounded-lg font-semibold text-sm border-2 transition-all hover:bg-gray-50"
-            style={{ color: '#1E4D8C', borderColor: '#1E4D8C' }}>
+            className="px-5 py-2 rounded-lg font-semibold text-sm border-2 transition-all hover:bg-gray-50 text-brand-navy border-brand-navy">
             Login
           </Link>
           <Link href="/signup"
-            className="px-5 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90 shadow-md"
-            style={{ background: '#2D9B8A' }}>
+            className="px-5 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90 shadow-md bg-brand-teal">
             Sign Up
           </Link>
         </div>
@@ -104,23 +100,22 @@ export default function Home() {
 
         {/* HERO */}
         <section className="flex flex-col items-center justify-center text-center px-6 pt-20 pb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border"
-            style={{ background: '#EAF4FF', color: '#1E4D8C', borderColor: '#BDD9FF' }}>
-            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#2D9B8A' }} />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border text-brand-navy border-[#BDD9FF]"
+            style={{ background: '#EAF4FF' }}>
+            <span className="w-2 h-2 rounded-full animate-pulse bg-brand-teal" />
             {patientEnabled ? "Rwanda's Healthcare Platform" : "Rwanda's Pharmacy Management Solution"}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 max-w-4xl"
-            style={{ color: '#1a2e4a' }}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 max-w-4xl text-brand-navy-dark">
             {patientEnabled ? (
               <>
                 Connecting Patients with{' '}
-                <span style={{ color: '#2D9B8A' }}>Nearby Pharmacies</span>
+                <span className="text-brand-teal">Nearby Pharmacies</span>
               </>
             ) : (
               <>
                 Empowering Pharmacies with{' '}
-                <span style={{ color: '#2D9B8A' }}>Modern Management</span>
+                <span className="text-brand-teal">Modern Management</span>
               </>
             )}
           </h1>
@@ -133,16 +128,14 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="/signup"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white text-base shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5"
-              style={{ background: '#2D9B8A' }}>
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white text-base shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5 bg-brand-teal">
               {patientEnabled ? "Get Started" : "Register Your Pharmacy"}
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </Link>
             <Link href="/login"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base border-2 transition-all hover:bg-gray-50"
-              style={{ color: '#1E4D8C', borderColor: '#d1dff5' }}>
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base border-2 transition-all hover:bg-gray-50 text-brand-navy border-[#d1dff5]">
               Login
             </Link>
           </div>
@@ -150,7 +143,7 @@ export default function Home() {
 
 
         {/* WHY CHOOSE EVUZE */}
-        <section style={{ background: '#1E4D8C' }} className="py-20 px-6">
+        <section className="py-20 px-6 bg-brand-navy">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-14">Why Choose Evuze?</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
@@ -186,7 +179,7 @@ export default function Home() {
 
         {/* CTA */}
         <section className="py-16 px-6 text-center bg-white">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: '#1a2e4a' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-brand-navy-dark">
             Ready to get started?
           </h2>
           <p className="text-gray-500 mb-8 max-w-md mx-auto">
@@ -197,14 +190,12 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {patientEnabled && (
               <Link href="/signup"
-                className="px-7 py-3 rounded-xl font-bold text-white text-sm shadow-md transition-all hover:opacity-90"
-                style={{ background: '#2D9B8A' }}>
+                className="px-7 py-3 rounded-xl font-bold text-white text-sm shadow-md transition-all hover:opacity-90 bg-brand-teal">
                 I'm a Patient
               </Link>
             )}
             <Link href="/signup"
-              className="px-7 py-3 rounded-xl font-bold text-sm border-2 transition-all hover:bg-blue-50"
-              style={{ color: '#1E4D8C', borderColor: '#1E4D8C' }}>
+              className="px-7 py-3 rounded-xl font-bold text-sm border-2 transition-all hover:bg-blue-50 text-brand-navy border-brand-navy">
               {patientEnabled ? "I'm a Pharmacy" : "Register Your Pharmacy"}
             </Link>
           </div>
