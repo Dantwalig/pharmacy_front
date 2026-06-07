@@ -37,7 +37,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
 
   return (
     <aside className={`
-      w-64 bg-linear-to-b from-[#1E4D8C] via-[#1a3d6f] to-[#0f2444] text-white
+      w-64 bg-linear-to-b from-brand-navy via-brand-navy-dark to-[#0f2444] text-white
       fixed left-0 top-0 bottom-0 shadow-2xl z-40 flex flex-col
       transition-transform duration-300
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -64,7 +64,7 @@ export default function PatientSidebar({ open = false, onClose }: PatientSidebar
           return (
             <Link key={item.id} href={item.href} onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive ? 'bg-[#2D9B8A] text-white font-semibold shadow-lg' : 'hover:bg-white/10 hover:translate-x-1'
+                isActive ? 'bg-brand-teal text-white font-semibold shadow-lg' : 'hover:bg-white/10 hover:translate-x-1'
               }`}
             >
               <Icon className="w-5 h-5 shrink-0" />

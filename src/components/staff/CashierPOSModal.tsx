@@ -1,14 +1,12 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, ShieldCheck, Banknote, Receipt, Loader2, X } from 'lucide-react';
+import { CheckCircleIcon, ShieldCheckIcon, BanknotesIcon, DocumentTextIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 interface OrderItem {
   quantity: number;
@@ -20,7 +18,13 @@ export interface CashierOrder {
   id: string;
   status: string;
   total: number;
-  patient: { firstName: string; lastName: string };
+  patientPayment?: number;
+  patient: {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    user?: { phone?: string };
+  };
   orderItems: OrderItem[];
 }
 
@@ -42,12 +46,8 @@ interface CashierPOSModalProps {
   onAdvance: (orderId: string) => void;
 }
 
-import { formatCurrency } from '@/lib/currency';
-
-// Stub until backend ships POST /payments/record
-async function mockRecordPayment(payload: object): Promise<{ receiptNumber: string }> {
-  await new Promise((r) => setTimeout(r, 800));
-  return { receiptNumber: `RCP-${Date.now().toString().slice(-6)}` };
+function fmt(n: number) {
+  return `RWF ${Number(n ?? 0).toLocaleString()}`;
 }
 
 export default function CashierPOSModal({
@@ -65,6 +65,7 @@ export default function CashierPOSModal({
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = useState('');
   const [reference, setReference] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [insuranceProvider, setInsuranceProvider] = useState('');
   const [policyNumber, setPolicyNumber] = useState('');
   const [notes, setNotes] = useState('');
@@ -80,6 +81,7 @@ export default function CashierPOSModal({
         setMethod('cash');
         setAmountReceived('');
         setReference('');
+        setPhoneNumber('');
         setInsuranceProvider('');
         setPolicyNumber('');
         setNotes('');
@@ -87,10 +89,12 @@ export default function CashierPOSModal({
         setReceipt(null);
       }, 200);
       return () => clearTimeout(timer);
+    } else if (order) {
+      setPhoneNumber(order.patient.phone || order.patient.user?.phone || '');
     }
-  }, [open]);
+  }, [open, order]);
 
-  const totalDue = order?.total ?? 0;
+  const totalDue = order ? (order.patientPayment ?? order.total) : 0;
   const change = useMemo(() => {
     if (method !== 'cash') return 0;
     const recv = Number(amountReceived);
@@ -125,6 +129,9 @@ export default function CashierPOSModal({
     if (method === 'insurance') {
       return insuranceProvider.trim().length > 0 && policyNumber.trim().length > 0;
     }
+    if (method === 'mtn_momo' || method === 'airtel_money') {
+      return phoneNumber.trim().length > 0;
+    }
     return true;
   })();
 
@@ -134,16 +141,17 @@ export default function CashierPOSModal({
     try {
       const payload = {
         orderId: order.id,
-        method: method.toUpperCase(),
-        amountReceived: method === 'cash' ? Number(amountReceived) : undefined,
-        referenceNumber: reference || undefined,
+        paymentMethod: method.toUpperCase(),
+        amountReceived: method === 'cash' ? Number(amountReceived) : totalDue,
+        phoneNumber: (method === 'mtn_momo' || method === 'airtel_money') ? phoneNumber : undefined,
         insuranceProvider: method === 'insurance' ? insuranceProvider : undefined,
         insurancePolicyNumber: method === 'insurance' ? policyNumber : undefined,
+        reference: reference || undefined,
         notes: notes || undefined,
       };
-      const res = await mockRecordPayment(payload);
+      const res = await api.post('/payments/record', payload);
       setReceipt({
-        receiptNumber: res.receiptNumber,
+        receiptNumber: res.data.receiptNumber,
         amount: totalDue,
         method:
           method === 'insurance'
@@ -172,9 +180,9 @@ export default function CashierPOSModal({
   const tabBtn = (key: 'verify' | 'record', icon: React.ReactNode, label: string) => (
     <button
       onClick={() => setTab(key)}
-      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${tab === key ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 bg-gray-100'
-        }`}
-      style={tab === key ? { backgroundColor: NAVY } : {}}
+      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${
+        tab === key ? 'bg-brand-navy text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 bg-gray-100'
+      }`}
     >
       {icon}
       {label}
@@ -192,8 +200,8 @@ export default function CashierPOSModal({
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <Receipt size={18} style={{ color: NAVY }} />
-              <h2 className="text-lg font-semibold" style={{ color: NAVY }}>
+              <DocumentTextIcon className="w-[18px] h-[18px] text-brand-navy" />
+              <h2 className="text-lg font-semibold text-brand-navy">
                 {t('cashier.processPaymentTitle')} — #{order.id.slice(0, 8)}
               </h2>
             </div>
@@ -208,7 +216,7 @@ export default function CashierPOSModal({
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label={t('common.close') || 'Close'}
           >
-            <X size={18} />
+            <XMarkIcon className="w-[18px] h-[18px]" />
           </button>
         </div>
 
@@ -217,10 +225,10 @@ export default function CashierPOSModal({
             /* Receipt screen */
             <div className="space-y-5">
               <div className="flex flex-col items-center text-center py-4">
-                <div className="h-14 w-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: `${TEAL}1a` }}>
-                  <CheckCircle2 size={32} style={{ color: TEAL }} />
+                <div className="h-14 w-14 rounded-full flex items-center justify-center mb-3 bg-brand-teal/10">
+                  <CheckCircleIcon className="w-8 h-8 text-brand-teal" />
                 </div>
-                <h3 className="text-lg font-semibold" style={{ color: NAVY }}>
+                <h3 className="text-lg font-semibold text-brand-navy">
                   {t('cashier.paymentSuccessful')}
                 </h3>
                 <p className="text-sm text-gray-400">{t('cashier.receiptGenerated')}</p>
@@ -230,7 +238,7 @@ export default function CashierPOSModal({
                 {[
                   [t('cashier.receiptNumber'), receipt.receiptNumber, 'font-mono font-medium'],
                   [t('cashier.orderId'), `#${order.id.slice(0, 8)}`, 'font-mono'],
-                  [t('cashier.amount'), formatCurrency(receipt.amount), 'font-semibold'],
+                  [t('cashier.amount'), fmt(receipt.amount), 'font-semibold'],
                   [t('cashier.method'), receipt.method, 'font-medium'],
                   ...(receipt.reference ? [[t('cashier.reference'), receipt.reference, 'font-mono text-xs']] : []),
                   ['', null, ''],
@@ -250,8 +258,7 @@ export default function CashierPOSModal({
 
               <button
                 onClick={handleCloseAndAdvance}
-                className="w-full py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90"
-                style={{ backgroundColor: TEAL }}
+                className="w-full py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 bg-brand-teal"
               >
                 {t('cashier.closeAndAdvance')}
               </button>
@@ -260,15 +267,15 @@ export default function CashierPOSModal({
             <div className="space-y-5">
               {/* Tab switcher */}
               <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-                {tabBtn('verify', <ShieldCheck size={16} />, t('cashier.verifyTab'))}
-                {tabBtn('record', <Banknote size={16} />, t('cashier.recordTab'))}
+                {tabBtn('verify', <ShieldCheckIcon className="w-4 h-4" />, t('cashier.verifyTab'))}
+                {tabBtn('record', <BanknotesIcon className="w-4 h-4" />, t('cashier.recordTab'))}
               </div>
 
               {/* Verify tab */}
               {tab === 'verify' && (
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2">
-                    <p className="text-sm font-semibold" style={{ color: NAVY }}>
+                    <p className="text-sm font-semibold text-brand-navy">
                       {t('cashier.orderSummary')}
                     </p>
                     <div className="space-y-1.5">
@@ -278,13 +285,13 @@ export default function CashierPOSModal({
                             {it.medication.name}{' '}
                             <span className="text-gray-400">× {it.quantity}</span>
                           </span>
-                          <span className="font-medium">{formatCurrency(it.price * it.quantity)}</span>
+                          <span className="font-medium">{fmt(it.price * it.quantity)}</span>
                         </div>
                       ))}
                     </div>
                     <div className="flex justify-between font-semibold text-sm pt-2 border-t border-gray-200">
                       <span>{t('cashier.totalDue')}</span>
-                      <span style={{ color: NAVY }}>{formatCurrency(totalDue)}</span>
+                      <span className="text-brand-navy">{formatCurrency(totalDue)}</span>
                     </div>
                   </div>
 
@@ -294,10 +301,11 @@ export default function CashierPOSModal({
                       <p className="text-xs text-gray-400">{t('cashier.flutterwaveTransaction')}</p>
                     </div>
                     <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${verifyStatus === 'confirmed'
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        verifyStatus === 'confirmed'
                           ? 'bg-teal-50 text-teal-700'
                           : 'bg-amber-50 text-amber-700'
-                        }`}
+                      }`}
                     >
                       {verifyStatus === 'confirmed' ? t('cashier.confirmed') : t('cashier.pendingStatus')}
                     </span>
@@ -306,17 +314,16 @@ export default function CashierPOSModal({
                   <button
                     onClick={handleVerify}
                     disabled={verifyStatus === 'loading' || verifyStatus === 'confirmed'}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ backgroundColor: NAVY }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-navy"
                   >
                     {verifyStatus === 'loading' ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
                         {t('cashier.verifying')}
                       </>
                     ) : (
                       <>
-                        <ShieldCheck size={16} />
+                        <ShieldCheckIcon className="w-4 h-4" />
                         {t('cashier.verifyTransaction')}
                       </>
                     )}
@@ -329,7 +336,7 @@ export default function CashierPOSModal({
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex justify-between text-sm">
                     <span className="text-gray-400">{t('cashier.totalDue')}</span>
-                    <span className="font-semibold" style={{ color: NAVY }}>{formatCurrency(totalDue)}</span>
+                    <span className="font-semibold text-brand-navy">{formatCurrency(totalDue)}</span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -338,7 +345,7 @@ export default function CashierPOSModal({
                       value={method}
                       onChange={(e) => setMethod(e.target.value as PaymentMethod)}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
-                      style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
+                      style={{ '--tw-ring-color': '#2D9B8A' } as React.CSSProperties}
                     >
                       <option value="cash">{t('cashier.method_cash')}</option>
                       <option value="card">{t('cashier.method_card')}</option>
@@ -367,6 +374,21 @@ export default function CashierPOSModal({
                           {formatCurrency(change)}
                         </span>
                       </div>
+                    </div>
+                  )}
+
+                  {(method === 'mtn_momo' || method === 'airtel_money') && (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700">
+                        {t('cashier.phoneNumber') || 'Phone Number'} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 078XXXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                      />
                     </div>
                   )}
 
@@ -426,12 +448,11 @@ export default function CashierPOSModal({
                   <button
                     onClick={handleRecord}
                     disabled={!canConfirmRecord || submitting}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ backgroundColor: TEAL }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
                         {t('cashier.processing')}
                       </>
                     ) : (

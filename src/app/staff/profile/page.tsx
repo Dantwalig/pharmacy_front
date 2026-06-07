@@ -6,6 +6,8 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import StatusBadge from '@/components/shared/StatusBadge';
 import {
   PencilSquareIcon,
   DocumentTextIcon,
@@ -14,6 +16,8 @@ import {
   ExclamationCircleIcon,
   CheckIcon,
   XMarkIcon,
+  LockClosedIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
 interface StaffProfile {
@@ -76,6 +80,7 @@ function EditField({
 
 export default function StaffProfilePage() {
   const { t } = useTranslation();
+  const { permissions, loading: permsLoading } = useStaffPermissions();
   const [profile, setProfile]       = useState<StaffProfile | null>(null);
   const [loading, setLoading]       = useState(true);
   const [isEditing, setIsEditing]   = useState(false);
@@ -187,10 +192,11 @@ export default function StaffProfilePage() {
           <p className="font-bold text-gray-900 text-base">{profile.firstName} {profile.lastName}</p>
           <p className="text-gray-400 text-sm mt-0.5">{roleLabel}</p>
 
-          <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            {isApproved ? t('common.active') : profile.status}
-          </span>
+          <StatusBadge
+            status={isApproved ? 'ACTIVE' : profile.status}
+            label={isApproved ? t('common.active') : profile.status}
+            className="mt-2"
+          />
 
           <div className="mt-5 w-full space-y-3 text-sm">
             <div>
@@ -275,12 +281,10 @@ export default function StaffProfilePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-gray-900 text-base">{t('pharmacyOwner.registrationDetails')}</h2>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                {isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
-              </span>
+              <StatusBadge
+                status={isApproved ? 'APPROVED' : 'PENDING'}
+                label={isApproved ? t('pharmacyOwner.approved') : t('branch.pending')}
+              />
             </div>
 
             <div className="space-y-0 text-sm divide-y divide-gray-50">
@@ -345,6 +349,79 @@ export default function StaffProfilePage() {
                 {t('pharmacyOwner.documentsNotice')}
               </p>
             </div>
+          </div>
+
+          {/* ── Permissions panel ───────────────────────────────────────── */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 mt-0">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F0F7F6' }}>
+                <ShieldCheckIcon className="w-4 h-4" style={{ color: '#2D9B8A' }} />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800">{t('staffMgmt.permissions')}</h3>
+                <p className="text-xs text-gray-400">
+                  {permsLoading
+                    ? t('common.loading')
+                    : `${permissions.length} ${t('staffMgmt.selected')}`}
+                </p>
+              </div>
+            </div>
+
+            {permsLoading ? (
+              <div className="flex justify-center py-4"><LoadingSpinner /></div>
+            ) : permissions.length === 0 ? (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                <LockClosedIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                <p className="text-xs text-gray-500">{t('staffMgmt.noPermissionsAssigned', 'No permissions assigned yet. Contact your branch manager.')}</p>
+              </div>
+            ) : (
+              // Group permissions by category for a cleaner read
+              (() => {
+                const groups: Record<string, string[]> = {
+                  Orders:        ['VIEW_ORDERS','ACCEPT_ORDERS','UPDATE_ORDER_STATUS','CANCEL_ORDERS'],
+                  Inventory:     ['VIEW_INVENTORY','ADD_MEDICATION','EDIT_MEDICATION','DELETE_MEDICATION','MANAGE_STOCK_TRANSFERS'],
+                  Payments:      ['VIEW_PAYMENTS','PROCESS_PAYMENTS','ISSUE_REFUNDS'],
+                  Prescriptions: ['VIEW_PRESCRIPTIONS','APPROVE_PRESCRIPTIONS','REJECT_PRESCRIPTIONS'],
+                  Analytics:     ['VIEW_ANALYTICS','VIEW_REPORTS','EXPORT_DATA'],
+                  Customers:     ['VIEW_CUSTOMERS','MANAGE_CUSTOMER_INFO'],
+                  'Staff & Settings': ['VIEW_STAFF','MANAGE_STAFF','MANAGE_BRANCH_SETTINGS'],
+                };
+                const groupColors: Record<string, { bg: string; text: string; dot: string }> = {
+                  Orders:             { bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-400'   },
+                  Inventory:          { bg: 'bg-teal-50',   text: 'text-teal-700',   dot: 'bg-teal-400'   },
+                  Payments:           { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-400'  },
+                  Prescriptions:      { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-400' },
+                  Analytics:          { bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-400'  },
+                  Customers:          { bg: 'bg-pink-50',   text: 'text-pink-700',   dot: 'bg-pink-400'   },
+                  'Staff & Settings': { bg: 'bg-gray-100',  text: 'text-gray-700',   dot: 'bg-gray-400'   },
+                };
+                return (
+                  <div className="space-y-3">
+                    {Object.entries(groups).map(([groupName, groupPerms]) => {
+                      const active = groupPerms.filter(p => permissions.includes(p));
+                      if (active.length === 0) return null;
+                      const c = groupColors[groupName];
+                      return (
+                        <div key={groupName}>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                            {groupName}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {active.map(perm => (
+                              <span key={perm}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${c.bg} ${c.text}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.dot}`} />
+                                {perm.replace(/_/g, ' ')}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()
+            )}
           </div>
 
         </div>

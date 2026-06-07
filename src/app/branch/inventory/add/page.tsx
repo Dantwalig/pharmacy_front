@@ -31,8 +31,8 @@ export default function BranchAddMedicationPage() {
         <ArrowLeftIcon className="w-4 h-4" /> Back to Inventory
       </button>
 
-      <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: NAVY }}>
-        <h1 className="text-2xl font-bold">{t('branch.addMedication')}</h1>
+      <div className="rounded-2xl p-6 bg-[#EBF4FF]">
+        <h1 className="text-2xl font-bold text-[#1E3A5F]">{t('branch.addMedication')}</h1>
         <p className="mt-1 text-white/70">{t('inventory.addMedicationBranchSubtitle')}</p>
       </div>
 
