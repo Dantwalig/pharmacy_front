@@ -139,7 +139,6 @@ export default function PharmacyProfilePage() {
   const docs = [
     profile?.pharmacyLicense ? { label: t('pharmacyOwner.pharmacyLicense'), value: profile.pharmacyLicense } : null,
     profile?.rdbCertificate  ? { label: t('pharmacyOwner.nationalId'),       value: profile.rdbCertificate  } : null,
-    profile?.businessRegistration ? { label: t('pharmacyOwner.taxRegistration'), value: profile.businessRegistration } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
   return (
