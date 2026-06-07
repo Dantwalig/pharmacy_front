@@ -136,7 +136,7 @@ export default function PatientProfilePage() {
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">{t('profile2.dateOfBirth')}</label>
-            <input type="date" value={profile.dateOfBirth} onChange={e => setProfile({...profile, dateOfBirth: e.target.value})} className={inputCls} />
+            <input type="date" value={profile.dateOfBirth} max={new Date().toISOString().split('T')[0]} onChange={e => setProfile({...profile, dateOfBirth: e.target.value})} className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">{t('profile2.gender')}</label>

@@ -178,7 +178,7 @@ export default function NewStaffPage() {
           </div>
           <div className="col-span-2">
             <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-gray-700 mb-1">{t('form.dateOfBirth')}</label>
-            <input id="dateOfBirth" type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
+            <input id="dateOfBirth" type="date" value={form.dateOfBirth} max={new Date().toISOString().split('T')[0]} onChange={e => setForm(p => ({...p, dateOfBirth: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
         </div>
