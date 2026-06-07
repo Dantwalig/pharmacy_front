@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
     <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
 
     {/* LEFT PANEL */}
-      <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-[#1E4D8C] via-[#2563a8] to-[#1a3d6f] p-10 flex-col justify-between text-white">
+      <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-brand-navy via-[#2563a8] to-brand-navy-dark p-10 flex-col justify-between text-white">
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1">Evuze</h1>

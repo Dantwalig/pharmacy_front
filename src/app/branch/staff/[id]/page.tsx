@@ -136,14 +136,13 @@ export default function StaffDetailPage() {
       </button>
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 bg-[#EBF4FF] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-            <UserCircleIcon className="w-9 h-9 text-white/80" />
+            <UserCircleIcon className="w-8 h-8 text-[#29ABE2]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{staff.firstName} {staff.lastName}</h1>
+            <h1 className="text-2xl font-bold text-[#1E3A5F]">{staff.firstName} {staff.lastName}</h1>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white`}>
                 {staff.user.role}
@@ -157,7 +156,7 @@ export default function StaffDetailPage() {
         <button
           onClick={handleDeactivate}
           disabled={deactivating}
-          className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 disabled:opacity-50 transition-all self-start sm:self-center"
+          className="px-5 py-2.5 rounded-xl text-sm font-medium border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-50 transition-all self-start sm:self-center"
         >
           {deactivating ? t('staffMgmt.removing') : t('staffMgmt.removeFromBranch')}
         </button>

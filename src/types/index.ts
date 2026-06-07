@@ -192,15 +192,20 @@ export interface PharmacyProfile {
   name: string;
   representativeName?: string;
   ownerName?: string;
+  // email is flattened from the User relation by the backend's findByUserId method.
+  // It is available directly as profile.email on the response object.
   email?: string;
   phone?: string;
   address?: string;
+  logoUrl?: string;
   dateOfIncorporation?: string;
   rdbCertificate?: string;
   pharmacyLicense?: string;
-  logoUrl?: string;
   rejectionReason?: string | null;
   approvedAt?: string | null;
+  // Nested user relation — present on the raw API response before flattening.
+  // Frontend should read profile.email (flattened) rather than profile.user.email.
+  user?: { email?: string };
 }
 
 export interface PharmacyDetail extends Pharmacy {

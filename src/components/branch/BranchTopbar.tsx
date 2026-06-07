@@ -1,6 +1,6 @@
 'use client';
 import { useTranslation } from 'react-i18next';
-import { Bell, User, Menu } from 'lucide-react';
+import { BellIcon, UserIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
 interface Props {
@@ -25,10 +25,10 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           aria-label="Open sidebar"
         >
-          <Menu size={18} className="text-gray-600" />
+          <Bars3Icon className="w-[18px] h-[18px] text-gray-600" />
         </button>
         <div>
-          <p className="text-base font-semibold" style={{ color: '#2D9B8A' }}>{pharmacyName}</p>
+          <p className="text-base font-semibold text-brand-teal">{pharmacyName}</p>
           <p className="text-xs text-gray-500 hidden sm:block">{t('branch.portal')}</p>
         </div>
       </div>
@@ -49,12 +49,12 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
         </div>
 
         <button className="relative p-2 rounded-full hover:bg-gray-100" aria-label="Notifications">
-          <Bell size={18} className="text-gray-600" />
+          <BellIcon className="w-[18px] h-[18px] text-gray-600" />
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: '#1E4D8C' }}>
-            <User size={16} />
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm bg-brand-navy">
+            <UserIcon className="w-4 h-4" />
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-semibold text-gray-800">{branchName}</p>

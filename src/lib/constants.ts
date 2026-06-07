@@ -54,3 +54,22 @@ export const ITEMS_PER_PAGE = 5;
 // Set NEXT_PUBLIC_SUPPORT_EMAIL in .env.local / .env.production to override.
 export const SUPPORT_EMAIL: string =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? 'info@ubwengelab.rw';
+
+// ── Order status groups ────────────────────────────────────────────────────
+// Orders that are still in-flight (patient "active" count, filters, etc.)
+// Used in: patient/orders/page, patient/dashboard/page
+export const PENDING_STATUSES: readonly string[] = [
+  'PENDING',
+  'ACCEPTED',
+  'PREPARING',
+  'OUT_FOR_DELIVERY',
+  'READY_FOR_PICKUP',
+];
+
+// Terminal states — order can no longer change
+// Used in: patient/orders/page, patient/dashboard/page
+export const COMPLETED_STATUSES: readonly string[] = [
+  'DELIVERED',
+  'CANCELLED',
+  'COMPLETED',
+];

@@ -27,7 +27,7 @@ export default function PharmacyGuard({ children }: PharmacyGuardProps) {
 
     // Not a pharmacy
     if (user.role !== 'PHARMACY') {
-      router.push('/dashboard');
+      router.push('/');
       return;
     }
 
