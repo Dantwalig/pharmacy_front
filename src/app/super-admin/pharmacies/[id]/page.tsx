@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import type { PharmacyDetail } from '@/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
   ArrowLeftIcon,
@@ -25,13 +26,11 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  PENDING:  { bg: '#FEF3C7', text: '#92400E', label: 'Pending Review' },
-  APPROVED: { bg: '#D1FAE5', text: '#065F46', label: 'Approved' },
-  REJECTED: { bg: '#FEE2E2', text: '#991B1B', label: 'Rejected' },
+const getStatusLabel = (s: string) => {
+  if (s === 'PENDING') return 'Pending Review';
+  if (s === 'APPROVED') return 'Approved';
+  if (s === 'REJECTED') return 'Rejected';
+  return s;
 };
 
 export default function SuperAdminPharmacyDetailPage() {
@@ -130,8 +129,6 @@ export default function SuperAdminPharmacyDetailPage() {
 
   if (!pharmacy) return null;
 
-  const status = STATUS_STYLES[pharmacy.status ?? ''] ?? { bg: '#F3F4F6', text: '#374151', label: pharmacy.status ?? 'Unknown' };
-
   // Registration number fields from the Prisma schema
   const registrationNumbers = [
     { label: 'RDB Certificate Number',        value: pharmacy.rdbCertificate,       docType: 'rdb' },
@@ -145,14 +142,13 @@ export default function SuperAdminPharmacyDetailPage() {
       {/* Back */}
       <button
         onClick={() => router.push('/super-admin/pharmacies')}
-        className="flex items-center gap-2 text-sm font-medium hover:underline"
-        style={{ color: NAVY }}
+        className="flex items-center gap-2 text-sm font-medium hover:underline text-brand-navy"
       >
         <ArrowLeftIcon className="w-4 h-4" /> Back to Applications
       </button>
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-white/60 text-sm mb-1">{t('superAdminPages.pharmacyApplication')}</p>
@@ -161,12 +157,11 @@ export default function SuperAdminPharmacyDetailPage() {
               {pharmacy.createdAt && `Submitted ${new Date(pharmacy.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}
             </p>
           </div>
-          <span
-            className="px-4 py-2 rounded-xl text-sm font-bold"
-            style={{ backgroundColor: status.bg, color: status.text }}
-          >
-            {status.label}
-          </span>
+          <StatusBadge
+            status={pharmacy.status ?? ''}
+            label={getStatusLabel(pharmacy.status ?? '')}
+            size="md"
+          />
         </div>
 
         {/* Quick stats from _count */}
@@ -190,8 +185,7 @@ export default function SuperAdminPharmacyDetailPage() {
           <button
             onClick={handleApprove}
             disabled={actionLoading}
-            className="flex items-center gap-2 px-6 py-3 text-white rounded-xl text-sm font-semibold disabled:opacity-50 transition-all"
-            style={{ backgroundColor: TEAL }}
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-xl text-sm font-semibold disabled:opacity-50 transition-all bg-brand-teal"
           >
             <CheckCircleIcon className="w-5 h-5" /> Approve Application
           </button>
@@ -234,7 +228,7 @@ export default function SuperAdminPharmacyDetailPage() {
 
         {/* Owner / Contact */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+          <h2 className="font-bold text-brand-navy mb-4 text-sm uppercase tracking-wide">
             Owner & Contact
           </h2>
           <div className="space-y-3 text-sm">
@@ -269,7 +263,7 @@ export default function SuperAdminPharmacyDetailPage() {
 
         {/* Registration Numbers — the three searchable fields */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+          <h2 className="font-bold text-brand-navy mb-4 text-sm uppercase tracking-wide">
             Registration Numbers
           </h2>
           <div className="space-y-4">
@@ -296,8 +290,7 @@ export default function SuperAdminPharmacyDetailPage() {
                           toast.error(t('errors.couldNotFetchDocument'));
                         }
                       }}
-                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-                      style={{ backgroundColor: '#F0F7F6', color: TEAL }}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all bg-brand-teal-light text-brand-teal"
                       aria-label={`View ${item.label} document`}
                     >
                       View Doc
@@ -314,7 +307,7 @@ export default function SuperAdminPharmacyDetailPage() {
       {/* Location Verification Card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h2 className="font-bold text-sm uppercase tracking-wide flex items-center gap-2" style={{ color: NAVY }}>
+          <h2 className="font-bold text-brand-navy text-sm uppercase tracking-wide flex items-center gap-2">
             <MapPinIcon className="w-4 h-4" />
             Location Verification
           </h2>
@@ -373,8 +366,7 @@ export default function SuperAdminPharmacyDetailPage() {
               <button
                 onClick={() => handleVerifyLocation(true)}
                 disabled={locationLoading || pharmacy.isLocationVerified}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                style={{ backgroundColor: TEAL }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all bg-brand-teal"
               >
                 <ShieldCheckIcon className="w-4 h-4" />
                 {pharmacy.isLocationVerified ? 'Already Verified' : 'Verify Location'}
@@ -407,7 +399,7 @@ export default function SuperAdminPharmacyDetailPage() {
 
       {/* Submitted Documents */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide flex items-center gap-2" style={{ color: NAVY }}>
+        <h2 className="font-bold text-brand-navy mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
           <DocumentTextIcon className="w-4 h-4" />
           Submitted Documents
         </h2>
@@ -446,8 +438,7 @@ export default function SuperAdminPharmacyDetailPage() {
                       toast.error(t('errors.couldNotFetchDocument'));
                     }
                   }}
-                  className="px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-all"
-                  style={{ backgroundColor: TEAL }}
+                  className="px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-all bg-brand-teal"
                   aria-label={`Open ${doc.label}`}
                 >
                   Open
@@ -461,7 +452,7 @@ export default function SuperAdminPharmacyDetailPage() {
       {/* Recent orders from this pharmacy */}
       {pharmacy.orders && pharmacy.orders.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h2 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide" style={{ color: NAVY }}>
+          <h2 className="font-bold text-brand-navy mb-4 text-sm uppercase tracking-wide">
             Recent Orders
           </h2>
           <div className="space-y-2">
@@ -474,7 +465,7 @@ export default function SuperAdminPharmacyDetailPage() {
                   <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold" style={{ color: TEAL }}>
+                  <p className="text-sm font-semibold text-brand-teal">
                     {Number(order.total ?? 0).toLocaleString()} RWF
                   </p>
                   <span className="text-xs text-gray-400">{order.status}</span>

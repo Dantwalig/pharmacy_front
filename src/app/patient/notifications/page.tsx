@@ -44,9 +44,6 @@ const getTypeConfig = (type: string) => {
   }
 };
 
-const NAVY = '#1E3A5F';
-const TEAL = '#2D9B8A';
-
 export default function PatientNotificationsPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -148,13 +145,12 @@ export default function PatientNotificationsPage() {
         {/* ── Header card ──────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-start justify-between mb-1">
-            <h1 className="text-3xl font-bold" style={{ color: NAVY }}>
+            <h1 className="text-3xl font-bold text-brand-navy">
               {t('notifications2.notifications')}
             </h1>
             <button
               onClick={handleMarkAllAsRead}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors hover:bg-gray-50"
-              style={{ borderColor: NAVY, color: NAVY }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-brand-navy text-brand-navy text-sm font-medium transition-colors hover:bg-gray-50"
             >
               {/* checkmark icon */}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +161,7 @@ export default function PatientNotificationsPage() {
           </div>
 
           {unreadCount > 0 && (
-            <p className="text-sm font-medium mb-5" style={{ color: TEAL }}>
+            <p className="text-sm font-medium mb-5 text-brand-teal">
               {t('notifications2.youHave')} {unreadCount} {unreadCount === 1
                 ? t('notifications2.unreadNotification')
                 : t('notifications2.unreadNotifications')}
@@ -178,12 +174,7 @@ export default function PatientNotificationsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveCategory(tab.id)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                style={
-                  activeCategory === tab.id
-                    ? { backgroundColor: NAVY, color: '#fff' }
-                    : { backgroundColor: '#F3F4F6', color: '#374151' }
-                }
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeCategory === tab.id ? 'bg-brand-navy text-white' : 'bg-gray-100 text-gray-700'}`}
               >
                 {/* tab icon */}
                 {tab.id === 'all'           && <span>🔔</span>}
@@ -208,7 +199,7 @@ export default function PatientNotificationsPage() {
         </div>
 
         {/* ── Notification section header ───────────────────────────────── */}
-        <h2 className="text-xl font-bold px-1" style={{ color: NAVY }}>
+        <h2 className="text-xl font-bold px-1 text-brand-navy">
           {activeCategory === 'all'           ? t('notifications2.allNotifications')
           : activeCategory === 'orders'        ? t('notifications2.ordersNotifications')
           : activeCategory === 'prescriptions' ? t('notifications2.prescriptionsNotifications')
@@ -296,8 +287,7 @@ export default function PatientNotificationsPage() {
                         {isOutForDelivery && (
                           <button
                             onClick={e => { e.stopPropagation(); if (n.orderId) router.push(`/patient/orders/${n.orderId}`); }}
-                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: NAVY }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 bg-brand-navy"
                           >
                             Track Courier
                           </button>
@@ -314,8 +304,7 @@ export default function PatientNotificationsPage() {
                         {isPrescription && n.prescriptionId && (
                           <button
                             onClick={e => { e.stopPropagation(); router.push(`/patient/prescriptions/${n.prescriptionId}`); }}
-                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: NAVY }}
+                            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 bg-brand-navy"
                           >
                             View Prescription
                           </button>

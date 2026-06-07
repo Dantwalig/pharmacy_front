@@ -4,10 +4,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { ClockIcon } from '@heroicons/react/24/outline';
 
-const TEAL = '#2D9B8A';
-const NAVY = '#1E4D8C';
 
 interface AttendanceRecord {
   id: string;
@@ -20,14 +19,6 @@ interface AttendanceRecord {
   clockInApprover?: { firstName: string; lastName: string };
   clockOutApprover?: { firstName: string; lastName: string };
 }
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:     'bg-yellow-100 text-yellow-800',
-  APPROVED:    'bg-blue-100 text-blue-800',
-  CLOCKED_OUT: 'bg-orange-100 text-orange-800',
-  COMPLETED:   'bg-green-100 text-green-800',
-  REJECTED:    'bg-red-100 text-red-800',
-};
 
 const STATUS_KEYS: Record<string, string> = {
   PENDING: 'attendance.statusPending',
@@ -72,7 +63,7 @@ export default function StaffAttendancePage() {
     <div className="max-w-2xl mx-auto space-y-6">
 
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white bg-brand-navy">
         <h1 className="text-2xl lg:text-3xl font-bold">{t('attendance.myAttendance')}</h1>
         <p className="mt-1 text-white/70">{t('attendance.yourShiftHistory')}</p>
       </div>
@@ -86,8 +77,7 @@ export default function StaffAttendancePage() {
         ].map(s => (
           <div
             key={s.label}
-            className="rounded-2xl p-5 text-center"
-            style={{ backgroundColor: s.dark ? NAVY : TEAL }}
+            className={`rounded-2xl p-5 text-center ${s.dark ? 'bg-brand-navy' : 'bg-brand-teal'}`}
           >
             <p className="text-2xl font-bold text-white">{s.value}</p>
             <p className="text-xs text-white/70 mt-1">{s.label}</p>
@@ -110,16 +100,14 @@ export default function StaffAttendancePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <p className="font-semibold text-gray-900 text-sm">{formatDate(record.clockInTime)}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[record.status]}`}>
-                      {t(STATUS_KEYS[record.status] || 'attendance.statusPending')}
-                    </span>
+                    <StatusBadge status={record.status} label={t(STATUS_KEYS[record.status] || 'attendance.statusPending')} />
                   </div>
 
                   <div className="flex gap-6 text-sm text-gray-600">
                     <div>
                       <span className="text-xs text-gray-400">{t('attendance.in')}</span> {formatTime(record.clockInTime)}
                       {record.clockInApprover && (
-                        <span className="text-xs ml-1" style={{ color: TEAL }}>
+                        <span className="text-xs ml-1 text-brand-teal">
                           {record.clockInApprover.firstName}
                         </span>
                       )}
@@ -128,14 +116,14 @@ export default function StaffAttendancePage() {
                       <div>
                         <span className="text-xs text-gray-400">{t('attendance.out')}</span> {formatTime(record.clockOutTime)}
                         {record.clockOutApprover && (
-                          <span className="text-xs ml-1" style={{ color: TEAL }}>
+                          <span className="text-xs ml-1 text-brand-teal">
                             {record.clockOutApprover.firstName}
                           </span>
                         )}
                       </div>
                     )}
                     {record.totalHours && (
-                      <div className="font-medium" style={{ color: NAVY }}>
+                      <div className="font-medium text-brand-navy">
                         {record.totalHours.toFixed(1)}h
                       </div>
                     )}

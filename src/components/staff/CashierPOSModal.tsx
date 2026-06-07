@@ -2,13 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, ShieldCheck, Banknote, Receipt, Loader2, X } from 'lucide-react';
+import { CheckCircleIcon, ShieldCheckIcon, BanknotesIcon, DocumentTextIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 interface OrderItem {
   quantity: number;
@@ -175,9 +172,8 @@ export default function CashierPOSModal({
     <button
       onClick={() => setTab(key)}
       className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${
-        tab === key ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 bg-gray-100'
+        tab === key ? 'bg-brand-navy text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 bg-gray-100'
       }`}
-      style={tab === key ? { backgroundColor: NAVY } : {}}
     >
       {icon}
       {label}
@@ -195,8 +191,8 @@ export default function CashierPOSModal({
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <Receipt size={18} style={{ color: NAVY }} />
-              <h2 className="text-lg font-semibold" style={{ color: NAVY }}>
+              <DocumentTextIcon className="w-[18px] h-[18px] text-brand-navy" />
+              <h2 className="text-lg font-semibold text-brand-navy">
                 {t('cashier.processPaymentTitle')} — #{order.id.slice(0, 8)}
               </h2>
             </div>
@@ -211,7 +207,7 @@ export default function CashierPOSModal({
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label={t('common.close') || 'Close'}
           >
-            <X size={18} />
+            <XMarkIcon className="w-[18px] h-[18px]" />
           </button>
         </div>
 
@@ -220,10 +216,10 @@ export default function CashierPOSModal({
             /* Receipt screen */
             <div className="space-y-5">
               <div className="flex flex-col items-center text-center py-4">
-                <div className="h-14 w-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: `${TEAL}1a` }}>
-                  <CheckCircle2 size={32} style={{ color: TEAL }} />
+                <div className="h-14 w-14 rounded-full flex items-center justify-center mb-3 bg-brand-teal/10">
+                  <CheckCircleIcon className="w-8 h-8 text-brand-teal" />
                 </div>
-                <h3 className="text-lg font-semibold" style={{ color: NAVY }}>
+                <h3 className="text-lg font-semibold text-brand-navy">
                   {t('cashier.paymentSuccessful')}
                 </h3>
                 <p className="text-sm text-gray-400">{t('cashier.receiptGenerated')}</p>
@@ -253,8 +249,7 @@ export default function CashierPOSModal({
 
               <button
                 onClick={handleCloseAndAdvance}
-                className="w-full py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90"
-                style={{ backgroundColor: TEAL }}
+                className="w-full py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 bg-brand-teal"
               >
                 {t('cashier.closeAndAdvance')}
               </button>
@@ -263,15 +258,15 @@ export default function CashierPOSModal({
             <div className="space-y-5">
               {/* Tab switcher */}
               <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-                {tabBtn('verify', <ShieldCheck size={16} />, t('cashier.verifyTab'))}
-                {tabBtn('record', <Banknote size={16} />, t('cashier.recordTab'))}
+                {tabBtn('verify', <ShieldCheckIcon className="w-4 h-4" />, t('cashier.verifyTab'))}
+                {tabBtn('record', <BanknotesIcon className="w-4 h-4" />, t('cashier.recordTab'))}
               </div>
 
               {/* Verify tab */}
               {tab === 'verify' && (
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2">
-                    <p className="text-sm font-semibold" style={{ color: NAVY }}>
+                    <p className="text-sm font-semibold text-brand-navy">
                       {t('cashier.orderSummary')}
                     </p>
                     <div className="space-y-1.5">
@@ -287,7 +282,7 @@ export default function CashierPOSModal({
                     </div>
                     <div className="flex justify-between font-semibold text-sm pt-2 border-t border-gray-200">
                       <span>{t('cashier.totalDue')}</span>
-                      <span style={{ color: NAVY }}>{fmt(totalDue)}</span>
+                      <span className="text-brand-navy">{fmt(totalDue)}</span>
                     </div>
                   </div>
 
@@ -310,17 +305,16 @@ export default function CashierPOSModal({
                   <button
                     onClick={handleVerify}
                     disabled={verifyStatus === 'loading' || verifyStatus === 'confirmed'}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ backgroundColor: NAVY }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-navy"
                   >
                     {verifyStatus === 'loading' ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
                         {t('cashier.verifying')}
                       </>
                     ) : (
                       <>
-                        <ShieldCheck size={16} />
+                        <ShieldCheckIcon className="w-4 h-4" />
                         {t('cashier.verifyTransaction')}
                       </>
                     )}
@@ -333,7 +327,7 @@ export default function CashierPOSModal({
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex justify-between text-sm">
                     <span className="text-gray-400">{t('cashier.totalDue')}</span>
-                    <span className="font-semibold" style={{ color: NAVY }}>{fmt(totalDue)}</span>
+                    <span className="font-semibold text-brand-navy">{fmt(totalDue)}</span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -342,7 +336,7 @@ export default function CashierPOSModal({
                       value={method}
                       onChange={(e) => setMethod(e.target.value as PaymentMethod)}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
-                      style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
+                      style={{ '--tw-ring-color': '#2D9B8A' } as React.CSSProperties}
                     >
                       <option value="cash">{t('cashier.method_cash')}</option>
                       <option value="card">{t('cashier.method_card')}</option>
@@ -430,12 +424,11 @@ export default function CashierPOSModal({
                   <button
                     onClick={handleRecord}
                     disabled={!canConfirmRecord || submitting}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ backgroundColor: TEAL }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
                         {t('cashier.processing')}
                       </>
                     ) : (

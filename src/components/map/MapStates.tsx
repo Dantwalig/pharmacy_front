@@ -4,8 +4,6 @@
 import { useTranslation } from 'react-i18next';
 import { WifiIcon, MapPinIcon, ExclamationTriangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 /** Pulsing skeleton loader while map tiles load */
 export function MapSkeleton() {
@@ -42,11 +40,8 @@ export function NoPharmaciesState({ onReset }: { onReset?: () => void }) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center min-h-80 bg-white dark:bg-gray-800 rounded-2xl p-10 text-center shadow-inner">
-      <div
-        className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-        style={{ background: `${NAVY}15` }}
-      >
-        <MagnifyingGlassIcon className="w-10 h-10" style={{ color: NAVY }} />
+      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 bg-brand-navy/10">
+        <MagnifyingGlassIcon className="w-10 h-10 text-brand-navy" />
       </div>
       <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('map.noPharmaciesFound')}</h3>
       <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mb-6">
@@ -55,8 +50,7 @@ export function NoPharmaciesState({ onReset }: { onReset?: () => void }) {
       {onReset && (
         <button
           onClick={onReset}
-          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90"
-          style={{ background: TEAL }}
+          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 bg-brand-teal"
         >
           {t('map.resetSearch')}
         </button>
@@ -83,8 +77,7 @@ export function LocationDeniedState({ onManual }: { onManual?: () => void }) {
       {onManual && (
         <button
           onClick={onManual}
-          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90"
-          style={{ background: NAVY }}
+          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 bg-brand-navy"
         >
           {t('map.searchByName')}
         </button>
@@ -130,8 +123,7 @@ export function MapErrorState({ message, onRetry }: { message?: string; onRetry?
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90"
-          style={{ background: NAVY }}
+          className="px-6 py-2 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 bg-brand-navy"
         >
           {t('map.retry')}
         </button>

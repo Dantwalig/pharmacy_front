@@ -44,7 +44,22 @@ export default function PharmacyNotificationsPage() {
       }
 
       const res = await api.get('/notifications?userType=pharmacy');
-      setNotifications(res.data);
+
+      const payload = res.data?.data ?? res.data;
+      const rawNotifications = Array.isArray(payload) ? payload : [];
+
+      const normalizedNotifications = rawNotifications.map((notif: any) => {
+        const matchesOutOfStock = notif.title?.toLowerCase().includes('out of stock') ||
+          notif.message?.toLowerCase().includes('out of stock');
+
+          return {
+            ...notif,
+            type: matchesOutOfStock ? 'OUT_OF_STOCK' : notif.type,
+            orderId: notif.orderId ?? undefined,
+          };
+        });
+
+      setNotifications(normalizedNotifications);
       setLastUpdated(new Date());
     } catch {
       // Notifications stay stale on polling failure
