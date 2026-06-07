@@ -14,6 +14,7 @@ import {
   EnvelopeIcon,
   IdentificationIcon,
   ClockIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
@@ -32,6 +33,47 @@ const STATUS_STYLES: Record<string, string> = {
   COMPLETED:   'bg-green-100 text-green-800',
   REJECTED:    'bg-red-100 text-red-800',
 };
+
+const PERM_GROUP_KEY: Record<string, string> = {
+  'Orders': 'permGroupOrders',
+  'Inventory': 'permGroupInventory',
+  'Payments': 'permGroupPayments',
+  'Prescriptions': 'permGroupPrescriptions',
+  'Analytics': 'permGroupAnalytics',
+  'Customers': 'permGroupCustomers',
+  'Staff & Settings': 'permGroupStaffSettings',
+};
+
+const PERMISSION_GROUPS = [
+  {
+    label: 'Orders',
+    perms: ['VIEW_ORDERS', 'ACCEPT_ORDERS', 'UPDATE_ORDER_STATUS', 'CANCEL_ORDERS'],
+  },
+  {
+    label: 'Inventory',
+    perms: ['VIEW_INVENTORY', 'ADD_MEDICATION', 'EDIT_MEDICATION', 'DELETE_MEDICATION', 'MANAGE_STOCK_TRANSFERS'],
+  },
+  {
+    label: 'Payments',
+    perms: ['VIEW_PAYMENTS', 'PROCESS_PAYMENTS', 'ISSUE_REFUNDS'],
+  },
+  {
+    label: 'Prescriptions',
+    perms: ['VIEW_PRESCRIPTIONS', 'APPROVE_PRESCRIPTIONS', 'REJECT_PRESCRIPTIONS'],
+  },
+  {
+    label: 'Analytics',
+    perms: ['VIEW_ANALYTICS', 'VIEW_REPORTS', 'EXPORT_DATA'],
+  },
+  {
+    label: 'Customers',
+    perms: ['VIEW_CUSTOMERS', 'MANAGE_CUSTOMER_INFO'],
+  },
+  {
+    label: 'Staff & Settings',
+    perms: ['VIEW_STAFF', 'MANAGE_STAFF', 'MANAGE_BRANCH_SETTINGS'],
+  },
+];
 
 interface StaffDetail {
   id: string;
@@ -69,6 +111,34 @@ export default function StaffDetailPage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [deactivating, setDeactivating] = useState(false);
+  const [isEditingPermissions, setIsEditingPermissions] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+
+  const togglePermission = (perm: string) => {
+    setSelectedPermissions(prev =>
+      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
+    );
+  };
+
+  const handleSavePermissions = async () => {
+    setSavingPermissions(true);
+    try {
+      await api.put(`/staff/${staffId}`, {
+        permissions: selectedPermissions,
+      });
+      toast.success(t('success.permissionsUpdated') || 'Permissions updated successfully');
+      setStaff(prev => prev ? {
+        ...prev,
+        permissions: { permissions: selectedPermissions }
+      } : null);
+      setIsEditingPermissions(false);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setSavingPermissions(false);
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -206,9 +276,20 @@ export default function StaffDetailPage() {
         </div>
 
         {/* Permissions */}
-        {staff.permissions && staff.permissions.permissions.length > 0 && (
-          <div className="mt-5 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2">{t('staffMgmt.permissions')}</p>
+        <div className="mt-5 pt-5 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-500">{t('staffMgmt.permissions')}</p>
+            <button
+              onClick={() => {
+                setSelectedPermissions(staff.permissions?.permissions ?? []);
+                setIsEditingPermissions(true);
+              }}
+              className="text-xs font-semibold text-[#29ABE2] hover:underline"
+            >
+              {t('staffMgmt.editPermissions') || 'Edit Permissions'}
+            </button>
+          </div>
+          {staff.permissions && staff.permissions.permissions.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {staff.permissions.permissions.map(p => (
                 <span key={p} className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
@@ -216,8 +297,10 @@ export default function StaffDetailPage() {
                 </span>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-xs text-gray-400 italic">No permissions assigned.</p>
+          )}
+        </div>
       </div>
 
       {/* Attendance history */}
@@ -290,6 +373,82 @@ export default function StaffDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Permissions Modal */}
+      {isEditingPermissions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">{t('staffMgmt.editPermissions') || 'Edit Permissions'}</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Assign or remove permissions for {staff.firstName} {staff.lastName} ({staff.user.role})
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEditingPermissions(false)}
+                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all"
+                aria-label="Close modal"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 p-6 overflow-y-auto space-y-6">
+              {PERMISSION_GROUPS.map(group => (
+                <div key={group.label} className="space-y-2">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {t(`staffMgmt.${PERM_GROUP_KEY[group.label]}`) || group.label}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {group.perms.map(perm => {
+                      const isSelected = selectedPermissions.includes(perm);
+                      return (
+                        <button
+                          type="button"
+                          key={perm}
+                          onClick={() => togglePermission(perm)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            isSelected
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-transparent'
+                          }`}
+                        >
+                          {perm.replace(/_/g, ' ')}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+              <button
+                onClick={() => setIsEditingPermissions(false)}
+                disabled={savingPermissions}
+                className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleSavePermissions}
+                disabled={savingPermissions}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-white shadow-sm hover:opacity-90 transition-all flex items-center gap-2 bg-brand-teal"
+              >
+                {savingPermissions ? (
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('common.saving') || 'Saving...'}</>
+                ) : (
+                  t('common.save')
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

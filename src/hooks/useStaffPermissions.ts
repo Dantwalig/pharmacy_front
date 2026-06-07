@@ -58,8 +58,8 @@ export function useStaffPermissions(): UseStaffPermissionsResult {
 
   const can = useCallback(
     (permission: StaffPermission): boolean => {
-      // Optimistic while loading — avoids a jarring locked flash on first render.
-      if (loading) return true;
+      // Pessimistic while loading — avoids showing unauthorized tabs on login before permissions arrive.
+      if (loading) return false;
       return permissions.includes(permission);
     },
     [loading, permissions],

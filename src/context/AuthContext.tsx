@@ -18,7 +18,8 @@ import {
   getAccessToken,
   getRefreshToken 
 } from '@/lib/auth';
-import { User } from '@/types';
+import { User, DecodedToken } from '@/types';
+import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -78,6 +79,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     initAuth();
   }, []);
+
+  // Silent token refresh based on user activity to prevent session expiry during active use
+  useEffect(() => {
+    if (!user) return;
+
+    let lastCheckTime = 0;
+    const checkInterval = 30000; // Throttle checks to once every 30 seconds
+
+    const checkAndRefreshSession = async () => {
+      const now = Date.now();
+      if (now - lastCheckTime < checkInterval) return;
+      lastCheckTime = now;
+
+      try {
+        const token = getAccessToken();
+        if (!token) return;
+
+        const decoded = jwtDecode<DecodedToken>(token);
+        // exp is in seconds, convert to ms
+        const timeLeft = decoded.exp * 1000 - now;
+
+        // If less than 5 minutes left on the access token, refresh it proactively
+        if (timeLeft < 5 * 60 * 1000) {
+          console.log('Session token is expiring soon, refreshing...');
+          const data = await authApi.refreshTokens();
+          const { accessToken, refreshToken: newRefreshToken } = data;
+          setAuthTokens(accessToken, newRefreshToken || getRefreshToken() || '');
+        }
+      } catch (err) {
+        console.error('Silent session refresh failed:', err);
+      }
+    };
+
+    const handleActivity = () => {
+      checkAndRefreshSession();
+    };
+
+    // Listen to mouse moves, keystrokes, touches, and clicks to keep the session alive
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('click', handleActivity);
+
+    // Run once on load/state change
+    checkAndRefreshSession();
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
