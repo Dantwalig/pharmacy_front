@@ -38,11 +38,16 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
         return tab === 'completed' || tab === 'all';
       }
       switch (tab) {
-        case 'pending_payment': return STATUS_PENDING_PAYMENT.includes(o.status);
-        case 'ready_pickup':    return STATUS_READY_PICKUP.includes(o.status);
-        case 'completed':       return STATUS_COMPLETED.includes(o.status);
-        case 'all':             return true;
-        default:                return true;
+        case 'pending_payment':
+          return o.status === 'READY_FOR_PICKUP' && o.paymentStatus !== 'COMPLETED';
+        case 'ready_pickup':
+          return o.status === 'READY_FOR_PICKUP' && o.paymentStatus === 'COMPLETED';
+        case 'completed':
+          return o.status === 'COMPLETED' || o.status === 'DELIVERED';
+        case 'all':
+          return true;
+        default:
+          return true;
       }
     });
   }, [tab, orders, advancedIds]);
@@ -71,9 +76,9 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('cashier.tabAll'),             value: orders.length,                                                          dark: false },
-          { label: t('cashier.tabPendingPayment'),  value: orders.filter((o) => STATUS_PENDING_PAYMENT.includes(o.status)).length, dark: false },
-          { label: t('cashier.tabReadyPickup'),     value: orders.filter((o) => STATUS_READY_PICKUP.includes(o.status)).length,    dark: false },
-          { label: t('cashier.tabCompleted'),       value: orders.filter((o) => STATUS_COMPLETED.includes(o.status)).length + advancedIds.size, dark: true },
+          { label: t('cashier.tabPendingPayment'),  value: orders.filter((o) => o.status === 'READY_FOR_PICKUP' && o.paymentStatus !== 'COMPLETED' && !advancedIds.has(o.id)).length, dark: false },
+          { label: t('cashier.tabReadyPickup'),     value: orders.filter((o) => o.status === 'READY_FOR_PICKUP' && o.paymentStatus === 'COMPLETED' && !advancedIds.has(o.id)).length,    dark: false },
+          { label: t('cashier.tabCompleted'),       value: orders.filter((o) => o.status === 'COMPLETED' || o.status === 'DELIVERED').length + advancedIds.size, dark: true },
         ].map((s) => (
           <div
             key={s.label}

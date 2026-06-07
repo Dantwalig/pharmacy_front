@@ -56,7 +56,6 @@ export default function StaffOrdersPage() {
     []
   );
 
-  const fetchedOrders = data ?? [];
 
   useEffect(() => {
     if (data) {
