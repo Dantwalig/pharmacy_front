@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -29,7 +30,7 @@ function RevenueTooltip({ active, payload, label }: any) {
     <div className="bg-white border border-gray-100 rounded-xl shadow-lg p-3 text-xs">
       <p className="font-semibold text-gray-700 mb-1">{label}</p>
       {payload.map((p: any) => (
-        <p key={p.dataKey} style={{ color: p.color }}>RWF {Number(p.value).toLocaleString()}</p>
+        <p key={p.dataKey} style={{ color: p.color }}>{formatCurrency(p.value)}</p>
       ))}
     </div>
   );

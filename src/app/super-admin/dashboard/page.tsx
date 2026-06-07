@@ -6,6 +6,7 @@
 
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -174,7 +175,7 @@ export default function SuperAdminDashboard() {
     },
     {
       name: t('superAdmin.platformRevenue'),
-      value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
+      value: formatCurrency(analytics?.platformRevenue as number),
       icon: CurrencyDollarIcon,
       textColor: 'text-green-600',
       bgColor: 'bg-green-100',

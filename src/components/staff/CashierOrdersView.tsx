@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CreditCardIcon, CubeIcon, CheckCircleIcon, QueueListIcon, UserIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
@@ -151,7 +152,7 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
                         {itemCount} {itemCount === 1 ? t('cashier.item') : t('cashier.items')}
                       </span>
                       <span className="font-semibold text-brand-navy">
-                        RWF {Number(o.total ?? 0).toLocaleString()}
+                        RWF {formatCurrency(o.total)}
                       </span>
                       {isPaid && (
                         <span
