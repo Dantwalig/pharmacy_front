@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapData } from '@/lib/api';
@@ -213,7 +214,7 @@ export default function StaffOrdersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <p className="text-sm font-bold text-gray-900 hidden sm:block">{fmt(order.total)}</p>
+                    <p className="text-sm font-bold text-gray-900 hidden sm:block">{formatCurrency(order.total)}</p>
                     <StatusBadge status={order.status} />
                     <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
@@ -235,13 +236,13 @@ export default function StaffOrdersPage() {
                               {item.medication.name}
                               <span className="text-gray-400 text-xs ml-1">x{item.quantity}</span>
                             </span>
-                            <span className="text-gray-700 font-medium">{fmt(item.price * item.quantity)}</span>
+                            <span className="text-gray-700 font-medium">{formatCurrency(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
                       <div className="flex justify-between text-sm font-bold mt-3 pt-3 border-t border-gray-100">
                         <span className="text-gray-700">{t('cart.total')}</span>
-                        <span className="text-brand-teal">{fmt(order.total)}</span>
+                        <span className="text-brand-teal">{formatCurrency(order.total)}</span>
                       </div>
                     </div>
 

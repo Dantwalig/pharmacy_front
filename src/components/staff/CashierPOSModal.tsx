@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircleIcon, ShieldCheckIcon, BanknotesIcon, DocumentTextIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -207,7 +208,7 @@ export default function CashierPOSModal({
             <p className="text-sm text-gray-500">
               {patientName} · {order.orderItems.length}{' '}
               {order.orderItems.length === 1 ? t('cashier.item') : t('cashier.items')} ·{' '}
-              <span className="font-semibold text-gray-800">{fmt(totalDue)}</span>
+              <span className="font-semibold text-gray-800">{formatCurrency(totalDue)}</span>
             </p>
           </div>
           <button
@@ -290,7 +291,7 @@ export default function CashierPOSModal({
                     </div>
                     <div className="flex justify-between font-semibold text-sm pt-2 border-t border-gray-200">
                       <span>{t('cashier.totalDue')}</span>
-                      <span className="text-brand-navy">{fmt(totalDue)}</span>
+                      <span className="text-brand-navy">{formatCurrency(totalDue)}</span>
                     </div>
                   </div>
 
@@ -335,7 +336,7 @@ export default function CashierPOSModal({
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex justify-between text-sm">
                     <span className="text-gray-400">{t('cashier.totalDue')}</span>
-                    <span className="font-semibold text-brand-navy">{fmt(totalDue)}</span>
+                    <span className="font-semibold text-brand-navy">{formatCurrency(totalDue)}</span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -370,7 +371,7 @@ export default function CashierPOSModal({
                       <div className="flex justify-between text-sm rounded-lg bg-gray-50 px-3 py-2">
                         <span className="text-gray-400">{t('cashier.change')}</span>
                         <span className={`font-semibold ${change > 0 ? 'text-teal-600' : 'text-gray-700'}`}>
-                          {fmt(change)}
+                          {formatCurrency(change)}
                         </span>
                       </div>
                     </div>

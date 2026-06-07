@@ -49,11 +49,11 @@ export default function BranchManagementPage() {
     setCreateError('');
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRe.test(form.branchManagerEmail)) {
-      setCreateError('Please enter a valid email address.');
+      setCreateError(t('pharmacyOwner.enterValidEmail', 'Please enter a valid email address.'));
       return;
     }
     if (user?.email && form.branchManagerEmail.toLowerCase() === user.email.toLowerCase()) {
-      setCreateError('The manager email cannot be the same as the pharmacy owner email.');
+      setCreateError(t('pharmacyOwner.sameAsOwnerEmail', 'Branch manager email cannot be the same as your own account email.'));
       return;
     }
     setSubmitting(true);

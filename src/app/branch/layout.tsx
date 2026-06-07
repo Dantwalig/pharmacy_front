@@ -8,7 +8,7 @@ import BranchTopbar from '@/components/branch/BranchTopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import SupportBot from '@/components/shared/SupportBot';
 
-const STANDALONE_PAGES = ['/branch/pending-approval'];
+const STANDALONE_PAGES = ['/branch/pending-approval', '/branch/change-password'];
 
 export default function BranchLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -20,8 +20,12 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (loading) return;
     if (!user || user.role !== 'BRANCH_MANAGER') { router.push('/login'); return; }
-    const branchStatus = user.branchStatus;
     const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
+    if (user.requiresPasswordChange && !isStandalone) {
+      router.push('/branch/change-password');
+      return;
+    }
+    const branchStatus = user.branchStatus;
     if ((branchStatus === 'INVITED' || branchStatus === 'PENDING') && !isStandalone) {
       router.push('/branch/pending-approval');
     }

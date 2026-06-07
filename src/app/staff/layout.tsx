@@ -19,10 +19,13 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !STAFF_ROLES.includes(user.role))) {
-      router.push('/login');
+    if (loading) return;
+    if (!user || !STAFF_ROLES.includes(user.role)) { router.push('/login'); return; }
+    const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
+    if (user.requiresPasswordChange && !isStandalone) {
+      router.push('/staff/change-password');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   if (loading) {
     return (
