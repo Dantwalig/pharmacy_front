@@ -60,6 +60,7 @@ export default function CashierPOSModal({
 
   const [tab, setTab] = useState<'verify' | 'record'>('verify');
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'loading' | 'confirmed'>('idle');
+  const [confirming, setConfirming] = useState(false);
 
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = useState('');
@@ -86,6 +87,7 @@ export default function CashierPOSModal({
         setNotes('');
         setSubmitting(false);
         setReceipt(null);
+        setConfirming(false);
       }, 200);
       return () => clearTimeout(timer);
     } else if (order) {
@@ -220,7 +222,66 @@ export default function CashierPOSModal({
         </div>
 
         <div className="p-6">
-          {receipt ? (
+          {confirming && !receipt ? (
+            /* ── Confirmation step ── */
+            <div className="space-y-5">
+              <div className="flex flex-col items-center text-center py-2">
+                <div className="h-12 w-12 rounded-full flex items-center justify-center mb-3 bg-amber-50">
+                  <BanknotesIcon className="w-6 h-6 text-amber-500" />
+                </div>
+                <h3 className="text-base font-semibold text-gray-900">{t('cashier.confirmPaymentTitle', 'Confirm Payment')}</h3>
+                <p className="text-sm text-gray-400 mt-0.5">{t('cashier.confirmPaymentSubtitle', 'Please review the details before processing.')}</p>
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2.5 text-sm">
+                {[
+                  [t('cashier.totalDue'),       fmt(totalDue)],
+                  [t('cashier.paymentMethod'),  t(`cashier.method_${method}`)],
+                  ...(method === 'cash'
+                    ? [[t('cashier.amountReceived'), fmt(Number(amountReceived))],
+                       [t('cashier.change'),         fmt(change)]]
+                    : []),
+                  ...(method === 'mtn_momo' || method === 'airtel_money'
+                    ? [[t('cashier.phoneNumber') || 'Phone', phoneNumber]]
+                    : []),
+                  ...(method === 'insurance'
+                    ? [[t('cashier.insuranceProvider'), insuranceProvider],
+                       [t('cashier.policyNumber'),      policyNumber]]
+                    : []),
+                  ...(reference ? [[t('cashier.referenceNumber'), reference]] : []),
+                  [t('cashier.cashierLabel'),   cashierName],
+                ].map(([label, value], i) => (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-gray-400">{label}</span>
+                    <span className="font-medium text-gray-900">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirming(false)}
+                  className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  {t('common.back', 'Back')}
+                </button>
+                <button
+                  onClick={handleRecord}
+                  disabled={submitting}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
+                >
+                  {submitting ? (
+                    <>
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                      {t('cashier.processing')}
+                    </>
+                  ) : (
+                    t('cashier.processPayment')
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : receipt ? (
             /* Receipt screen */
             <div className="space-y-5">
               <div className="flex flex-col items-center text-center py-4">
@@ -445,18 +506,11 @@ export default function CashierPOSModal({
                   </div>
 
                   <button
-                    onClick={handleRecord}
-                    disabled={!canConfirmRecord || submitting}
+                    onClick={() => setConfirming(true)}
+                    disabled={!canConfirmRecord}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
                   >
-                    {submitting ? (
-                      <>
-                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                        {t('cashier.processing')}
-                      </>
-                    ) : (
-                      t('cashier.confirmPayment')
-                    )}
+                    {t('cashier.confirmPayment')}
                   </button>
                 </div>
               )}
