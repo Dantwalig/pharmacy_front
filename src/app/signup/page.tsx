@@ -228,6 +228,7 @@ export default function SignupPage() {
                 <div>
                   <label className={labelCls}>{t('signup.dateOfBirth')}</label>
                   <input type="date" required value={patientForm.dateOfBirth}
+                    max={new Date().toISOString().split('T')[0]}
                     onChange={e => setPatientForm({...patientForm, dateOfBirth: e.target.value})}
                     className={inputCls.replace('pl-11','pl-3')} />
                 </div>
