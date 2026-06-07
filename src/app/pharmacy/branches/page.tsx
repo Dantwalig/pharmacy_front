@@ -47,17 +47,34 @@ export default function BranchManagementPage() {
 
   const handleAdd = async () => {
     setCreateError('');
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(form.branchManagerEmail)) {
+      setCreateError(t('pharmacyOwner.enterValidEmail', 'Please enter a valid email address.'));
+      return;
+    }
     if (user?.email && form.branchManagerEmail.toLowerCase() === user.email.toLowerCase()) {
-      setCreateError('Branch manager email cannot be the same as your own account email.');
+      setCreateError(t('pharmacyOwner.sameAsOwnerEmail', 'Branch manager email cannot be the same as your own account email.'));
       return;
     }
     setSubmitting(true);
     try {
-      await api.post('/branches/create', form);
+      const res = await api.post('/branches/create', form);
+      const branchId = res.data?.id;
+
       setShowModal(false);
       setForm({ name: '', address: '', phone: '', branchManagerEmail: '', latitude: undefined, longitude: undefined });
-      setCreateSuccess('Branch added successfully.');
-      setTimeout(() => setCreateSuccess(''), 4000);
+      // Auto-send manager invite email
+      if (branchId) {
+        try {
+          await api.post(`/branches/${branchId}/send-credentials`);
+          setCreateSuccess(t('pharmacyOwner.branchCreatedInviteSent', 'Branch created and invite email sent to manager.'));
+        } catch {
+          setCreateSuccess(t('pharmacyOwner.branchCreatedInviteFailed', 'Branch created, but invite email could not be sent. Use "Send Credentials" from branch details.'));
+        }
+      } else {
+        setCreateSuccess(t('pharmacyOwner.branchCreatedSuccess', 'Branch created successfully.'));
+      }
+      setTimeout(() => setCreateSuccess(''), 6000);
       load(true);
     } catch {
       setCreateError(t('pharmacyOwner.createError'));
@@ -75,8 +92,13 @@ export default function BranchManagementPage() {
   return (
     <div className="space-y-6">
     {createSuccess && (
-        <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>
-        {createSuccess}
+        <div
+          className="px-4 py-3 rounded-xl text-sm font-medium"
+          style={createSuccess.includes('could not')
+            ? { backgroundColor: '#FEF3C7', color: '#92400E' }
+            : { backgroundColor: '#D1FAE5', color: '#065F46' }}
+        >
+          {createSuccess}
         </div>
     )}
 
@@ -205,9 +227,11 @@ export default function BranchManagementPage() {
                 Manager Email *
               </label>
               <input
+                type="email"
                 value={form.branchManagerEmail}
                 onChange={e => setForm(f => ({ ...f, branchManagerEmail: e.target.value }))}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="manager@example.com"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
             <div>
@@ -244,7 +268,8 @@ export default function BranchManagementPage() {
             <button
                 onClick={handleAdd}
                 disabled={submitting || !form.name || !form.address || !form.phone || !form.branchManagerEmail || form.latitude === undefined || form.longitude === undefined}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 bg-brand-teal"
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60"
+                style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
               >
               {submitting ? t('common.saving') : t('common.add')}
               </button>
