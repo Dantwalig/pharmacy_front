@@ -22,24 +22,26 @@ const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
 
 const DOCTOR_NAV = [
-  { href: '/hospital/doctor/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/hospital/doctor/appointments',  icon: CalendarDays,    label: 'Appointments' },
-  { href: '/hospital/doctor/consultations', icon: ClipboardList,   label: 'Consultations' },
-  { href: '/hospital/doctor/patient',       icon: Users,           label: 'Patients' },
-  { href: '/hospital/doctor/schedule',      icon: Clock,           label: 'Schedule' },
-  { href: '/hospital/doctor/messages',      icon: MessageSquare,   label: 'Messages' },
-  { href: '/hospital/doctor/prescription',  icon: Pill,            label: 'Prescriptions' },
-  { href: '/hospital/doctor/settings',      icon: Settings,        label: 'Settings' },
+  { href: '/hospital/doctor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/doctor/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/doctor/consultations', icon: ClipboardList, label: 'Consultations' },
+  { href: '/hospital/doctor/patient', icon: Users, label: 'Patients' },
+  { href: '/hospital/doctor/schedule', icon: Clock, label: 'Schedule' },
+  { href: '/hospital/doctor/messages', icon: MessageSquare, label: 'Messages' },
+  { href: '/hospital/doctor/prescription', icon: Pill, label: 'Prescriptions' },
+  { href: '/hospital/doctor/settings', icon: Settings, label: 'Settings' },
 ];
 
 const ADMIN_NAV = [
-  { href: '/hospital/admin/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/hospital/admin/finance',     icon: DollarSign,      label: 'Finance' },
-  { href: '/hospital/admin/staff',       icon: Users,           label: 'Staff' },
-  { href: '/hospital/admin/departments', icon: Building2,       label: 'Departments' },
-  { href: '/hospital/admin/schedule',    icon: Clock,           label: 'Schedule' },
-  { href: '/hospital/admin/reports',     icon: BarChart2,       label: 'Reports' },
-  { href: '/hospital/admin/settings',    icon: Settings,        label: 'Settings' },
+  { href: '/hospital/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/admin/staff', icon: Users, label: 'Staff Management' },
+  { href: '/hospital/admin/departments', icon: Building2, label: 'Departments' },
+  { href: '/hospital/admin/schedule', icon: Clock, label: 'Schedule' },
+  { href: '/hospital/admin/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/admin/finance', icon: DollarSign, label: 'Finance' },
+  { href: '/hospital/admin/inventory', icon: ClipboardList, label: 'Inventory & Procurement' },
+  { href: '/hospital/admin/reports', icon: BarChart2, label: 'Reports & Analytics' },
+  { href: '/hospital/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 interface Props {
@@ -80,9 +82,8 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
               key={href}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
               style={active ? { backgroundColor: TEAL } : {}}
             >
               <Icon size={18} />
