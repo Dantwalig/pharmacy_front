@@ -20,7 +20,7 @@ export default function BranchChangePasswordPage() {
     confirm: false,
   });
   const [form, setForm] = useState({
-    tempPassword: '',
+    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
@@ -28,20 +28,26 @@ export default function BranchChangePasswordPage() {
   const toggle = (field: keyof typeof showPass) =>
     setShowPass(prev => ({ ...prev, [field]: !prev[field] }));
 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.newPassword !== form.confirmPassword) {
-      toast.error(t('form.passwordsDoNotMatch'));
-      return;
-    }
     if (form.newPassword.length < 8) {
       toast.error(t('form.passwordTooShort'));
       return;
     }
+    if (!passwordRegex.test(form.newPassword)) {
+      toast.error('Password must contain uppercase, lowercase, and a number or special character (@$!%*?&#)');
+      return;
+    }
+    if (form.newPassword !== form.confirmPassword) {
+      toast.error(t('form.passwordsDoNotMatch'));
+      return;
+    }
     setLoading(true);
     try {
-      await api.put('/auth/branch/change-password', {
-        tempPassword: form.tempPassword,
+      await api.put('/auth/change-password', {
+        currentPassword: form.currentPassword,
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
@@ -85,9 +91,9 @@ export default function BranchChangePasswordPage() {
               <input
                 type={showPass.current ? 'text' : 'password'}
                 required
-                value={form.tempPassword}
+                value={form.currentPassword}
                 onChange={e =>
-                  setForm(p => ({ ...p, tempPassword: e.target.value }))
+                  setForm(p => ({ ...p, currentPassword: e.target.value }))
                 }
                 placeholder="Enter current password"
                 className="w-full px-4 py-3.5 pr-11 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
@@ -115,12 +121,11 @@ export default function BranchChangePasswordPage() {
               <input
                 type={showPass.new ? 'text' : 'password'}
                 required
-                minLength={8}
                 value={form.newPassword}
                 onChange={e =>
                   setForm(p => ({ ...p, newPassword: e.target.value }))
                 }
-                placeholder="At least 8 characters"
+                placeholder="Min 8 chars, uppercase, number, special char"
                 className="w-full px-4 py-3.5 pr-11 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] transition"
               />
               <button
@@ -136,6 +141,10 @@ export default function BranchChangePasswordPage() {
               </button>
             </div>
           </div>
+
+          <p className="text-xs text-gray-400 -mt-4">
+            8+ characters with uppercase, lowercase, and a number or special character (@$!%*?&#)
+          </p>
 
           {/* Confirm New Password */}
           <div>
