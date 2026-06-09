@@ -116,8 +116,7 @@ function parseCSVText(text: string): ParsedRow[] {
 
 // ── Excel parser (SheetJS) ─────────────────────────────────────────────────
 async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
-  const mod = await import('xlsx');
-  const XLSX = mod.default ?? mod;
+  const XLSX = await import('xlsx');
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
@@ -135,7 +134,7 @@ async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
 
 // ── DOCX parser (mammoth → HTML → table) ─────────────────────────────────
 async function parseDocxBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
-  const mammoth = (await import('mammoth')).default;
+  const mammoth = await import('mammoth');
   const { value: html } = await mammoth.convertToHtml({ arrayBuffer: buffer });
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const table = doc.querySelector('table');

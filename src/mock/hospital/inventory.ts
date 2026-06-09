@@ -1,4 +1,4 @@
-import { HospitalStats } from '@/types';
+
 
 export interface InventoryItem {
   id: string;

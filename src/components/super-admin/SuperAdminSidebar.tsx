@@ -30,13 +30,13 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
   const { logout } = useAuth();
 
   const navigation = [
-    { name: t('superAdmin.dashboard'),  href: '/super-admin/dashboard',       icon: Squares2X2Icon },
-    { name: t('superAdmin.pharmacies'), href: '/super-admin/pharmacies',      icon: BuildingStorefrontIcon },
-    { name: t('superAdmin.patients'),   href: '/super-admin/patients',        icon: UserGroupIcon },
-    { name: t('superAdmin.analytics'),  href: '/super-admin/analytics',       icon: ChartBarIcon },
-    { name: t('superAdmin.pharmacyMap'),href: '/super-admin/map',             icon: MapPinIcon },
-    { name: t('common.notifications'),  href: '/super-admin/notifications',   icon: BellIcon },
-    { name: t('common.profile'),        href: '/super-admin/profile',         icon: UserCircleIcon },
+    { name: t('superAdmin.dashboard'), href: '/super-admin/dashboard', icon: Squares2X2Icon },
+    { name: t('superAdmin.pharmacies'), href: '/super-admin/pharmacies', icon: BuildingStorefrontIcon },
+    { name: t('superAdmin.patients'), href: '/super-admin/patients', icon: UserGroupIcon },
+    { name: t('superAdmin.analytics'), href: '/super-admin/analytics', icon: ChartBarIcon },
+    { name: t('superAdmin.pharmacyMap'), href: '/super-admin/map', icon: MapPinIcon },
+    { name: t('common.notifications'), href: '/super-admin/notifications', icon: BellIcon },
+    { name: t('common.profile'), href: '/super-admin/profile', icon: UserCircleIcon },
   ];
 
   const handleLogout = () => {
@@ -50,7 +50,7 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
         fixed inset-y-0 left-0 z-40 w-64 flex flex-col
         transition-transform duration-300
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        lg:translate-x-0 lg:min-h-screen lg:sticky lg:top-0 lg:self-start
+        lg:static lg:translate-x-0 lg:min-h-screen
       `}
       style={{ backgroundColor: '#1E3A5F', color: '#CBD5E1' }}
     >
