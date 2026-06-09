@@ -278,6 +278,9 @@ export interface Consultation {
   diagnosis?: string;
   duration?: string;
   status: ConsultationStatus;
+  gender?: 'Male' | 'Female';
+  age?: number;
+  bp?: string;
 }
 
 export type RefusalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -291,3 +294,19 @@ export interface Refusal {
   status: RefusalStatus;
 }
 
+// ── Patients ──────────────────────────────────────────────────────────────────
+
+export type PatientStatus = 'ACTIVE' | 'CRITICAL' | 'INACTIVE';
+
+export interface Patient {
+  id: string;
+  patientId: string;
+  name: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+  isNew?: boolean;
+  followUpDue?: boolean;
+}
