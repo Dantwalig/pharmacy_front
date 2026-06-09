@@ -12,9 +12,6 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { EnvelopeIcon, ShieldCheckIcon, MapPinIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
 function VerifyEmailForm() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -78,7 +75,7 @@ function VerifyEmailForm() {
       {/* LEFT PANEL */}
       <div
         className="hidden lg:flex lg:w-5/12 p-10 flex-col justify-between text-white"
-        style={{ background: `linear-gradient(135deg, #1E4D8C 0%, #2563a8 50%, #1a3d6f 100%)` }}
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy) 0%, #2563a8 50%, var(--color-brand-navy-dark) 100%)' }}
       >
         <div>
           <div className="mb-8">
@@ -99,7 +96,7 @@ function VerifyEmailForm() {
               { icon: ShieldCheckIcon, title: 'Secure & Private', desc: 'Enterprise-grade security.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-3">
-                <Icon className="w-5 h-5 shrink-0 mt-0.5" style={{ color: TEAL }} />
+                <Icon className="w-5 h-5 shrink-0 mt-0.5 text-brand-teal" />
                 <div>
                   <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
                   <p className="text-xs" style={{ color: 'rgba(191,219,254,0.8)' }}>{desc}</p>
@@ -117,13 +114,13 @@ function VerifyEmailForm() {
           {/* Icon */}
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
             style={{ background: '#EBF4FF' }}>
-            <EnvelopeIcon className="w-7 h-7" style={{ color: NAVY }} />
+            <EnvelopeIcon className="w-7 h-7 text-brand-navy" />
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('verify.title')}</h2>
           <p className="text-gray-500 text-sm mb-1">{t('verify.subtitle')}</p>
           {email && (
-            <p className="text-xs font-medium mb-6" style={{ color: TEAL }}>
+            <p className="text-xs font-medium mb-6 text-brand-teal">
               Sent to: {email}
             </p>
           )}
@@ -147,12 +144,7 @@ function VerifyEmailForm() {
                     onKeyDown={e => handleKeyDown(idx, e)}
                     onPaste={handlePaste}
                     disabled={loading}
-                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg outline-none transition-all"
-                    style={{
-                      borderColor: digit ? TEAL : undefined,
-                    }}
-                    onFocus={e => e.target.style.borderColor = TEAL}
-                    onBlur={e => e.target.style.borderColor = digit ? TEAL : '#D1D5DB'}
+                    className={`w-12 h-12 text-center text-xl font-bold border-2 rounded-lg outline-none transition-all focus:border-brand-teal ${digit ? 'border-brand-teal' : 'border-gray-300'}`}
                   />
                 ))}
               </div>
@@ -161,8 +153,7 @@ function VerifyEmailForm() {
             <button
               type="submit"
               disabled={loading || code.join('').length !== 5}
-              className="w-full text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: TEAL }}
+              className="w-full text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 bg-brand-teal"
             >
               {loading ? (
                 <>
@@ -178,8 +169,7 @@ function VerifyEmailForm() {
             <button
               onClick={handleResend}
               disabled={resending}
-              className="text-sm font-semibold hover:underline disabled:opacity-50"
-              style={{ color: TEAL }}
+              className="text-sm font-semibold hover:underline disabled:opacity-50 text-brand-teal"
             >
               {resending ? t('verify.resending') : t('verify.resendCode')}
             </button>

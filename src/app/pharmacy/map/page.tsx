@@ -13,14 +13,11 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GitBranch, MapPin, Users, RefreshCw, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { BuildingOffice2Icon, MapPinIcon, UsersIcon, ArrowPathIcon, ExclamationCircleIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import dynamic from 'next/dynamic';
 import { api, unwrapData } from '@/lib/api';
 import type { MapMarker } from '@/components/map/BaseMap';
 import { MapSkeleton } from '@/components/map/MapStates';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 // Dynamic import — Leaflet must not run on the server
 const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false });
@@ -29,10 +26,10 @@ const BaseMap = dynamic(() => import('@/components/map/BaseMap'), { ssr: false }
 
 function statusBadge(status: string) {
   switch (status) {
-    case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active',           icon: CheckCircle };
-    case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup',    icon: Clock };
-    case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval', icon: Clock };
-    default:         return { bg: '#F3F4F6', text: '#6B7280', label: status ?? '—',      icon: AlertCircle };
+    case 'APPROVED': return { bg: '#D1FAE5', text: '#065F46', label: 'Active',           icon: CheckCircleIcon };
+    case 'INVITED':  return { bg: '#FEF3C7', text: '#92400E', label: 'Pending Setup',    icon: ClockIcon };
+    case 'PENDING':  return { bg: '#DBEAFE', text: '#1E40AF', label: 'Pending Approval', icon: ClockIcon };
+    default:         return { bg: '#F3F4F6', text: '#6B7280', label: status ?? '—',      icon: ExclamationCircleIcon };
   }
 }
 
@@ -49,8 +46,8 @@ function BranchCard({ branch, active, onClick }: { branch: any; active: boolean;
       className="w-full text-left rounded-2xl p-4 border transition-all duration-150"
       style={{
         backgroundColor: active ? '#F0F7F6' : '#fff',
-        borderColor:     active ? TEAL : '#E5E7EB',
-        boxShadow: active ? `0 0 0 2px ${TEAL}33` : undefined,
+        borderColor:     active ? '#2D9B8A' : '#E5E7EB',
+        boxShadow: active ? '0 0 0 2px #2D9B8A33' : undefined,
       }}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
@@ -59,26 +56,26 @@ function BranchCard({ branch, active, onClick }: { branch: any; active: boolean;
           className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
           style={{ backgroundColor: st.bg, color: st.text }}
         >
-          <StatusIcon size={10} />
+          <StatusIcon className="w-[10px] h-[10px]" />
           {st.label}
         </span>
       </div>
 
       <div className="flex items-start gap-1.5 text-xs text-gray-500 mb-1">
-        <MapPin size={12} className="shrink-0 mt-0.5" style={{ color: TEAL }} />
+        <MapPinIcon className="w-3 h-3 shrink-0 mt-0.5 text-brand-teal" />
         <span className="line-clamp-2">{branch.address || '—'}</span>
       </div>
 
       {branch.manager?.email && (
-        <div className="flex items-center gap-1.5 text-xs" style={{ color: NAVY }}>
-          <Users size={12} />
+        <div className="flex items-center gap-1.5 text-xs text-brand-navy">
+          <UsersIcon className="w-3 h-3" />
           <span className="truncate">{branch.manager.email}</span>
         </div>
       )}
 
       {!hasCoords && (
         <p className="mt-2 text-xs text-amber-500 flex items-center gap-1">
-          <AlertCircle size={11} />
+          <ExclamationCircleIcon className="w-[11px] h-[11px]" />
           No coordinates — won&apos;t appear on map
         </p>
       )}
@@ -147,7 +144,7 @@ export default function PharmacyMapPage() {
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="rounded-2xl p-6 lg:p-8 text-white flex items-start justify-between gap-4" style={{ backgroundColor: NAVY }}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white flex items-start justify-between gap-4 bg-brand-navy">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold">Branch Network Map</h1>
           <p className="mt-1 text-white/70">Triangulated view of all your branch locations</p>
@@ -157,7 +154,7 @@ export default function PharmacyMapPage() {
           disabled={loading}
           className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium transition-all disabled:opacity-50"
         >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <ArrowPathIcon className={`w-[15px] h-[15px] ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
@@ -165,8 +162,8 @@ export default function PharmacyMapPage() {
       {/* Stat pills */}
       <div className="flex flex-wrap gap-3">
         {[
-          { label: 'Total Branches', value: branches.length,  color: NAVY },
-          { label: 'Active',         value: totalActive,       color: TEAL },
+          { label: 'Total Branches', value: branches.length,  color: '#1E4D8C' },
+          { label: 'Active',         value: totalActive,       color: '#2D9B8A' },
           { label: 'Pending Setup',  value: totalPending,      color: '#F59E0B' },
           { label: 'On Map',         value: totalMapped,       color: '#6366F1' },
         ].map(s => (
@@ -181,9 +178,9 @@ export default function PharmacyMapPage() {
       {error ? (
         <div className="flex items-center justify-center h-64 rounded-2xl border border-gray-100 bg-gray-50">
           <div className="text-center space-y-2">
-            <AlertCircle size={28} className="mx-auto text-gray-300" />
+            <ExclamationCircleIcon className="w-7 h-7 mx-auto text-gray-300" />
             <p className="text-sm text-gray-400">Failed to load branches.</p>
-            <button onClick={load} className="text-xs font-medium underline" style={{ color: TEAL }}>Try again</button>
+            <button onClick={load} className="text-xs font-medium underline text-brand-teal">Try again</button>
           </div>
         </div>
       ) : (
@@ -214,11 +211,11 @@ export default function PharmacyMapPage() {
                 onClick={() => setTriangulate(v => !v)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all"
                 style={triangulate
-                  ? { backgroundColor: `${NAVY}12`, borderColor: NAVY, color: NAVY }
+                  ? { backgroundColor: '#1E4D8C12', borderColor: '#1E4D8C', color: '#1E4D8C' }
                   : { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#6B7280' }
                 }
               >
-                <GitBranch size={13} />
+                <BuildingOffice2Icon className="w-[13px] h-[13px]" />
                 Triangulation {triangulate ? 'On' : 'Off'}
               </button>
             </div>
@@ -231,7 +228,7 @@ export default function PharmacyMapPage() {
                 className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 gap-3"
                 style={{ height: '520px' }}
               >
-                <MapPin size={32} className="text-gray-200" />
+                <MapPinIcon className="w-8 h-8 text-gray-200" />
                 <p className="text-sm text-gray-400">No branches with coordinates to display.</p>
                 <p className="text-xs text-gray-300">Add latitude/longitude when creating branches.</p>
               </div>
@@ -283,10 +280,10 @@ export default function PharmacyMapPage() {
 
             {/* Selected branch detail card */}
             {selectedBranch && (
-              <div className="rounded-2xl border p-4 bg-white space-y-3" style={{ borderColor: TEAL }}>
+              <div className="rounded-2xl border border-brand-teal p-4 bg-white space-y-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${TEAL}20` }}>
-                    <GitBranch size={14} style={{ color: TEAL }} />
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-brand-teal/10">
+                    <BuildingOffice2Icon className="w-[14px] h-[14px] text-brand-teal" />
                   </div>
                   <p className="font-bold text-gray-900 text-sm">{selectedBranch.name}</p>
                 </div>
@@ -297,7 +294,7 @@ export default function PharmacyMapPage() {
                   </div>
                   <div className="flex gap-2">
                     <span className="text-gray-400 w-16 shrink-0">Manager</span>
-                    <span className="font-medium truncate" style={{ color: NAVY }}>{selectedBranch.manager?.email || 'Unassigned'}</span>
+                    <span className="font-medium truncate text-brand-navy">{selectedBranch.manager?.email || 'Unassigned'}</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-gray-400 w-16 shrink-0">Phone</span>

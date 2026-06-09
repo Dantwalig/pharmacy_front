@@ -10,6 +10,7 @@ export const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Bypass ngrok warning page for API calls
   },
   withCredentials: true, // Important for CORS with credentials
   timeout: 15000, // 15 second timeout to prevent endless hanging

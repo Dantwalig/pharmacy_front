@@ -1,24 +1,23 @@
 'use client';
 // src/app/(pharmacy)/orders/page.tsx
+import { formatCurrency } from '@/lib/currency';
 import { useFetch } from '@/hooks/useFetch';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback} from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Eye } from 'lucide-react';
+import { MagnifyingGlassIcon, FunnelIcon, EyeIcon } from '@heroicons/react/24/outline';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
-
-type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED';
+type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_CHECKOUT' | 'COMPLETED' | 'REJECTED';
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING:            { bg: '#FEF3C7', text: '#92400E' },
   ACCEPTED:           { bg: '#E0E7FF', text: '#3730A3' },
-  READY_FOR_PICKUP:   { bg: '#DBEAFE', text: '#1E40AF' },
+  READY_FOR_CHECKOUT: { bg: '#DBEAFE', text: '#1E40AF' },
   COMPLETED:          { bg: '#D1FAE5', text: '#065F46' },
-  CANCELLED:           { bg: '#FEE2E2', text: '#991B1B' },
+  REJECTED:           { bg: '#FEE2E2', text: '#991B1B' },
   'All Orders':       { bg: 'linear-gradient(to right, #0284C7, #38BDF8)', text: '#FFFFFF' },
 };
 
@@ -31,31 +30,27 @@ export default function PharmacyOrdersPage() {
   const [branch, setBranch]     = useState('');
 
   const fetchOrdersData = useCallback(
-    async (signal: AbortSignal) => {
-      const ordRes = await api.get('/orders/pharmacy-orders', { signal });
-      return {
-        orders: ordRes.data?.data ?? ordRes.data ?? [],
-      };
-    },
-    []
+  async (signal: AbortSignal) => {
+    const [ordRes, brRes] = await Promise.all([
+      api.get('/orders/pharmacy-orders', { signal }),
+      api.get('/branches/my-branches', { signal }),
+    ]);
+
+    return {
+      orders: ordRes.data?.data ?? ordRes.data ?? [],
+      branches: brRes.data?.data ?? brRes.data ?? [],
+    };
+  },
+  []
   );
 
   const { data, loading, error } = useFetch<{
-    orders: any[];
-  }>(fetchOrdersData, []);
+  orders: any[];
+  branches: any[];
+  }>(fetchOrdersData,[]);
 
-  const orders = data?.orders ?? [];
-
-  // Derive branch list from orders (workaround for missing /branches/my-branches endpoint)
-  const branches = useMemo(() => {
-    const map = new Map<string, { id: string; name: string }>();
-    for (const o of orders) {
-      const id = o.branch?.id ?? o.branchId ?? '';
-      const name = o.branch?.name ?? (o.branchId ? String(o.branchId) : '');
-      if (id) map.set(id, { id, name });
-    }
-    return Array.from(map.values());
-  }, [orders]);
+const orders = data?.orders ?? [];
+const branches = data?.branches ?? [];
 
   useEffect(() => {
      if (error) {
@@ -69,33 +64,26 @@ export default function PharmacyOrdersPage() {
     if (branch) res = res.filter(o => o.branchId === branch);
     if (search) {
       const q = search.toLowerCase();
-      res = res.filter((o) => {
-        const patientName = `${o.patient?.firstName ?? ''} ${o.patient?.lastName ?? ''}`.trim().toLowerCase();
-        const staffName =o.staffName ??o.branchId?.slice(0, 8) ??'';
-
-        return (
-          (o.id ?? '').toString().toLowerCase().includes(q) ||
-          patientName.includes(q) ||
-          staffName.includes(q)
-        );
-      });
+      res = res.filter(o =>
+      o.id?.toLowerCase().includes(q) ||
+        o.patientName?.toLowerCase().includes(q)
+      );
     }
     setFiltered(res);
   }, [orders, tab, branch, search]);
 
     const countFor = (s: TabKey) => {
       if (s === 'All Orders') return orders.length;
-      return orders.filter((o) => o.status === s).length;
+      return orders.filter(o => o.status === s).length;
     };
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'All Orders',         label: t('pharmacyOwner.allOrders') },
     { key: 'PENDING',            label: t('pharmacyOwner.pending') },
     { key: 'ACCEPTED',           label: t('pharmacyOwner.accepted') },
-    // WORKAROUND
-    { key: 'READY_FOR_PICKUP',   label: t('pharmacyOwner.readyForPickup') },
+    { key: 'READY_FOR_CHECKOUT', label: t('pharmacyOwner.readyForCheckout') },
     { key: 'COMPLETED',          label: t('pharmacyOwner.completedTab') },
-    { key: 'CANCELLED',          label: t('pharmacyOwner.cancelled') },
+    { key: 'REJECTED',           label: t('pharmacyOwner.rejected') },
   ];
 
   return (
@@ -113,7 +101,7 @@ export default function PharmacyOrdersPage() {
     {/* Filters */}
       <div className="flex items-center gap-3">
       <div className="flex-1 relative">
-        <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
         <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -122,7 +110,7 @@ export default function PharmacyOrdersPage() {
           />
       </div>
       <div className="flex items-center gap-2">
-        <Filter size={16} className="text-gray-400" />
+        <FunnelIcon className="w-4 h-4 text-gray-400" />
         <select
             value={branch}
             onChange={e => setBranch(e.target.value)}
@@ -205,32 +193,22 @@ export default function PharmacyOrdersPage() {
             </tr>
           ) : (
               filtered.map((order: any) => {
-                const sc = STATUS_COLORS[order.status] ?? { bg: '#F3F4F6', text: '#374151' };
                 return (
                   <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-5 py-4 text-sm font-medium text-gray-800">
                     #{order.id?.slice(0, 8)}
                     </td>
-                    <td className="px-5 py-4 text-sm text-gray-700">
-                      {`${order.patient?.firstName ?? ''} ${order.patient?.lastName ?? ''}`.trim() || '—'}
-                      </td>
+                  <td className="px-5 py-4 text-sm text-gray-700">
+                    {order.patientName ?? '—'}
+                    </td>
                   <td className="px-5 py-4 text-sm font-semibold" style={{ color: '#0284C7' }}>
-                    {order.total?.toLocaleString()} RWF
+                    {formatCurrency(order.total)}
                     </td>
                   <td className="px-5 py-4">
-                    <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ backgroundColor: sc.bg, color: sc.text }}
-                      >
-                      {order.status}
-                      </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
-                    {(
-                      (order.staff?.firstName || order.staff?.lastName)
-                        ? `${order.staff?.firstName ?? ''} ${order.staff?.lastName ?? ''}`.trim()
-                        : order.staffName ?? (order.branchId ? String(order.branchId).slice(0, 8) : '—')
-                    ) || '—'}
+                    {order.staffName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm text-gray-500">
                     {order.createdAt
@@ -242,7 +220,7 @@ export default function PharmacyOrdersPage() {
                         onClick={() => router.push(`/pharmacy/orders/${order.id}`)}
                         className="flex items-center gap-1.5 px-3 py-1.5 border border-[#0284C7] rounded-lg text-sm text-[#0284C7] hover:bg-gray-50"
                       >
-                      <Eye size={14} />
+                      <EyeIcon className="w-[14px] h-[14px]" />
                       {t('common.view')}
                       </button>
                   </td>
