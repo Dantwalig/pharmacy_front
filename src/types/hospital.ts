@@ -213,6 +213,7 @@ export interface Department {
   doctorCount: number;
   nurseCount: number;
   status: 'ACTIVE' | 'INACTIVE';
+  head?: string;
 }
 
 // ── Reports ───────────────────────────────────────────────────────────────────

@@ -113,12 +113,14 @@ export const MOCK_HOSPITAL_STAFF: HospitalStaffMember[] = [
 
 // Department summary derived from MOCK_DOCTORS grouped by specialization
 // Used by Departments page — matches Tab 6 strategy in API mapping doc
+// add  the head of department field to link with staff profiles was not in the original API mapping doc but is added here for better frontend display and linking with staff profiles
 export const MOCK_DEPARTMENTS = [
-  { id: 'dept-001', name: 'Cardiology',      doctorCount: 1, nurseCount: 1, status: 'ACTIVE' as const },
-  { id: 'dept-002', name: 'General Medicine', doctorCount: 1, nurseCount: 1, status: 'ACTIVE' as const },
-  { id: 'dept-003', name: 'Paediatrics',      doctorCount: 1, nurseCount: 1, status: 'ACTIVE' as const },
-  { id: 'dept-004', name: 'Surgery',          doctorCount: 1, nurseCount: 1, status: 'ACTIVE' as const },
-  { id: 'dept-005', name: 'Neurology',        doctorCount: 1, nurseCount: 1, status: 'ACTIVE' as const },
-  { id: 'dept-006', name: 'Orthopaedics',     doctorCount: 1, nurseCount: 0, status: 'ACTIVE' as const },
-  { id: 'dept-007', name: 'Dermatology',      doctorCount: 1, nurseCount: 0, status: 'ACTIVE' as const },
+  { id: 'dept-001', name: 'Cardiology',       doctorCount: 5,  nurseCount: 7,  status: 'ACTIVE' as const, head: 'Dr. Alice Mutoni'      },
+  { id: 'dept-002', name: 'General Medicine', doctorCount: 4,  nurseCount: 10, status: 'ACTIVE' as const, head: 'Dr. Patrick Habimana'  },
+  { id: 'dept-003', name: 'Paediatrics',      doctorCount: 4,  nurseCount: 6,  status: 'ACTIVE' as const, head: 'Dr. Diane Mukamana'    },
+  { id: 'dept-004', name: 'Surgery',          doctorCount: 6,  nurseCount: 12, status: 'ACTIVE' as const, head: 'Dr. Eric Nsanzimana'   },
+  { id: 'dept-005', name: 'Neurology',        doctorCount: 3,  nurseCount: 10, status: 'ACTIVE' as const, head: 'Dr. Solange Ingabire'  },
+  { id: 'dept-006', name: 'Orthopaedics',     doctorCount: 4,  nurseCount: 4,  status: 'ACTIVE' as const, head: 'Dr. Celestin Rudasingwa' },
+  { id: 'dept-007', name: 'Dermatology',      doctorCount: 5,  nurseCount: 4,  status: 'ACTIVE' as const, head: 'Dr. Beata Mukamugisha' },
 ];
+
