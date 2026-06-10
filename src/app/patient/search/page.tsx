@@ -12,7 +12,6 @@ import {
   MapPinIcon,
   MapIcon,
   ListBulletIcon,
-  BeakerIcon,
 } from '@heroicons/react/24/outline';
 import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -29,9 +28,6 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   ssr: false,
   loading: () => <MapSkeleton />,
 });
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 export default function SearchPage() {
   const { t } = useTranslation();
@@ -89,7 +85,7 @@ export default function SearchPage() {
   const routes = (geoStatus === 'success' && coords && mapPharmacies.length > 0)
     ? mapPharmacies.slice(0, 3).filter(p => p.latitude && p.longitude).map(p => ({
         points: [coords, [p.latitude!, p.longitude!]] as [number, number][],
-        color: NAVY,
+        color: '#1E4D8C',
         weight: 3,
         dashed: true
       }))
@@ -139,7 +135,7 @@ export default function SearchPage() {
       name: med.name,
       price: med.price,
       quantity: 1,
-      pharmacyId: med.pharmacy?.id || '',
+      pharmacyId: med.pharmacyId || med.pharmacy?.id || '',
       branchId: med.branchId || med.branch?.id || '',
       pharmacyName: med.pharmacy?.name || '',
       requiresPrescription: med.requiresPrescription,
@@ -154,8 +150,7 @@ export default function SearchPage() {
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
         {geoStatus === 'success' ? t('search.pharmaciesNearYou') : t('search.allPharmacies')}
         <span
-          className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full"
-          style={{ background: `${NAVY}15`, color: NAVY }}
+          className="ml-2 text-sm font-normal px-2 py-0.5 rounded-full bg-brand-navy/10 text-brand-navy"
         >
           {mapPharmacies.length}
         </span>
@@ -165,16 +160,14 @@ export default function SearchPage() {
         <button
           onClick={() => setViewMode('map')}
           title="Map view"
-          className="p-2.5 rounded-xl transition-all"
-          style={viewMode === 'map' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
+          className={`p-2.5 rounded-xl transition-all ${viewMode === 'map' ? 'bg-brand-teal text-white' : 'bg-gray-200 text-gray-500'}`}
         >
           <MapIcon className="w-5 h-5" />
         </button>
         <button
           onClick={() => setViewMode('list')}
           title="List view"
-          className="p-2.5 rounded-xl transition-all"
-          style={viewMode === 'list' ? { background: TEAL, color: '#fff' } : { background: '#e5e7eb', color: '#6b7280' }}
+          className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-brand-teal text-white' : 'bg-gray-200 text-gray-500'}`}
         >
           <ListBulletIcon className="w-5 h-5" />
         </button>
@@ -185,9 +178,12 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="bg-[#EBF5FF] rounded-2xl p-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-[#1E3A5F]">{t('patient.findPharmacyAndMedicine')}</h1>
-        <p className="text-lg" style={{ color: '#3B82F6' }}>{t('search.searchNearby')}</p>
+      <div
+        className="rounded-2xl shadow-xl p-8 text-white"
+        style={{ background: 'linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-navy-dark))' }}
+      >
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('patient.findPharmacyAndMedicine')}</h1>
+        <p className="text-blue-100 text-lg">{t('search.searchNearby')}</p>
       </div>
 
       {/* Search bar */}
@@ -205,12 +201,12 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl outline-none focus:ring-2 transition-all"
-              style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
+              style={{ '--tw-ring-color': '#2D9B8A' } as React.CSSProperties}
             />
           </div>
           <button
             type="submit"
-            className="px-6 py-3 rounded-xl font-semibold border-2 border-gray-800 text-gray-800 bg-white hover:bg-gray-50 transition-all whitespace-nowrap"
+            className="px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:opacity-90 whitespace-nowrap bg-brand-teal"
           >
             {t('common.search')}
           </button>
@@ -223,12 +219,7 @@ export default function SearchPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-6 py-3 rounded-xl font-semibold transition-all"
-            style={
-              activeTab === tab
-                ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)', color: '#fff' }
-                : { background: '#e5e7eb', color: '#374151' }
-            }
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === tab ? 'bg-brand-navy text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             {tab === 'pharmacies' ? t('pharmacies.pharmacies') : t('medications.medications')}
           </button>
@@ -248,7 +239,7 @@ export default function SearchPage() {
           {geoStatus !== 'success' && geoStatus !== 'denied' && (
             <div
               className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white"
-              style={{ background: `linear-gradient(135deg, ${TEAL}, #207a6c)` }}
+              style={{ background: 'linear-gradient(135deg, var(--color-brand-teal), #207a6c)' }}
             >
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-8 h-8 shrink-0" />
@@ -262,8 +253,7 @@ export default function SearchPage() {
               <button
                 onClick={requestLocation}
                 disabled={geoStatus === 'loading'}
-                className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60"
-                style={{ color: TEAL }}
+                className="shrink-0 px-6 py-2.5 bg-white font-bold text-sm rounded-xl transition-all hover:bg-gray-50 disabled:opacity-60 text-brand-teal"
               >
                 {geoStatus === 'loading' ? t('search.locating') : t('search.useMyLocation')}
               </button>
@@ -338,7 +328,7 @@ export default function SearchPage() {
                       <p className="text-sm text-gray-500">{t('search.availableAt')} {med.pharmacy?.name}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold" style={{ color: NAVY }}>
+                      <span className="text-2xl font-bold text-brand-navy">
                         RWF {med.price?.toLocaleString()}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${med.quantity > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
@@ -348,8 +338,7 @@ export default function SearchPage() {
                     <button
                       onClick={() => handleAddToCart(med)}
                       disabled={med.quantity === 0}
-                      className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40"
-                      style={{ background: TEAL }}
+                      className="w-full py-3 rounded-xl text-white font-semibold transition-all disabled:opacity-40 bg-brand-teal"
                     >
                       {t('medications.addToCart')}
                     </button>
@@ -360,13 +349,13 @@ export default function SearchPage() {
           )}
           {!medLoading && searched && medications.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow">
-              <BeakerIcon className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+              <p className="text-5xl mb-3">💊</p>
               <p className="text-gray-500 text-lg">{t('search.noMedicationsFound')}</p>
             </div>
           )}
           {!searched && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow">
-              <MagnifyingGlassIcon className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+              <p className="text-5xl mb-3">🔍</p>
               <p className="text-gray-500 text-lg">{t('search.enterMedicationName')}</p>
             </div>
           )}

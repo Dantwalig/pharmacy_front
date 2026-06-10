@@ -48,14 +48,17 @@ export default function PharmacyDetailsPage() {
   };
 
   const handleAddToCart = (medication: Medication) => {
+    const resolvedPharmacyId = medication.pharmacyId || pharmacy?.pharmacyId || pharmacy?.id || '';
+    const resolvedBranchId = pharmacy?.pharmacyId ? pharmacy.id : (medication.branchId || medication.branch?.id || branchId);
+
     addToCart({
       medicationId: medication.id,
       name: medication.name,
       price: medication.price,
       quantity: 1,
-      pharmacyId: pharmacy?.id || '',
+      pharmacyId: resolvedPharmacyId,
       pharmacyName: pharmacy?.name || '',
-      branchId: medication.branchId || medication.branch?.id || branchId,
+      branchId: resolvedBranchId,
       requiresPrescription: medication.requiresPrescription,
       imageUrl: medication.imageUrl,
     });
@@ -75,7 +78,7 @@ export default function PharmacyDetailsPage() {
       <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('pharmacies.notFound')}</p>
-        <button onClick={() => router.back()} className="bg-[#1E4D8C] text-white px-6 py-2 rounded-xl hover:bg-[#1a3d6f]">
+        <button onClick={() => router.back()} className="bg-brand-navy text-white px-6 py-2 rounded-xl hover:bg-brand-navy-dark">
           {t('pharmacies.goBack')}
           </button>
       </div>
@@ -102,18 +105,18 @@ export default function PharmacyDetailsPage() {
         </button>
 
       {/* Pharmacy Header */}
-      <div className="bg-[#EBF5FF] rounded-2xl p-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1E3A5F]">{pharmacy.name}</h1>
+        <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">{pharmacy.name}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3">
-            <MapPinIcon className="w-5 h-5 mt-0.5 shrink-0 text-[#2D9B8A]" />
-            <span className="text-gray-600 text-sm">{pharmacy.address}</span>
+            <MapPinIcon className="w-6 h-6 mt-0.5 shrink-0" />
+            <span className="text-blue-100">{pharmacy.address}</span>
           </div>
           <div className="flex items-center gap-3">
-            <PhoneIcon className="w-5 h-5 shrink-0 text-[#2D9B8A]" />
-            <a href={`tel:${pharmacy.phone}`} className="text-gray-600 hover:text-[#1E3A5F] font-medium text-sm">
+            <PhoneIcon className="w-6 h-6 shrink-0" />
+            <a href={`tel:${pharmacy.phone}`} className="text-blue-100 hover:text-white font-medium underline">
               {pharmacy.phone}
-            </a>
+              </a>
           </div>
         </div>
       </div>
@@ -126,7 +129,7 @@ export default function PharmacyDetailsPage() {
               placeholder={t('pharmacies.searchMedicationsPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#2D9B8A] dark:focus:border-[#2D9B8A] transition-colors"
+              className="w-full px-6 py-4 pr-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-brand-teal dark:focus:border-brand-teal transition-colors"
             />
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
         </div>
@@ -137,10 +140,9 @@ export default function PharmacyDetailsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all ${
                   selectedCategory === category
-                    ? 'text-white shadow-sm'
+                    ? 'bg-linear-to-r from-brand-teal to-[#207a6c] text-white shadow-lg'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
-                style={selectedCategory === category ? { background: 'linear-gradient(to right, #0688CA, #32B6F2)' } : {}}
               >
               {category}
               </button>
@@ -175,7 +177,7 @@ export default function PharmacyDetailsPage() {
                 <div className="p-6 space-y-4">
                 <div>
                   <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">{medication.name}</h3>
-                  <span className="inline-block px-3 py-1 bg-[#1E4D8C]/10 dark:bg-[#1E4D8C]/30 text-[#1E4D8C] dark:text-blue-400 rounded-full text-xs font-medium">
+                  <span className="inline-block px-3 py-1 bg-brand-navy/10 dark:bg-brand-navy/30 text-brand-navy dark:text-blue-400 rounded-full text-xs font-medium">
                     {medication.category}
                     </span>
                 </div>
@@ -197,13 +199,13 @@ export default function PharmacyDetailsPage() {
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{t('pharmacy.price')}</p>
-                    <p className="text-2xl font-bold bg-linear-to-r from-[#1E4D8C] to-[#2D9B8A] bg-clip-text text-transparent">
+                    <p className="text-2xl font-bold bg-linear-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent">
                       {medication.price.toLocaleString()} RWF
                       </p>
                   </div>
                   <button
                       onClick={() => handleAddToCart(medication)}
-                      className="text-white px-4 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-sm flex items-center gap-2" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
+                      className="bg-linear-to-r from-brand-teal to-[#207a6c] text-white px-4 py-3 rounded-xl font-semibold hover:from-[#207a6c] hover:to-[#185e53] transition-all shadow-lg flex items-center gap-2"
                     >
                     <ShoppingCartIcon className="w-5 h-5" />
                     {t('medications.addToCart')}

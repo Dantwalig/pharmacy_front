@@ -1,5 +1,44 @@
 // src/types/hospital.ts
-// Types derived from hospital_portal_api_mapping.md — match actual API shapes.
+
+export type EntryColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | (string & {});
+
+export interface ScheduleEntry {
+  id: string;
+  patientName: string;
+  time: string;
+  date: string; // ISO string or yyyy-MM-dd
+  color: EntryColor;
+  type?: string;
+  // Fields from dev
+  doctorId?: string;
+  doctorName?: string;
+  startTime?: string;
+  endTime?: string;
+  appointmentType?: 'IN_PERSON' | 'ONLINE';
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+
+export type MessageDirection = 'SENT' | 'RECEIVED';
+
+export interface Message {
+  id: string;
+  text: string;
+  direction: MessageDirection;
+  timestamp: string;
+}
+
+export interface Conversation {
+  id: string;
+  senderName: string;
+  role: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: number;
+  unreadCount?: number; // Keep for compatibility with my UI
+  initials?: string;    // Keep for UI display
+  messages: Message[];
+}
 
 // ── Auth / User ───────────────────────────────────────────────────────────────
 
@@ -212,27 +251,6 @@ export interface AdminProfile {
   phone: string;
 }
 
-// ── Messages ──────────────────────────────────────────────────────────────────
-
-export type MessageDirection = 'SENT' | 'RECEIVED';
-
-export interface Message {
-  id: string;
-  text: string;
-  direction: MessageDirection;
-  timestamp: string;
-}
-
-export interface Conversation {
-  id: string;
-  senderName: string;
-  role: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  messages: Message[];
-}
-
 // ── Claims ────────────────────────────────────────────────────────────────────
 
 export type ClaimStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -260,6 +278,9 @@ export interface Consultation {
   diagnosis?: string;
   duration?: string;
   status: ConsultationStatus;
+  gender?: 'Male' | 'Female';
+  age?: number;
+  bp?: string;
 }
 
 export type RefusalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -271,4 +292,21 @@ export interface Refusal {
   reason: string;
   insurance?: string;
   status: RefusalStatus;
+}
+
+// ── Patients ──────────────────────────────────────────────────────────────────
+
+export type PatientStatus = 'ACTIVE' | 'CRITICAL' | 'INACTIVE';
+
+export interface Patient {
+  id: string;
+  patientId: string;
+  name: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+  isNew?: boolean;
+  followUpDue?: boolean;
 }

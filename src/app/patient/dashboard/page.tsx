@@ -8,8 +8,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
-import { PENDING_STATUSES } from '@/lib/constants';
-import { getOrderItems } from '@/lib/orderUtils';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
@@ -22,6 +20,7 @@ import {
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { fetchPharmacyLocations } from '@/services/pharmacies';
 import { PharmacyLocation, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/features/map/pharmacyData';
 import { MapSkeleton } from '@/components/map/MapStates';
@@ -31,9 +30,6 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   ssr: false,
   loading: () => <MapSkeleton />,
 });
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
 
 export default function PatientDashboard() {
   const { t } = useTranslation();
@@ -83,7 +79,7 @@ export default function PatientDashboard() {
           ['COMPLETED', 'DELIVERED'].includes(o.status)
         ).length,
         pendingOrders: orders.filter((o) =>
-          PENDING_STATUSES.includes(o.status)
+          ['PENDING', 'ACCEPTED', 'PREPARING'].includes(o.status)
         ).length,
       });
       setRecentOrders(orders.slice(0, 5));
@@ -171,7 +167,7 @@ export default function PatientDashboard() {
           <Link
             href="/patient/search"
             className="inline-flex items-center text-white font-semibold text-base transition-all hover:opacity-90"
-            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)', borderRadius: '99px', padding: '20px 40px', gap: '12.79px' }}
           >
             <MapPinIcon className="w-5 h-5" />
             {t('dashboard.browseNearbyPharmacies')}
@@ -213,10 +209,9 @@ export default function PatientDashboard() {
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `${TEAL}15` }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-teal/10"
             >
-              <MapPinIcon className="w-6 h-6" style={{ color: TEAL }} />
+              <MapPinIcon className="w-6 h-6 text-brand-teal" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
@@ -229,8 +224,7 @@ export default function PatientDashboard() {
           </div>
           <Link
             href="/patient/search"
-            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
-            style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}
+            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90 bg-brand-navy"
           >
             {t('common.viewAll')} →
           </Link>
@@ -261,10 +255,9 @@ export default function PatientDashboard() {
                 onClick={() => setSelectedId(p.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                   selectedId === p.id
-                    ? 'text-white border-transparent'
+                    ? 'bg-brand-teal text-white border-brand-teal'
                     : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-teal-400'
                 }`}
-                style={selectedId === p.id ? { background: TEAL, borderColor: TEAL } : {}}
               >
                 {p.status === 'OPEN' ? '🟢' : '🔴'} {p.name}
               </button>
@@ -276,13 +269,12 @@ export default function PatientDashboard() {
       {/* Recent Orders */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold" style={{ color: NAVY }}>
+          <h2 className="text-2xl font-bold text-brand-navy">
             {t('dashboard.recentMedicalOrders')}
           </h2>
           <Link
             href="/patient/orders"
-            className="font-semibold text-sm flex items-center gap-1 hover:underline"
-            style={{ color: NAVY }}
+            className="font-semibold text-sm flex items-center gap-1 hover:underline text-brand-navy"
           >
             {t('common.viewAll')} <span className="text-base">›</span>
           </Link>
@@ -291,21 +283,12 @@ export default function PatientDashboard() {
         {recentOrders.length > 0 ? (
           <div className="flex flex-col" style={{ gap: '20px' }}>
             {recentOrders.map((order) => {
-              const firstItem = getOrderItems(order)[0];
+              const firstItem = order.items?.[0] ?? order.orderItems?.[0];
               const medName = firstItem?.medication?.name ?? 'Medication';
               const medImage = firstItem?.medication?.imageUrl;
               const pharmacyName = order.pharmacy?.name ?? '—';
               const branchName = order.branch?.name ?? '';
 
-              const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
-                PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-                ACCEPTED:  { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-                PREPARING: { bg: '#FEF3C7', color: '#D97706', dot: '#F59E0B' },
-                COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-                DELIVERED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-                CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
-              };
-              const s = statusMap[order.status] ?? statusMap.PENDING;
 
               return (
                 <Link key={order.id} href={`/patient/orders/${order.id}`}>
@@ -325,7 +308,7 @@ export default function PatientDashboard() {
                     {/* Order info */}
                     <div className="flex-1 min-w-0">
                       <p className="font-extrabold text-gray-900">Order #{order.id.slice(0, 8)}</p>
-                      <p className="font-extrabold text-sm mt-0.5" style={{ color: TEAL }}>{medName}</p>
+                      <p className="font-extrabold text-sm mt-0.5 text-brand-teal">{medName}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {pharmacyName}{branchName ? ` • ${branchName}` : ''}
                       </p>
@@ -336,13 +319,7 @@ export default function PatientDashboard() {
                       <p className="font-bold text-gray-900 text-lg">
                         {order.total?.toLocaleString()} RWF
                       </p>
-                      <span
-                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase"
-                        style={{ background: s.bg, color: s.color }}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
-                        {getStatusLabel(order.status)}
-                      </span>
+                      <StatusBadge status={order.status} label={getStatusLabel(order.status)} className="mt-2" />
                     </div>
                   </div>
                 </Link>

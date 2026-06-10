@@ -16,31 +16,18 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-      <div className="bg-[#EBF5FF] rounded-2xl p-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-[#1E3A5F]">{t('cart.title')}</h1>
-          <p className="text-gray-500">{t('cart.reviewItems')}</p>
-        </div>
-        <Link href="/patient/search">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            {t('common.search')}
-          </button>
-        </Link>
+      <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
+        <p className="text-blue-100 text-lg">{t('cart.title')}</p>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-        <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        <p className="text-gray-800 text-lg mb-2 font-bold">{t('cart.empty')}</p>
-        <p className="text-gray-500 mb-6 text-sm">
-          {t('cart.suggestedMeds')}<br />
-          <span className="text-gray-400">[Paracetamol 500mg, Ibuprofen 200mg, Vitamin C]</span>
-        </p>
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl m-6 border border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center">
+        <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-800 dark:text-gray-200 text-lg mb-2 font-semibold">{t('cart.empty')}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">{t('dashboard.startShopping')}</p>
         <Link href="/patient/search">
-          <button className="text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
+          <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
             {t('checkout2.browseMedications')}
-          </button>
+            </button>
         </Link>
       </div>
     </div>
@@ -54,19 +41,9 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
-    <div className="bg-[#EBF5FF] rounded-2xl p-8 flex items-start justify-between">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-[#1E3A5F]">{t('cart.title')}</h1>
-        <p className="text-gray-500">{pharmacyName || t('cart.reviewItems')}</p>
-      </div>
-      <Link href="/patient/search">
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          {t('common.search')}
-        </button>
-      </Link>
+    <div className="bg-linear-to-r from-brand-navy to-brand-navy-dark rounded-2xl shadow-xl p-8 text-white">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('cart.title')}</h1>
+      <p className="text-blue-100"> {pharmacyName}</p>
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -109,7 +86,7 @@ export default function CartPage() {
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('cart.subtotal')}</span>
-                  <span className="font-bold text-lg text-[#2563EB]">{(item.price * item.quantity).toLocaleString()} RWF</span>
+                  <span className="font-bold text-lg text-blue-600 dark:text-blue-400">{(item.price * item.quantity).toLocaleString()} RWF</span>
                 </div>
               </div>
             ))}
@@ -130,12 +107,12 @@ export default function CartPage() {
             </div>
             <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-4 flex justify-between">
               <span className="font-bold text-lg text-gray-800 dark:text-gray-100">{t('cart.total')}</span>
-              <span className="font-bold text-2xl text-[#2563EB]">{total.toLocaleString()} RWF</span>
+              <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">{total.toLocaleString()} RWF</span>
             </div>
           </div>
           <div className="space-y-3">
             <button onClick={() => router.push('/patient/checkout')}
-                className="w-full text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-sm" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
+                className="w-full bg-linear-to-r from-brand-navy to-brand-navy-dark text-white py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-900 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
               {t('cart.proceedToCheckout')}
               </button>
             <Link href="/patient/search">

@@ -7,13 +7,12 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
-
-const NAVY = '#1E4D8C';
-const TEAL = '#2D9B8A';
+import { useAuth } from '@/context/AuthContext';
 
 export default function StaffChangePasswordPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState({ temp: false, new: false, confirm: false });
   const [form, setForm] = useState({
@@ -39,6 +38,7 @@ export default function StaffChangePasswordPage() {
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
+      updateUser({ requiresPasswordChange: false });
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (error: unknown) {
@@ -52,13 +52,12 @@ export default function StaffChangePasswordPage() {
     setShowPass(prev => ({ ...prev, [field]: !prev[field] }));
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: NAVY }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-brand-navy">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: '#F0F7F6' }}>
-              <ShieldCheckIcon className="w-7 h-7" style={{ color: TEAL }} />
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-brand-teal-light">
+              <ShieldCheckIcon className="w-7 h-7 text-brand-teal" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">{t('staff.welcomeTitle')}</h1>
             <p className="text-sm text-gray-500 mt-2">
@@ -82,10 +81,7 @@ export default function StaffChangePasswordPage() {
                     value={form[key as keyof typeof form]}
                     onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
                     placeholder={placeholder}
-                    className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-lg text-sm outline-none"
-                    style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
-                    onFocus={e => (e.target.style.borderColor = TEAL)}
-                    onBlur={e => (e.target.style.borderColor = '#D1D5DB')}
+                    className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-brand-teal"
                   />
                   <button type="button" onClick={() => toggle(field)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -100,8 +96,7 @@ export default function StaffChangePasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-              style={{ backgroundColor: TEAL }}
+              className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2 bg-brand-teal"
             >
               {loading ? (
                 <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('branch.saving')}</>

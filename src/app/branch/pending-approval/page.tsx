@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import { CloudArrowUpIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 import { BranchStatus } from '@/types';
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 
 export default function BranchPendingApprovalPage() {
   const { t } = useTranslation();
@@ -59,9 +60,12 @@ export default function BranchPendingApprovalPage() {
   const isPending = branchStatus === 'PENDING';
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
     <div className="w-full max-w-md">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+      <div className="bg-white rounded-2xl shadow-xl p-8 relative">
+        <div className="absolute top-6 right-6">
+          <LanguageSwitcher />
+        </div>
         {/* Status icon */}
           <div className="text-center mb-8">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
@@ -72,7 +76,7 @@ export default function BranchPendingApprovalPage() {
               : <CloudArrowUpIcon className="w-8 h-8 text-emerald-600" />
             }
             </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-bold text-gray-900">
             {isPending ? t('pendingApproval.underReview') : t('pendingApproval.uploadBranchLicense')}
             </h1>
           <p className="text-sm text-gray-500 mt-2">
@@ -85,11 +89,11 @@ export default function BranchPendingApprovalPage() {
 
         {isPending ? (
             // Waiting state
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-xl p-4 text-center">
-            <p className="text-yellow-800 dark:text-yellow-400 font-medium text-sm">
+            <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-center">
+            <p className="text-yellow-800 font-medium text-sm">
               {t('pendingApproval.approvalTime')}
               </p>
-            <p className="text-yellow-600 dark:text-yellow-500 text-xs mt-1">
+            <p className="text-yellow-600 text-xs mt-1">
               {t('pendingApproval.notifyOnApproval')}
               </p>
           </div>
@@ -97,21 +101,21 @@ export default function BranchPendingApprovalPage() {
             // Upload form
             <form onSubmit={handleUpload} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
                 {t('pendingApproval.licenseLabel')}
                 </label>
               <div
                   className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
                     file
-                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+                      ? 'border-emerald-400 bg-emerald-50'
+                      : 'border-gray-300 hover:border-emerald-400 hover:bg-emerald-50'
                   }`}
                   onClick={() => document.getElementById('license-input')?.click()}
                 >
                 <CloudArrowUpIcon className={`w-8 h-8 mx-auto mb-2 ${file ? 'text-emerald-500' : 'text-gray-400'}`} />
                 {file ? (
                     <>
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{file.name}</p>
+                    <p className="text-sm font-medium text-emerald-700">{file.name}</p>
                     <p className="text-xs text-emerald-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </>
                 ) : (
@@ -133,7 +137,7 @@ export default function BranchPendingApprovalPage() {
             <button
                 type="submit"
                 disabled={!file || uploading}
-                className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: "#2D9B8A" }}
+                className="w-full text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 bg-brand-teal"
               >
               {uploading ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('pendingApproval.uploading')}</>
@@ -146,7 +150,7 @@ export default function BranchPendingApprovalPage() {
 
           <button
             onClick={logout}
-            className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors"
           >
           {t('common.logout')}
           </button>
