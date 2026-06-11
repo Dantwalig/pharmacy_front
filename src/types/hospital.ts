@@ -213,6 +213,7 @@ export interface Department {
   doctorCount: number;
   nurseCount: number;
   status: 'ACTIVE' | 'INACTIVE';
+  head?: string;
 }
 
 // ── Reports ───────────────────────────────────────────────────────────────────
@@ -309,4 +310,29 @@ export interface Patient {
   status: PatientStatus;
   isNew?: boolean;
   followUpDue?: boolean;
+}
+
+// Tab identifiers for the doctor prescription page
+export type PrescriptionTab = 'info' | 'visits' | 'labs' | 'prescriptions';
+
+// Extended patient details — used by Patient Info tab on the prescription page
+// Fields beyond base Patient: dob, bloodType, phone, email, address,
+//   insurance (provider + ID), allergies[], emergencyContact (name/relation/phone)
+export interface PatientDetail {
+  dob: string;
+  bloodType: string;
+  phone: string;
+  email: string;
+  address: string;
+  insurance: string;
+  insuranceId: string;
+  allergies: string[];
+  emergencyContact: { name: string; relation: string; phone: string };
+}
+
+// Individual prescription entry for a patient
+export interface PatientRx {
+  id: string;
+  name: string;
+  description: string;
 }
