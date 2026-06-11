@@ -1,3 +1,7 @@
+import PatientNotificationsPage from "@/app/patient/notifications/page";
+import { printCustomRoutes } from "next/dist/build/utils";
+import { Condiment } from "next/font/google";
+
 // src/lib/i18n/en.ts
 export const en = {
   common: {
@@ -1616,6 +1620,18 @@ export const en = {
     hospitalProfile: 'Hospital Profile',
     adminProfile: 'Admin Profile',
     logout: 'Logout',
+    doctorName: 'Doctor',
+    specialization: 'Specialization',
+
+    //Added for doctor Dashboard
+    activeDoctors: 'Active Doctors',
+    monthlyRevenue: 'Monthly Revenue',
+    condition: 'Condition',
+    weeklyPatientVisitsRates: 'Weekly Visit Rates',
+    doctor: 'Doctor',
+    priority: 'Priority',
+    notification: 'Notifications',
+    patientCategories: 'Patient Category',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',
