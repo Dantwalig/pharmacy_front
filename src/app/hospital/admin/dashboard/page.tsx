@@ -176,25 +176,9 @@ export default function HospitalAdminDashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid vertical={false} />
-
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                />
-
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                />
-
-                <Tooltip />
-
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  dot={false}
-                />
+                <XAxis dataKey="label" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Line type="monotone" dataKey="value" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
