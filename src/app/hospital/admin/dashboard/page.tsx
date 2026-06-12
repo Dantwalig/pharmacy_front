@@ -172,8 +172,8 @@ export default function HospitalAdminDashboardPage() {
             </div>
           </div>
 
-          <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px]">
+            <ResponsiveContainer width="98%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="label" axisLine={false} tickLine={false} />
