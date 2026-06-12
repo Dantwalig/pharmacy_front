@@ -592,6 +592,7 @@ export const en = {
       weeklyReport: 'Weekly report ready',
     },
     pharmacyMap: 'Pharmacy Map',
+
   },
   branch: {
     portal: 'Branch Portal',
@@ -1632,6 +1633,20 @@ export const en = {
     priority: 'Priority',
     notification: 'Notifications',
     patientCategories: 'Patient Category',
+    welcomeMessage: 'Ready for today’s appointments and patient updates.',
+    viewSchedule: 'Today',
+        
+    //Added for admin dashboard page
+    adminWelcomeMessage: 'Welcome back, Super Admin! Here\'s what\'s happening today.',
+    viewAppointments: 'View Appointments',
+    procuredValue: 'Procured Value',
+    lowStockExpiry: 'Low Stock & Expiry',
+    onDutyToday: 'On Duty Today',
+    requiresImmediateAttention: 'Requires Immediate Attention',
+    monthlyLogistics: 'Monthly Logistics',
+    spend: 'Spend',
+    volume: 'Volume',
+    recentActivity: 'Recent Activity',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',
