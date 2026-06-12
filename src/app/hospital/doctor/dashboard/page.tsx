@@ -24,7 +24,7 @@ export default function HospitalDoctorDashboardPage() {
   const overviewCards = [
     {
       title: MOCK_DASHBOARD_STATS.appointmentsByStatus.CONFIRMED + MOCK_DASHBOARD_STATS.appointmentsByStatus.PENDING,
-      label: t('hospital.todaysAppointments'),
+      label: t('hospital.todayAppointments'),
       icon: CalendarIcon,
       borderColor: '#E0F2FE',
       iconColor: '#0284C7',
@@ -116,7 +116,7 @@ export default function HospitalDoctorDashboardPage() {
 
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
-            {getGreeting()},<br />{firstName}.
+            {getGreeting()},{firstName}.
           </h1>
           <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeMessage')}</p>
           <Link
