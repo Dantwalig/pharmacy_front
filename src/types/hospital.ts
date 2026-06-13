@@ -122,6 +122,9 @@ export interface Appointment {
   patientName: string;
   doctorName: string;
   specialization: string;
+//added for doctor dashboard recent appointments table
+  condition?: string;
+  healthStatus?: string;
 }
 
 // ── Inventory / Drug Stock ────────────────────────────────────────────────────
