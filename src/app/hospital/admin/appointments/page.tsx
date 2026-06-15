@@ -79,8 +79,8 @@ export default function HospitalAdminAppointmentsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: NAVY }}>
+      <div className="rounded-2xl px-4 py-5 sm:p-8" style={{ background: '#EBF5FF' }}>
+        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>
           Appointment Scheduling &amp; Tracking
         </h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -91,8 +91,8 @@ export default function HospitalAdminAppointmentsPage() {
       {/* Table card */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Filter bar */}
-        <div className="p-4 border-b border-gray-100 flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[160px]">
+        <div className="p-3 sm:p-4 border-b border-gray-100 flex flex-wrap gap-2 sm:gap-3 items-center">
+          <div className="relative flex-1 min-w-[140px]">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -148,12 +148,12 @@ export default function HospitalAdminAppointmentsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
-                <th className="px-6 py-3">Patient Name</th>
-                <th className="px-6 py-3">Assigned Doctor</th>
-                <th className="px-6 py-3">Department</th>
-                <th className="px-6 py-3">Scheduled Date &amp; Time</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Options</th>
+                <th className="px-4 sm:px-6 py-3">Patient Name</th>
+                <th className="px-4 sm:px-6 py-3">Assigned Doctor</th>
+                <th className="hidden md:table-cell px-6 py-3">Department</th>
+                <th className="hidden sm:table-cell px-6 py-3">Scheduled Date &amp; Time</th>
+                <th className="px-4 sm:px-6 py-3">Status</th>
+                <th className="px-4 sm:px-6 py-3">Options</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -162,11 +162,11 @@ export default function HospitalAdminAppointmentsPage() {
                 const dm = DEPT_META[a.specialization] ?? { bg: '#F3F4F6', color: '#374151' };
                 return (
                   <tr key={a.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold" style={{ color: NAVY }}>
+                    <td className="px-4 sm:px-6 py-4 font-semibold" style={{ color: NAVY }}>
                       {a.patientName}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{a.doctorName}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4 text-gray-600">{a.doctorName}</td>
+                    <td className="hidden md:table-cell px-6 py-4">
                       <span
                         className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide whitespace-nowrap"
                         style={{ background: dm.bg, color: dm.color }}
@@ -174,10 +174,10 @@ export default function HospitalAdminAppointmentsPage() {
                         {a.specialization}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                    <td className="hidden sm:table-cell px-6 py-4 text-gray-600 whitespace-nowrap">
                       {formatDateTime(a.date)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <span
                         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap"
                         style={{ background: sm.bg, color: sm.color }}
@@ -186,7 +186,7 @@ export default function HospitalAdminAppointmentsPage() {
                         {sm.label}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <div className="flex items-center gap-1">
                         <button
                           className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400 transition-colors"

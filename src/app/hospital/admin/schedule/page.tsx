@@ -19,7 +19,6 @@ import type { ScheduleEntry } from '@/types/hospital';
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
 
-// Pastel card palette keyed to the color field on ScheduleEntry
 const CARD_PALETTE: Record<string, { bg: string; fg: string }> = {
   blue:   { bg: '#EFF6FF', fg: '#1E40AF' },
   green:  { bg: '#F0FDF4', fg: '#166534' },
@@ -38,10 +37,10 @@ function typeDisplay(type?: string): { label: string; Icon: React.ElementType } 
   return { label: 'In Person', Icon: UserIcon };
 }
 
-// ── Date helpers ────────────────────────────────────────────────────────────
+// ── Date helpers ─────────────────────────────────────────────────────────────
 
 function getMondayOfWeek(d: Date): Date {
-  const dow = d.getUTCDay(); // 0=Sun
+  const dow = d.getUTCDay();
   const diff = dow === 0 ? -6 : 1 - dow;
   const m = new Date(d);
   m.setUTCDate(d.getUTCDate() + diff);
@@ -63,51 +62,52 @@ function parseMin(t: string) {
   return h * 60 + m;
 }
 
-function fmt12(h: number) {
-  return h === 12 ? '12 PM' : h > 12 ? `${h - 12} PM` : `${h} AM`;
-}
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// 30-minute slots from 08:00 to 14:30 — fixed height, no row inflation
+const HALF_SLOTS: { time: string; label: string; onHour: boolean }[] = [
+  { time: '08:00', label: '8 AM',  onHour: true  },
+  { time: '08:30', label: '',      onHour: false },
+  { time: '09:00', label: '9 AM',  onHour: true  },
+  { time: '09:30', label: '',      onHour: false },
+  { time: '10:00', label: '10 AM', onHour: true  },
+  { time: '10:30', label: '',      onHour: false },
+  { time: '11:00', label: '11 AM', onHour: true  },
+  { time: '11:30', label: '',      onHour: false },
+  { time: '12:00', label: '12 PM', onHour: true  },
+  { time: '12:30', label: '',      onHour: false },
+  { time: '13:00', label: '1 PM',  onHour: true  },
+  { time: '13:30', label: '',      onHour: false },
+  { time: '14:00', label: '2 PM',  onHour: true  },
+  { time: '14:30', label: '',      onHour: false },
+];
 
-const HOUR_SLOTS = [8, 9, 10, 11, 12, 13, 14, 15];
 const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 const DOW_ABBR = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-// Mock "today" anchored to the demo data week so the calendar pre-loads with data
+// Anchored to Tuesday June 2, 2026 so the week loads Mon Jun 1–Sun Jun 7 with data
 const MOCK_TODAY = new Date('2026-06-02T00:00:00Z');
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function HospitalAdminSchedulePage() {
   const todayStr = toISO(MOCK_TODAY);
 
-  // Week being viewed
   const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(MOCK_TODAY));
-
-  // Mini-calendar month being shown
-  const [calYear, setCalYear] = useState(MOCK_TODAY.getUTCFullYear());
-  const [calMonth, setCalMonth] = useState(MOCK_TODAY.getUTCMonth());
-
-  // Mobile left-panel visibility
-  const [leftOpen, setLeftOpen] = useState(false);
-
-  // Week / Month tab (Month is visual only — no grid change)
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [calYear,   setCalYear]   = useState(MOCK_TODAY.getUTCFullYear());
+  const [calMonth,  setCalMonth]  = useState(MOCK_TODAY.getUTCMonth());
+  const [leftOpen,  setLeftOpen]  = useState(false);
+  const [viewMode,  setViewMode]  = useState<'week' | 'month'>('week');
 
   const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
 
   const prevWeek = () => {
-    const d = new Date(weekStart);
-    d.setUTCDate(d.getUTCDate() - 7);
-    setWeekStart(d);
+    const d = new Date(weekStart); d.setUTCDate(d.getUTCDate() - 7); setWeekStart(d);
   };
-
   const nextWeek = () => {
-    const d = new Date(weekStart);
-    d.setUTCDate(d.getUTCDate() + 7);
-    setWeekStart(d);
+    const d = new Date(weekStart); d.setUTCDate(d.getUTCDate() + 7); setWeekStart(d);
   };
 
   const entriesByDay = useMemo(() => {
@@ -121,19 +121,20 @@ export default function HospitalAdminSchedulePage() {
 
   const weekLabel = `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })} – ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}`;
 
-  // Mini-calendar helpers
   const daysInMonth = new Date(Date.UTC(calYear, calMonth + 1, 0)).getUTCDate();
-  const firstDow    = new Date(Date.UTC(calYear, calMonth, 1)).getUTCDay(); // 0=Sun
+  const firstDow    = new Date(Date.UTC(calYear, calMonth, 1)).getUTCDay();
 
   const handleCalDay = (day: number) => {
-    const clicked = new Date(Date.UTC(calYear, calMonth, day));
-    setWeekStart(getMondayOfWeek(clicked));
+    setWeekStart(getMondayOfWeek(new Date(Date.UTC(calYear, calMonth, day))));
   };
 
-  const prevCalMonth = () => calMonth === 0 ? (setCalYear(y => y - 1), setCalMonth(11)) : setCalMonth(m => m - 1);
-  const nextCalMonth = () => calMonth === 11 ? (setCalYear(y => y + 1), setCalMonth(0)) : setCalMonth(m => m + 1);
+  const prevCalMonth = () => calMonth === 0
+    ? (setCalYear(y => y - 1), setCalMonth(11))
+    : setCalMonth(m => m - 1);
+  const nextCalMonth = () => calMonth === 11
+    ? (setCalYear(y => y + 1), setCalMonth(0))
+    : setCalMonth(m => m + 1);
 
-  // Doctor legend
   const doctorLegend = useMemo(() => {
     const seen = new Set<string>();
     return MOCK_SCHEDULE.reduce<{ id: string; name: string; color: string }[]>((acc, e) => {
@@ -146,7 +147,7 @@ export default function HospitalAdminSchedulePage() {
     }, []);
   }, []);
 
-  // ── Left panel ─────────────────────────────────────────────────────────────
+  // ── Left panel ──────────────────────────────────────────────────────────────
 
   const leftPanel = (
     <div className="space-y-3">
@@ -164,14 +165,12 @@ export default function HospitalAdminSchedulePage() {
           </button>
         </div>
 
-        {/* Day-of-week header */}
         <div className="grid grid-cols-7 mb-1">
           {DOW_ABBR.map((d, i) => (
             <div key={i} className="text-center text-[9px] font-semibold text-gray-400">{d}</div>
           ))}
         </div>
 
-        {/* Day grid */}
         <div className="grid grid-cols-7 gap-y-0.5">
           {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} />)}
           {Array.from({ length: daysInMonth }, (_, i) => {
@@ -185,8 +184,8 @@ export default function HospitalAdminSchedulePage() {
                 onClick={() => handleCalDay(day)}
                 className="w-6 h-6 mx-auto flex items-center justify-center text-[11px] rounded-full transition-colors hover:opacity-90"
                 style={
-                  isToday  ? { backgroundColor: TEAL,  color: '#fff', fontWeight: 700 } :
-                  isInWeek ? { backgroundColor: NAVY,  color: '#fff', opacity: 0.55 }  :
+                  isToday  ? { backgroundColor: TEAL, color: '#fff', fontWeight: 700 } :
+                  isInWeek ? { backgroundColor: NAVY, color: '#fff', opacity: 0.55 }   :
                              { color: '#374151' }
                 }
               >
@@ -197,7 +196,7 @@ export default function HospitalAdminSchedulePage() {
         </div>
       </div>
 
-      {/* Search for people */}
+      {/* Search */}
       <div className="bg-white rounded-2xl px-3 py-2.5 shadow-sm">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -209,25 +208,19 @@ export default function HospitalAdminSchedulePage() {
         </div>
       </div>
 
-      {/* Booking pages + My/Other calendars */}
+      {/* Booking pages / calendars */}
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Booking Pages</p>
-
-        {/* My calendars */}
         <div>
           <button className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-700 w-full">
             <ChevronDownIcon className="w-3 h-3 shrink-0" />
             My calendars
           </button>
-          <div className="mt-2 pl-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: TEAL }} />
-              <span className="text-[11px] text-gray-600">Hospital Admin</span>
-            </div>
+          <div className="mt-2 pl-4 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: TEAL }} />
+            <span className="text-[11px] text-gray-600">Hospital Admin</span>
           </div>
         </div>
-
-        {/* Other calendars */}
         <div>
           <button className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-700 w-full group">
             <PlusIcon className="w-3 h-3 shrink-0 group-hover:text-sky-500 transition-colors" />
@@ -238,11 +231,10 @@ export default function HospitalAdminSchedulePage() {
     </div>
   );
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div>
-      {/* Mobile panel toggle */}
       <button
         className="lg:hidden mb-4 inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white"
         style={{ backgroundColor: NAVY }}
@@ -253,24 +245,22 @@ export default function HospitalAdminSchedulePage() {
       </button>
 
       <div className="flex gap-5 items-start">
-        {/* Left panel */}
         <aside className={`w-52 shrink-0 ${leftOpen ? 'block' : 'hidden'} lg:block`}>
           {leftPanel}
         </aside>
 
-        {/* Main content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* Page header */}
-          <div className="rounded-2xl px-8 py-6" style={{ background: '#EBF5FF' }}>
+          <div className="rounded-2xl px-4 py-4 sm:px-8 sm:py-6" style={{ background: '#EBF5FF' }}>
             <div className="flex items-start justify-between flex-wrap gap-3">
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: NAVY }}>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: NAVY }}>
                   SCHEDULE
                 </h1>
                 <p className="mt-0.5 text-sm text-gray-500">Appointment list &middot; Today</p>
               </div>
               <button
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: TEAL }}
               >
                 Try now
@@ -281,9 +271,8 @@ export default function HospitalAdminSchedulePage() {
 
           {/* Calendar card */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {/* Navigation bar */}
+            {/* Nav bar */}
             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 flex-wrap">
-              {/* Week / Month toggle */}
               <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-semibold">
                 <button
                   onClick={() => setViewMode('week')}
@@ -301,12 +290,11 @@ export default function HospitalAdminSchedulePage() {
                 </button>
               </div>
 
-              {/* Arrows + date range */}
               <div className="flex items-center gap-1 flex-1 justify-center min-w-0">
                 <button onClick={prevWeek} className="p-1.5 rounded-lg hover:bg-gray-100 shrink-0">
                   <ChevronLeftIcon className="w-4 h-4 text-gray-500" />
                 </button>
-                <span className="text-xs font-semibold px-1 truncate" style={{ color: NAVY }}>
+                <span className="text-xs font-semibold px-1 truncate max-w-[120px] sm:max-w-none" style={{ color: NAVY }}>
                   {weekLabel}
                 </span>
                 <button onClick={nextWeek} className="p-1.5 rounded-lg hover:bg-gray-100 shrink-0">
@@ -314,7 +302,6 @@ export default function HospitalAdminSchedulePage() {
                 </button>
               </div>
 
-              {/* Search + Settings */}
               <div className="flex items-center gap-1 shrink-0">
                 <button className="p-1.5 rounded-lg hover:bg-gray-100">
                   <MagnifyingGlassIcon className="w-4 h-4 text-gray-500" />
@@ -325,11 +312,14 @@ export default function HospitalAdminSchedulePage() {
               </div>
             </div>
 
-            {/* Grid — scrolls horizontally on small screens */}
+            {/* Grid */}
             <div className="overflow-x-auto">
               <div className="min-w-[640px]">
                 {/* Day-column headers */}
-                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
+                <div
+                  className="grid border-b border-gray-100"
+                  style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}
+                >
                   <div className="py-3 text-center text-[9px] text-gray-400 font-semibold uppercase tracking-widest">
                     GMT
                   </div>
@@ -353,45 +343,45 @@ export default function HospitalAdminSchedulePage() {
                   })}
                 </div>
 
-                {/* Hour rows */}
-                {HOUR_SLOTS.map(hour => {
-                  const slotStart = hour * 60;
-                  const slotEnd   = slotStart + 60;
+                {/* 30-minute slot rows — fixed h-14 so no row ever inflates */}
+                {HALF_SLOTS.map(slot => {
+                  const slotMin = parseMin(slot.time);
                   return (
                     <div
-                      key={hour}
-                      className="grid border-t border-gray-50"
-                      style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}
+                      key={slot.time}
+                      className="grid"
+                      style={{ gridTemplateColumns: '52px repeat(7, 1fr)', height: 56 }}
                     >
-                      {/* Time label */}
-                      <div className="pr-2 pt-2.5 text-[10px] text-gray-400 font-medium text-right border-r border-gray-100">
-                        {fmt12(hour)}
+                      {/* Time label — only on the :00 mark */}
+                      <div
+                        className={`flex items-start justify-end pr-2 pt-1.5 text-[10px] font-medium text-gray-400 border-r border-gray-100 ${slot.onHour ? 'border-t border-gray-100' : 'border-t border-gray-50'}`}
+                      >
+                        {slot.label}
                       </div>
 
                       {/* Day cells */}
                       {weekDates.map((d, di) => {
                         const isToday  = toISO(d) === todayStr;
-                        const daySlots = (entriesByDay.get(toISO(d)) ?? []).filter(e => {
+                        const dayEntry = (entriesByDay.get(toISO(d)) ?? []).find(e => {
                           const s = parseMin(e.startTime ?? '00:00');
-                          return s >= slotStart && s < slotEnd;
+                          return s >= slotMin && s < slotMin + 30;
                         });
                         return (
                           <div
                             key={di}
-                            className="border-l border-gray-100 min-h-[76px] p-1 space-y-1"
+                            className={`border-l border-gray-100 p-1 ${slot.onHour ? 'border-t border-gray-100' : 'border-t border-gray-50'}`}
                             style={isToday ? { backgroundColor: '#EFF6FF40' } : {}}
                           >
-                            {daySlots.map(entry => {
-                              const { bg, fg } = cardColors(entry.color as string);
-                              const { label, Icon } = typeDisplay(entry.type);
+                            {dayEntry && (() => {
+                              const { bg, fg } = cardColors(dayEntry.color as string);
+                              const { label, Icon } = typeDisplay(dayEntry.type);
                               return (
                                 <div
-                                  key={entry.id}
-                                  className="rounded-xl px-2.5 py-2 text-xs cursor-default"
+                                  className="rounded-xl px-2 py-1.5 text-xs cursor-default h-full"
                                   style={{ backgroundColor: bg, color: fg }}
                                 >
-                                  <p className="font-semibold truncate leading-snug">
-                                    {entry.doctorName ?? entry.patientName}
+                                  <p className="font-semibold truncate leading-snug text-[11px]">
+                                    {dayEntry.doctorName ?? dayEntry.patientName}
                                   </p>
                                   <div className="flex items-center gap-1 mt-0.5 opacity-80">
                                     <Icon className="w-3 h-3 shrink-0" />
@@ -399,7 +389,7 @@ export default function HospitalAdminSchedulePage() {
                                   </div>
                                 </div>
                               );
-                            })}
+                            })()}
                           </div>
                         );
                       })}
