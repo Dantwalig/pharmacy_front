@@ -13,12 +13,12 @@ import type { AppointmentStatus } from '@/types/hospital';
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
 
-const STATUS_META: Record<AppointmentStatus, { label: string; bg: string; color: string }> = {
-  CONFIRMED:        { label: 'Confirmed',     bg: '#DCFCE7', color: '#166534' },
-  PENDING:          { label: 'Pending',        bg: '#FEF9C3', color: '#854D0E' },
-  CANCELLED:        { label: 'Cancelled',      bg: '#FEE2E2', color: '#991B1B' },
-  READY_FOR_DOCTOR: { label: 'Ready',          bg: '#DBEAFE', color: '#1E40AF' },
-  COMPLETED:        { label: 'Completed',      bg: '#F3F4F6', color: '#4B5563' },
+const STATUS_META: Record<AppointmentStatus, { label: string; dot: string; bg: string; color: string }> = {
+  CONFIRMED:        { label: 'CONFIRMED',  dot: '#16A34A', bg: '#DCFCE7', color: '#166534' },
+  PENDING:          { label: 'PENDING',    dot: '#D97706', bg: '#FEF9C3', color: '#854D0E' },
+  CANCELLED:        { label: 'CANCELLED',  dot: '#DC2626', bg: '#FEE2E2', color: '#991B1B' },
+  READY_FOR_DOCTOR: { label: 'READY',      dot: '#2563EB', bg: '#DBEAFE', color: '#1E40AF' },
+  COMPLETED:        { label: 'COMPLETED',  dot: '#6B7280', bg: '#F3F4F6', color: '#4B5563' },
 };
 
 const DEPT_META: Record<string, { bg: string; color: string }> = {
@@ -179,9 +179,10 @@ export default function HospitalAdminAppointmentsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className="inline-block px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap"
                         style={{ background: sm.bg, color: sm.color }}
                       >
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: sm.dot }} />
                         {sm.label}
                       </span>
                     </td>
