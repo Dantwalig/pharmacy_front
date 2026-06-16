@@ -572,8 +572,6 @@ export const en = {
     platformRevenue: 'Platform Revenue',
     pharmacyManagement: 'Pharmacy Management',
     pharmacies: 'Pharmacies',
-    hospitalManagement: 'Hospital Management',
-    hospitals: 'Hospitals',
     patients: 'Patients',
     analytics: 'Analytics',
     pending: 'Pending',

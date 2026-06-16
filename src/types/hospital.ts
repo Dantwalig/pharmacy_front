@@ -66,17 +66,6 @@ export interface MockAdmin {
   email: string;
 }
 
-export interface MockNurse {
-  id: string;
-  firstName: string;
-  lastName: string;
-  role: 'NURSE';
-  department: string;
-  hospitalId: string;
-  hospitalName: string;
-  email: string;
-}
-
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 // Source: GET /api/hospitals/:hospitalId/dashboard/stats
 
@@ -248,28 +237,6 @@ export interface AdmissionDataPoint {
 export interface DiagnosisBreakdown {
   name: string;
   value: number;
-}
-
-// Analytics charts shown on the Reports & Analysis page (Figma)
-export interface DepartmentWaitTime {
-  department: string;
-  minutes: number;
-}
-
-export interface SatisfactionSlice {
-  name: 'Excellent' | 'Good' | 'Poor';
-  value: number;
-}
-
-export interface DepartmentStaffCount {
-  department: string;
-  staff: number;
-}
-
-export interface AdmissionsTrendPoint {
-  period: string;
-  admitted: number;
-  outpatients: number;
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────

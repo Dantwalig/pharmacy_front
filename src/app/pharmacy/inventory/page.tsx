@@ -155,7 +155,7 @@ useEffect(() => {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {['Medication Name','Branch','Category','Dosage','Manufacturer','Unit Price','Qty in Stock','Threshold','Prescription','Expiry','Status','Actions'].map(h => (
+                {['Medication Name','Category','Dosage','Manufacturer','Unit Price','Qty in Stock','Threshold','Prescription','Expiry','Status','Actions'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
                 </tr>
@@ -170,12 +170,6 @@ useEffect(() => {
                       <p className="font-semibold text-gray-900">{med.name}</p>
                       {med.description && <p className="text-xs text-gray-400 truncate max-w-[140px]">{med.description}</p>}
                       </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {med.branch?.name
-                        ? <span className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">{med.branch.name}</span>
-                        : <span className="text-gray-400 text-xs">—</span>
-                      }
-                    </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">{med.category}</span>
                     </td>
