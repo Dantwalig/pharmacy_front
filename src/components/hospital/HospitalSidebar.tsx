@@ -47,16 +47,37 @@ const ADMIN_NAV = [
   { href: '/hospital/admin/settings',     icon: Settings,        label: 'Settings'                },
 ];
 
+const NURSE_NAV = [
+  { href: '/hospital/nurse/dashboard',    icon: LayoutDashboard, label: 'Dashboard'     },
+  { href: '/hospital/nurse/patients',     icon: Users,           label: 'Patients'      },
+  { href: '/hospital/nurse/appointments', icon: CalendarDays,    label: 'Appointments'  },
+  { href: '/hospital/nurse/schedule',     icon: Clock,           label: 'Schedule'      },
+  { href: '/hospital/nurse/messages',     icon: MessageSquare,   label: 'Messages'      },
+  { href: '/hospital/nurse/settings',     icon: Settings,        label: 'Settings'      },
+];
+
+const NAV_MAP = {
+  doctor: DOCTOR_NAV,
+  admin:  ADMIN_NAV,
+  nurse:  NURSE_NAV,
+};
+
+const LABEL_MAP = {
+  doctor: 'Doctor Portal',
+  admin:  'Admin Portal',
+  nurse:  'Nurse Portal',
+};
+
 interface Props {
-  portalType: 'doctor' | 'admin';
+  portalType: 'doctor' | 'admin' | 'nurse';
   open?: boolean;
   onClose?: () => void;
 }
 
 export default function HospitalSidebar({ portalType, open = false, onClose }: Props) {
   const pathname = usePathname();
-  const nav = portalType === 'doctor' ? DOCTOR_NAV : ADMIN_NAV;
-  const portalLabel = portalType === 'doctor' ? 'Doctor Portal' : 'Admin Portal';
+  const nav = NAV_MAP[portalType];
+  const portalLabel = LABEL_MAP[portalType];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
