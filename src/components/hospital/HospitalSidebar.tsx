@@ -19,6 +19,8 @@ import {
   BarChart2,
   LogOut,
   X,
+  Activity,
+  FileText,
 } from 'lucide-react';
 
 const NAVY = '#1E3A5F';
@@ -35,6 +37,17 @@ const DOCTOR_NAV = [
   { href: '/hospital/doctor/settings', icon: Settings, label: 'Settings' },
 ];
 
+const NURSE_NAV = [
+  { href: '/hospital/nurse/dashboard',  icon: LayoutDashboard, label: 'Dashboard'                },
+  { href: '/hospital/nurse/schedule',   icon: CalendarDays,    label: 'Schedule'                 },
+  { href: '/hospital/nurse/patients',   icon: Users,           label: 'Patients'                 },
+  { href: '/hospital/nurse/vitals',     icon: Activity,        label: 'Vitals & Assessments'     },
+  { href: '/hospital/nurse/medication', icon: Pill,            label: 'Medication Administration'},
+  { href: '/hospital/nurse/notes',      icon: FileText,        label: 'Nursing Notes'            },
+  { href: '/hospital/nurse/messages',   icon: MessageSquare,   label: 'Messages'                 },
+  { href: '/hospital/nurse/settings',   icon: Settings,        label: 'Settings'                 },
+];
+
 const ADMIN_NAV = [
   { href: '/hospital/admin/dashboard',    icon: LayoutDashboard, label: 'Dashboard'               },
   { href: '/hospital/admin/staff',        icon: UserCog,         label: 'Staff Management'        },
@@ -48,15 +61,21 @@ const ADMIN_NAV = [
 ];
 
 interface Props {
-  portalType: 'doctor' | 'admin';
+  portalType: 'doctor' | 'admin' | 'nurse';
   open?: boolean;
   onClose?: () => void;
 }
 
 export default function HospitalSidebar({ portalType, open = false, onClose }: Props) {
   const pathname = usePathname();
-  const nav = portalType === 'doctor' ? DOCTOR_NAV : ADMIN_NAV;
-  const portalLabel = portalType === 'doctor' ? 'Doctor Portal' : 'Admin Portal';
+  const nav =
+    portalType === 'doctor' ? DOCTOR_NAV :
+    portalType === 'nurse'  ? NURSE_NAV  :
+    ADMIN_NAV;
+  const portalLabel =
+    portalType === 'doctor' ? 'Doctor Portal' :
+    portalType === 'nurse'  ? 'Nurse Portal'  :
+    'Admin Portal';
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
