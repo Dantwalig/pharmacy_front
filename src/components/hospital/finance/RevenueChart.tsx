@@ -98,7 +98,7 @@ export default function RevenueChart({
                 width={45}
               />
               <Tooltip
-                formatter={(v: number) => [`RWF ${v.toLocaleString()}`, '']}
+                formatter={(v: number | undefined) => [v !== undefined ? `RWF ${v.toLocaleString()}` : '', '']}
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
               />
               {showExpenses && <Legend />}
@@ -124,7 +124,7 @@ export default function RevenueChart({
                 width={45}
               />
               <Tooltip
-                formatter={(v: number) => [`RWF ${v.toLocaleString()}`, '']}
+                formatter={(v: number | undefined) => [v !== undefined ? `RWF ${v.toLocaleString()}` : '', '']}
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
               />
               {showExpenses && <Legend />}

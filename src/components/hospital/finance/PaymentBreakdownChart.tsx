@@ -63,7 +63,7 @@ export default function PaymentBreakdownChart({
               ))}
             </Pie>
             <Tooltip
-              formatter={(v: number) => [fmtRWF(v), '']}
+              formatter={(v: number | undefined) => [v !== undefined ? fmtRWF(v) : '', '']}
               contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
             />
           </PieChart>
