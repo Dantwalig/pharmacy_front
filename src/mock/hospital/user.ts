@@ -29,6 +29,7 @@ export const MOCK_NURSE: MockNurse = {
   firstName: 'Sarah',
   lastName: 'Nkurunziza',
   role: 'NURSE',
+  department: 'Medical Surgery Unit',
   hospitalId: 'hospital-mock-001',
   hospitalName: 'E-Vuze General Hospital',
   email: 'sarah.n@evuze.rw',
