@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Bell, Menu } from 'lucide-react';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,9 @@ interface Props {
 
 export default function HospitalTopbar({ userName, roleLabel, hospitalName, onMenuClick }: Props) {
   const { i18n } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const changeLanguage = (code: string) => {
     i18n.changeLanguage(code);
@@ -50,7 +54,7 @@ export default function HospitalTopbar({ userName, roleLabel, hospitalName, onMe
             <span key={lang.code} className="flex items-center">
               <button
                 onClick={() => changeLanguage(lang.code)}
-                className={`text-sm font-medium px-0.5 ${i18n.language === lang.code ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'}`}
+                className={`text-sm font-medium px-0.5 ${mounted && i18n.language === lang.code ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'}`}
               >
                 {lang.label}
               </button>
@@ -66,7 +70,7 @@ export default function HospitalTopbar({ userName, roleLabel, hospitalName, onMe
         <div className="flex items-center gap-2">
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-            style={{ backgroundColor: '#2D9B8A' }}
+            style={{ backgroundColor: '#00A2E8' }}
           >
             {initials}
           </div>

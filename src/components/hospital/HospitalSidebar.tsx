@@ -7,15 +7,20 @@ import {
   CalendarDays,
   ClipboardList,
   Users,
+  UserCog,
   Clock,
+  Bell,
   MessageSquare,
   Pill,
   Settings,
   DollarSign,
-  Building2,
+  Network,
+  Package,
   BarChart2,
   LogOut,
   X,
+  Activity,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -33,15 +38,17 @@ const DOCTOR_NAV = [
   { href: '/hospital/doctor/settings', icon: Settings, label: 'Settings' },
 ];
 
+
+
 const ADMIN_NAV = [
   { href: '/hospital/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/hospital/admin/staff', icon: Users, label: 'Staff Management' },
-  { href: '/hospital/admin/departments', icon: Building2, label: 'Departments' },
-  { href: '/hospital/admin/schedule', icon: Clock, label: 'Schedule' },
+  { href: '/hospital/admin/staff', icon: UserCog, label: 'Staff Management' },
+  { href: '/hospital/admin/departments', icon: Network, label: 'Departments' },
   { href: '/hospital/admin/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/admin/schedule', icon: Bell, label: 'Schedule' },
   { href: '/hospital/admin/finance', icon: DollarSign, label: 'Finance' },
-  { href: '/hospital/admin/inventory', icon: ClipboardList, label: 'Inventory & Procurement' },
-  { href: '/hospital/admin/reports', icon: BarChart2, label: 'Reports & Analytics' },
+  { href: '/hospital/admin/inventory', icon: Package, label: 'Inventory & Procurement' },
+  { href: '/hospital/admin/reports', icon: BarChart2, label: 'Reports & Analysis' },
   { href: '/hospital/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -65,8 +72,14 @@ interface Props {
 export default function HospitalSidebar({ portalType, open = false, onClose }: Props) {
   const pathname = usePathname();
   const { logout } = useAuth();
-  const nav = portalType === 'doctor' ? DOCTOR_NAV : portalType === 'admin' ? ADMIN_NAV : NURSE_NAV;
-  const portalLabel = portalType === 'doctor' ? 'Doctor Portal' : portalType === 'admin' ? 'Admin Portal' : 'Nurse Portal';
+  const nav =
+    portalType === 'doctor' ? DOCTOR_NAV :
+      portalType === 'nurse' ? NURSE_NAV :
+        ADMIN_NAV;
+  const portalLabel =
+    portalType === 'doctor' ? 'Doctor Portal' :
+      portalType === 'nurse' ? 'Nurse Portal' :
+        'Admin Portal';
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -113,7 +126,7 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <LogOut size={18} />
-          Logout
+          Sign Out
         </button>
       </div>
     </aside>

@@ -1,5 +1,44 @@
 // src/types/hospital.ts
-// Types derived from hospital_portal_api_mapping.md — match actual API shapes.
+
+export type EntryColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | (string & {});
+
+export interface ScheduleEntry {
+  id: string;
+  patientName: string;
+  time: string;
+  date: string; // ISO string or yyyy-MM-dd
+  color: EntryColor;
+  type?: string;
+  // Fields from dev
+  doctorId?: string;
+  doctorName?: string;
+  startTime?: string;
+  endTime?: string;
+  appointmentType?: 'IN_PERSON' | 'ONLINE';
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+
+export type MessageDirection = 'SENT' | 'RECEIVED';
+
+export interface Message {
+  id: string;
+  text: string;
+  direction: MessageDirection;
+  timestamp: string;
+}
+
+export interface Conversation {
+  id: string;
+  senderName: string;
+  role: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: number;
+  unreadCount?: number; // Keep for compatibility with my UI
+  initials?: string;    // Keep for UI display
+  messages: Message[];
+}
 
 // ── Auth / User ───────────────────────────────────────────────────────────────
 
@@ -32,6 +71,7 @@ export interface MockNurse {
   firstName: string;
   lastName: string;
   role: 'NURSE';
+  department: string;
   hospitalId: string;
   hospitalName: string;
   email: string;
@@ -93,6 +133,9 @@ export interface Appointment {
   patientName: string;
   doctorName: string;
   specialization: string;
+  //added for doctor dashboard recent appointments table
+  condition?: string;
+  healthStatus?: string;
 }
 
 // ── Inventory / Drug Stock ────────────────────────────────────────────────────
@@ -184,6 +227,7 @@ export interface Department {
   doctorCount: number;
   nurseCount: number;
   status: 'ACTIVE' | 'INACTIVE';
+  head?: string;
 }
 
 // ── Reports ───────────────────────────────────────────────────────────────────
@@ -206,6 +250,28 @@ export interface DiagnosisBreakdown {
   value: number;
 }
 
+// Analytics charts shown on the Reports & Analysis page (Figma)
+export interface DepartmentWaitTime {
+  department: string;
+  minutes: number;
+}
+
+export interface SatisfactionSlice {
+  name: 'Excellent' | 'Good' | 'Poor';
+  value: number;
+}
+
+export interface DepartmentStaffCount {
+  department: string;
+  staff: number;
+}
+
+export interface AdmissionsTrendPoint {
+  period: string;
+  admitted: number;
+  outpatients: number;
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export interface HospitalSettings {
@@ -220,27 +286,6 @@ export interface AdminProfile {
   lastName: string;
   email: string;
   phone: string;
-}
-
-// ── Messages ──────────────────────────────────────────────────────────────────
-
-export type MessageDirection = 'SENT' | 'RECEIVED';
-
-export interface Message {
-  id: string;
-  text: string;
-  direction: MessageDirection;
-  timestamp: string;
-}
-
-export interface Conversation {
-  id: string;
-  senderName: string;
-  role: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  messages: Message[];
 }
 
 // ── Claims ────────────────────────────────────────────────────────────────────
@@ -270,6 +315,9 @@ export interface Consultation {
   diagnosis?: string;
   duration?: string;
   status: ConsultationStatus;
+  gender?: 'Male' | 'Female';
+  age?: number;
+  bp?: string;
 }
 
 export type RefusalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -304,4 +352,46 @@ export interface MedicationStats {
   dueToday: number;
   upcomingMedications: number;
   administeredToday: number;
+}
+
+// ── Patients ──────────────────────────────────────────────────────────────────
+
+export type PatientStatus = 'ACTIVE' | 'CRITICAL' | 'INACTIVE';
+
+export interface Patient {
+  id: string;
+  patientId: string;
+  name: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+  isNew?: boolean;
+  followUpDue?: boolean;
+}
+
+// Tab identifiers for the doctor prescription page
+export type PrescriptionTab = 'info' | 'visits' | 'labs' | 'prescriptions';
+
+// Extended patient details — used by Patient Info tab on the prescription page
+// Fields beyond base Patient: dob, bloodType, phone, email, address,
+//   insurance (provider + ID), allergies[], emergencyContact (name/relation/phone)
+export interface PatientDetail {
+  dob: string;
+  bloodType: string;
+  phone: string;
+  email: string;
+  address: string;
+  insurance: string;
+  insuranceId: string;
+  allergies: string[];
+  emergencyContact: { name: string; relation: string; phone: string };
+}
+
+// Individual prescription entry for a patient
+export interface PatientRx {
+  id: string;
+  name: string;
+  description: string;
 }
