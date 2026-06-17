@@ -27,6 +27,16 @@ export interface MockAdmin {
   email: string;
 }
 
+export interface MockNurse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'NURSE';
+  hospitalId: string;
+  hospitalName: string;
+  email: string;
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 // Source: GET /api/hospitals/:hospitalId/dashboard/stats
 
@@ -271,4 +281,27 @@ export interface Refusal {
   reason: string;
   insurance?: string;
   status: RefusalStatus;
+}
+
+// ── Medication Administration ───────────────────────────────────────────────
+
+export type MedicationStatus = 'ADMINISTERED' | 'DUE' | 'UPCOMING' | 'MISSED' | 'OVERDUE';
+export type MedicationRoute = 'Oral (PO)' | 'Subcutaneous (SubQ)' | 'Intravenous (IV)' | 'IV Push' | 'Intramuscular (IM)';
+
+export interface MedicationAdministration {
+  id: string;
+  patientName: string;
+  medicationName: string;
+  dosage: string;
+  route: MedicationRoute;
+  scheduledTime: string; // HH:mm AM/PM
+  status: MedicationStatus;
+  assignedNurse: string;
+}
+
+export interface MedicationStats {
+  missedDoses: number;
+  dueToday: number;
+  upcomingMedications: number;
+  administeredToday: number;
 }
