@@ -22,6 +22,7 @@ import {
   Activity,
   FileText,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
@@ -37,27 +38,29 @@ const DOCTOR_NAV = [
   { href: '/hospital/doctor/settings', icon: Settings, label: 'Settings' },
 ];
 
-const NURSE_NAV = [
-  { href: '/hospital/nurse/dashboard',  icon: LayoutDashboard, label: 'Dashboard'                },
-  { href: '/hospital/nurse/schedule',   icon: CalendarDays,    label: 'Schedule'                 },
-  { href: '/hospital/nurse/patients',   icon: Users,           label: 'Patients'                 },
-  { href: '/hospital/nurse/vitals',     icon: Activity,        label: 'Vitals & Assessments'     },
-  { href: '/hospital/nurse/medication', icon: Pill,            label: 'Medication Administration'},
-  { href: '/hospital/nurse/notes',      icon: FileText,        label: 'Nursing Notes'            },
-  { href: '/hospital/nurse/messages',   icon: MessageSquare,   label: 'Messages'                 },
-  { href: '/hospital/nurse/settings',   icon: Settings,        label: 'Settings'                 },
-];
+
 
 const ADMIN_NAV = [
-  { href: '/hospital/admin/dashboard',    icon: LayoutDashboard, label: 'Dashboard'               },
-  { href: '/hospital/admin/staff',        icon: UserCog,         label: 'Staff Management'        },
-  { href: '/hospital/admin/departments',  icon: Network,         label: 'Departments'             },
-  { href: '/hospital/admin/appointments', icon: CalendarDays,    label: 'Appointments'            },
-  { href: '/hospital/admin/schedule',     icon: Bell,            label: 'Schedule'                },
-  { href: '/hospital/admin/finance',      icon: DollarSign,      label: 'Finance'                 },
-  { href: '/hospital/admin/inventory',    icon: Package,         label: 'Inventory & Procurement' },
-  { href: '/hospital/admin/reports',      icon: BarChart2,       label: 'Reports & Analysis'      },
-  { href: '/hospital/admin/settings',     icon: Settings,        label: 'Settings'                },
+  { href: '/hospital/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/admin/staff', icon: UserCog, label: 'Staff Management' },
+  { href: '/hospital/admin/departments', icon: Network, label: 'Departments' },
+  { href: '/hospital/admin/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/admin/schedule', icon: Bell, label: 'Schedule' },
+  { href: '/hospital/admin/finance', icon: DollarSign, label: 'Finance' },
+  { href: '/hospital/admin/inventory', icon: Package, label: 'Inventory & Procurement' },
+  { href: '/hospital/admin/reports', icon: BarChart2, label: 'Reports & Analysis' },
+  { href: '/hospital/admin/settings', icon: Settings, label: 'Settings' },
+];
+
+const NURSE_NAV = [
+  { href: '/hospital/nurse/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/nurse/schedule', icon: Clock, label: 'Schedule' },
+  { href: '/hospital/nurse/patients', icon: Users, label: 'Patients' },
+  { href: '/hospital/nurse/vitals', icon: ClipboardList, label: 'Vitals & Assessments' },
+  { href: '/hospital/nurse/medications', icon: Pill, label: 'Medication Administration' },
+  { href: '/hospital/nurse/notes', icon: MessageSquare, label: 'Nursing Notes' },
+  { href: '/hospital/nurse/messages', icon: MessageSquare, label: 'Messages' },
+  { href: '/hospital/nurse/settings', icon: Settings, label: 'Settings' },
 ];
 
 interface Props {
@@ -68,14 +71,15 @@ interface Props {
 
 export default function HospitalSidebar({ portalType, open = false, onClose }: Props) {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const nav =
     portalType === 'doctor' ? DOCTOR_NAV :
-    portalType === 'nurse'  ? NURSE_NAV  :
-    ADMIN_NAV;
+      portalType === 'nurse' ? NURSE_NAV :
+        ADMIN_NAV;
   const portalLabel =
     portalType === 'doctor' ? 'Doctor Portal' :
-    portalType === 'nurse'  ? 'Nurse Portal'  :
-    'Admin Portal';
+      portalType === 'nurse' ? 'Nurse Portal' :
+        'Admin Portal';
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -118,10 +122,7 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
       {/* Logout */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = '/login';
-          }}
+          onClick={logout}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <LogOut size={18} />

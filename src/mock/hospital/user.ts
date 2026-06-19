@@ -1,4 +1,4 @@
-import type { MockDoctor, MockAdmin } from '@/types/hospital';
+import type { MockDoctor, MockAdmin, MockNurse } from '@/types/hospital';
 
 // TODO: to be  replaced with useAuth() once hospital login flow is confirmed
 // For now, these mock user objects can be used to simulate logged-in doctor and admin users in the hospital portal during development and testing. They contain basic information such as name, role, specialization, department, hospital affiliation, and email. This allows the frontend to conditionally render content based on user role and to display user-specific information without needing a full authentication system in place yet.
@@ -22,4 +22,15 @@ export const MOCK_ADMIN: MockAdmin = {
   hospitalId: 'hospital-mock-001',
   hospitalName: 'E-Vuze General Hospital',
   email: 'jean.habimana@evuze.rw',
+};
+
+export const MOCK_NURSE: MockNurse = {
+  id: 'nurse-mock-001',
+  firstName: 'Sarah',
+  lastName: 'Nkurunziza',
+  role: 'NURSE',
+  department: 'Medical Surgery Unit',
+  hospitalId: 'hospital-mock-001',
+  hospitalName: 'E-Vuze General Hospital',
+  email: 'sarah.n@evuze.rw',
 };
