@@ -395,3 +395,30 @@ export interface PatientRx {
   name: string;
   description: string;
 }
+
+// Nurse Dashboard 
+
+export interface NurseDashboardStats {
+  totalPatients: number;
+  pendingTasks: number;
+  activeConsultations: number;
+}
+
+export interface NursePatientOverview {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  status: 'Stable' | 'High Risk';
+  bp: string;
+  hr: number;
+  temperature: string;
+}
+
+export interface NurseScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  location: string;
+  status: 'Completed' | 'Upcoming';
+}

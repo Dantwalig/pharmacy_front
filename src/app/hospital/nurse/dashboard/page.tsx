@@ -1,161 +1,206 @@
+// src/app/hospital/nurse/dashboard/page.tsx
+
 'use client';
 
-import React from 'react';
-import {
-    Calendar,
-    Users,
-    ClipboardList,
-    MessageSquare,
-    ChevronRight,
-    TrendingUp,
-} from 'lucide-react';
-import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
+import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { nurseDashboardStats, nurseDashboardCardsData, nursePatients, nurseSchedule } from '@/mock/hospital/nurse';
 
-export default function NurseDashboard() {
-    const patientOverview = [
-        { id: '101', name: 'John D.', gender: 'Male', age: 28, status: 'Stable', statusColor: 'text-green-500', bp: '128/78', hr: 72, temp: '98.6°F' },
-        { id: '102', name: 'Mary S.', gender: 'Female', age: 54, status: 'Stable', statusColor: 'text-green-500', bp: '118/72', hr: 80, temp: '99.1°F' },
-        { id: '103', name: 'Robert T.', gender: 'Male', age: 39, status: 'High Risk', statusColor: 'text-red-500', bp: '142/88', hr: 98, temp: '97.8°F' },
-        { id: '104', name: 'Linda K.', gender: 'Female', age: 62, status: 'Stable', statusColor: 'text-green-500', bp: '124/75', hr: 104, temp: '100.2°F' },
-    ];
+export default function NurseDashboardPage() {
+  const { t } = useTranslation();
 
-    const schedule = [
-        { time: '07:00 AM', title: 'Shift Start/Report', subtitle: 'Medical Surgery Unit', status: 'Completed' },
-        { time: '08:00 AM', title: 'Medication Pass', subtitle: 'Room 101-110', status: 'Upcoming' },
-        { time: '09:00 AM', title: 'Rounds', subtitle: 'Medical Surgery Unit', status: 'Upcoming' },
-        { time: '12:00 PM', title: 'Lunch Break', subtitle: '30 min', status: 'Upcoming' },
-    ];
+  const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return t('hospital.goodMorning');
+  if (h < 17) return t('hospital.goodAfternoon');
+  return t('hospital.goodEvening');
+  };
 
-    return (
-        <div className="p-6 lg:p-8 space-y-8 bg-[#F8FAFC]">
-            {/* Welcome Banner */}
-            <div className="bg-[#EFF6FF] rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between relative overflow-hidden group">
-                <div className="space-y-6 relative z-10">
-                    <h1 className="text-4xl md:text-5xl font-black text-[#1E3A5F]">Good Evening Nurse</h1>
-                    <p className="text-[#38BDF8] text-lg font-bold">Check what's on your agenda today</p>
-                    <button className="bg-[#38BDF8] text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-lg hover:bg-[#0EA5E9] transition-all transform hover:-translate-y-1">
-                        <Calendar className="w-6 h-6" />
-                        Today
-                    </button>
-                </div>
-                <div className="mt-8 md:mt-0 relative z-10">
-                    <div className="w-48 h-48 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center relative shadow-inner">
-                        {/* Simple symbolic illustration placeholder */}
-                        <div className="w-32 h-32 bg-[#38BDF8]/20 rounded-full flex items-center justify-center">
-                            <Users className="w-16 h-16 text-[#38BDF8]" />
-                        </div>
-                    </div>
-                </div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full -mr-48 -mt-48 blur-3xl" />
-            </div>
+// Stats Card Styling
+  const cardStylesConfig: Record<string, { icon: any; color: string; value: number }> = {
+    patients: {
+      icon: UserGroupIcon,
+      color: '#2563EB',
+      value: nurseDashboardStats.totalPatients,
+    },
+    tasks: {
+      icon: ClipboardDocumentListIcon,
+      color: '#F97316',
+      value: nurseDashboardStats.pendingTasks,
+    },
+    messages: {
+      icon: ChatBubbleLeftRightIcon,
+      color: '#C026D3',
+      value: nurseDashboardStats.activeConsultations,
+    },
+  };
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="bg-white p-10 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-all group">
-                    <div className="flex justify-between items-start mb-4">
-                        <Users className="w-8 h-8 text-[#38BDF8]" />
-                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#38BDF8] transition-colors" />
-                    </div>
-                    <p className="text-5xl font-black text-[#1E3A5F]">6</p>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Total Patients</p>
-                    <p className="text-xs font-bold text-[#38BDF8] mt-4 flex items-center justify-center gap-1 cursor-pointer">View Patients <ChevronRight className="w-3 h-3" /></p>
-                </div>
-                <div className="bg-white p-10 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-all group">
-                    <div className="flex justify-between items-start mb-4">
-                        <ClipboardList className="w-8 h-8 text-orange-400" />
-                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-400 transition-colors" />
-                    </div>
-                    <p className="text-5xl font-black text-[#1E3A5F]">8</p>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Pending Tasks</p>
-                    <p className="text-xs font-bold text-orange-400 mt-4 flex items-center justify-center gap-1 cursor-pointer">View Nursing notes <ChevronRight className="w-3 h-3" /></p>
-                </div>
-                <div className="bg-white p-10 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-all group">
-                    <div className="flex justify-between items-start mb-4">
-                        <MessageSquare className="w-8 h-8 text-purple-500" />
-                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-purple-500 transition-colors" />
-                    </div>
-                    <p className="text-5xl font-black text-[#1E3A5F]">2</p>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Unread Messages</p>
-                    <p className="text-xs font-bold text-purple-400 mt-4 flex items-center justify-center gap-1 cursor-pointer">View Messages <ChevronRight className="w-3 h-3" /></p>
-                </div>
-            </div>
+  // Merge the text withstyle config for easier rendering
+  const statCards = nurseDashboardCardsData.map((card) => ({
+    ...card,
+    ...cardStylesConfig[card.key],
+  }));
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Patient Overview */}
-                <div className="bg-white rounded-[32px] border border-[#E2E8F0] shadow-sm p-8 space-y-8">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                                <Users className="w-5 h-5 text-[#38BDF8]" />
-                            </div>
-                            <h3 className="text-xl font-black text-[#1E3A5F]">Patient Overview</h3>
-                        </div>
-                        <button className="text-[#38BDF8] text-xs font-bold hover:underline">View all</button>
-                    </div>
+  return (
+    <div className="space-y-6">
+      {/* Hero*/}
+      <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
+        {/*Heartbeat SVG*/}
+        <svg 
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]" 
+          viewBox="0 0 320 140"  fill="none" preserveAspectRatio="xMidYMid meet" >
+          <polyline points="0,70 55,70 80,15 108,125 135,30 162,105 188,70 320,70" stroke="#1E4D8C" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
 
-                    <div className="space-y-4">
-                        {patientOverview.map((p) => (
-                            <div key={p.id} className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-2xl border border-transparent hover:border-[#E2E8F0] hover:bg-white hover:shadow-sm transition-all cursor-pointer group">
-                                <div className="flex items-center gap-4">
-                                    <span className="text-xs font-black text-gray-300 group-hover:text-[#38BDF8]">{p.id}</span>
-                                    <div>
-                                        <p className="text-sm font-black text-[#1E3A5F]">{p.name}</p>
-                                        <p className="text-[10px] font-bold text-gray-400">{p.gender}, {p.age}</p>
-                                    </div>
-                                </div>
-                                <span className={`text-[10px] font-black uppercase ${p.statusColor}`}>{p.status}</span>
-                                <div className="hidden md:flex gap-6 text-center">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase">BP</p>
-                                        <p className="text-xs font-black text-[#1E3A5F]">{p.bp}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase">HR</p>
-                                        <p className="text-xs font-black text-[#1E3A5F]">{p.hr}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Temp</p>
-                                        <p className="text-xs font-black text-[#1E3A5F]">{p.temp}</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#1E3A5F]" />
-                            </div>
-                        ))}
-                    </div>
-                    <button className="w-full py-4 text-[#38BDF8] text-sm font-bold border-t border-gray-50 hover:bg-blue-50 transition-colors">View all Patients</button>
-                </div>
-
-                {/* Schedule */}
-                <div className="bg-white rounded-[32px] border border-[#E2E8F0] shadow-sm p-8 space-y-8">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
-                                <Calendar className="w-5 h-5 text-orange-400" />
-                            </div>
-                            <h3 className="text-xl font-black text-[#1E3A5F]">Today's Schedule</h3>
-                        </div>
-                        <button className="text-[#38BDF8] text-xs font-bold hover:underline">View full schedule</button>
-                    </div>
-
-                    <div className="space-y-6 relative before:absolute before:left-[41px] before:top-2 before:bottom-2 before:w-[2px] before:bg-[#E2E8F0]">
-                        {schedule.map((item, idx) => (
-                            <div key={idx} className="flex gap-10 relative">
-                                <p className="text-xs font-bold text-[#1E3A5F] w-20 pt-1">{item.time}</p>
-                                <div className={`w-3 h-3 rounded-full mt-2 z-10 border-2 bg-white ${item.status === 'Completed' ? 'border-green-500' : 'border-[#38BDF8]'}`} />
-                                <div className="flex-1 p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex justify-between items-center group hover:bg-white hover:shadow-md transition-all">
-                                    <div>
-                                        <p className="text-sm font-black text-[#1E3A5F]">{item.title}</p>
-                                        <p className="text-[10px] font-bold text-gray-400">{item.subtitle}</p>
-                                    </div>
-                                    <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${item.status === 'Completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-[#38BDF8]'}`}>
-                                        {item.status} {item.status === 'Completed' && '✓'}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+        <div className="relative z-10">
+          <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
+            {getGreeting()},{" Nurse"}.
+          </h1>
+          <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeNurse')}</p>
+          <Link
+            href="/hospital/doctor/appointments"
+            className="mt-6 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+            style={{
+              background: 'linear-gradient(to right, #0284C7, #38BDF8)',
+              width: '140px',
+              height: '44px',
+              borderRadius: '16px',
+            }} >
+            <CalendarIcon className="w-4 h-4" /> {t('hospital.viewSchedule')}
+          </Link>
         </div>
-    );
+      </div>
+    
+     {/* Stat Cards */}
+    <div className="grid gap-5 md:grid-cols-3">
+      {statCards.map((card) => {const Icon = card.icon;
+
+        return (
+          <div key={card.title} className="rounded-2xl bg-white px-6 py-5 min-h-[180px] flex flex-col"
+            style={{ border: `1px solid ${card.color}40`, }} >
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-8">
+              <Icon className="h-5 w-5" style={{ color: card.color }} />
+              <h3 className="text-sm font-semibold text-gray-800"> {card.title}</h3>
+            </div>
+
+            <h2 className="text-5xl font-light" style={{ color: card.color }} > {card.value} </h2>
+            <p className="mt-3 text-xs text-gray-500"> {card.subtitle} </p>
+
+            <div className="flex-1" />
+            <div className="border-t border-gray-200 my-4" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium" style={{ color: card.color }} >
+                {card.action}
+              </span>
+              <ArrowRightIcon className="h-4 w-4" style={{ color: card.color }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+      {/* Patient Overview*/}
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <UserGroupIcon className="h-6 w-6 text-[#2563EB]" />
+            <h2 className="text-lg font-bold text-gray-800">{t('hospital.patientOverview')}</h2>
+          </div>
+          <button className="text-sm font-bold text-[#2563EB] hover:underline">{t('common.viewAll')}</button>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-4 divide-y divide-gray-100">
+          {nursePatients.map((patient) => (
+            <div 
+              key={patient.id} 
+              className="grid grid-cols-12 gap-4 py-4 items-center px-2 hover:bg-slate-50 rounded-lg transition-colors group cursor-pointer" >
+              <div className="col-span-2 sm:col-span-1 flex items-center gap-2 border-r border-gray-200 pr-2">
+                <span className="text-sm font-bold text-gray-400">{patient.id}</span>
+              </div>
+
+              <div className="col-span-5 sm:col-span-3 pl-1">
+                <div className="font-bold text-gray-900 text-sm sm:text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                  {patient.name}
+                </div>
+                <div className="text-xs font-semibold text-gray-400 mt-0.5"> {patient.gender}, {patient.age} </div>
+              </div>
+
+              <div className="col-span-5 sm:col-span-2 text-center sm:text-left">
+                <span className={`text-sm font-bold ${ patient.status === 'Stable' ? 'text-green-600' : 'text-red-600' }`}>
+                  {patient.status}
+                </span>
+              </div>
+
+              <div className="col-span-12 sm:col-span-5 grid grid-cols-3 gap-2 text-center sm:text-left pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                {/* BP */}
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">BP</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.bp}</div>
+                </div>
+                {/* HR */}
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">HR</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.hr}</div>
+                </div>
+                {/* Temp */}
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Temp</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.temperature}</div>
+                </div>
+              </div>
+
+              <div className="absolute right-4 sm:relative sm:right-auto col-span-12 sm:col-span-1 flex justify-end">
+                <ArrowRightIcon className="h-5 w-5 text-gray-700 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-6">
+          <button className="text-sm font-bold text-[#2563EB] hover:underline">
+            {t('hospital.viewAllPatients')}
+          </button>
+        </div>
+
+      </div>
+
+      {/* Schedule */}
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b px-5 py-4">
+          <div className="flex items-center gap-2">
+            <CalendarDaysIcon className="h-5 w-5 text-[#2563EB]" />
+            <h2 className="font-semibold text-gray-800"> {t('hospital.todaySchedule')} </h2>
+          </div>
+
+          <button className="text-sm text-[#2563EB]">{t('hospital.viewFullSchedule')}</button>
+        </div>
+
+        <div>
+          {nurseSchedule.map((item) => (
+            <div key={item.id}
+              className="flex items-center justify-between border-b px-5 py-4 last:border-b-0">
+
+              <div className="flex gap-5">
+                <span className="font-medium">{item.time}</span>
+                <div>
+                  <p className="font-medium">{item.title}</p>
+                  <p className="text-xs text-gray-500">{item.location}</p>
+                </div>
+              </div>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                item.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }`}>
+                {item.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
