@@ -133,7 +133,7 @@ export interface Appointment {
   patientName: string;
   doctorName: string;
   specialization: string;
-//added for doctor dashboard recent appointments table
+  //added for doctor dashboard recent appointments table
   condition?: string;
   healthStatus?: string;
 }
@@ -331,6 +331,29 @@ export interface Refusal {
   status: RefusalStatus;
 }
 
+// ── Medication Administration ───────────────────────────────────────────────
+
+export type MedicationStatus = 'ADMINISTERED' | 'DUE' | 'UPCOMING' | 'MISSED' | 'OVERDUE';
+export type MedicationRoute = 'Oral (PO)' | 'Subcutaneous (SubQ)' | 'Intravenous (IV)' | 'IV Push' | 'Intramuscular (IM)';
+
+export interface MedicationAdministration {
+  id: string;
+  patientName: string;
+  medicationName: string;
+  dosage: string;
+  route: MedicationRoute;
+  scheduledTime: string; // HH:mm AM/PM
+  status: MedicationStatus;
+  assignedNurse: string;
+}
+
+export interface MedicationStats {
+  missedDoses: number;
+  dueToday: number;
+  upcomingMedications: number;
+  administeredToday: number;
+}
+
 // ── Patients ──────────────────────────────────────────────────────────────────
 
 export type PatientStatus = 'ACTIVE' | 'CRITICAL' | 'INACTIVE';
@@ -371,4 +394,31 @@ export interface PatientRx {
   id: string;
   name: string;
   description: string;
+}
+
+// Nurse Dashboard 
+
+export interface NurseDashboardStats {
+  totalPatients: number;
+  pendingTasks: number;
+  activeConsultations: number;
+}
+
+export interface NursePatientOverview {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  status: 'Stable' | 'High Risk';
+  bp: string;
+  hr: number;
+  temperature: string;
+}
+
+export interface NurseScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  location: string;
+  status: 'Completed' | 'Upcoming';
 }

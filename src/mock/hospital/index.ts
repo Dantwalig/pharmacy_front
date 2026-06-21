@@ -10,3 +10,4 @@ export * from './messages';
 export * from './claims';
 export * from './consultations';
 export * from './settings';
+export * from './medications';
