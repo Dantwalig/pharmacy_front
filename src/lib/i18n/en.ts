@@ -1664,6 +1664,8 @@ export const en = {
     allDepartments: 'All Departments',
     allShiftTypes: 'All Shift Types',
     upcoming: 'Upcoming',
+    weeklyViewComingSoon: 'Weekly view is coming soon.',
+    monthlyViewComingSoon: 'Monthly view is coming soon.',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',

@@ -8,6 +8,7 @@ import {
   CheckCircleIcon,
   CalendarDaysIcon,
   ChevronDownIcon,
+  CalendarIcon,
 } from '@heroicons/react/24/outline';
 import { nurseShiftStats, nurseShiftSchedule } from '@/mock/hospital/nurse';
 
@@ -47,13 +48,13 @@ export default function NurseSchedulePage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {nurseShiftStats.map((stat) => {
           const Icon = STAT_ICONS[stat.key] ?? ClockIcon;
           return (
             <div
               key={stat.key}
-              className="flex items-center gap-4 rounded-xl bg-white px-5 py-4 shadow-sm border border-gray-100"
+              className="flex min-w-0 items-center gap-4 rounded-xl bg-white px-5 py-4 shadow-sm border border-gray-100"
               style={{ borderLeft: `4px solid ${stat.color}` }}
             >
               <div
@@ -63,8 +64,8 @@ export default function NurseSchedulePage() {
                 <Icon className="h-6 w-6" style={{ color: stat.color }} />
               </div>
               <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 whitespace-nowrap">{stat.title}</p>
-                <p className="text-xs font-medium text-slate-500 whitespace-nowrap">{stat.subtitle}</p>
+                <p className="text-lg font-bold text-slate-900 break-words">{stat.title}</p>
+                <p className="text-xs font-medium text-slate-500 break-words">{stat.subtitle}</p>
               </div>
             </div>
           );
@@ -90,15 +91,15 @@ export default function NurseSchedulePage() {
           ))}
         </div>
 
-        <div className="relative">
-          <select className="appearance-none rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
+        <div className="relative min-w-[150px]">
+          <select className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
             <option>{t('hospital.allDepartments')}</option>
           </select>
           <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         </div>
 
-        <div className="relative">
-          <select className="appearance-none rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
+        <div className="relative min-w-[140px]">
+          <select className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
             <option>{t('hospital.allShiftTypes')}</option>
           </select>
           <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -107,13 +108,21 @@ export default function NurseSchedulePage() {
         <input
           type="date"
           defaultValue="2026-06-09"
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
+          className="min-w-[140px] rounded-lg border border-gray-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
         />
       </div>
 
       {/* Timeline */}
       <div className="space-y-3 rounded-2xl bg-white p-4 sm:p-6 shadow-sm border border-gray-100">
-        {nurseShiftSchedule.map((item) => {
+        {view !== 'daily' && (
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <CalendarIcon className="h-8 w-8 text-slate-300" />
+            <p className="text-sm font-semibold text-slate-500">
+              {t(`hospital.${view}ViewComingSoon`)}
+            </p>
+          </div>
+        )}
+        {view === 'daily' && nurseShiftSchedule.map((item) => {
           const statusColor = STATUS_COLOR[item.status];
           const statusLabel =
             item.status === 'COMPLETED'
