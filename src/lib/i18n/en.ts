@@ -1647,6 +1647,13 @@ export const en = {
     spend: 'Spend',
     volume: 'Volume',
     recentActivity: 'Recent Activity',
+
+    //nurse
+    welcomeNurse: 'Check what\'s on your agenda  today.',
+    patientOverview: 'Patient Overview',
+    viewAllPatients: 'View All Patients',
+    todaySchedule: 'Today\'s Schedule',
+    viewFullSchedule: 'View Full Schedule',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',
