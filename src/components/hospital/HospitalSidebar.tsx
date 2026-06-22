@@ -59,15 +59,6 @@ const NURSE_NAV = [
   { href: '/hospital/nurse/settings', icon: Settings, label: 'Settings' },
 ];
 
-const NURSE_NAV = [
-  { href: '/hospital/nurse/dashboard',    icon: LayoutDashboard, label: 'Dashboard'     },
-  { href: '/hospital/nurse/patients',     icon: Users,           label: 'Patients'      },
-  { href: '/hospital/nurse/appointments', icon: CalendarDays,    label: 'Appointments'  },
-  { href: '/hospital/nurse/schedule',     icon: Clock,           label: 'Schedule'      },
-  { href: '/hospital/nurse/messages',     icon: MessageSquare,   label: 'Messages'      },
-  { href: '/hospital/nurse/settings',     icon: Settings,        label: 'Settings'      },
-];
-
 const NAV_MAP = {
   doctor: DOCTOR_NAV,
   admin:  ADMIN_NAV,

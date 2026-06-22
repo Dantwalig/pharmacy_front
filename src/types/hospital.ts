@@ -66,6 +66,17 @@ export interface MockAdmin {
   email: string;
 }
 
+export interface MockNurse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'NURSE';
+  department: string;
+  hospitalId: string;
+  hospitalName: string;
+  email: string;
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 // Source: GET /api/hospitals/:hospitalId/dashboard/stats
 
