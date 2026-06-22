@@ -7,7 +7,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { MOCK_PATIENTS, MOCK_PATIENT_RX, MOCK_PATIENT_DETAILS } from '@/mock/hospital/consultations';
-import { MOCK_INVENTORY } from '@/mock/hospital/inventory';
+import { MOCK_DRUG_STOCK } from '@/mock/hospital/inventory';
 import type { PatientDetail, PrescriptionTab } from '@/types/hospital';
 
 const NAVY = '#1E3A5F';
@@ -129,23 +129,25 @@ function Stepper({ value, unit, onDecrement, onIncrement }: {
 
 // ── Drug search input with dropdown ──────────────────────────────────────────
 function DrugSearchInput({ value, onChange }: { value: string; onChange: (name: string) => void }) {
-  const [query, setQuery] = useState(value);
-  const [open, setOpen]   = useState(false);
-  const containerRef      = useRef<HTMLDivElement>(null);
+  const [query, setQuery]       = useState(value);
+  const [open, setOpen]         = useState(false);
+  const containerRef            = useRef<HTMLDivElement>(null);
 
   const results = query.trim().length > 0
-    ? MOCK_INVENTORY.filter(d =>
-        d.category === 'Drug' &&
-        d.name.toLowerCase().includes(query.toLowerCase())
+    ? MOCK_DRUG_STOCK.filter(d =>
+        d.drug.brandName.toLowerCase().includes(query.toLowerCase()) ||
+        d.drug.genericName.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 8)
     : [];
 
-  function select(drug: (typeof MOCK_INVENTORY)[number]) {
-    setQuery(drug.name);
-    onChange(drug.name);
+  function select(drug: (typeof MOCK_DRUG_STOCK)[number]) {
+    const label = `${drug.drug.brandName} ${drug.drug.dosageStrength}`;
+    setQuery(label);
+    onChange(label);
     setOpen(false);
   }
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -157,9 +159,9 @@ function DrugSearchInput({ value, onChange }: { value: string; onChange: (name: 
   }, []);
 
   const STOCK_COLOR: Record<string, { bg: string; color: string }> = {
-    IN_STOCK:     { bg: '#F0FDF4', color: '#15803D' },
-    LOW_STOCK:    { bg: '#FFF7ED', color: '#C2410C' },
-    OUT_OF_STOCK: { bg: '#FEF2F2', color: '#DC2626' },
+    IN_STOCK:  { bg: '#F0FDF4', color: '#15803D' },
+    LOW_STOCK: { bg: '#FFF7ED', color: '#C2410C' },
+    OUT:       { bg: '#FEF2F2', color: '#DC2626' },
   };
 
   return (
@@ -181,22 +183,23 @@ function DrugSearchInput({ value, onChange }: { value: string; onChange: (name: 
       {open && results.length > 0 && (
         <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden max-h-52 overflow-y-auto">
           {results.map(d => {
-            const badge = STOCK_COLOR[d.status] ?? STOCK_COLOR.IN_STOCK;
+            const stockStatus = d.quantity === 0 ? 'OUT' : d.lowStockAlert ? 'LOW_STOCK' : 'IN_STOCK';
+            const badge = STOCK_COLOR[stockStatus];
             return (
-              <li key={d.id}>
+              <li key={d.drugId}>
                 <button
                   onMouseDown={() => select(d)}
                   className="w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{d.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{d.unit}</p>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{d.drug.brandName} {d.drug.dosageStrength}</p>
+                    <p className="text-xs text-gray-400 truncate">{d.drug.genericName} · {d.drug.dosageForm}</p>
                   </div>
                   <span
                     className="shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold"
                     style={{ background: badge.bg, color: badge.color }}
                   >
-                    {d.status === 'OUT_OF_STOCK' ? 'Out of stock' : d.status === 'LOW_STOCK' ? 'Low stock' : `Qty: ${d.availableQuantity}`}
+                    {stockStatus === 'OUT' ? 'Out of stock' : stockStatus === 'LOW_STOCK' ? 'Low stock' : `Qty: ${d.quantity}`}
                   </span>
                 </button>
               </li>

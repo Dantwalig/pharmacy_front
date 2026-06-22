@@ -32,6 +32,10 @@ const STATUS_STYLES: Record<string, StatusStyle> = {
   OUT_OF_STOCK:     { classes: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500'     },
   OPEN:             { classes: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
   CLOSED:           { classes: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500'     },
+  // Finance / Invoice statuses
+  PAID:              { classes: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  UNPAID:            { classes: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500'     },
+  INSURANCE_PENDING: { classes: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500'    },
 };
 
 const DEFAULT_STYLE: StatusStyle = {

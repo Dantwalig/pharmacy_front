@@ -19,8 +19,6 @@ import {
   BarChart2,
   LogOut,
   X,
-  Activity,
-  FileText,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -28,17 +26,15 @@ const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
 
 const DOCTOR_NAV = [
-  { href: '/hospital/doctor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/hospital/doctor/appointments', icon: CalendarDays, label: 'Appointments' },
-  { href: '/hospital/doctor/consultations', icon: ClipboardList, label: 'Consultations' },
-  { href: '/hospital/doctor/patient', icon: Users, label: 'Patients' },
-  { href: '/hospital/doctor/schedule', icon: Clock, label: 'Schedule' },
-  { href: '/hospital/doctor/messages', icon: MessageSquare, label: 'Messages' },
-  { href: '/hospital/doctor/prescription', icon: Pill, label: 'Prescriptions' },
-  { href: '/hospital/doctor/settings', icon: Settings, label: 'Settings' },
+  { href: '/hospital/doctor/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/doctor/appointments',  icon: CalendarDays,    label: 'Appointments' },
+  { href: '/hospital/doctor/consultations', icon: ClipboardList,   label: 'Consultations' },
+  { href: '/hospital/doctor/patient',       icon: Users,           label: 'Patients' },
+  { href: '/hospital/doctor/schedule',      icon: Clock,           label: 'Schedule' },
+  { href: '/hospital/doctor/messages',      icon: MessageSquare,   label: 'Messages' },
+  { href: '/hospital/doctor/prescription',  icon: Pill,            label: 'Prescriptions' },
+  { href: '/hospital/doctor/settings',      icon: Settings,        label: 'Settings' },
 ];
-
-
 
 const ADMIN_NAV = [
   { href: '/hospital/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -62,6 +58,18 @@ const NURSE_NAV = [
   { href: '/hospital/nurse/messages', icon: MessageSquare, label: 'Messages' },
   { href: '/hospital/nurse/settings', icon: Settings, label: 'Settings' },
 ];
+
+const NAV_MAP = {
+  doctor: DOCTOR_NAV,
+  admin:  ADMIN_NAV,
+  nurse:  NURSE_NAV,
+};
+
+const LABEL_MAP = {
+  doctor: 'Doctor Portal',
+  admin:  'Admin Portal',
+  nurse:  'Nurse Portal',
+};
 
 interface Props {
   portalType: 'doctor' | 'admin' | 'nurse';
@@ -108,8 +116,9 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
               key={href}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                active ? 'text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
               style={active ? { backgroundColor: TEAL } : {}}
             >
               <Icon size={18} />

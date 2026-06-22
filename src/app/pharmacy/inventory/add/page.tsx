@@ -116,11 +116,11 @@ function parseCSVText(text: string): ParsedRow[] {
 
 // ── Excel parser (SheetJS) ─────────────────────────────────────────────────
 async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
-  const XLSX = await import('xlsx');
+  const XLSX = await import('xlsx') as typeof import('xlsx');
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
-  return raw.map(record => {
+  return raw.map((record: Record<string, unknown>) => {
     const normalized: Record<string, string> = {};
     for (const [k, v] of Object.entries(record)) {
       const val = v instanceof Date
@@ -129,12 +129,12 @@ async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
       normalized[normalizeKey(k)] = val;
     }
     return buildRow(normalized);
-  }).filter(r => r.name || r.category || r.price);
+  }).filter((r: ParsedRow) => r.name || r.category || r.price);
 }
 
 // ── DOCX parser (mammoth → HTML → table) ─────────────────────────────────
 async function parseDocxBuffer(buffer: ArrayBuffer): Promise<ParsedRow[]> {
-  const mammoth = await import('mammoth');
+  const mammoth = (await import('mammoth')).default;
   const { value: html } = await mammoth.convertToHtml({ arrayBuffer: buffer });
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const table = doc.querySelector('table');
@@ -161,8 +161,7 @@ function downloadCSVTemplate() {
 }
 
 async function downloadExcelTemplate() {
-  const mod = await import('xlsx');
-  const XLSX = mod.default ?? mod;
+  const XLSX = await import('xlsx') as typeof import('xlsx');
   const ws = XLSX.utils.aoa_to_sheet([
     CSV_HEADERS,
     EXAMPLE_ROW.split(','),
