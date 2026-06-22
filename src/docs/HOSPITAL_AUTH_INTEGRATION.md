@@ -83,6 +83,44 @@ that record. Until this lands, the `DOCTOR` path in `AuthContext` cannot be
 verified against a real login  only against the static response shape
 already confirmed for `HOSPITAL_ADMIN`.
 
+### Gap 1b  Even a successful DOCTOR login has no `Doctor.id`  **Blocking for all downstream doctor-side integration work**
+Confirmed by reading `back-end/src/auth/auth.service.ts` (the `onboardHospitalStaff`
+transaction) and `back-end/prisma/schema.prisma` together  this is a
+second, independent problem from Gap 1 above, and it does **not** go away
+once Gap 1 is fixed.
+
+**What's confirmed correct:** `POST /auth/onboard/hospital-staff` with
+`role: 'DOCTOR'` does the right thing today  inside one transaction it
+creates both a `HospitalStaff` row (for login) and a `Doctor` row (for
+clinical data), linked by the same `userId`. A doctor onboarded through this
+endpoint, not the seed script, would not hit Gap 1 at all.
+
+**What's still broken either way:** `Appointment.doctorId` and
+`Prescription.doctorId` both reference `Doctor.id`  not `User.id`, not
+`HospitalStaff.id`. The hospital-staff login response is:
+```ts
+{ id, email, role, hospitalId, hospitalName, status, requiresPasswordChange }
+```
+That `id` is the `User.id`. **`Doctor.id` is not present anywhere in this
+response.** So even after a fully successful login (real or fixed), the
+frontend has no ID it can use to call `GET /appointments?doctorId=:id`,
+fetch the doctor's own schedule, or create a prescription tied to that
+doctor.
+
+**Why this matters beyond this PR:** every doctor-side backend integration
+task (dashboard, appointments, schedule, prescription, consultations) will
+hit this exact wall the moment it gets past login  not because of
+anything wrong in those tasks, but because the one ID they all need to
+scope their API calls with was never returned. Whoever picks up that work
+should read this gap first rather than rediscover it independently.
+
+**Backend action needed (not made  documenting only):** include
+`doctorId: doctor.id` in the hospital-staff login response when
+`role === 'DOCTOR'` (a one-line addition to the existing `hospitalStaff`
+branch, since the transaction already guarantees a matching `Doctor` row
+exists for staff onboarded the correct way), or add a `GET /doctors/me`
+lookup the frontend can call once authenticated.
+
 ### Gap 2  Hospital admin's display name comes from the Hospital record, not a person  **Non-blocking, workaround shipped**
 The `HOSPITAL_ADMIN` login response's `profile` field is the full `Hospital`
 record (name, address, status, etc.), not an admin-person record. The
