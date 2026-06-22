@@ -164,6 +164,38 @@ first and only falls back to `NEXT_PUBLIC_DEV_HOSPITAL_ID` when there is no
 authenticated session **and** `NODE_ENV !== 'production'`  a logged-out
 production user gets `undefined`, never a real dev hospital's id.
 
+### Gap 6  No route-level auth guard existed for any `/hospital/*` route  RESOLVED
+`src/middleware.tsx` already had working role-based guards for
+`/super-admin`, `/pharmacy`, `/patient`, `/branch`, and `/staff`, but
+`/hospital/*` had an explicit `// TODO: add hospital auth once login flow is
+confirmed  for now all /hospital/* routes are open` and its `config.matcher`
+didn't even include `/hospital/:path*`, so the middleware function never ran
+for hospital paths at all. This meant **none** of the four hospital roles
+(admin, doctor, nurse, receptionist) had any protection  not "admin-only,"
+literally none. Anyone could navigate straight to e.g.
+`/hospital/admin/dashboard` with no token and no redirect.
+
+**Resolution shipped:** added `/hospital/:path*` to the matcher (excluding
+`/hospital/register`, which must stay public), and added a guard block
+mirroring the existing `isStaffRoute` pattern:
+- No token, or an undecodable token  redirect to `/`.
+- Role must be `HOSPITAL_ADMIN`, `DOCTOR`, or hospital-side `NURSE` (the same
+  `hospitalId`-presence discriminator used everywhere else in this doc) 
+  any other role redirects to `/`.
+- Path-specific check: `/hospital/admin/*` requires `HOSPITAL_ADMIN`,
+  `/hospital/doctor/*` requires `DOCTOR`, `/hospital/nurse/*` requires the
+  hospital-`NURSE` discriminator  cross-role access (e.g. a doctor visiting
+  `/hospital/admin/dashboard`) now redirects instead of silently rendering.
+- `HOSPITAL_ADMIN` additionally checks `payload.status` (the hospital's
+  approval status, present in the JWT for that role only): `PENDING` 
+  `/pending-approval`, anything else but `APPROVED`  redirect to `/`.
+
+This was previously untested end-to-end for the same reason Gap 1 blocks
+real doctor logins  there was no way to get a real hospital-staff token to
+verify against until that's fixed. The guard logic itself was written
+against the confirmed JWT payload shape from `generateTokens()` in
+`auth.service.ts`, not guessed.
+
 ---
 
 ## Files changed
