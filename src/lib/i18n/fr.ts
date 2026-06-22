@@ -1616,6 +1616,16 @@ export const fr = {
     hospitalProfile: 'Profil de l\'hôpital',
     adminProfile: 'Profil administrateur',
     logout: 'Déconnexion',
+
+    // [FR TODO] best-effort, not verified by a native speaker - nurse Schedule & Shifts page
+    nurseScheduleTitle: 'Horaire et Gardes Infirmières',
+    nurseScheduleSubtitle: 'Organisez, consultez et coordonnez les horaires de garde et les tâches cliniques de votre service.',
+    dailyView: 'Vue Journalière',
+    weeklyView: 'Vue Hebdomadaire',
+    monthlyView: 'Vue Mensuelle',
+    allDepartments: 'Tous les Départements',
+    allShiftTypes: 'Tous les Types de Garde',
+    upcoming: 'À venir',
   },
   bulkUploadPage: {
     addManually: 'Saisie manuelle',

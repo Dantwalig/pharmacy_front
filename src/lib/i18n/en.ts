@@ -1654,6 +1654,16 @@ export const en = {
     viewAllPatients: 'View All Patients',
     todaySchedule: 'Today\'s Schedule',
     viewFullSchedule: 'View Full Schedule',
+
+    //nurse - Schedule & Shifts page
+    nurseScheduleTitle: 'Nurse Schedule & Shifts',
+    nurseScheduleSubtitle: 'Organize, view, and coordinate your ward shift timings and clinical duties.',
+    dailyView: 'Daily View',
+    weeklyView: 'Weekly View',
+    monthlyView: 'Monthly View',
+    allDepartments: 'All Departments',
+    allShiftTypes: 'All Shift Types',
+    upcoming: 'Upcoming',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',

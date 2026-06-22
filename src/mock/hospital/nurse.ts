@@ -1,4 +1,4 @@
-import type { NurseDashboardStats, NursePatientOverview, NurseScheduleItem } from '@/types/hospital';
+import type { NurseDashboardStats, NursePatientOverview, NurseScheduleItem, NurseShiftStat, NurseShiftScheduleItem } from '@/types/hospital';
 
 export const nurseDashboardStats: NurseDashboardStats = {
   totalPatients: 6,
@@ -100,4 +100,24 @@ export const nurseSchedule: NurseScheduleItem[] = [
     location: '30 min',
     status: 'Upcoming',
   },
+];
+
+// Nurse Schedule & Shifts page
+
+export const nurseShiftStats: NurseShiftStat[] = [
+  { key: 'dayShift', title: 'Day Shift', subtitle: '07:00 AM - 03:00 PM', color: '#0EA5E9' },
+  { key: 'generalMed', title: 'General Med', subtitle: 'Next: ICU (June 10)', color: '#8B5CF6' },
+  { key: 'duties', title: '5 Duties', subtitle: 'Tasks Today', color: '#10B981' },
+  { key: 'shifts', title: '4 Shifts', subtitle: 'Weekly Assignments', color: '#F59E0B' },
+];
+
+export const nurseShiftSchedule: NurseShiftScheduleItem[] = [
+  { id: 'shift-1', time: '07:00 AM', title: 'Shift Handover & Morning ward briefing', description: 'Ward A & B staffing allocations, patient safety review.', status: 'COMPLETED' },
+  { id: 'shift-2', time: '08:00 AM', title: 'Patient Rounds & Vitals Inspections', description: 'Record routine BP, HR, SpO2, and temperature levels.', status: 'COMPLETED' },
+  { id: 'shift-3', time: '09:00 AM', title: 'Morning Medication Administration Round', description: 'Administer prescribed oral, SubQ, and IV treatments.', status: 'COMPLETED' },
+  { id: 'shift-4', time: '11:00 AM', title: 'Doctor Rounds Accompaniment', description: 'Join Dr. Samuel Nkurunziza for detailed clinical review.', status: 'COMPLETED' },
+  { id: 'shift-5', time: '12:00 PM', title: 'Lunch Handover & Mid-Shift Check', description: 'Mid-day briefing and vital assessments review.', status: 'COMPLETED' },
+  { id: 'shift-6', time: '01:00 PM', title: 'Afternoon Assessment & Documentation', description: 'Log clinical assessments and update nursing notes.', status: 'ACTIVE' },
+  { id: 'shift-7', time: '02:00 PM', title: 'Afternoon Medication Administration Round', description: 'Administer scheduled afternoon medication doses.', status: 'UPCOMING' },
+  { id: 'shift-8', time: '03:00 PM', title: 'Shift Handover to Evening Nurse Team', description: 'Perform formal bedside handoff and patient review.', status: 'UPCOMING' },
 ];

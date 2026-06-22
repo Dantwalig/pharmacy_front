@@ -400,3 +400,20 @@ export interface NurseScheduleItem {
   location: string;
   status: 'Completed' | 'Upcoming';
 }
+
+// Nurse Schedule & Shifts page
+
+export interface NurseShiftStat {
+  key: string;
+  title: string;
+  subtitle: string;
+  color: string;
+}
+
+export interface NurseShiftScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  description: string;
+  status: 'COMPLETED' | 'ACTIVE' | 'UPCOMING';
+}

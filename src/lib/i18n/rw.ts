@@ -1617,6 +1617,16 @@ export const rw = {
     hospitalProfile: 'Amakuru y\'Ibitaro',
     adminProfile: 'Amakuru y\'Ubutegetsi',
     logout: 'Sohoka',
+
+    // [REVIEW RW] proposed translation, needs native-speaker confirmation - nurse Schedule & Shifts page
+    nurseScheduleTitle: 'Gahunda n\'Amasaha y\'Ubuforomo',
+    nurseScheduleSubtitle: 'Tegura, reba, kandi uhuze amasaha y\'umurimo n\'imirimo y\'ubuvuzi muri serivisi yawe.',
+    dailyView: 'Ku Munsi',
+    weeklyView: 'Ku Cyumweru',
+    monthlyView: 'Ku Kwezi',
+    allDepartments: 'Amashami Yose',
+    allShiftTypes: 'Uburyo Bwose bw\'Amasaha',
+    upcoming: 'Bizaza',
   },
   bulkUploadPage: {
     addManually: 'Injiza Buri Kimwe',
