@@ -186,7 +186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         case 'PHARMACIST':
         case 'CASHIER':
-        case 'NURSE':
           toast.success(t('auth2.welcomeBack'));
           // If first login (temp password), redirect to change password
           if (response.data.requiresPasswordChange) {
@@ -194,6 +193,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             router.push('/staff/dashboard');
           }
+          break;
+
+        case 'NURSE':
+          // The backend reuses the 'NURSE' role string for both a pharmacy
+          // branch-staff nurse and a hospital nurse. `hospitalId` is only
+          // present on the hospital login response — use it as the
+          // discriminator instead of the role string alone.
+          if (userData.hospitalId) {
+            toast.success(t('auth2.welcomeBack'));
+            router.push(
+              userData.requiresPasswordChange
+                ? '/hospital/nurse/settings'
+                : '/hospital/nurse/dashboard'
+            );
+          } else {
+            toast.success(t('auth2.welcomeBack'));
+            if (response.data.requiresPasswordChange) {
+              router.push('/staff/change-password');
+            } else {
+              router.push('/staff/dashboard');
+            }
+          }
+          break;
+
+        case 'DOCTOR':
+          toast.success(t('auth2.welcomeBack'));
+          router.push(
+            userData.requiresPasswordChange
+              ? '/hospital/doctor/settings'
+              : '/hospital/doctor/dashboard'
+          );
+          break;
+
+        case 'HOSPITAL_ADMIN':
+          if (userData.hospitalStatus === 'PENDING') {
+            toast.success('Your hospital account is under review. Please wait for approval.');
+            router.push('/pending-approval');
+          } else if (userData.hospitalStatus === 'REJECTED') {
+            toast.error('Your hospital account was rejected. Please update your documents and resubmit.');
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          } else if (userData.hospitalStatus === 'APPROVED') {
+            toast.success(t('auth2.welcomeAdmin'));
+            router.push('/hospital/admin/dashboard');
+          } else {
+            toast.error(t('auth2.invalidRole'));
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          }
+          break;
+
+        case 'RECEPTIONIST':
+          // No frontend portal exists for this role yet — see auth
+          // integration gap doc. Do not silently log them into an
+          // unfinished/incorrect portal.
+          toast.error('The receptionist portal is not available yet. Please contact your hospital admin.');
+          removeAuthTokens();
+          clearUserCache();
+          setUser(null);
+          router.push('/login');
           break;
 
         default:
