@@ -3,14 +3,11 @@
 import { useState } from 'react';
 import HospitalSidebar from '@/components/hospital/HospitalSidebar';
 import HospitalTopbar from '@/components/hospital/HospitalTopbar';
-import { MOCK_DOCTOR } from '@/mock/hospital/user';
-
-// TODO: replace MOCK_DOCTOR with useAuth() once hospital login is configured
+import { useHospitalDoctorUser } from '@/lib/hospital';
 
 export default function HospitalDoctorLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const userName = `${MOCK_DOCTOR.firstName} ${MOCK_DOCTOR.lastName}`;
+  const { userName, roleLabel, hospitalName } = useHospitalDoctorUser();
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -28,8 +25,8 @@ export default function HospitalDoctorLayout({ children }: { children: React.Rea
       <div className="flex-1 lg:ml-64 min-w-0">
         <HospitalTopbar
           userName={userName}
-          roleLabel={MOCK_DOCTOR.specialisation}
-          hospitalName={MOCK_DOCTOR.hospitalName}
+          roleLabel={roleLabel}
+          hospitalName={hospitalName}
           onMenuClick={() => setSidebarOpen(true)}
         />
         <main className="p-4 lg:p-6">{children}</main>

@@ -4,14 +4,15 @@
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { MOCK_DASHBOARD_STATS, MOCK_RECENT_APPOINTMENTS, MOCK_WEEKLY_REVENUE, MOCK_PATIENT_CATEGORIES, MOCK_DASHBOARD_NOTIFICATIONS } from '@/mock/hospital/dashboard';
-import { MOCK_DOCTOR } from '@/mock/hospital/user';
+import { useHospitalDoctorUser } from '@/lib/hospital';
 import { CalendarIcon, UsersIcon, UserPlusIcon, BanknotesIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 const NAVY = '#1E4D8C';
 
 export default function HospitalDoctorDashboardPage() {
   const { t } = useTranslation();
-  const firstName = MOCK_DOCTOR.firstName;
+  const { userName } = useHospitalDoctorUser();
+  const firstName = userName.split(' ')[0];
 
   const getGreeting = () => {
     const h = new Date().getHours();
