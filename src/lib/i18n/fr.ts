@@ -1626,8 +1626,7 @@ export const fr = {
     allDepartments: 'Tous les Départements',
     allShiftTypes: 'Tous les Types de Garde',
     upcoming: 'À venir',
-    weeklyViewComingSoon: 'La vue hebdomadaire arrive bientôt.',
-    monthlyViewComingSoon: 'La vue mensuelle arrive bientôt.',
+    noShiftsScheduled: 'Aucune garde programmée.',
   },
   bulkUploadPage: {
     addManually: 'Saisie manuelle',

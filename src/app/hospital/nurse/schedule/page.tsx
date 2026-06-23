@@ -8,9 +8,14 @@ import {
   CheckCircleIcon,
   CalendarDaysIcon,
   ChevronDownIcon,
-  CalendarIcon,
 } from '@heroicons/react/24/outline';
-import { nurseShiftStats, nurseShiftSchedule } from '@/mock/hospital/nurse';
+import {
+  nurseShiftStats,
+  nurseShiftSchedule,
+  nurseShiftScheduleWeekly,
+  nurseShiftScheduleMonthly,
+} from '@/mock/hospital/nurse';
+import type { NurseShift } from '@/types/hospital';
 
 const NAVY = '#1E3A5F';
 const SKY = '#0EA5E9';
@@ -31,9 +36,16 @@ const STATUS_COLOR: Record<string, string> = {
 type ViewMode = 'daily' | 'weekly' | 'monthly';
 const VIEW_MODES: ViewMode[] = ['daily', 'weekly', 'monthly'];
 
+const SCHEDULE_BY_VIEW: Record<ViewMode, NurseShift[]> = {
+  daily: nurseShiftSchedule,
+  weekly: nurseShiftScheduleWeekly,
+  monthly: nurseShiftScheduleMonthly,
+};
+
 export default function NurseSchedulePage() {
   const { t } = useTranslation();
   const [view, setView] = useState<ViewMode>('daily');
+  const visibleSchedule = SCHEDULE_BY_VIEW[view];
 
   return (
     <div className="space-y-6">
@@ -114,15 +126,12 @@ export default function NurseSchedulePage() {
 
       {/* Timeline */}
       <div className="space-y-3 rounded-2xl bg-white p-4 sm:p-6 shadow-sm border border-gray-100">
-        {view !== 'daily' && (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <CalendarIcon className="h-8 w-8 text-slate-300" />
-            <p className="text-sm font-semibold text-slate-500">
-              {t(`hospital.${view}ViewComingSoon`)}
-            </p>
-          </div>
+        {visibleSchedule.length === 0 && (
+          <p className="py-12 text-center text-sm font-semibold text-slate-400">
+            {t('hospital.noShiftsScheduled')}
+          </p>
         )}
-        {view === 'daily' && nurseShiftSchedule.map((item) => {
+        {visibleSchedule.map((item) => {
           const statusColor = STATUS_COLOR[item.status];
           const statusLabel =
             item.status === 'COMPLETED'
@@ -133,7 +142,7 @@ export default function NurseSchedulePage() {
 
           return (
             <div key={item.id} className="flex items-center gap-3 sm:gap-5">
-              <span className="hidden w-20 shrink-0 text-right text-xs font-bold text-slate-600 sm:block">
+              <span className="hidden w-24 shrink-0 text-right text-xs font-bold text-slate-600 sm:block">
                 {item.time}
               </span>
               <span className="h-12 w-1 shrink-0 rounded" style={{ background: SKY }} />

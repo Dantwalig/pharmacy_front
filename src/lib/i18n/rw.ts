@@ -1627,8 +1627,7 @@ export const rw = {
     allDepartments: 'Amashami Yose',
     allShiftTypes: 'Uburyo Bwose bw\'Amasaha',
     upcoming: 'Bizaza',
-    weeklyViewComingSoon: 'Kureba ku cyumweru biraza vuba.',
-    monthlyViewComingSoon: 'Kureba ku kwezi biraza vuba.',
+    noShiftsScheduled: 'Nta gahunda y\'amasaha ihari.',
   },
   bulkUploadPage: {
     addManually: 'Injiza Buri Kimwe',
