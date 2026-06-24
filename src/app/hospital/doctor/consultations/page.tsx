@@ -1,24 +1,47 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_CONSULTATIONS } from '@/mock/hospital/consultations';
-import type { ConsultationStatus } from '@/types/hospital';
+import { useState, useEffect } from 'react';
+import { api, unwrapData } from '@/lib/api';
+import { MOCK_DOCTOR } from '@/mock/hospital/user';
+import type { ConsultationStatus, Consultation } from '@/types/hospital';
 
 const STATUS_BADGE: Record<ConsultationStatus, string> = {
-  ACTIVE:    'bg-blue-50  border border-blue-400  text-blue-600',
+  ACTIVE: 'bg-blue-50  border border-blue-400  text-blue-600',
   COMPLETED: 'bg-green-50 border border-green-400 text-green-600',
-  PENDING:   'bg-amber-50 border border-amber-400 text-amber-600',
+  PENDING: 'bg-amber-50 border border-amber-400 text-amber-600',
 };
 
 export default function HospitalDoctorConsultationsPage() {
-  const [search, setSearch]       = useState('');
+  const [search, setSearch] = useState('');
   const [selectedId, setSelected] = useState<string | null>(null);
 
-  const filtered = MOCK_CONSULTATIONS.filter(c =>
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadConsultations() {
+      try {
+        setLoading(true);
+        const res = await api.get(`/consultations?doctorId=${MOCK_DOCTOR.id}`);
+        const parsed = unwrapData<Consultation>(res.data);
+        setConsultations(parsed);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch consultations:', err);
+        setError('Failed to load consultations');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadConsultations();
+  }, []);
+
+  const filtered = consultations.filter(c =>
     c.patientName.toLowerCase().includes(search.toLowerCase())
   );
 
-  const selected = MOCK_CONSULTATIONS.find(c => c.id === selectedId) ?? null;
+  const selected = consultations.find(c => c.id === selectedId) ?? null;
 
   return (
     <div className="space-y-6">
@@ -54,16 +77,25 @@ export default function HospitalDoctorConsultationsPage() {
 
           {/* Scrollable patient rows */}
           <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
-            {filtered.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No patients found</p>
+            {loading ? (
+              <div className="p-4 space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="animate-pulse bg-gray-100 rounded-xl h-16 w-full" />
+                ))}
+              </div>
+            ) : error ? (
+              <p className="text-sm text-red-500 text-center py-8">{error}</p>
+            ) : filtered.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">
+                {search ? "No patients found" : "No consultations"}
+              </p>
             ) : (
               filtered.map(c => (
                 <button
                   key={c.id}
                   onClick={() => setSelected(c.id)}
-                  className={`w-full text-left px-5 py-4 transition-colors ${
-                    selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                  }`}
+                  className={`w-full text-left px-5 py-4 transition-colors ${selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
