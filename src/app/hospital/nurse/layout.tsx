@@ -30,7 +30,7 @@ export default function HospitalNurseLayout({ children }: { children: React.Reac
                     hospitalName={MOCK_NURSE.hospitalName}
                     onMenuClick={() => setSidebarOpen(true)}
                 />
-                <main className="flex-1 overflow-x-hidden">{children}</main>
+                <main className="flex-1 overflow-x-hidden p-4 lg:p-6">{children}</main>
             </div>
         </div>
     );
