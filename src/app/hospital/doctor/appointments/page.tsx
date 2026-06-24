@@ -14,12 +14,18 @@ import {
   ClockIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EllipsisVerticalIcon,
 } from '@heroicons/react/24/outline';
+
+const PAGE_SIZE = 8;
 
 export default function HospitalDoctorAppointmentsPage() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<string>('ALL');
+  const [page, setPage] = useState(1);
 
   const totalCount = MOCK_APPOINTMENTS.length;
   const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CONFIRMED').length;
@@ -28,8 +34,8 @@ export default function HospitalDoctorAppointmentsPage() {
 
   //stats
   const statCards = [
-    { label: t('hospital.total', 'Total'), value: totalCount, icon: CalendarIcon, iconColor: '#1E4D8C', bgColor: '#EBF5FF' },
-    { label: t('hospital.confirmed', 'Confirmed'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
+    { label: t('hospital.today', 'Today'), value: totalCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
     { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
     { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
   ];
@@ -51,7 +57,10 @@ export default function HospitalDoctorAppointmentsPage() {
     return matchesTab && matchesSearch;
   });
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+  const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = filteredAppointments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
   const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     //statusMap for appointments
@@ -68,8 +77,8 @@ export default function HospitalDoctorAppointmentsPage() {
     <div className="space-y-6">
       {/* Hero Header */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-extrabold text-gray-900">{t('hospital.appointmentsTitle', 'Appointment Scheduling & Tracking')}</h1>
-        <p className="mt-1 text-sm text-gray-600">{t('hospital.appointmentsSubtitle', 'Manage and track patient consultation timelines')}</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.appointmentsTitle', 'Appointments')}</h1>
+        <p className="mt-1 text-sm" style={{ color: '#3B82F6' }}>{t('hospital.appointmentsSubtitle', 'Manage and track patients appointments')}</p>
       </div>
 
       {/* Stats Cards Section */}
@@ -77,13 +86,16 @@ export default function HospitalDoctorAppointmentsPage() {
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex items-center justify-between">
-              <div>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</h3>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <div className="rounded-xl p-3 shrink-0" style={{ backgroundColor: stat.bgColor }}>
-                <Icon className="w-6 h-6" style={{ color: stat.iconColor }} />
+            <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700">{stat.label}</h3>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t('hospital.appointmentsWord', 'Appointments')}</p>
+                </div>
+                <div className="rounded-xl p-2.5 shrink-0" style={{ backgroundColor: stat.bgColor }}>
+                  <Icon className="w-5 h-5" style={{ color: stat.iconColor }} />
+                </div>
               </div>
             </div>
           );
@@ -98,7 +110,7 @@ export default function HospitalDoctorAppointmentsPage() {
             type="text"
             placeholder={t('hospital.searchPlaceholder', 'Search name by ID, condition...')}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
         </div>
@@ -110,7 +122,7 @@ export default function HospitalDoctorAppointmentsPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => { setActiveTab(tab.id); setPage(1); }}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     activeTab === tab.id
                       ? 'bg-blue-600 text-white shadow-sm'
@@ -136,35 +148,35 @@ export default function HospitalDoctorAppointmentsPage() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">{t('hospital.thPatient', 'Patient')}</th>
-                <th className="px-6 py-4">{t('hospital.thDate', 'Date')}</th>
                 <th className="px-6 py-4">{t('hospital.thTime', 'Time')}</th>
-                <th className="px-6 py-4">{t('hospital.thSpecialization', 'Specialization')}</th>
-                <th className="px-6 py-4">{t('hospital.thType', 'Type')}</th>
+                <th className="px-6 py-4">{t('hospital.thType', 'Appointment type')}</th>
+                <th className="px-6 py-4">{t('hospital.thDoctor', 'Doctor')}</th>
+                <th className="px-6 py-4">{t('hospital.thNotes', 'Notes')}</th>
                 <th className="px-6 py-4">{t('hospital.thStatus', 'Status')}</th>
-                <th className="px-6 py-4 text-right">{t('hospital.thActions', 'Actions')}</th>
+                <th className="px-6 py-4 text-right" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {filteredAppointments.length === 0 ? (
+              {pageItems.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-gray-400 font-medium">
                     {t('hospital.noAppointmentsFound', 'No appointments found matching the selected criteria.')}
                   </td>
                 </tr>
               ) : (
-                filteredAppointments.map((apt: Appointment) => (
+                pageItems.map((apt: Appointment) => (
                   <tr key={apt.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-semibold text-gray-900">
                       {apt.patientName}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{formatDate(apt.date)}</td>
                     <td className="px-6 py-4 text-gray-600">{formatTime(apt.date)}</td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
                         {apt.specialization || t('hospital.general', 'General')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 capitalize">{apt.type?.toLowerCase().replace('_', '-')}</td>
+                    <td className="px-6 py-4 text-gray-600">{apt.doctorName}</td>
+                    <td className="px-6 py-4 text-gray-500 max-w-[220px] truncate">{apt.notes ?? apt.reason}</td>
                     <td className="px-6 py-4">
                       {(() => {
                         const status = statusMap[apt.status] ?? {
@@ -185,9 +197,10 @@ export default function HospitalDoctorAppointmentsPage() {
                     <td className="px-6 py-4 text-right">
                       <Link
                         href={`/hospital/doctor/appointments/${apt.id}`}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-semibold rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                        aria-label={t('hospital.viewBtn', 'View')}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                       >
-                        {t('hospital.viewBtn', 'View')}
+                        <EllipsisVerticalIcon className="w-5 h-5" />
                       </Link>
                     </td>
                   </tr>
@@ -196,10 +209,60 @@ export default function HospitalDoctorAppointmentsPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
-          {t('hospital.showingCount', 'Showing {{count}} of {{total}} Appointments', { count: filteredAppointments.length, total: totalCount })}
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
+          <span>
+            {t('hospital.showingCount', 'Showing {{count}} of {{total}} Appointments', { count: pageItems.length, total: filteredAppointments.length })}
+          </span>
+          <div className="flex items-center gap-1">
+            <AptNavButton onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}>
+              <ChevronLeftIcon className="w-3.5 h-3.5" />
+            </AptNavButton>
+            {aptPageNumbers(safePage, totalPages).map((n, i) =>
+              n === '...'
+                ? <span key={`ellipsis-${i}`} className="px-1 text-gray-400">...</span>
+                : <AptPageButton key={n} label={n} active={n === safePage} onClick={() => setPage(n)} />
+            )}
+            <AptNavButton onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}>
+              <ChevronRightIcon className="w-3.5 h-3.5" />
+            </AptNavButton>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function aptPageNumbers(current: number, total: number): (number | '...')[] {
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | '...')[] = [1];
+  if (current > 3) pages.push('...');
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function AptPageButton({ label, active, onClick }: { label: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-7 h-7 text-xs rounded flex items-center justify-center transition-colors ${
+        active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function AptNavButton({ onClick, disabled, children }: { onClick: () => void; disabled: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="w-7 h-7 flex items-center justify-center rounded transition-colors disabled:text-gray-300 disabled:cursor-default text-gray-600 hover:bg-gray-100 disabled:hover:bg-transparent"
+    >
+      {children}
+    </button>
   );
 }

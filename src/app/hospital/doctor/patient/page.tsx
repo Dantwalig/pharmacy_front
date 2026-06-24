@@ -26,6 +26,7 @@ export default function HospitalDoctorPatientsPage() {
   const [search, setSearch]             = useState('');
   const [statusFilter, setStatus]       = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
+  const [lastVisitFilter, setLastVisit] = useState('ALL');
   const [page, setPage]                 = useState(1);
 
   const total       = MOCK_PATIENTS.length;
@@ -38,6 +39,13 @@ export default function HospitalDoctorPatientsPage() {
   const filtered = MOCK_PATIENTS
     .filter(p => statusFilter === 'ALL' || p.status === statusFilter)
     .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
+    .filter(p => {
+      if (lastVisitFilter === 'ALL') return true;
+      const visit = new Date(p.lastVisit).getTime();
+      if (Number.isNaN(visit)) return true;
+      const days = (Date.now() - visit) / 86_400_000;
+      return days <= Number(lastVisitFilter);
+    })
     .filter(p =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.patientId.toLowerCase().includes(search.toLowerCase())
@@ -67,51 +75,62 @@ export default function HospitalDoctorPatientsPage() {
         <StatCard label="Total Patients"  value={total}       icon={<UserGroupIcon className="w-6 h-6" />} color="blue"   trend="+12% from last week"  />
         <StatCard label="Active Cases"    value={activeCount} icon={<ActiveCasesIcon />}                   color="green"  trend="+12% from last month" />
         <StatCard label="New Patients"    value={newCount}    icon={<UserPlusIcon className="w-6 h-6" />}  color="orange" trend="+5% from last week"   />
-        <StatCard label="Follow Ups Due"  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend="-12% from last week" />
+        <StatCard label="Follow ups due"  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend="-12% from last week" />
       </div>
 
-      {/* Filters + table card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        {/* Filter bar */}
-        <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-gray-100">
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
-            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search name by ID,..."
-              value={search}
-              onChange={e => applyFilter(() => setSearch(e.target.value))}
-              className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={e => applyFilter(() => setStatus(e.target.value as PatientStatus | 'ALL'))}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="CRITICAL">Critical</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
-
-          <select
-            value={conditionFilter}
-            onChange={e => applyFilter(() => setCondition(e.target.value))}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            {conditions.map(c => (
-              <option key={c} value={c}>{c === 'ALL' ? 'All Conditions' : c}</option>
-            ))}
-          </select>
-
-          <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
-            <FunnelIcon className="w-4 h-4" />
-            Filter
-          </button>
+      {/* Filter bar — standalone card */}
+      <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search name by ID,..."
+            value={search}
+            onChange={e => applyFilter(() => setSearch(e.target.value))}
+            className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
 
+        <select
+          value={statusFilter}
+          onChange={e => applyFilter(() => setStatus(e.target.value as PatientStatus | 'ALL'))}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="ALL">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="CRITICAL">Critical</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+
+        <select
+          value={conditionFilter}
+          onChange={e => applyFilter(() => setCondition(e.target.value))}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          {conditions.map(c => (
+            <option key={c} value={c}>{c === 'ALL' ? 'All Conditions' : c}</option>
+          ))}
+        </select>
+
+        <select
+          value={lastVisitFilter}
+          onChange={e => applyFilter(() => setLastVisit(e.target.value))}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="ALL">Last Visit</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+
+        <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+          <FunnelIcon className="w-4 h-4" />
+          Filter
+        </button>
+      </div>
+
+      {/* Table card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
