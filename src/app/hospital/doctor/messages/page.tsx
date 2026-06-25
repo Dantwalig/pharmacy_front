@@ -73,7 +73,7 @@ export default function DoctorMessagesPage() {
                 <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#1E3A5F' }}>
                     {t('hospital.messages') || 'Doctor Messaging Hub'}
                 </h1>
-                <p className="mt-1 text-sm font-medium" style={{ color: '#3B82F6' }}>
+                <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>
                     Communicate directly with patients, pharmacists, and medical staff in real-time.
                 </p>
             </div>

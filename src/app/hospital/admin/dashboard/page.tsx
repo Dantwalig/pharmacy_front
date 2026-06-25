@@ -23,6 +23,8 @@ export default function HospitalAdminDashboardPage() {
       label: t('hospital.appointments'),
       value: 9,
       statusText: '18% vs yesterday',
+      statusColor: 'text-emerald-600',
+      up: true,
       accent: 'border-brand-navy',
       iconBg: 'bg-brand-navy/10',
       iconColor: 'text-brand-navy',
@@ -33,6 +35,8 @@ export default function HospitalAdminDashboardPage() {
       label: t('hospital.activeDoctors'),
       value: 6,
       statusText: t('hospital.onDutyToday'),
+      statusColor: 'text-slate-500',
+      up: false,
       accent: 'border-amber-500',
       iconBg: 'bg-amber-100',
       iconColor: 'text-amber-600',
@@ -43,6 +47,8 @@ export default function HospitalAdminDashboardPage() {
       label: t('hospital.procuredValue'),
       value: '1,850,000 RWF',
       statusText: '12% budget utilization',
+      statusColor: 'text-emerald-600',
+      up: true,
       accent: 'border-emerald-500',
       iconBg: 'bg-emerald-100',
       iconColor: 'text-emerald-600',
@@ -53,6 +59,8 @@ export default function HospitalAdminDashboardPage() {
       label: t('hospital.lowStockExpiry'),
       value: 7,
       statusText: t('hospital.requiresImmediateAttention'),
+      statusColor: 'text-red-500',
+      up: false,
       accent: 'border-red-500',
       iconBg: 'bg-red-100',
       iconColor: 'text-red-600',
@@ -117,7 +125,7 @@ export default function HospitalAdminDashboardPage() {
           <h1 className="text-4xl sm:text-5xl font-black mb-3 text-brand-blue-light">
             {getGreeting()}, {firstName}.
           </h1>
-          <p className="text-lg text-brand-navy-dark">
+          <p className="text-lg" style={{ color: '#0284C7' }}>
             {t('hospital.adminWelcomeMessage')}
           </p>
           <Link
@@ -139,7 +147,7 @@ export default function HospitalAdminDashboardPage() {
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className={`text-sm font-semibold ${card.labelClass}`}>
+                <p className={`text-xs font-bold uppercase tracking-wider ${card.labelClass}`}>
                   {card.label}
                 </p>
                 <h3 className="mt-2 text-3xl font-bold text-slate-900">
@@ -150,7 +158,9 @@ export default function HospitalAdminDashboardPage() {
                 <card.icon className={`w-6 h-6 ${card.iconColor}`} />
               </div>
             </div>
-            <p className="mt-4 text-sm text-slate-500">{card.statusText}</p>
+            <p className={`mt-4 text-sm font-medium ${card.statusColor}`}>
+              {card.up && <span className="mr-0.5">↑</span>}{card.statusText}
+            </p>
           </div>
         ))}
       </div>

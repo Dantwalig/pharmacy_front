@@ -443,7 +443,7 @@ export default function HospitalDoctorPrescriptionPage() {
 
                 <button
                   className="mt-auto w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ background: '#3B82F6' }}
+                  style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
                 >
                   Add Medicine
                 </button>

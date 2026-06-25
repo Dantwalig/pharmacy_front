@@ -133,7 +133,7 @@ export default function DoctorSchedulePage() {
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ color: '#1E3A5F' }}>
                     {t('hospital.schedule') || 'Doctor Schedule & Calendar'}
                 </h1>
-                <p className="mt-2 text-sm sm:text-base font-medium" style={{ color: '#3B82F6' }}>
+                <p className="mt-2 text-sm sm:text-base font-medium" style={{ color: '#0284C7' }}>
                     Organize, view, and reserve time slots for examinations, surgeries, and clinics.
                 </p>
             </div>
@@ -175,7 +175,7 @@ export default function DoctorSchedulePage() {
                         </button>
                     </div>
 
-                    <button className="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all">
+                    <button className="flex items-center gap-2 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all hover:opacity-90" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
                         <PlusIcon className="w-4 h-4" />
                         Reserve Time Slot
                     </button>

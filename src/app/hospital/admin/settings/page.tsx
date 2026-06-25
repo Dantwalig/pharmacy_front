@@ -21,7 +21,6 @@ import {
 } from '@/mock/hospital/settings';
 
 const NAVY     = '#1E3A5F';
-const TEAL     = '#2D9B8A';
 const GRADIENT = 'linear-gradient(90deg, #1E4D8C 0%, #2D9B8A 100%)';
 
 type Tab = 'general' | 'fees' | 'announcements' | 'departments';
@@ -56,7 +55,7 @@ export default function HospitalAdminSettingsPage() {
           <h1 className="text-2xl sm:text-3xl font-semibold truncate" style={{ color: NAVY }}>
             Settings
           </h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: TEAL }}>
+          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>
             Manage Hospital Preferences and Configurations
           </p>
         </div>
@@ -80,7 +79,7 @@ export default function HospitalAdminSettingsPage() {
               style={{
                 whiteSpace: 'nowrap',
                 ...(activeTab === key
-                  ? { background: GRADIENT, color: '#fff' }
+                  ? { background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }
                   : { background: '#fff', color: '#6b7280', border: '1px solid #d1d5db' }),
               }}
             >
@@ -93,7 +92,7 @@ export default function HospitalAdminSettingsPage() {
         {/* Fix 4: full-width on mobile, auto on sm+ */}
         <button
           className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-all min-h-11 shrink-0"
-          style={{ background: GRADIENT }}
+          style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
           <Save size={15} />
           Save Changes
@@ -140,8 +139,8 @@ function ActionBtn({ label, onClick }: { label: string; onClick?: () => void }) 
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1 text-xs font-semibold text-white px-3 py-1.5 rounded-lg hover:opacity-90 transition-all whitespace-nowrap"
-      style={{ background: GRADIENT }}
+      className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg hover:opacity-90 transition-all whitespace-nowrap"
+      style={{ background: '#EFF6FF', color: '#2563EB' }}
     >
       <Plus size={12} />
       {label}

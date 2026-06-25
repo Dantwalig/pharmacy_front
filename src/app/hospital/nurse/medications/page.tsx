@@ -52,7 +52,7 @@ export default function MedicationAdministrationPage() {
             <div className="bg-white rounded-3xl p-8 border border-[#E2E8F0] shadow-sm relative overflow-hidden">
                 <div className="relative z-10">
                     <h1 className="text-3xl font-bold text-[#1E3A5F]">Medication Administration</h1>
-                    <p className="text-[#64748B] mt-2 max-w-2xl font-medium">
+                    <p className="mt-2 max-w-2xl font-medium" style={{ color: '#0284C7' }}>
                         Track patient schedules, record doses, and monitor compliance in real-time.
                     </p>
                 </div>
