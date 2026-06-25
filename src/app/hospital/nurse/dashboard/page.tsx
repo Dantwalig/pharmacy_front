@@ -4,8 +4,14 @@
 
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { nurseDashboardStats, nurseDashboardCardsData, nursePatients, nurseSchedule } from '@/mock/hospital/nurse';
+
+const ACTION_HREF: Record<string, string> = {
+  patients: '/hospital/nurse/patients',
+  tasks:    '/hospital/nurse/notes',
+  messages: '/hospital/nurse/messages',
+};
 
 export default function NurseDashboardPage() {
   const { t } = useTranslation();
@@ -91,12 +97,12 @@ export default function NurseDashboardPage() {
 
             <div className="flex-1" />
             <div className="border-t border-gray-200 my-4" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium" style={{ color: card.color }} >
+            <Link href={ACTION_HREF[card.key] ?? '#'} className="flex items-center justify-between group">
+              <span className="text-xs font-medium group-hover:underline" style={{ color: card.color }} >
                 {card.action}
               </span>
-              <ArrowRightIcon className="h-4 w-4" style={{ color: card.color }} />
-            </div>
+              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: card.color }} />
+            </Link>
           </div>
         );
       })}
@@ -170,7 +176,7 @@ export default function NurseDashboardPage() {
 
       {/* Schedule */}
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b px-5 py-4">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div className="flex items-center gap-2">
             <CalendarDaysIcon className="h-5 w-5 text-[#2563EB]" />
             <h2 className="font-semibold text-gray-800"> {t('hospital.todaySchedule')} </h2>
@@ -182,20 +188,22 @@ export default function NurseDashboardPage() {
         <div>
           {nurseSchedule.map((item) => (
             <div key={item.id}
-              className="flex items-center justify-between border-b px-5 py-4 last:border-b-0">
+              className="flex items-center justify-between border-b border-gray-100 px-5 py-4 last:border-b-0">
 
-              <div className="flex gap-5">
-                <span className="font-medium">{item.time}</span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-500 w-16 shrink-0">{item.time}</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
                 <div>
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-xs text-gray-500">{item.location}</p>
+                  <p className="text-sm font-semibold text-gray-800">{item.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{item.location}</p>
                 </div>
               </div>
 
               <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                item.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }`}>
+                className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold ${
+                item.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600' }`}>
                 {item.status}
+                {item.status === 'Completed' && <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />}
               </span>
             </div>
           ))}
