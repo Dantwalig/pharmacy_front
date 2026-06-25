@@ -28,6 +28,7 @@ export default function HospitalDoctorPatientsPage() {
   const [conditionFilter, setCondition] = useState('ALL');
   const [lastVisitFilter, setLastVisit] = useState('ALL');
   const [page, setPage]                 = useState(1);
+  const [now]                           = useState(() => Date.now());
 
   const total       = MOCK_PATIENTS.length;
   const activeCount = MOCK_PATIENTS.filter(p => p.status === 'ACTIVE').length;
@@ -43,7 +44,7 @@ export default function HospitalDoctorPatientsPage() {
       if (lastVisitFilter === 'ALL') return true;
       const visit = new Date(p.lastVisit).getTime();
       if (Number.isNaN(visit)) return true;
-      const days = (Date.now() - visit) / 86_400_000;
+      const days = (now - visit) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
     .filter(p =>

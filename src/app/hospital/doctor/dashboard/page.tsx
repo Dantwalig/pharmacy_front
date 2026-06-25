@@ -84,13 +84,14 @@ export default function HospitalDoctorDashboardPage() {
   });
 
   const patientCategoryTotal = MOCK_PATIENT_CATEGORIES.reduce((sum, item) => sum + item.value, 0);
-  let startPercentage = 0;
-  const categoryGradient = `conic-gradient(${MOCK_PATIENT_CATEGORIES.map((item) => {
-    const endPercentage = startPercentage + (item.value / patientCategoryTotal) * 100;
-    const result = `${item.color} ${startPercentage}% ${endPercentage}%`;
-    startPercentage = endPercentage;
-    return result;
-  }).join(', ')})`;
+  const categorySegments = MOCK_PATIENT_CATEGORIES.map((item, index) => {
+    const start = MOCK_PATIENT_CATEGORIES
+      .slice(0, index)
+      .reduce((sum, c) => sum + (c.value / patientCategoryTotal) * 100, 0);
+    const end = start + (item.value / patientCategoryTotal) * 100;
+    return `${item.color} ${start}% ${end}%`;
+  });
+  const categoryGradient = `conic-gradient(${categorySegments.join(', ')})`;
 
   const priorityBadgeClasses: Record<string, string> = {
     Low: 'bg-emerald-100 text-emerald-700',

@@ -22,6 +22,7 @@ export default function NursePatientsPage() {
   const [conditionFilter, setCondition] = useState('ALL');
   const [lastVisitFilter, setLastVisit] = useState('ALL');
   const [page, setPage]                 = useState(1);
+  const [now]                           = useState(() => Date.now());
 
   const conditions = ['ALL', ...Array.from(new Set(MOCK_PATIENTS.map(p => p.condition)))];
 
@@ -32,7 +33,7 @@ export default function NursePatientsPage() {
       if (lastVisitFilter === 'ALL') return true;
       const visit = new Date(p.lastVisit).getTime();
       if (Number.isNaN(visit)) return true;
-      const days = (Date.now() - visit) / 86_400_000;
+      const days = (now - visit) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
     .filter(p =>
