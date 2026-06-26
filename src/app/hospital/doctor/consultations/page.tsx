@@ -27,7 +27,7 @@ export default function HospitalDoctorConsultationsPage() {
         <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>
           Patient Consultations Workflow
         </h1>
-        <p className="mt-1 text-sm" style={{ color: '#00A2E8' }}>
+        <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>
           Record medical examinations, patient vitals, diagnosis codes, and treatment instructions.
         </p>
       </div>

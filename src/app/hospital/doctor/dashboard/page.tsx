@@ -24,35 +24,51 @@ export default function HospitalDoctorDashboardPage() {
   const overviewCards = [
     {
       title: MOCK_DASHBOARD_STATS.appointmentsByStatus.CONFIRMED + MOCK_DASHBOARD_STATS.appointmentsByStatus.PENDING,
-      label: t('hospital.todayAppointments'),
+      label: 'Appointments',
+      trend: '+2 than yesterday',
       icon: CalendarIcon,
       borderColor: '#E0F2FE',
       iconColor: '#0284C7',
-      iconBg: '#EBF5FF'
+      iconBg: '#EBF5FF',
+      labelColor: '#0284C7',
+      pillBg: '#EBF5FF',
+      pillColor: '#0284C7',
     },
     {
       title: MOCK_DASHBOARD_STATS.totalPatients,
-      label: t('hospital.totalPatients'),
+      label: 'Total Patients',
+      trend: '10% last month',
       icon: UsersIcon,
       borderColor: '#DCFCE7',
       iconColor: '#04802D',
-      iconBg: '#F0FDF4'
+      iconBg: '#F0FDF4',
+      labelColor: '#04802D',
+      pillBg: '#F0FDF4',
+      pillColor: '#04802D',
     },
     {
-      title: MOCK_DASHBOARD_STATS.activeDoctors,
-      label: t('hospital.activeDoctors'),
+      title: 2,
+      label: 'Emergency Cases',
+      trend: '+2% this week',
       icon: UserPlusIcon,
       borderColor: '#FEE2E2',
       iconColor: '#FF0000',
-      iconBg: '#FEF2F2'
+      iconBg: '#FEF2F2',
+      labelColor: '#DC2626',
+      pillBg: '#FEF2F2',
+      pillColor: '#DC2626',
     },
     {
-      title: MOCK_DASHBOARD_STATS.monthlyRevenue.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-      label: t('hospital.monthlyRevenue'),
+      title: '40%',
+      label: 'Medicine Stock Rate',
+      trend: 'this month',
       icon: BanknotesIcon,
       borderColor: '#F3E8FF',
       iconColor: '#92009F',
-      iconBg: '#F3E8FF'
+      iconBg: '#F3E8FF',
+      labelColor: '#92009F',
+      pillBg: '#F3E8FF',
+      pillColor: '#92009F',
     }
   ];
 
@@ -68,13 +84,14 @@ export default function HospitalDoctorDashboardPage() {
   });
 
   const patientCategoryTotal = MOCK_PATIENT_CATEGORIES.reduce((sum, item) => sum + item.value, 0);
-  let startPercentage = 0;
-  const categoryGradient = `conic-gradient(${MOCK_PATIENT_CATEGORIES.map((item) => {
-    const endPercentage = startPercentage + (item.value / patientCategoryTotal) * 100;
-    const result = `${item.color} ${startPercentage}% ${endPercentage}%`;
-    startPercentage = endPercentage;
-    return result;
-  }).join(', ')})`;
+  const categorySegments = MOCK_PATIENT_CATEGORIES.map((item, index) => {
+    const start = MOCK_PATIENT_CATEGORIES
+      .slice(0, index)
+      .reduce((sum, c) => sum + (c.value / patientCategoryTotal) * 100, 0);
+    const end = start + (item.value / patientCategoryTotal) * 100;
+    return `${item.color} ${start}% ${end}%`;
+  });
+  const categoryGradient = `conic-gradient(${categorySegments.join(', ')})`;
 
   const priorityBadgeClasses: Record<string, string> = {
     Low: 'bg-emerald-100 text-emerald-700',
@@ -103,36 +120,24 @@ export default function HospitalDoctorDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Hero*/}
-      <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
-        {/*Heartbeat SVG*/}
-        <svg 
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]" 
-          viewBox="0 0 320 140" 
-          fill="none"
-          preserveAspectRatio="xMidYMid meet"
+      <div className="rounded-2xl w-full" style={{ background: '#EBF5FF', padding: '26px 32px' }}>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#1a3470' }}>
+          {getGreeting()}, Dr. {firstName}
+        </h1>
+        <p className="text-sm sm:text-base" style={{ color: '#0284C7' }}>{t('hospital.welcomeMessage')}</p>
+        <Link
+          href="/hospital/doctor/appointments"
+          className="mt-5 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+          style={{
+            background: 'linear-gradient(to right, #0284C7, #38BDF8)',
+            height: '38px',
+            borderRadius: '12px',
+            padding: '0 18px',
+          }}
         >
-          <polyline points="0,70 55,70 80,15 108,125 135,30 162,105 188,70 320,70" stroke="#1E4D8C" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-
-        <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
-            {getGreeting()},{firstName}.
-          </h1>
-          <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeMessage')}</p>
-          <Link
-            href="/hospital/doctor/appointments"
-            className="mt-6 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-            style={{
-              background: 'linear-gradient(to right, #0284C7, #38BDF8)',
-              width: '140px',
-              height: '44px',
-              borderRadius: '16px',
-            }}
-          >
-            <CalendarIcon className="w-4 h-4" />
-            {t('hospital.viewSchedule')}
-          </Link>
-        </div>
+          <CalendarIcon className="w-4 h-4" />
+          {t('hospital.viewSchedule')}
+        </Link>
       </div>
 
       {/* Overview Stats*/}
@@ -142,16 +147,20 @@ export default function HospitalDoctorDashboardPage() {
           return (
             <div
               key={card.label}
-              className="rounded-2xl border p-5 bg-white shadow-sm flex items-center justify-between transition-all duration-300 hover:shadow-md"
+              className="rounded-2xl border p-5 bg-white shadow-sm flex flex-col items-center text-center transition-all duration-300 hover:shadow-md"
               style={{ borderColor: card.borderColor }}
             >
-              <div>
-                <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                <h3 className="mt-2 text-2xl font-bold text-gray-900">{card.title}</h3>
+              <div className="rounded-xl p-2.5 mb-2" style={{ backgroundColor: card.iconBg }}>
+                <Icon className="w-5 h-5" style={{ color: card.iconColor }} />
               </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor: card.iconBg }}>
-                <Icon className="w-6 h-6" style={{ color: card.iconColor }} />
-              </div>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: card.labelColor }}>{card.label}</p>
+              <h3 className="mt-2 text-3xl font-bold text-gray-900">{card.title}</h3>
+              <span
+                className="mt-3 inline-block px-3 py-1 rounded-full text-[10px] font-semibold"
+                style={{ background: card.pillBg, color: card.pillColor }}
+              >
+                {card.trend}
+              </span>
             </div>
           );
         })}
@@ -162,7 +171,7 @@ export default function HospitalDoctorDashboardPage() {
         {/*Weekly Patient Visits */}
         <div className="lg:col-span-6 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col justify-between">
           <div className="text-center mb-6">
-            <h3 className="text-xs font-bold tracking-wider uppercase text-slate-700">
+            <h3 className="text-xs font-bold tracking-wider uppercase text-blue-600">
               {t('hospital.weeklyPatientVisitsRates')}
             </h3>
           </div>
@@ -252,38 +261,25 @@ export default function HospitalDoctorDashboardPage() {
       {/* Patient Categories and Notifications */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-4 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="text-xs font-bold tracking-wider uppercase text-slate-700 mb-4">
+          <div className="text-center text-xs font-bold tracking-wider uppercase text-blue-600 mb-4">
             {t('hospital.patientCategories')}
           </div>
           <div className="flex justify-center">
             <div className="relative w-64 h-64 rounded-full" style={{ background: categoryGradient }}>
-              <div className="absolute inset-0 m-10 rounded-full bg-white flex flex-col items-center justify-center">
-                <span className="text-sm font-semibold text-gray-500">{t('hospital.totalPatients')}</span>
-                <span className="text-3xl font-bold text-slate-900">{patientCategoryTotal}</span>
-              </div>
+              <div className="absolute inset-0 m-10 rounded-full bg-white" />
             </div>
           </div>
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {MOCK_PATIENT_CATEGORIES.map((category) => (
-              <div key={category.label} className="rounded-2xl bg-slate-50 p-3 flex items-center gap-3">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">{category.label}</div>
-                  <div className="text-sm font-bold text-gray-900">{category.value}</div>
-                </div>
+              <div key={category.label} className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: category.color }} />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">{category.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="xl:col-span-8 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{t('hospital.notification')}</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Latest hospital alerts and priorities</p>
-            </div>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

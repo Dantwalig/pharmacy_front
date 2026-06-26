@@ -101,8 +101,8 @@ function TogglePill({ label, active, onClick }: { label: string; active: boolean
       className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all border"
       style={
         active
-          ? { background: '#3B82F6', color: '#fff', borderColor: '#3B82F6' }
-          : { background: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }
+          ? { background: '#DBEAFE', color: '#2563EB', borderColor: '#DBEAFE' }
+          : { background: '#F3F4F6', color: '#6B7280', borderColor: '#F3F4F6' }
       }
     >
       {label}
@@ -284,16 +284,22 @@ export default function HospitalDoctorPrescriptionPage() {
               <button
                 key={p.id}
                 onClick={() => { setSelected(p.id); setTab('prescriptions'); }}
-                className="w-full text-left px-3 py-2.5 rounded-xl transition-all"
+                className="w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-2.5"
                 style={isActive ? { background: '#3B82F6', color: '#fff' } : { color: NAVY }}
               >
-                <p className="text-xs font-semibold leading-tight">{p.name}</p>
-                <p
-                  className="text-xs mt-0.5 leading-tight truncate"
-                  style={{ color: isActive ? 'rgba(255,255,255,0.75)' : '#9CA3AF' }}
-                >
-                  {p.condition.charAt(0) + p.condition.slice(1).toLowerCase()}
-                </p>
+                <span
+                  className="w-7 h-7 rounded-full shrink-0"
+                  style={{ background: isActive ? 'rgba(255,255,255,0.4)' : '#E5E7EB' }}
+                />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold leading-tight truncate">{p.name}</p>
+                  <p
+                    className="text-xs mt-0.5 leading-tight truncate"
+                    style={{ color: isActive ? 'rgba(255,255,255,0.75)' : '#9CA3AF' }}
+                  >
+                    {p.condition.charAt(0) + p.condition.slice(1).toLowerCase()}
+                  </p>
+                </div>
               </button>
             );
           })}
@@ -323,21 +329,22 @@ export default function HospitalDoctorPrescriptionPage() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-100 px-6">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setTab(tab.id)}
-              className="relative px-4 py-3 text-xs font-semibold transition-colors"
-              style={{ color: activeTab === tab.id ? '#1D4ED8' : '#9CA3AF' }}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: '#1D4ED8' }} />
-              )}
-            </button>
-          ))}
+        {/* Tabs — segmented control */}
+        <div className="px-6 py-3 border-b border-gray-100">
+          <div className="flex items-center bg-gray-100 rounded-xl p-1">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setTab(tab.id)}
+                className={`flex-1 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === tab.id ? 'bg-white shadow-sm' : ''
+                }`}
+                style={{ color: activeTab === tab.id ? '#1D4ED8' : '#6B7280' }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab content */}
@@ -349,7 +356,7 @@ export default function HospitalDoctorPrescriptionPage() {
               No data available for this tab yet.
             </div>
           ) : (
-            <div className="flex gap-5 h-full">
+            <div className="flex gap-5 items-start">
 
               {/* ── Prescription form ── */}
               <div className="flex-1 min-w-0 bg-gray-50 rounded-2xl border border-gray-100 p-5 flex flex-col gap-4">
@@ -403,8 +410,8 @@ export default function HospitalDoctorPrescriptionPage() {
                             className="w-9 h-9 rounded-lg text-xs font-semibold transition-all border"
                             style={
                               active
-                                ? { background: '#3B82F6', color: '#fff', borderColor: '#3B82F6' }
-                                : { background: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }
+                                ? { background: '#DBEAFE', color: '#2563EB', borderColor: '#DBEAFE' }
+                                : { background: '#F3F4F6', color: '#6B7280', borderColor: '#F3F4F6' }
                             }
                           >
                             {day}
@@ -436,14 +443,14 @@ export default function HospitalDoctorPrescriptionPage() {
 
                 <button
                   className="mt-auto w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ background: '#3B82F6' }}
+                  style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
                 >
                   Add Medicine
                 </button>
               </div>
 
               {/* ── Current prescriptions ── */}
-              <div className="w-64 shrink-0 flex flex-col gap-3 overflow-y-auto">
+              <div className="w-64 shrink-0 flex flex-col gap-3">
                 {rxList.length === 0 ? (
                   <div className="flex items-center justify-center h-24 text-xs text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">
                     No prescriptions yet.
