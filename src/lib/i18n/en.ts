@@ -1665,6 +1665,16 @@ export const en = {
     allShiftTypes: 'All Shift Types',
     upcoming: 'Upcoming',
     noShiftsScheduled: 'No shifts scheduled.',
+
+    //Receptionist appointments, check-in, leave request,
+    appointmentsTitle: 'Scheduled Appointment Bookings',
+    appointmentsSubtitle: 'Review, search, filters, reschedule or check-in upcoming patient visits.',
+    checkInTitle:'Check-In & Queue Management',
+    checkInSubtitle:'Optimize patient flow, check-in schedules, and allocate active consulting doctors in real-time.',
+    leaveRequestTitle: 'Staff Leave Request Panel',
+    leaveRequestSubtitle: 'Submit leaves, upload supporting documentation, and track authorization histories.',
+    changePasswordTitle: 'Change Password',
+    changePasswordSubtitle: 'Update your password to ensure account security.',
   },
   bulkUploadPage: {
     addManually: 'Add Manually',
