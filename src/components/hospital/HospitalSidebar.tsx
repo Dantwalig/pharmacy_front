@@ -61,7 +61,7 @@ const NURSE_NAV = [
 
 //Added receptionist navigation
 const RECEPTIONIST_NAV = [
-  { href: '/hospital/receptionist/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/receptionist/appointment-list', icon: CalendarDays, label: 'Appointments' },
   { href: '/hospital/receptionist/change-password', icon: UserCog, label: 'Change Password' },
   { href: '/hospital/receptionist/checkingQueue', icon: Clock, label: 'Checking Queue' },
   { href: '/hospital/receptionist/leave-request', icon: Users, label: 'Leave Request' },
