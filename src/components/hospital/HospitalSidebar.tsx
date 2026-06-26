@@ -59,20 +59,30 @@ const NURSE_NAV = [
   { href: '/hospital/nurse/settings', icon: Settings, label: 'Settings' },
 ];
 
+//Added receptionist navigation
+const RECEPTIONIST_NAV = [
+  { href: '/hospital/receptionist/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/receptionist/change-password', icon: UserCog, label: 'Change Password' },
+  { href: '/hospital/receptionist/checkingQueue', icon: Clock, label: 'Checking Queue' },
+  { href: '/hospital/receptionist/leave-request', icon: Users, label: 'Leave Request' },
+]
+
 const NAV_MAP = {
   doctor: DOCTOR_NAV,
   admin:  ADMIN_NAV,
   nurse:  NURSE_NAV,
+  receptionist: RECEPTIONIST_NAV, //added receptionist to the map
 };
 
 const LABEL_MAP = {
   doctor: 'Doctor Portal',
   admin:  'Admin Portal',
   nurse:  'Nurse Portal',
+  receptionist: 'Receptionist Portal', //added receptionist to the map
 };
 
 interface Props {
-  portalType: 'doctor' | 'admin' | 'nurse';
+  portalType: 'doctor' | 'admin' | 'nurse' | 'receptionist'; //added receptionist to the portalType
   open?: boolean;
   onClose?: () => void;
 }
@@ -83,11 +93,13 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
   const nav =
     portalType === 'doctor' ? DOCTOR_NAV :
       portalType === 'nurse' ? NURSE_NAV :
-        ADMIN_NAV;
+        portalType === 'receptionist' ? RECEPTIONIST_NAV :
+          ADMIN_NAV; //added receptionist to the nav selection
   const portalLabel =
     portalType === 'doctor' ? 'Doctor Portal' :
       portalType === 'nurse' ? 'Nurse Portal' :
-        'Admin Portal';
+        portalType === 'receptionist' ? 'Receptionist Portal' :
+          'Admin Portal'; //added receptionist to the portal label selection
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
