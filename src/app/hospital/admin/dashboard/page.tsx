@@ -4,13 +4,14 @@
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { MOCK_ADMIN } from '@/mock/hospital/user';
+import { useHospitalAdminUser } from '@/lib/hospital';
 import { CalendarIcon, UsersIcon, BanknotesIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function HospitalAdminDashboardPage() {
   const { t } = useTranslation();
+  const { userName } = useHospitalAdminUser();
 
-  const firstName = MOCK_ADMIN.firstName;
+  const firstName = userName.split(' ')[0];
   const getGreeting = () => {
     const h = new Date().getHours();
     if (h < 12) return t('hospital.goodMorning');
