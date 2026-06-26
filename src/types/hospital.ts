@@ -77,6 +77,18 @@ export interface MockNurse {
   email: string;
 }
 
+//Recptionist
+export interface MockReceptionist {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'RECEPTIONIST';
+  department: string;
+  hospitalId: string;
+  hospitalName: string;
+  email: string;
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 // Source: GET /api/hospitals/:hospitalId/dashboard/stats
 
