@@ -1,5 +1,3 @@
-//src/app/hospital/receptionist/layout.tsx
-
 'use client';
 
 import { useState } from 'react';

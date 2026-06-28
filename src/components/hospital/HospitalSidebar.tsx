@@ -19,6 +19,7 @@ import {
   BarChart2,
   LogOut,
   X,
+  User,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -61,10 +62,13 @@ const NURSE_NAV = [
 
 //Added receptionist navigation
 const RECEPTIONIST_NAV = [
+  { href: '/hospital/receptionist/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/hospital/receptionist/appointment-list', icon: CalendarDays, label: 'Appointments' },
-  { href: '/hospital/receptionist/change-password', icon: UserCog, label: 'Change Password' },
   { href: '/hospital/receptionist/checkingQueue', icon: Clock, label: 'Checking Queue' },
   { href: '/hospital/receptionist/leave-request', icon: Users, label: 'Leave Request' },
+  { href: '/hospital/receptionist/notifications', icon: Bell, label: 'Notifications' },
+  { href: '/hospital/receptionist/profile', icon: User, label: 'Profile' },
+  { href: '/hospital/receptionist/change-password', icon: UserCog, label: 'Change Password' },
 ]
 
 const NAV_MAP = {

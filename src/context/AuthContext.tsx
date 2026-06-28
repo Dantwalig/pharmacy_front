@@ -249,14 +249,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         case 'RECEPTIONIST':
-          // No frontend portal exists for this role yet — see auth
-          // integration gap doc. Do not silently log them into an
-          // unfinished/incorrect portal.
-          toast.error('The receptionist portal is not available yet. Please contact your hospital admin.');
-          removeAuthTokens();
-          clearUserCache();
-          setUser(null);
-          router.push('/login');
+          toast.success('Welcome back!');
+          router.push('/hospital/receptionist/dashboard');
           break;
 
         default:
