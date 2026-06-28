@@ -391,7 +391,7 @@ export interface PatientRx {
 export interface NurseDashboardStats {
   totalPatients: number;
   pendingTasks: number;
-  activeConsultations: number;
+  unreadMessages: number;
 }
 
 export interface NursePatientOverview {

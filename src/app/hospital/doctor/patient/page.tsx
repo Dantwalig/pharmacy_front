@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MagnifyingGlassIcon,
   UserGroupIcon,
@@ -11,33 +11,61 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
-import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
-import type { PatientStatus } from '@/types/hospital';
+import { api, unwrapData } from '@/lib/api';
+import { MOCK_DOCTOR } from '@/mock/hospital/user';
+import type { PatientStatus, Patient } from '@/types/hospital';
 
 const PAGE_SIZE = 3;
 
 const STATUS_BADGE: Record<PatientStatus, string> = {
-  ACTIVE:   'bg-green-100 text-green-700',
+  ACTIVE: 'bg-green-100 text-green-700',
   CRITICAL: 'bg-red-100   text-red-600',
   INACTIVE: 'bg-gray-100  text-gray-600',
 };
 
 export default function HospitalDoctorPatientsPage() {
-  const [search, setSearch]             = useState('');
-  const [statusFilter, setStatus]       = useState<PatientStatus | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
   const [lastVisitFilter, setLastVisit] = useState('ALL');
   const [page, setPage]                 = useState(1);
   const [now]                           = useState(() => Date.now());
 
-  const total       = MOCK_PATIENTS.length;
-  const activeCount = MOCK_PATIENTS.filter(p => p.status === 'ACTIVE').length;
-  const newCount    = MOCK_PATIENTS.filter(p => p.isNew).length;
-  const followUps   = MOCK_PATIENTS.filter(p => p.followUpDue).length;
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const conditions = ['ALL', ...Array.from(new Set(MOCK_PATIENTS.map(p => p.condition)))];
+  useEffect(() => {
+    async function loadPatients() {
+      try {
+        setLoading(true);
+        const res = await api.get(`/hospitals/${MOCK_DOCTOR.hospitalId}/patients?doctorId=${MOCK_DOCTOR.id}`);
+        // We ensure fallback values for isNew and followUpDue client-side if they are missing
+        const parsed = unwrapData<Patient>(res.data).map(p => ({
+          ...p,
+          isNew: p.isNew ?? false,
+          followUpDue: p.followUpDue ?? false,
+        }));
+        setPatients(parsed);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch patients:', err);
+        setError('Failed to load patients for this doctor.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPatients();
+  }, []);
 
-  const filtered = MOCK_PATIENTS
+  const total = patients.length;
+  const activeCount = patients.filter(p => p.status === 'ACTIVE').length;
+  const newCount = patients.filter(p => p.isNew).length;
+  const followUps = patients.filter(p => p.followUpDue).length;
+
+  const conditions = ['ALL', ...Array.from(new Set(patients.map(p => p.condition)))];
+
+  const filtered = patients
     .filter(p => statusFilter === 'ALL' || p.status === statusFilter)
     .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
     .filter(p => {
@@ -52,9 +80,9 @@ export default function HospitalDoctorPatientsPage() {
       p.patientId.toLowerCase().includes(search.toLowerCase())
     );
 
-  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage    = Math.min(page, totalPages);
-  const pageItems   = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function applyFilter(fn: () => void) {
     fn();
@@ -76,7 +104,7 @@ export default function HospitalDoctorPatientsPage() {
         <StatCard label="Total Patients"  value={total}       icon={<UserGroupIcon className="w-6 h-6" />} color="blue"   trend="+12% from last week"  />
         <StatCard label="Active Cases"    value={activeCount} icon={<ActiveCasesIcon />}                   color="green"  trend="+12% from last month" />
         <StatCard label="New Patients"    value={newCount}    icon={<UserPlusIcon className="w-6 h-6" />}  color="orange" trend="+5% from last week"   />
-        <StatCard label="Follow ups due"  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend="-12% from last week" />
+        <StatCard label="Follow Ups Due"  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend="-12% from last week" />
       </div>
 
       {/* Filter bar — standalone card */}
@@ -145,10 +173,24 @@ export default function HospitalDoctorPatientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {pageItems.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={8} className="px-6 py-4">
+                      <div className="h-6 bg-gray-100 rounded w-full"></div>
+                    </td>
+                  </tr>
+                ))
+              ) : error ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-16 text-center">
-                    <p className="text-gray-500 font-medium">No patients found</p>
+                    <p className="text-red-500 font-medium">{error}</p>
+                  </td>
+                </tr>
+              ) : pageItems.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-16 text-center">
+                    <p className="text-gray-500 font-medium">No patients assigned / found</p>
                     <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
                   </td>
                 </tr>
@@ -230,9 +272,8 @@ function PageButton({ label, active, onClick }: { label: number; active: boolean
   return (
     <button
       onClick={onClick}
-      className={`w-7 h-7 text-xs rounded flex items-center justify-center transition-colors ${
-        active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-      }`}
+      className={`w-7 h-7 text-xs rounded flex items-center justify-center transition-colors ${active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+        }`}
     >
       {label}
     </button>
@@ -256,8 +297,8 @@ function StatCard({ label, value, icon, color, trend }: {
   color: 'blue' | 'green' | 'orange' | 'purple'; trend: string;
 }) {
   const palette = {
-    blue:   { bg: 'bg-blue-50',   text: 'text-blue-500',   border: 'border-blue-100' },
-    green:  { bg: 'bg-green-50',  text: 'text-green-500',  border: 'border-green-100' },
+    blue: { bg: 'bg-blue-50', text: 'text-blue-500', border: 'border-blue-100' },
+    green: { bg: 'bg-green-50', text: 'text-green-500', border: 'border-green-100' },
     orange: { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-100' },
     purple: { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-100' },
   };

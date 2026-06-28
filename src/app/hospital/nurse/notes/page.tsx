@@ -56,6 +56,7 @@ export default function NursingNotesPage() {
     const [notes, setNotes] = useState<NursingNote[]>(INITIAL_NOTES);
     const [search, setSearch] = useState('');
     const [patientFilter, setPatientFilter] = useState('');
+    const [dateFilter, setDateFilter] = useState(MOCK_TODAY);
 
     const [selectedPatient, setSelectedPatient] = useState('');
     const [dateTime, setDateTime] = useState('06/09/2026 05:20 PM');
@@ -67,10 +68,11 @@ export default function NursingNotesPage() {
         const q = search.toLowerCase();
         return notes.filter((note) => {
             if (patientFilter && note.patientName !== patientFilter) return false;
+            if (dateFilter && note.date !== dateFilter) return false;
             if (q && !note.patientName.toLowerCase().includes(q) && !note.observationNotes.toLowerCase().includes(q)) return false;
             return true;
         });
-    }, [notes, search, patientFilter]);
+    }, [notes, search, patientFilter, dateFilter]);
 
     const stats = [
         { label: 'Notes Created Today', value: notes.filter((n) => n.date === MOCK_TODAY).length, icon: <FileText className="w-5 h-5 text-[#38BDF8]" />, bgColor: 'bg-[#F0F9FF]', borderColor: 'border-[#E0F2FE]' },
@@ -126,7 +128,7 @@ export default function NursingNotesPage() {
                         </div>
                         <div className="min-w-0">
                             <p className="text-2xl font-black text-[#1E3A5F]">{stat.value}</p>
-                            <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wide break-words">{stat.label}</p>
+                            <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wide wrap-break-word">{stat.label}</p>
                         </div>
                     </div>
                 ))}
@@ -161,12 +163,12 @@ export default function NursingNotesPage() {
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-4 h-4 pointer-events-none" />
                         </div>
                         <div className="relative flex-1">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-3.5 h-3.5" />
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-3.5 h-3.5 pointer-events-none" />
                             <input
-                                type="text"
-                                readOnly
-                                value="06/09/2026"
-                                className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-[10px] font-bold text-[#1E3A5F]"
+                                type="date"
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                                className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-[10px] font-bold text-[#1E3A5F] focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
                             />
                         </div>
                     </div>

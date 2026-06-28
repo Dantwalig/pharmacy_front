@@ -6,12 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { nurseDashboardStats, nurseDashboardCardsData, nursePatients, nurseSchedule } from '@/mock/hospital/nurse';
-
-const ACTION_HREF: Record<string, string> = {
-  patients: '/hospital/nurse/patients',
-  tasks:    '/hospital/nurse/notes',
-  messages: '/hospital/nurse/messages',
-};
+import { MOCK_NURSE } from '@/mock/hospital/user';
 
 export default function NurseDashboardPage() {
   const { t } = useTranslation();
@@ -38,7 +33,7 @@ export default function NurseDashboardPage() {
     messages: {
       icon: ChatBubbleLeftRightIcon,
       color: '#C026D3',
-      value: nurseDashboardStats.activeConsultations,
+      value: nurseDashboardStats.unreadMessages,
     },
   };
 
@@ -61,11 +56,11 @@ export default function NurseDashboardPage() {
 
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
-            {getGreeting()},{" Nurse"}.
+            {getGreeting()}, {MOCK_NURSE.firstName}.
           </h1>
           <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeNurse')}</p>
           <Link
-            href="/hospital/doctor/appointments"
+            href="/hospital/nurse/schedule"
             className="mt-6 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{
               background: 'linear-gradient(to right, #0284C7, #38BDF8)',
@@ -97,11 +92,11 @@ export default function NurseDashboardPage() {
 
             <div className="flex-1" />
             <div className="border-t border-gray-200 my-4" />
-            <Link href={ACTION_HREF[card.key] ?? '#'} className="flex items-center justify-between group">
-              <span className="text-xs font-medium group-hover:underline" style={{ color: card.color }} >
+            <Link href={card.href} className="flex items-center justify-between group/action">
+              <span className="text-xs font-medium group-hover/action:underline" style={{ color: card.color }}>
                 {card.action}
               </span>
-              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: card.color }} />
+              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover/action:translate-x-1" style={{ color: card.color }} />
             </Link>
           </div>
         );
