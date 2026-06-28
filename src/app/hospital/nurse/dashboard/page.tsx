@@ -4,7 +4,7 @@
 
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { nurseDashboardStats, nurseDashboardCardsData, nursePatients, nurseSchedule } from '@/mock/hospital/nurse';
 import { MOCK_NURSE } from '@/mock/hospital/user';
 
