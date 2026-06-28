@@ -3,28 +3,30 @@ import type { NurseDashboardStats, NursePatientOverview, NurseScheduleItem, Nurs
 export const nurseDashboardStats: NurseDashboardStats = {
   totalPatients: 6,
   pendingTasks: 8,
-  activeConsultations: 2,
+  unreadMessages: 2,
 };
 
-// Purely data-driven text config array
 export const nurseDashboardCardsData = [
   {
     key: 'patients',
     title: 'My Patients',
     subtitle: 'Total Patients',
     action: 'View Patients',
+    href: '/hospital/nurse/patients',
   },
   {
     key: 'tasks',
     title: 'Tasks',
     subtitle: 'Pending Tasks',
     action: 'View Nursing Notes',
+    href: '/hospital/nurse/notes',
   },
   {
     key: 'messages',
     title: 'Messages',
     subtitle: 'Unread Messages',
     action: 'View Messages',
+    href: '/hospital/nurse/messages',
   },
 ];
 
@@ -67,7 +69,7 @@ export const nursePatients: NursePatientOverview[] = [
     status: 'Stable',
     bp: '124/75',
     hr: 104,
-    temperature: '108.2°F',
+    temperature: '98.2°F',
   },
 ];
 
