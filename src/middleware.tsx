@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-function decodeToken(token: string): { role?: string; pharmacyStatus?: string; status?: string } | null {
+function decodeToken(token: string): { role?: string; pharmacyStatus?: string; status?: string; hospitalId?: string } | null {
   try {
     const payload = token.split('.')[1];
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
@@ -21,14 +21,10 @@ export function middleware(request: NextRequest) {
   const isPatientRoute    = pathname.startsWith('/patient');
   const isBranchRoute     = pathname.startsWith('/branch');
   const isStaffRoute      = pathname.startsWith('/staff');
-  // TODO: add hospital auth once login flow is confirmed — for now all /hospital/* routes are open
-  const isHospitalRoute   = pathname.startsWith('/hospital');
+  // Hospital signup/registration must stay public — only the portals below are guarded
+  const isHospitalRoute   = pathname.startsWith('/hospital') && pathname !== '/hospital/register';
 
-  if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute) {
-    return NextResponse.next();
-  }
-
-  if (isHospitalRoute) {
+  if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute && !isHospitalRoute) {
     return NextResponse.next();
   }
 
@@ -98,6 +94,41 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isHospitalRoute) {
+    // The backend reuses role 'NURSE' for both a pharmacy/branch-staff nurse
+    // and a hospital nurse — hospitalId is only present on the hospital case
+    // (see src/docs/HOSPITAL_AUTH_INTEGRATION.md for the full writeup).
+    const isHospitalNurse = payload.role === 'NURSE' && !!payload.hospitalId;
+    const isValidHospitalRole =
+      payload.role === 'HOSPITAL_ADMIN' || payload.role === 'DOCTOR' || isHospitalNurse;
+
+    if (!isValidHospitalRole) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    if (pathname.startsWith('/hospital/admin') && payload.role !== 'HOSPITAL_ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (pathname.startsWith('/hospital/doctor') && payload.role !== 'DOCTOR') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (pathname.startsWith('/hospital/nurse') && !isHospitalNurse) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    if (payload.role === 'HOSPITAL_ADMIN') {
+      const hospitalStatus = payload.status;
+      if (hospitalStatus === 'PENDING') {
+        return NextResponse.redirect(new URL('/pending-approval', request.url));
+      }
+      if (hospitalStatus && hospitalStatus !== 'APPROVED') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    }
+
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
@@ -108,5 +139,6 @@ export const config = {
     '/patient/:path*',
     '/branch/:path*',
     '/staff/:path*',
+    '/hospital/:path*',
   ],
 };

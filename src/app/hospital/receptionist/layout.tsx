@@ -1,13 +1,16 @@
+//src/app/hospital/receptionist/layout.tsx
+
 'use client';
 
 import { useState } from 'react';
 import HospitalSidebar from '@/components/hospital/HospitalSidebar';
 import HospitalTopbar from '@/components/hospital/HospitalTopbar';
-import { useHospitalNurseUser } from '@/lib/hospital';
+import { MOCK_RECEPTIONIST } from '@/mock/hospital/user';
 
-export default function HospitalNurseLayout({ children }: { children: React.ReactNode }) {
+export default function HospitalReceptionistLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { userName, roleLabel, hospitalName } = useHospitalNurseUser();
+
+    const userName = `${MOCK_RECEPTIONIST.firstName} ${MOCK_RECEPTIONIST.lastName}`;
 
     return (
         <div className="flex min-h-screen bg-[#F8FAFC]">
@@ -18,15 +21,15 @@ export default function HospitalNurseLayout({ children }: { children: React.Reac
                 />
             )}
             <HospitalSidebar
-                portalType="nurse"
+                portalType="receptionist"
                 open={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
             />
             <div className="flex-1 lg:ml-64 min-w-0 flex flex-col">
                 <HospitalTopbar
                     userName={userName}
-                    roleLabel={roleLabel}
-                    hospitalName={hospitalName}
+                    roleLabel="Receptionist"
+                    hospitalName={MOCK_RECEPTIONIST.hospitalName}
                     onMenuClick={() => setSidebarOpen(true)}
                 />
                 <main className="flex-1 overflow-x-hidden p-4 lg:p-6">{children}</main>

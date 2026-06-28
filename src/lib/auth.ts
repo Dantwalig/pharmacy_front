@@ -64,6 +64,14 @@ export const getUserFromToken = (): User | null => {
       role: decoded.role,
       isVerified: decoded.isVerified || true,
       pharmacyStatus: decoded.pharmacyStatus,
+      // Hospital-side claims — only present on hospital logins. The decoded
+      // token's `status` is overloaded by the backend (hospital approval
+      // status for HOSPITAL_ADMIN vs. staff status for DOCTOR/NURSE/
+      // RECEPTIONIST); hospitalName isn't in the JWT payload at all, so it
+      // won't survive a decode-only fallback (only the cached-user path has it).
+      hospitalId: decoded.hospitalId,
+      hospitalStatus: decoded.role === 'HOSPITAL_ADMIN' ? (decoded.status as User['hospitalStatus']) : undefined,
+      status: decoded.role !== 'HOSPITAL_ADMIN' ? (decoded.status as User['status']) : undefined,
     };
   } catch {
     return null;

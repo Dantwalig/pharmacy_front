@@ -109,10 +109,10 @@ export default function NursingNotesPage() {
     return (
         <div className="p-6 lg:p-8 space-y-8 bg-[#F8FAFC]">
             {/* Header */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E8F0] shadow-sm relative overflow-hidden">
+            <div className="rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden" style={{ background: '#EBF5FF' }}>
                 <div className="relative z-10">
                     <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A5F]">Nursing Notes & Documentation</h1>
-                    <p className="text-[#64748B] mt-2 max-w-2xl font-medium">
+                    <p className="mt-2 max-w-2xl font-medium" style={{ color: '#0284C7' }}>
                         Document patient observations, care activities, and treatment outcomes during your shift.
                     </p>
                 </div>

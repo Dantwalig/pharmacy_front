@@ -1,0 +1,296 @@
+//src/app/hospital/recertionist/leave-request/page.tsx
+
+'use client';
+
+import { useTranslation } from 'react-i18next';
+import { useState, useRef } from 'react';
+
+const BLUE = '#1E3A8A';
+const lightBlue = '#1E40AF';
+
+type LeaveRequest = {
+  id: string;
+  requestDate: string; // ISO date
+  leaveType: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  durationDays: number;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED';
+  fileName?: string | null;
+};
+
+export default function HospitalReceptionistLeaveRequestPage() {
+  const { t } = useTranslation();
+
+  // Mock balances
+  const [annualBalance] = useState(14);
+  const [sickBalance] = useState(8);
+
+  // Mock request history
+  const [history, setHistory] = useState<LeaveRequest[]>([
+    { id: 'LR-001', requestDate: '2026-06-10', leaveType: 'Annual Leave', startDate: '2026-06-25', endDate: '2026-06-28', durationDays: 4, status: 'APPROVED', fileName: null },
+    { id: 'LR-002', requestDate: '2026-06-12', leaveType: 'Sick Leave', startDate: '2026-06-13', endDate: '2026-06-14', durationDays: 2, status: 'APPROVED', fileName: 'fit_note.pdf' },
+    { id: 'LR-003', requestDate: '2026-06-15', leaveType: 'Unpaid Leave', startDate: '2026-07-10', endDate: '2026-07-12', durationDays: 3, status: 'PENDING', fileName: null },
+  ]);
+
+  // Form state
+  const [leaveType, setLeaveType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reason, setReason] = useState('');
+  const [fileName, setFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Simple helpers
+  const statusBadge = (status: LeaveRequest['status']) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600';
+      case 'PENDING':
+        return 'inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-600';
+      case 'REJECTED':
+        return 'inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-50 text-red-600';
+      default:
+        return 'inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600';
+    }
+  };
+
+  const formatDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
+    } catch {
+      return iso;
+    }
+  };
+
+  const calcDurationDays = (s: string, e: string) => {
+    if (!s || !e) return 0;
+    const sd = new Date(s);
+    const ed = new Date(e);
+    const diff = Math.round((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return diff > 0 ? diff : 0;
+  };
+
+  const submitLeaveRequest = () => {
+  
+    if (!leaveType) {
+      alert('Please select a leave type.');
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert('Please select start and end dates.');
+      return;
+    }
+    const duration = calcDurationDays(startDate, endDate);
+    if (duration <= 0) {
+      alert('End date must be the same or after start date.');
+      return;
+    }
+
+    const newReq: LeaveRequest = {
+      id: `LR-${(history.length + 1).toString().padStart(3, '0')}`,
+      requestDate: new Date().toISOString().split('T')[0],
+      leaveType,
+      startDate,
+      endDate,
+      durationDays: duration,
+      status: 'PENDING',
+      fileName,
+    };
+
+    setHistory((prev) => [newReq, ...prev]);
+    // reset form
+    setLeaveType('');
+    setStartDate('');
+    setEndDate('');
+    setReason('');
+    setFileName(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) {
+      setFileName(f.name);
+    } else {
+      setFileName(null);
+    }
+  };
+
+  const viewRequest = (req: LeaveRequest) => {
+
+    alert(`${req.id}\n${req.leaveType}\n${formatDate(req.startDate)} to ${formatDate(req.endDate)} (${req.durationDays} days)\nStatus: ${req.status}`);
+  };
+
+  const cancelRequest = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to cancel this request?')) return;
+    setHistory((prev) => prev.map((h) => (h.id === id ? { ...h, status: 'REJECTED' } : h)));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Hero Header */}
+      <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
+        <h1 className="text-3xl font-extrabold" style={{ color: BLUE }}>
+          {t('hospital.leaveRequestTitle', 'Staff Leave Request Panel')}
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: lightBlue }}>
+          {t('hospital.leaveRequestSubtitle', 'Submit leaves, upload supporting documentation, and track authorization histories.')}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+ 
+        <div className="lg:col-span-4 space-y-6">
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+              <p className="text-xs uppercase text-gray-400">Annual Leave</p>
+              <div className="mt-3">
+                <div className="text-2xl font-extrabold text-sky-600">{annualBalance} Days</div>
+                <p className="text-xs text-gray-400 mt-1">Remaining Balance</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+              <p className="text-xs uppercase text-gray-400">Sick Leave</p>
+              <div className="mt-3">
+                <div className="text-2xl font-extrabold text-amber-600">{sickBalance} Days</div>
+                <p className="text-xs text-gray-400 mt-1">Remaining Balance</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold mb-3">Submit Leave Request</h3>
+
+            <label className="block text-xs font-medium text-gray-600">Leave Type *</label>
+            <select
+              value={leaveType}
+              onChange={(e) => setLeaveType(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white"
+              aria-label="Leave Type" >
+              <option value="">Select Leave Type...</option>
+              <option value="Annual Leave">Annual Leave</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Unpaid Leave">Unpaid Leave</option>
+            </select>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600">Start Date *</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600">End Date *</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-gray-600">Reason for Request *</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Provide details regarding your request..."
+                rows={4}
+                className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white resize-none"
+              />
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-gray-600">Supporting Documents</label>
+              <div className="mt-2">
+                <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 px-4 py-3 text-sm text-gray-500 cursor-pointer hover:bg-gray-50">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  <span>Click to Upload File (PDF, DOC, Images)</span>
+                  <input ref={fileInputRef} onChange={onFileChange} type="file" className="hidden" />
+                </label>
+                <p className="mt-2 text-xs text-gray-400">{fileName ?? 'No file selected'}</p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={submitLeaveRequest}
+                className="w-full rounded-lg bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 text-sm font-semibold"
+              >
+                Submit Leave Request
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="lg:col-span-8">
+          <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold mb-4">Request History</h3>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                    <th className="py-3 px-4">Request Date</th>
+                    <th className="py-3 px-4">Leave Type</th>
+                    <th className="py-3 px-4">Duration</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                  {history.map((r) => (
+                    <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 font-medium">{formatDate(r.requestDate)}</td>
+                      <td className="py-3 px-4">{r.leaveType}</td>
+                      <td className="py-3 px-4">
+                        <div className="font-semibold">{r.durationDays} Days</div>
+                        <div className="text-xs text-gray-400">{formatDate(r.startDate)} to {formatDate(r.endDate)}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={statusBadge(r.status)}>{r.status}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center gap-2 justify-end">
+                          <button
+                            onClick={() => viewRequest(r)}
+                            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                          >
+                            View
+                          </button>
+
+                          {r.status === 'PENDING' && (
+                            <button
+                              onClick={(e) => cancelRequest(e, r.id)}
+                              className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {history.length === 0 && (
+                <div className="p-6 text-center text-sm text-gray-400">No requests yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

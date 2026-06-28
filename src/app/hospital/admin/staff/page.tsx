@@ -164,7 +164,7 @@ export default function HospitalAdminStaffManagementPage() {
       <div className="rounded-2xl px-6 py-7 flex items-center justify-between" style={{ background: '#EBF5FF' }}>
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>Staff Management</h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: TEAL }}>Manage Hospital Staff, roles and departments.</p>
+          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Manage Hospital Staff, roles and departments.</p>
         </div>
         <div className="opacity-10 shrink-0 ml-4 hidden sm:block" style={{ color: NAVY }}>
           <Users size={60} />

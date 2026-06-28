@@ -78,7 +78,7 @@ export default function NurseMessagesPage() {
                     <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: NAVY }}>
                         {t('hospital.messages') || 'Messages'}
                     </h1>
-                    <p className="mt-2 text-sm sm:text-base" style={{ color: TEAL }}>
+                    <p className="mt-2 text-sm sm:text-base" style={{ color: '#0284C7' }}>
                         Check your conversations with other nurses and doctors
                     </p>
                 </div>

@@ -6,13 +6,12 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-import KpiCard from '@/components/hospital/finance/KpiCard';
 import RevenueChart from '@/components/hospital/finance/RevenueChart';
 import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdownChart';
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
 
-import { MOCK_FINANCE_KPIS, MOCK_INVOICES } from '@/mock/hospital/finance';
+import { MOCK_INVOICES } from '@/mock/hospital/finance';
 import type { PaymentBreakdownItem } from '@/components/hospital/finance/PaymentBreakdownChart';
 import type { RefundItem } from '@/components/hospital/finance/RefundTable';
 
@@ -38,11 +37,11 @@ const REFUNDS: RefundItem[] = [
   { id: 'RF-005', amount: 34_100, status: 'REJECTED', date: '2023-05-18' },
 ];
 
-const KPI_META = [
-  { icon: <BanknotesIcon className="w-5 h-5" />,        accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
-  { icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100', iconColor: 'text-red-500'     },
-  { icon: <BanknotesIcon className="w-5 h-5" />,        accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-  { icon: <ClockIcon className="w-5 h-5" />,            accentColor: 'bg-amber-100',   iconColor: 'text-amber-600'   },
+const FINANCE_KPIS = [
+  { label: 'Total Revenues',   value: 'RWF 123,456', sub: '+12.5% from last week', trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
+  { label: 'Pending Payments', value: 'RWF 54,321',  sub: '18 Invoices',           trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
+  { label: 'Overdue Payments', value: 'RWF 3,456',   sub: '9 Invoices',            trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: 'Refunds',          value: 'RWF 350,000', sub: '+24% from last week',   trend: true,  icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
 ];
 
 export default function HospitalAdminFinancePage() {
@@ -53,7 +52,7 @@ export default function HospitalAdminFinancePage() {
       <div className="rounded-2xl p-7 bg-brand-hero relative overflow-hidden">
         <div className="relative z-10">
           <h1 className="text-3xl font-bold text-brand-navy">Finance</h1>
-          <p className="mt-1 text-sm text-slate-500">Overview of hospital finances and transactions</p>
+          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Overview of hospital finances and transactions</p>
         </div>
         <svg
           className="absolute right-6 bottom-0 opacity-20 hidden sm:block"
@@ -70,17 +69,22 @@ export default function HospitalAdminFinancePage() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {MOCK_FINANCE_KPIS.map((kpi, i) => (
-          <KpiCard
-            key={kpi.label}
-            label={kpi.label}
-            value={kpi.value}
-            trend={kpi.trend}
-            trendUp={kpi.trendUp}
-            icon={KPI_META[i].icon}
-            accentColor={KPI_META[i].accentColor}
-            iconColor={KPI_META[i].iconColor}
-          />
+        {FINANCE_KPIS.map((kpi) => (
+          <div key={kpi.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${kpi.accentColor}`}>
+                <span className={kpi.iconColor}>{kpi.icon}</span>
+              </div>
+              <span className="text-gray-300 text-lg leading-none">⋯</span>
+            </div>
+            <p className="mt-3 text-sm font-semibold text-slate-600">{kpi.label}</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{kpi.value}</p>
+            {kpi.trend ? (
+              <span className="mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">{kpi.sub}</span>
+            ) : (
+              <span className="mt-2 inline-block text-xs text-slate-400">{kpi.sub}</span>
+            )}
+          </div>
         ))}
       </div>
 
