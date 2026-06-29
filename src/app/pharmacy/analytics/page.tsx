@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapItem } from '@/lib/api';
@@ -187,7 +188,7 @@ export default function PharmacyAnalyticsPage() {
   const statCards = [
     {
       label: t('analytics.totalRevenue'),
-      value: `${fmt(a.totalRevenue)} RWF`,
+      value: formatCurrency(a.totalRevenue),
       sub:   a.revenueChange != null ? `${a.revenueChange > 0 ? '+' : ''}${a.revenueChange}% ${t('analytics.vsLastMonth')}` : t('analytics.thisMonth'),
       subColor: a.revenueChange > 0 ? '#16A34A' : a.revenueChange < 0 ? '#DC2626' : undefined,
       icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
@@ -200,7 +201,7 @@ export default function PharmacyAnalyticsPage() {
     },
     {
       label: t('analytics.avgOrderValue2'),
-      value: `${fmt(a.avgOrderValue)} RWF`,
+      value: formatCurrency(a.avgOrderValue),
       sub:   a.avgValueChange != null ? `${a.avgValueChange > 0 ? '+' : ''}${a.avgValueChange}%` : '',
       subColor: a.avgValueChange > 0 ? '#16A34A' : a.avgValueChange < 0 ? '#DC2626' : undefined,
       icon: <svg className="w-5 h-5" fill="none" stroke="#1E4D8C" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
@@ -251,7 +252,7 @@ export default function PharmacyAnalyticsPage() {
                     <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
               </PieChart>
             </ResponsiveContainer>
             <DonutLegend data={donutData} />
@@ -270,7 +271,7 @@ export default function PharmacyAnalyticsPage() {
               <BarChart data={s.revenueByBranch} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
                   {s.revenueByBranch.map((_: any, i: number) => (
                     <Cell key={i} fill={i === 0 ? '#1746A2' : '#6B84A8'} />
@@ -294,7 +295,7 @@ export default function PharmacyAnalyticsPage() {
           <div className="space-y-4">
             <ProgressRow
               label={t('analytics.revenueGrowth')}
-              sub={`${fmt(a.totalRevenue)} RWF ${t('analytics.vsLastMonth')}`}
+              sub={`${formatCurrency(a.totalRevenue)} ${t('analytics.vsLastMonth')}`}
               change={a.revenueChange ?? 0}
               color="#1E4D8C"
             />
@@ -306,7 +307,7 @@ export default function PharmacyAnalyticsPage() {
             />
             <ProgressRow
               label={t('analytics.avgOrderValue2')}
-              sub={`${fmt(a.avgOrderValue)} RWF avg`}
+              sub={`${formatCurrency(a.avgOrderValue)} avg`}
               change={a.avgValueChange ?? 0}
               color="#1E4D8C"
             />
@@ -333,7 +334,7 @@ export default function PharmacyAnalyticsPage() {
           {/* The Text Field */}
           <div className="leading-tight">
             {t('analytics.onTrackToHit')}{' '}
-            <span className="font-bold text-gray-900">{fmt(a.targetRevenue)} RWF</span>{' '}
+            <span className="font-bold text-gray-900">{formatCurrency(a.targetRevenue)}</span>{' '}
             {t('analytics.thisMonthDot')}
           </div>
         </div>
@@ -367,7 +368,7 @@ export default function PharmacyAnalyticsPage() {
               <LineChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
-                <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString()} RWF`, '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v), '']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Line type="monotone" dataKey="revenue" stroke="#2D9B8A" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#2D9B8A' }} />
               </LineChart>
             </ResponsiveContainer>

@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/errorHandler';
 import { CloudArrowUpIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 import { BranchStatus } from '@/types';
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 
 export default function BranchPendingApprovalPage() {
   const { t } = useTranslation();
@@ -61,7 +62,10 @@ export default function BranchPendingApprovalPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
     <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="bg-white rounded-2xl shadow-xl p-8 relative">
+        <div className="absolute top-6 right-6">
+          <LanguageSwitcher />
+        </div>
         {/* Status icon */}
           <div className="text-center mb-8">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${

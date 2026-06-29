@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Squares2X2Icon, ClockIcon, LockClosedIcon, UserIcon, ArrowRightOnRectangleIcon, XMarkIcon, CubeIcon, ClipboardDocumentListIcon, ShieldExclamationIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { isPatientEnabled } from '@/lib/features';
 import { useAuth } from '@/context/AuthContext';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
 
 interface StaffSidebarProps {
   open?: boolean;
@@ -16,13 +17,14 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
   const pathname = usePathname();
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { can } = useStaffPermissions();
   const isCashier = user?.role === 'CASHIER';
 
   const nav = [
     { href: '/staff/dashboard',       icon: Squares2X2Icon,            label: t('staff.dashboard'),      show: true },
-    { href: '/staff/orders',          icon: CreditCardIcon,            label: t('cashier.paymentsNav'),  show: isCashier },
-    { href: '/staff/prescriptions',   icon: ClipboardDocumentListIcon, label: t('staff.prescriptions'),  show: !isCashier },
-    { href: '/staff/inventory',       icon: CubeIcon,                  label: t('staff.inventory'),      show: true },
+    { href: '/staff/orders',          icon: CreditCardIcon,            label: t('cashier.paymentsNav'),  show: isCashier && (can('VIEW_PAYMENTS') || can('PROCESS_PAYMENTS')) },
+    { href: '/staff/prescriptions',   icon: ClipboardDocumentListIcon, label: t('staff.prescriptions'),  show: !isCashier && can('VIEW_PRESCRIPTIONS') },
+    { href: '/staff/inventory',       icon: CubeIcon,                  label: t('staff.inventory'),      show: can('VIEW_INVENTORY') },
     { href: '/staff/attendance',      icon: ClockIcon,                 label: t('staff.attendance'),     show: true },
     { href: '/staff/profile',         icon: UserIcon,                  label: t('staff.profile'),        show: true },
     { href: '/staff/change-password', icon: LockClosedIcon,            label: t('staff.changePassword'), show: true },

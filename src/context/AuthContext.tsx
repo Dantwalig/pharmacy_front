@@ -18,7 +18,8 @@ import {
   getAccessToken,
   getRefreshToken 
 } from '@/lib/auth';
-import { User } from '@/types';
+import { User, DecodedToken } from '@/types';
+import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -28,6 +29,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
+  setUserDirectly: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,6 +79,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     initAuth();
   }, []);
+
+  // Silent token refresh based on user activity to prevent session expiry during active use
+  useEffect(() => {
+    if (!user) return;
+
+    let lastCheckTime = 0;
+    const checkInterval = 30000; // Throttle checks to once every 30 seconds
+
+    const checkAndRefreshSession = async () => {
+      const now = Date.now();
+      if (now - lastCheckTime < checkInterval) return;
+      lastCheckTime = now;
+
+      try {
+        const token = getAccessToken();
+        if (!token) return;
+
+        const decoded = jwtDecode<DecodedToken>(token);
+        // exp is in seconds, convert to ms
+        const timeLeft = decoded.exp * 1000 - now;
+
+        // If less than 5 minutes left on the access token, refresh it proactively
+        if (timeLeft < 5 * 60 * 1000) {
+          console.log('Session token is expiring soon, refreshing...');
+          const data = await authApi.refreshTokens();
+          const { accessToken, refreshToken: newRefreshToken } = data;
+          setAuthTokens(accessToken, newRefreshToken || getRefreshToken() || '');
+        }
+      } catch (err) {
+        console.error('Silent session refresh failed:', err);
+      }
+    };
+
+    const handleActivity = () => {
+      checkAndRefreshSession();
+    };
+
+    // Listen to mouse moves, keystrokes, touches, and clicks to keep the session alive
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('click', handleActivity);
+
+    // Run once on load/state change
+    checkAndRefreshSession();
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -129,7 +186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         case 'PHARMACIST':
         case 'CASHIER':
-        case 'NURSE':
           toast.success(t('auth2.welcomeBack'));
           // If first login (temp password), redirect to change password
           if (response.data.requiresPasswordChange) {
@@ -137,6 +193,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             router.push('/staff/dashboard');
           }
+          break;
+
+        case 'NURSE':
+          // The backend reuses the 'NURSE' role string for both a pharmacy
+          // branch-staff nurse and a hospital nurse. `hospitalId` is only
+          // present on the hospital login response — use it as the
+          // discriminator instead of the role string alone.
+          if (userData.hospitalId) {
+            toast.success(t('auth2.welcomeBack'));
+            router.push(
+              userData.requiresPasswordChange
+                ? '/hospital/nurse/settings'
+                : '/hospital/nurse/dashboard'
+            );
+          } else {
+            toast.success(t('auth2.welcomeBack'));
+            if (response.data.requiresPasswordChange) {
+              router.push('/staff/change-password');
+            } else {
+              router.push('/staff/dashboard');
+            }
+          }
+          break;
+
+        case 'DOCTOR':
+          toast.success(t('auth2.welcomeBack'));
+          router.push(
+            userData.requiresPasswordChange
+              ? '/hospital/doctor/settings'
+              : '/hospital/doctor/dashboard'
+          );
+          break;
+
+        case 'HOSPITAL_ADMIN':
+          if (userData.hospitalStatus === 'PENDING') {
+            toast.success('Your hospital account is under review. Please wait for approval.');
+            router.push('/pending-approval');
+          } else if (userData.hospitalStatus === 'REJECTED') {
+            toast.error('Your hospital account was rejected. Please update your documents and resubmit.');
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          } else if (userData.hospitalStatus === 'APPROVED') {
+            toast.success(t('auth2.welcomeAdmin'));
+            router.push('/hospital/admin/dashboard');
+          } else {
+            toast.error(t('auth2.invalidRole'));
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          }
+          break;
+
+        case 'RECEPTIONIST':
+          toast.success('Welcome back!');
+          router.push('/hospital/receptionist/dashboard');
           break;
 
         default:
@@ -176,6 +290,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser((prev: User | null) => (prev ? { ...prev, ...userData } : null));
   };
 
+  // Used by external login flows (e.g. Super Admin) that handle their own
+  // token storage but still need to hydrate the AuthContext user state so
+  // layout guards don't see null and redirect back to /login.
+  const setUserDirectly = (userData: User) => {
+    setUser(userData);
+  };
+
   const refreshUser = async () => {
     try {
       const currentUser = getUserFromToken();
@@ -213,7 +334,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser, setUserDirectly }}>
     {children}
     </AuthContext.Provider>
 );

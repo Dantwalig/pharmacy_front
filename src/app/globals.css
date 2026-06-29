@@ -20,6 +20,9 @@
   --color-brand-navy-dark:  #1a3d6f;
   --color-brand-teal:       #2D9B8A;
   --color-brand-teal-light: #F0F7F6;
+
+  --color-brand-blue-light:       #0284C7;
+  --color-brand-hero:       #E0F2FE;
 }
 
 body {

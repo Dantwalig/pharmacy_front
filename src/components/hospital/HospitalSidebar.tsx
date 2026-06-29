@@ -7,16 +7,21 @@ import {
   CalendarDays,
   ClipboardList,
   Users,
+  UserCog,
   Clock,
+  Bell,
   MessageSquare,
   Pill,
   Settings,
   DollarSign,
-  Building2,
+  Network,
+  Package,
   BarChart2,
   LogOut,
   X,
+  User,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
@@ -33,25 +38,72 @@ const DOCTOR_NAV = [
 ];
 
 const ADMIN_NAV = [
-  { href: '/hospital/admin/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/hospital/admin/finance',     icon: DollarSign,      label: 'Finance' },
-  { href: '/hospital/admin/staff',       icon: Users,           label: 'Staff' },
-  { href: '/hospital/admin/departments', icon: Building2,       label: 'Departments' },
-  { href: '/hospital/admin/schedule',    icon: Clock,           label: 'Schedule' },
-  { href: '/hospital/admin/reports',     icon: BarChart2,       label: 'Reports' },
-  { href: '/hospital/admin/settings',    icon: Settings,        label: 'Settings' },
+  { href: '/hospital/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/admin/staff', icon: UserCog, label: 'Staff Management' },
+  { href: '/hospital/admin/departments', icon: Network, label: 'Departments' },
+  { href: '/hospital/admin/appointments', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/admin/schedule', icon: Bell, label: 'Schedule' },
+  { href: '/hospital/admin/finance', icon: DollarSign, label: 'Finance' },
+  { href: '/hospital/admin/inventory', icon: Package, label: 'Inventory & Procurement' },
+  { href: '/hospital/admin/reports', icon: BarChart2, label: 'Reports & Analysis' },
+  { href: '/hospital/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
+const NURSE_NAV = [
+  { href: '/hospital/nurse/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/nurse/schedule', icon: Clock, label: 'Schedule' },
+  { href: '/hospital/nurse/patients', icon: Users, label: 'Patients' },
+  { href: '/hospital/nurse/vitals', icon: ClipboardList, label: 'Vitals & Assessments' },
+  { href: '/hospital/nurse/medications', icon: Pill, label: 'Medication Administration' },
+  { href: '/hospital/nurse/notes', icon: MessageSquare, label: 'Nursing Notes' },
+  { href: '/hospital/nurse/messages', icon: MessageSquare, label: 'Messages' },
+  { href: '/hospital/nurse/settings', icon: Settings, label: 'Settings' },
+];
+
+//Added receptionist navigation
+const RECEPTIONIST_NAV = [
+  { href: '/hospital/receptionist/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/hospital/receptionist/appointment-list', icon: CalendarDays, label: 'Appointments' },
+  { href: '/hospital/receptionist/checkingQueue', icon: Clock, label: 'Checking Queue' },
+  { href: '/hospital/receptionist/leave-request', icon: Users, label: 'Leave Request' },
+  { href: '/hospital/receptionist/notifications', icon: Bell, label: 'Notifications' },
+  { href: '/hospital/receptionist/profile', icon: User, label: 'Profile' },
+  { href: '/hospital/receptionist/change-password', icon: UserCog, label: 'Change Password' },
+]
+
+const NAV_MAP = {
+  doctor: DOCTOR_NAV,
+  admin:  ADMIN_NAV,
+  nurse:  NURSE_NAV,
+  receptionist: RECEPTIONIST_NAV, //added receptionist to the map
+};
+
+const LABEL_MAP = {
+  doctor: 'Doctor Portal',
+  admin:  'Admin Portal',
+  nurse:  'Nurse Portal',
+  receptionist: 'Receptionist Portal', //added receptionist to the map
+};
+
 interface Props {
-  portalType: 'doctor' | 'admin';
+  portalType: 'doctor' | 'admin' | 'nurse' | 'receptionist'; //added receptionist to the portalType
   open?: boolean;
   onClose?: () => void;
 }
 
 export default function HospitalSidebar({ portalType, open = false, onClose }: Props) {
   const pathname = usePathname();
-  const nav = portalType === 'doctor' ? DOCTOR_NAV : ADMIN_NAV;
-  const portalLabel = portalType === 'doctor' ? 'Doctor Portal' : 'Admin Portal';
+  const { logout } = useAuth();
+  const nav =
+    portalType === 'doctor' ? DOCTOR_NAV :
+      portalType === 'nurse' ? NURSE_NAV :
+        portalType === 'receptionist' ? RECEPTIONIST_NAV :
+          ADMIN_NAV; //added receptionist to the nav selection
+  const portalLabel =
+    portalType === 'doctor' ? 'Doctor Portal' :
+      portalType === 'nurse' ? 'Nurse Portal' :
+        portalType === 'receptionist' ? 'Receptionist Portal' :
+          'Admin Portal'; //added receptionist to the portal label selection
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -95,14 +147,11 @@ export default function HospitalSidebar({ portalType, open = false, onClose }: P
       {/* Logout */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = '/login';
-          }}
+          onClick={logout}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <LogOut size={18} />
-          Logout
+          Sign Out
         </button>
       </div>
     </aside>

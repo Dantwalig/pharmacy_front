@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { unwrapData } from '@/lib/api';
@@ -15,6 +16,8 @@ import {
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import PermissionGate from '@/components/shared/PermissionGate';
 import CashierOrdersView from '@/components/staff/CashierOrdersView';
 import { Order, OrderStatus } from '@/types';
 import { useFetch } from '@/hooks/useFetch';
@@ -35,6 +38,7 @@ function fmt(n: number) {
 export default function StaffOrdersPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { can } = useStaffPermissions();
   const isCashier = user?.role === 'CASHIER';
 
   const [orders, setOrders]                   = useState<Order[]>([]);
@@ -53,9 +57,12 @@ export default function StaffOrdersPage() {
     []
   );
 
-  const fetchedOrders = data ?? [];
 
-  useEffect(() => { setOrders(fetchedOrders ?? []); }, [fetchedOrders]);
+  useEffect(() => {
+    if (data) {
+      setOrders(data);
+    }
+  }, [data]);
   useEffect(() => { if (error) toast.error(t('errors.failedToLoadOrders')); }, [error, t]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
@@ -207,7 +214,7 @@ export default function StaffOrdersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <p className="text-sm font-bold text-gray-900 hidden sm:block">{fmt(order.total)}</p>
+                    <p className="text-sm font-bold text-gray-900 hidden sm:block">{formatCurrency(order.total)}</p>
                     <StatusBadge status={order.status} />
                     <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
@@ -229,13 +236,13 @@ export default function StaffOrdersPage() {
                               {item.medication.name}
                               <span className="text-gray-400 text-xs ml-1">x{item.quantity}</span>
                             </span>
-                            <span className="text-gray-700 font-medium">{fmt(item.price * item.quantity)}</span>
+                            <span className="text-gray-700 font-medium">{formatCurrency(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
                       <div className="flex justify-between text-sm font-bold mt-3 pt-3 border-t border-gray-100">
                         <span className="text-gray-700">{t('cart.total')}</span>
-                        <span className="text-brand-teal">{fmt(order.total)}</span>
+                        <span className="text-brand-teal">{formatCurrency(order.total)}</span>
                       </div>
                     </div>
 
@@ -264,35 +271,41 @@ export default function StaffOrdersPage() {
                           {t('orders2.updateStatus')}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {nextStatuses.map((s, i) => (
-                            <button
-                              key={s}
-                              onClick={() => handleStatusUpdate(order.id, s)}
-                              disabled={isUpdating}
-                              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 ${
-                                i === 0
-                                  ? 'text-white'
-                                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                              }`}
-                              style={i === 0 ? { background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' } : {}}
-                            >
-                              {isUpdating
-                                ? t('orders2.updating')
-                                : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
-                            </button>
-                          ))}
+                          <PermissionGate permission="UPDATE_ORDER_STATUS" showLocked lockedMessage="No status update access">
+                            <>
+                              {nextStatuses.map((s, i) => (
+                                <button
+                                  key={s}
+                                  onClick={() => handleStatusUpdate(order.id, s)}
+                                  disabled={isUpdating}
+                                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 ${
+                                    i === 0
+                                      ? 'text-white'
+                                      : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                                  }`}
+                                  style={i === 0 ? { background: 'linear-gradient(93.49deg, #0284C7 0%, #38BDF8 102.32%)' } : {}}
+                                >
+                                  {isUpdating
+                                    ? t('orders2.updating')
+                                    : `${t('orders2.markAs')} ${s.replace(/_/g, ' ').toLowerCase()}`}
+                                </button>
+                              ))}
+                            </>
+                          </PermissionGate>
                           {['PENDING', 'ACCEPTED', 'PREPARING'].includes(order.status) && (
-                            <button
-                              onClick={() => {
-                                setRejectingOrderId(order.id);
-                                setRejectReason('');
-                                setShowRejectModal(true);
-                              }}
-                              disabled={isUpdating}
-                              className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all disabled:opacity-50"
-                            >
-                              {t('orders2.rejectOrder', 'Reject / Cancel Order')}
-                            </button>
+                            <PermissionGate permission="CANCEL_ORDERS" showLocked lockedMessage="No cancel access">
+                              <button
+                                onClick={() => {
+                                  setRejectingOrderId(order.id);
+                                  setRejectReason('');
+                                  setShowRejectModal(true);
+                                }}
+                                disabled={isUpdating}
+                                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all disabled:opacity-50"
+                              >
+                                {t('orders2.rejectOrder', 'Reject / Cancel Order')}
+                              </button>
+                            </PermissionGate>
                           )}
                         </div>
                       </div>

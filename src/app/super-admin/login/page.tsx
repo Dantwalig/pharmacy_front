@@ -8,13 +8,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
-import { setAuthTokens } from '@/lib/auth';
-import Cookies from 'js-cookie';
+import { setAuthTokens, cacheUserData } from '@/lib/auth';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminLoginPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { setUserDirectly } = useAuth();
   const [secretKey, setSecretKey] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,11 +28,13 @@ export default function SuperAdminLoginPage() {
 
       const { accessToken, refreshToken, user } = response.data;
 
-      // Save tokens
+      // Persist tokens and user cookie
       setAuthTokens(accessToken, refreshToken);
+      cacheUserData(user);
 
-      // Save user
-      Cookies.set('user', JSON.stringify(user), { expires: 7 });
+      // Hydrate AuthContext so the layout guard sees the user immediately
+      // and does not redirect back to /login before the cookie is read.
+      setUserDirectly(user);
 
       toast.success(t('auth2.superAdminLoginSuccess'));
 

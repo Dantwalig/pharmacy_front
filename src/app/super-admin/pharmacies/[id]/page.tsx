@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useRouter } from 'next/navigation';
@@ -466,7 +467,7 @@ export default function SuperAdminPharmacyDetailPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-brand-teal">
-                    {Number(order.total ?? 0).toLocaleString()} RWF
+                    {formatCurrency(order.total)}
                   </p>
                   <span className="text-xs text-gray-400">{order.status}</span>
                 </div>

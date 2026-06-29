@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircleIcon, ShieldCheckIcon, BanknotesIcon, DocumentTextIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -17,7 +18,13 @@ export interface CashierOrder {
   id: string;
   status: string;
   total: number;
-  patient: { firstName: string; lastName: string };
+  patientPayment?: number;
+  patient: {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    user?: { phone?: string };
+  };
   orderItems: OrderItem[];
 }
 
@@ -43,12 +50,6 @@ function fmt(n: number) {
   return `RWF ${Number(n ?? 0).toLocaleString()}`;
 }
 
-// Stub until backend ships POST /payments/record
-async function mockRecordPayment(payload: object): Promise<{ receiptNumber: string }> {
-  await new Promise((r) => setTimeout(r, 800));
-  return { receiptNumber: `RCP-${Date.now().toString().slice(-6)}` };
-}
-
 export default function CashierPOSModal({
   open,
   onClose,
@@ -60,10 +61,12 @@ export default function CashierPOSModal({
 
   const [tab, setTab] = useState<'verify' | 'record'>('verify');
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'loading' | 'confirmed'>('idle');
+  const [confirming, setConfirming] = useState(false);
 
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = useState('');
   const [reference, setReference] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [insuranceProvider, setInsuranceProvider] = useState('');
   const [policyNumber, setPolicyNumber] = useState('');
   const [notes, setNotes] = useState('');
@@ -79,17 +82,21 @@ export default function CashierPOSModal({
         setMethod('cash');
         setAmountReceived('');
         setReference('');
+        setPhoneNumber('');
         setInsuranceProvider('');
         setPolicyNumber('');
         setNotes('');
         setSubmitting(false);
         setReceipt(null);
+        setConfirming(false);
       }, 200);
       return () => clearTimeout(timer);
+    } else if (order) {
+      setPhoneNumber(order.patient.phone || order.patient.user?.phone || '');
     }
-  }, [open]);
+  }, [open, order]);
 
-  const totalDue = order?.total ?? 0;
+  const totalDue = order ? (order.patientPayment ?? order.total) : 0;
   const change = useMemo(() => {
     if (method !== 'cash') return 0;
     const recv = Number(amountReceived);
@@ -124,6 +131,9 @@ export default function CashierPOSModal({
     if (method === 'insurance') {
       return insuranceProvider.trim().length > 0 && policyNumber.trim().length > 0;
     }
+    if (method === 'mtn_momo' || method === 'airtel_money') {
+      return phoneNumber.trim().length > 0;
+    }
     return true;
   })();
 
@@ -133,16 +143,17 @@ export default function CashierPOSModal({
     try {
       const payload = {
         orderId: order.id,
-        method: method.toUpperCase(),
-        amountReceived: method === 'cash' ? Number(amountReceived) : undefined,
-        referenceNumber: reference || undefined,
+        paymentMethod: method.toUpperCase(),
+        amountReceived: method === 'cash' ? Number(amountReceived) : totalDue,
+        phoneNumber: (method === 'mtn_momo' || method === 'airtel_money') ? phoneNumber : undefined,
         insuranceProvider: method === 'insurance' ? insuranceProvider : undefined,
         insurancePolicyNumber: method === 'insurance' ? policyNumber : undefined,
+        reference: reference || undefined,
         notes: notes || undefined,
       };
-      const res = await mockRecordPayment(payload);
+      const res = await api.post('/payments/record', payload);
       setReceipt({
-        receiptNumber: res.receiptNumber,
+        receiptNumber: res.data.receiptNumber,
         amount: totalDue,
         method:
           method === 'insurance'
@@ -199,7 +210,7 @@ export default function CashierPOSModal({
             <p className="text-sm text-gray-500">
               {patientName} · {order.orderItems.length}{' '}
               {order.orderItems.length === 1 ? t('cashier.item') : t('cashier.items')} ·{' '}
-              <span className="font-semibold text-gray-800">{fmt(totalDue)}</span>
+              <span className="font-semibold text-gray-800">{formatCurrency(totalDue)}</span>
             </p>
           </div>
           <button
@@ -212,7 +223,66 @@ export default function CashierPOSModal({
         </div>
 
         <div className="p-6">
-          {receipt ? (
+          {confirming && !receipt ? (
+            /* ── Confirmation step ── */
+            <div className="space-y-5">
+              <div className="flex flex-col items-center text-center py-2">
+                <div className="h-12 w-12 rounded-full flex items-center justify-center mb-3 bg-amber-50">
+                  <BanknotesIcon className="w-6 h-6 text-amber-500" />
+                </div>
+                <h3 className="text-base font-semibold text-gray-900">{t('cashier.confirmPaymentTitle', 'Confirm Payment')}</h3>
+                <p className="text-sm text-gray-400 mt-0.5">{t('cashier.confirmPaymentSubtitle', 'Please review the details before processing.')}</p>
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2.5 text-sm">
+                {[
+                  [t('cashier.totalDue'),       fmt(totalDue)],
+                  [t('cashier.paymentMethod'),  t(`cashier.method_${method}`)],
+                  ...(method === 'cash'
+                    ? [[t('cashier.amountReceived'), fmt(Number(amountReceived))],
+                       [t('cashier.change'),         fmt(change)]]
+                    : []),
+                  ...(method === 'mtn_momo' || method === 'airtel_money'
+                    ? [[t('cashier.phoneNumber') || 'Phone', phoneNumber]]
+                    : []),
+                  ...(method === 'insurance'
+                    ? [[t('cashier.insuranceProvider'), insuranceProvider],
+                       [t('cashier.policyNumber'),      policyNumber]]
+                    : []),
+                  ...(reference ? [[t('cashier.referenceNumber'), reference]] : []),
+                  [t('cashier.cashierLabel'),   cashierName],
+                ].map(([label, value], i) => (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-gray-400">{label}</span>
+                    <span className="font-medium text-gray-900">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirming(false)}
+                  className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  {t('common.back', 'Back')}
+                </button>
+                <button
+                  onClick={handleRecord}
+                  disabled={submitting}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
+                >
+                  {submitting ? (
+                    <>
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                      {t('cashier.processing')}
+                    </>
+                  ) : (
+                    t('cashier.processPayment')
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : receipt ? (
             /* Receipt screen */
             <div className="space-y-5">
               <div className="flex flex-col items-center text-center py-4">
@@ -282,7 +352,7 @@ export default function CashierPOSModal({
                     </div>
                     <div className="flex justify-between font-semibold text-sm pt-2 border-t border-gray-200">
                       <span>{t('cashier.totalDue')}</span>
-                      <span className="text-brand-navy">{fmt(totalDue)}</span>
+                      <span className="text-brand-navy">{formatCurrency(totalDue)}</span>
                     </div>
                   </div>
 
@@ -327,7 +397,7 @@ export default function CashierPOSModal({
                 <div className="space-y-4">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex justify-between text-sm">
                     <span className="text-gray-400">{t('cashier.totalDue')}</span>
-                    <span className="font-semibold text-brand-navy">{fmt(totalDue)}</span>
+                    <span className="font-semibold text-brand-navy">{formatCurrency(totalDue)}</span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -362,9 +432,24 @@ export default function CashierPOSModal({
                       <div className="flex justify-between text-sm rounded-lg bg-gray-50 px-3 py-2">
                         <span className="text-gray-400">{t('cashier.change')}</span>
                         <span className={`font-semibold ${change > 0 ? 'text-teal-600' : 'text-gray-700'}`}>
-                          {fmt(change)}
+                          {formatCurrency(change)}
                         </span>
                       </div>
+                    </div>
+                  )}
+
+                  {(method === 'mtn_momo' || method === 'airtel_money') && (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700">
+                        {t('cashier.phoneNumber') || 'Phone Number'} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 078XXXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                      />
                     </div>
                   )}
 
@@ -422,18 +507,11 @@ export default function CashierPOSModal({
                   </div>
 
                   <button
-                    onClick={handleRecord}
-                    disabled={!canConfirmRecord || submitting}
+                    onClick={() => setConfirming(true)}
+                    disabled={!canConfirmRecord}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand-teal"
                   >
-                    {submitting ? (
-                      <>
-                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                        {t('cashier.processing')}
-                      </>
-                    ) : (
-                      t('cashier.confirmPayment')
-                    )}
+                    {t('cashier.confirmPayment')}
                   </button>
                 </div>
               )}

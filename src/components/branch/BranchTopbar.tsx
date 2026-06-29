@@ -1,7 +1,7 @@
 'use client';
 import { useTranslation } from 'react-i18next';
 import { BellIcon, UserIcon, Bars3Icon } from '@heroicons/react/24/outline';
-import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 
 interface Props {
   branchName?: string;
@@ -10,12 +10,7 @@ interface Props {
 }
 
 export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-Vuze Pharmacy', onMenuClick }: Props) {
-  const { t, i18n } = useTranslation();
-
-  const changeLanguage = (code: string) => {
-    i18n.changeLanguage(code);
-    localStorage.setItem('i18nextLng', code);
-  };
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
@@ -34,19 +29,7 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden md:flex items-center gap-1">
-          {SUPPORTED_LANGUAGES.map((lang, i) => (
-            <span key={lang.code} className="flex items-center">
-              <button
-                onClick={() => changeLanguage(lang.code)}
-                className={`text-sm font-medium px-0.5 ${i18n.language === lang.code ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'}`}
-              >
-                {lang.label}
-              </button>
-              {i < SUPPORTED_LANGUAGES.length - 1 && <span className="text-gray-300 mx-1">|</span>}
-            </span>
-          ))}
-        </div>
+        <LanguageSwitcher />
 
         <button className="relative p-2 rounded-full hover:bg-gray-100" aria-label="Notifications">
           <BellIcon className="w-[18px] h-[18px] text-gray-600" />

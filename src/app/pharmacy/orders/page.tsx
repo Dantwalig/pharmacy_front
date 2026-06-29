@@ -1,5 +1,6 @@
 'use client';
 // src/app/(pharmacy)/orders/page.tsx
+import { formatCurrency } from '@/lib/currency';
 import { useFetch } from '@/hooks/useFetch';
 import { useState, useEffect, useCallback} from 'react';
 import { useRouter } from 'next/navigation';
@@ -201,7 +202,7 @@ const branches = data?.branches ?? [];
                     {order.patientName ?? '—'}
                     </td>
                   <td className="px-5 py-4 text-sm font-semibold" style={{ color: '#0284C7' }}>
-                    {order.total?.toLocaleString()} RWF
+                    {formatCurrency(order.total)}
                     </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={order.status} />

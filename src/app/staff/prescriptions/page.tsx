@@ -6,6 +6,8 @@ import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import PermissionGate from '@/components/shared/PermissionGate';
 import StatusBadge from '@/components/shared/StatusBadge';
 import {
   ClipboardDocumentListIcon,
@@ -233,35 +235,41 @@ export default function StaffPrescriptionsPage() {
                           >
                             {t('common.cancel')}
                           </button>
-                          <button
-                            onClick={() => handleReject(p.id)}
-                            disabled={!!actionId}
-                            className="flex-1 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
-                          >
-                            {actionId === p.id ? t('prescriptions.rejecting') : t('prescriptions.confirmReject')}
-                          </button>
+                          <PermissionGate permission="REJECT_PRESCRIPTIONS" showLocked lockedMessage="No reject access">
+                            <button
+                              onClick={() => handleReject(p.id)}
+                              disabled={!!actionId}
+                              className="flex-1 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-50 bg-red-600 hover:bg-red-700"
+                            >
+                              {actionId === p.id ? t('prescriptions.rejecting') : t('prescriptions.confirmReject')}
+                            </button>
+                          </PermissionGate>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <button
-                          onClick={() => handleVerify(p.id)}
-                          disabled={!!actionId}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 bg-brand-teal"
-                          aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
-                        >
-                          <CheckCircleIcon className="w-4 h-4" />
-                          {actionId === p.id ? t('prescriptions.verifying') : t('staff.verify')}
-                        </button>
-                        <button
-                          onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
-                          disabled={!!actionId}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
-                          aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
-                        >
-                          <XCircleIcon className="w-4 h-4" />
-                          {t('staff.reject')}
-                        </button>
+                        <PermissionGate permission="APPROVE_PRESCRIPTIONS" showLocked lockedMessage="No approve access">
+                          <button
+                            onClick={() => handleVerify(p.id)}
+                            disabled={!!actionId}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 bg-brand-teal"
+                            aria-label={`Verify prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                            {actionId === p.id ? t('prescriptions.verifying') : t('staff.verify')}
+                          </button>
+                        </PermissionGate>
+                        <PermissionGate permission="REJECT_PRESCRIPTIONS" showLocked lockedMessage="No reject access">
+                          <button
+                            onClick={() => { setRejectingId(p.id); setRejectReason(''); }}
+                            disabled={!!actionId}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
+                            aria-label={`Reject prescription for ${p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : `#${p.id.slice(0, 8)}`}`}
+                          >
+                            <XCircleIcon className="w-4 h-4" />
+                            {t('staff.reject')}
+                          </button>
+                        </PermissionGate>
                       </>
                     )}
                   </div>

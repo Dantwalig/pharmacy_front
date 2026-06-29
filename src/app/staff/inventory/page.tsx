@@ -8,6 +8,8 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { FDA_CATEGORIES } from '@/lib/constants';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import PermissionGate from '@/components/shared/PermissionGate';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -19,6 +21,7 @@ export default function StaffInventoryPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
+  const { can } = useStaffPermissions();
   const isCashier = user?.role === 'CASHIER';
   const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,10 +125,12 @@ export default function StaffInventoryPage() {
         </div>
 
         {!isCashier && (
-          <button onClick={() => router.push('/staff/inventory/add')}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0 bg-brand-teal">
-            <PlusIcon className="w-4 h-4" /> {t('staff.addMedication')}
-          </button>
+          <PermissionGate permission="ADD_MEDICATION">
+            <button onClick={() => router.push('/staff/inventory/add')}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium shrink-0 bg-brand-teal">
+              <PlusIcon className="w-4 h-4" /> {t('staff.addMedication')}
+            </button>
+          </PermissionGate>
         )}
       </div>
 
@@ -186,11 +191,13 @@ export default function StaffInventoryPage() {
                     <td className="px-4 py-3">{stockBadge(med)}</td>
                     {!isCashier && (
                       <td className="px-4 py-3">
-                        <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-teal-light text-brand-teal"
-                          aria-label={`Edit ${med.name}`}>
-                          <PencilIcon className="w-3.5 h-3.5" /> Edit
-                        </button>
+                        <PermissionGate permission="EDIT_MEDICATION" showLocked lockedMessage="No edit access">
+                          <button onClick={() => router.push(`/staff/inventory/${med.id}`)}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-teal-light text-brand-teal"
+                            aria-label={`Edit ${med.name}`}>
+                            <PencilIcon className="w-3.5 h-3.5" /> Edit
+                          </button>
+                        </PermissionGate>
                       </td>
                     )}
                   </tr>

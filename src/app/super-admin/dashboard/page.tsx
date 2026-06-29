@@ -1,5 +1,6 @@
 'use client';
 
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ interface Analytics {
   totalPharmacies: number;
   approvedPharmacies: number;
   pendingPharmacies: number;
+  pendingBranches: number;
   totalOrders: number;
   completedOrders: number;
   totalRevenue: number;
@@ -42,6 +44,7 @@ interface PendingBranch {
   phone: string;
   branchManagerEmail: string;
   pharmacyLicense: string | null;
+  branchStatus: 'INVITED' | 'PENDING';
   createdAt: string;
   pharmacy: { id: string; name: string; representativeName: string };
   manager: { email: string } | null;
@@ -192,6 +195,14 @@ export default function SuperAdminDashboard() {
       action: () => router.push('/super-admin/pharmacies?filter=pending'),
     },
     {
+      name: 'Pending Branches',
+      value: analytics?.pendingBranches || 0,
+      icon: BuildingStorefrontIcon,
+      textColor: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+      action: () => document.getElementById('branch-verification')?.scrollIntoView({ behavior: 'smooth' }),
+    },
+    {
       name: t('superAdmin.totalPatients'),
       value: analytics?.totalPatients || 0,
       icon: UserGroupIcon,
@@ -200,7 +211,7 @@ export default function SuperAdminDashboard() {
     },
     {
       name: t('superAdmin.platformRevenue'),
-      value: `$${analytics?.platformRevenue?.toLocaleString() || 0}`,
+      value: formatCurrency(analytics?.platformRevenue as number),
       icon: CurrencyDollarIcon,
       textColor: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -216,7 +227,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -236,8 +247,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* ── PENDING BRANCH VERIFICATION ── */}
-      {/* This section is NEW — connected to backend GET /super-admin/branches/pending */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div id="branch-verification" className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg" style={{ background: '#EAF4FF' }}>
@@ -247,7 +257,7 @@ export default function SuperAdminDashboard() {
             </div>
             <div>
               <h2 className="font-bold text-gray-900">Branch Verification</h2>
-              <p className="text-xs text-gray-400">Branches awaiting license review</p>
+              <p className="text-xs text-gray-400">Branches awaiting setup or license review</p>
             </div>
           </div>
           {pendingBranches.length > 0 && (
@@ -286,13 +296,13 @@ export default function SuperAdminDashboard() {
                       <p className="text-xs text-gray-400">{branch.manager.email}</p>
                     )}
                     <div className="flex items-center gap-2 mt-1">
-                      {branch.pharmacyLicense ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                          <CheckCircleIcon className="w-3 h-3" /> License uploaded
+                      {branch.branchStatus === 'PENDING' ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full">
+                          <ClockIcon className="w-3 h-3" /> Awaiting review
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                          <XCircleIcon className="w-3 h-3" /> No license
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                          <ClockIcon className="w-3 h-3" /> License not uploaded
                         </span>
                       )}
                       <span className="text-xs text-gray-400">

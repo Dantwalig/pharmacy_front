@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 type Tab          = 'outgoing' | 'incoming';
 type BackendState = 'loading' | 'unavailable' | 'ready';
@@ -39,13 +40,22 @@ export default function BranchTransfersPage() {
   const [branches, setBranches]         = useState<any[]>([]);
   const [medications, setMedications]   = useState<any[]>([]);
   const [submitting, setSubmitting]     = useState(false);
+  const [myBranchId, setMyBranchId]     = useState<string | null>(null);
+  const [updatingId, setUpdatingId]     = useState<string | null>(null);
+
+
   const [form, setForm] = useState({
     toBranchId: '',
     notes: '',
     items: [{ medicationId: '', quantity: '' }],
   });
 
-  useEffect(() => { fetchTransfers(); }, []);
+  useEffect(() => {
+    api.get('/branches/my-branch-details')
+      .then(res => setMyBranchId(res.data?.id || null))
+      .catch(() => {});
+    fetchTransfers();
+  }, []);
 
   const fetchTransfers = async () => {
     setBackendState('loading');
@@ -68,6 +78,19 @@ export default function BranchTransfersPage() {
       if (medsRes.status === 'fulfilled')   setMedications(Array.isArray(medsRes.value.data) ? medsRes.value.data : []);
       if (branchRes.status === 'fulfilled') setBranches(branchRes.value.data?.data ?? branchRes.value.data ?? []);
     } catch { /**/ }
+  };
+
+  const handleUpdateStatus = async (transferId: string, status: string) => {
+    setUpdatingId(transferId);
+    try {
+      await api.patch(`/stock-transfers/${transferId}/status`, { status });
+      toast.success(`Transfer status updated to ${status}`);
+      fetchTransfers();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const handleSubmitTransfer = async (e: React.FormEvent) => {
@@ -95,8 +118,8 @@ export default function BranchTransfersPage() {
   const updateItem = (i: number, field: string, value: string) =>
     setForm(f => ({ ...f, items: f.items.map((item, idx) => idx === i ? { ...item, [field]: value } : item) }));
 
-  const outgoing  = transfers.filter(t => t.direction === 'outgoing' || t.isOutgoing);
-  const incoming  = transfers.filter(t => t.direction === 'incoming' || t.isIncoming);
+  const outgoing = transfers.filter(t => t.direction === 'outgoing' || t.isOutgoing || (myBranchId && t.fromBranchId === myBranchId));
+  const incoming = transfers.filter(t => t.direction === 'incoming' || t.isIncoming || (myBranchId && t.toBranchId === myBranchId));
   const displayed = tab === 'outgoing' ? outgoing : incoming;
 
   const formatDate = (d: string) =>
@@ -152,7 +175,7 @@ export default function BranchTransfersPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex bg-gray-100 rounded-xl p-1 w-fit">
+          <div className="flex bg-gray-100 rounded-xl p-1 w-fit mt-5">
             {(['outgoing', 'incoming'] as Tab[]).map(item => (
               <button key={item} onClick={() => setTab(item)}
                 className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${
@@ -165,7 +188,7 @@ export default function BranchTransfersPage() {
 
           {/* Request form */}
           {showForm && (
-            <form onSubmit={handleSubmitTransfer} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-4">
+            <form onSubmit={handleSubmitTransfer} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-4 mt-5">
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold text-gray-800">{t('transfers.newTransferRequest')}</h3>
                 <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 text-sm">Cancel</button>
@@ -213,47 +236,110 @@ export default function BranchTransfersPage() {
           )}
 
           {/* List */}
-          {displayed.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 py-20 text-center">
-              <div className="flex justify-center mb-4 opacity-20">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M8 24 L38 24 M28 14 L38 24 L28 34" stroke="#1E3A5F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M40 24 L10 24 M20 14 L10 24 L20 34" stroke="#1E3A5F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" transform="translate(0, 4)"/></svg>
+          <div className="mt-5">
+            {displayed.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 py-20 text-center">
+                <div className="flex justify-center mb-4 opacity-20">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M8 24 L38 24 M28 14 L38 24 L28 34" stroke="#1E3A5F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M40 24 L10 24 M20 14 L10 24 L20 34" stroke="#1E3A5F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" transform="translate(0, 4)"/></svg>
+                </div>
+                <p className="font-semibold text-gray-600 mb-1">No transfers found</p>
+                <p className="text-sm text-gray-400">Use the button above to request stock from another branch.</p>
               </div>
-              <p className="font-semibold text-gray-600 mb-1">No transfers found</p>
-              <p className="text-sm text-gray-400">Use the button above to request stock from another branch.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {displayed.map(item => (
-                <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-5">
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div className="flex-1 space-y-1.5">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {tab === 'outgoing'
-                            ? `To: ${item.toBranch?.name ?? item.toBranchId}`
-                            : `From: ${item.fromBranch?.name ?? item.fromBranchId}`}
-                        </p>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400">Requested: {formatDate(item.createdAt)}</p>
-                      {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
-                      {item.items?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {item.items.map((med: any, i: number) => (
-                            <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">
-                              {med.medication?.name ?? med.medicationId} x{med.quantity}
-                            </span>
-                          ))}
+            ) : (
+              <div className="space-y-3">
+                {displayed.map(item => (
+                  <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-5">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex-1 space-y-1.5">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <p className="font-semibold text-gray-900 text-sm">
+                            {tab === 'outgoing'
+                              ? `To: ${item.toBranch?.name ?? item.toBranchId}`
+                              : `From: ${item.fromBranch?.name ?? item.fromBranchId}`}
+                          </p>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {item.status}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-xs text-gray-400">Requested: {formatDate(item.createdAt)}</p>
+                        {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
+                        {item.items?.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {item.items.map((med: any, i: number) => (
+                              <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">
+                                {med.medication?.name ?? med.medicationId} x{med.quantity}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col sm:flex-row gap-2 shrink-0 self-center">
+                        {/* If current branch is B (toBranchId, receiver of the request, sender of the stock) */}
+                        {item.toBranchId === myBranchId && item.status === 'PENDING' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(item.id, 'APPROVED')}
+                              disabled={updatingId === item.id}
+                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(item.id, 'REJECTED')}
+                              disabled={updatingId === item.id}
+                              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+
+                        {/* If current branch is B (toBranchId, sender of the stock) and status is APPROVED */}
+                        {item.toBranchId === myBranchId && item.status === 'APPROVED' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(item.id, 'SHIPPED')}
+                            disabled={updatingId === item.id}
+                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                          >
+                            Ship Transfer
+                          </button>
+                        )}
+
+                        {/* If current branch is A (fromBranchId, initiator, receiver of the stock) and status is SHIPPED */}
+                        {item.fromBranchId === myBranchId && item.status === 'SHIPPED' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(item.id, 'COMPLETED')}
+                            disabled={updatingId === item.id}
+                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                          >
+                            Complete / Receive
+                          </button>
+                        )}
+
+                        {/* If current branch is A (fromBranchId, initiator) and status is PENDING */}
+                        {item.fromBranchId === myBranchId && item.status === 'PENDING' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(item.id, 'REJECTED')}
+                            disabled={updatingId === item.id}
+                            className="px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg disabled:opacity-50 transition"
+                          >
+                            Cancel Request
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

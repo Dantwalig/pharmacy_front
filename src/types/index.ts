@@ -1,8 +1,12 @@
 // src/types/index.ts
 
-export type UserRole = 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE';
+export type UserRole = 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE' | 'HOSPITAL_ADMIN' | 'DOCTOR' | 'RECEPTIONIST';
 
 export type PharmacyStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+// Hospital staff status (HospitalStaff.status in the backend schema) — distinct
+// from PharmacyStatus/BranchStatus, only ACTIVE/INACTIVE exist for hospital staff
+export type HospitalStaffStatus = 'ACTIVE' | 'INACTIVE';
 
 export type BranchStatus = 'INVITED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -30,6 +34,14 @@ export interface User {
   branchStatus?: BranchStatus;
   requiresPasswordChange?: boolean;
   profile?: Profile;
+  // Hospital-side fields. Present on HOSPITAL_ADMIN, DOCTOR, and hospital-side
+  // NURSE/RECEPTIONIST login responses — hospitalId is the discriminator that
+  // distinguishes a hospital NURSE from the pharmacy/branch-staff NURSE, since
+  // both share the same `role: 'NURSE'` string on the backend.
+  hospitalId?: string;
+  hospitalName?: string;
+  hospitalStatus?: PharmacyStatus; // HOSPITAL_ADMIN only — hospital approval state
+  status?: HospitalStaffStatus;    // DOCTOR/NURSE/RECEPTIONIST hospital staff status
 }
 
 export interface Medication {
@@ -78,6 +90,7 @@ export interface Order {
   status: OrderStatus;
   type: OrderType;
   total: number;
+  patientPayment?: number;
   paymentMethod: PaymentMethod;
   deliveryAddress?: string;
   // Two shapes exist: GET /orders/:id returns `items`, GET /orders/pharmacy-orders returns `orderItems`
@@ -191,15 +204,20 @@ export interface PharmacyProfile {
   name: string;
   representativeName?: string;
   ownerName?: string;
+  // email is flattened from the User relation by the backend's findByUserId method.
+  // It is available directly as profile.email on the response object.
   email?: string;
   phone?: string;
   address?: string;
+  logoUrl?: string;
   dateOfIncorporation?: string;
   rdbCertificate?: string;
   pharmacyLicense?: string;
-  logoUrl?: string;
   rejectionReason?: string | null;
   approvedAt?: string | null;
+  // Nested user relation — present on the raw API response before flattening.
+  // Frontend should read profile.email (flattened) rather than profile.user.email.
+  user?: { email?: string };
 }
 
 export interface PharmacyDetail extends Pharmacy {
@@ -313,6 +331,12 @@ export interface DecodedToken {
   isVerified?: boolean;
   pharmacyStatus?: PharmacyStatus;
   branchStatus?: BranchStatus;
+  // JWT payload includes these only for hospital-side logins (see
+  // back-end auth.service.ts generateTokens()) — status here is overloaded
+  // by the backend across roles (hospital status for admin, staff status for
+  // doctor/nurse/receptionist), so keep it loosely typed as string.
+  hospitalId?: string;
+  status?: string;
   iat: number;
   exp: number;
 }

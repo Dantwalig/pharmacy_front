@@ -7,35 +7,44 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
 
 export default function StaffChangePasswordPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState({ temp: false, new: false, confirm: false });
+  const [showPass, setShowPass] = useState({ current: false, new: false, confirm: false });
   const [form, setForm] = useState({
-    tempPassword: '',
+    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.newPassword !== form.confirmPassword) {
-      toast.error(t('form.passwordsDoNotMatch'));
-      return;
-    }
     if (form.newPassword.length < 8) {
       toast.error(t('form.passwordTooShort'));
       return;
     }
+    if (!passwordRegex.test(form.newPassword)) {
+      toast.error('Password must contain uppercase, lowercase, and a number or special character (@$!%*?&#)');
+      return;
+    }
+    if (form.newPassword !== form.confirmPassword) {
+      toast.error(t('form.passwordsDoNotMatch'));
+      return;
+    }
     setLoading(true);
     try {
-      await api.put('/staff/profile/change-password', {
-        tempPassword: form.tempPassword,
+      await api.put('/auth/change-password', {
+        currentPassword: form.currentPassword,
         newPassword: form.newPassword,
         confirmPassword: form.confirmPassword,
       });
+      updateUser({ requiresPasswordChange: false });
       toast.success(t('form.passwordChangedWelcome'));
       router.push('/staff/dashboard');
     } catch (error: unknown) {
@@ -64,9 +73,9 @@ export default function StaffChangePasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
-              { field: 'temp' as const,    label: t('staff.tempPassword'),    key: 'tempPassword',    placeholder: t('staff.tempPasswordPlaceholder') },
-              { field: 'new' as const,     label: t('staff.newPassword'),     key: 'newPassword',     placeholder: t('staff.newPasswordPlaceholder') },
-              { field: 'confirm' as const, label: t('staff.confirmPassword'), key: 'confirmPassword', placeholder: t('staff.confirmPasswordPlaceholder') },
+              { field: 'current' as const, label: 'Current Password',          key: 'currentPassword', placeholder: t('staff.tempPasswordPlaceholder') },
+              { field: 'new' as const,     label: t('staff.newPassword'),       key: 'newPassword',     placeholder: t('staff.newPasswordPlaceholder') },
+              { field: 'confirm' as const, label: t('staff.confirmPassword'),   key: 'confirmPassword', placeholder: t('staff.confirmPasswordPlaceholder') },
             ].map(({ field, label, key, placeholder }) => (
               <div key={key}>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>
@@ -87,6 +96,11 @@ export default function StaffChangePasswordPage() {
                     {showPass[field] ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </button>
                 </div>
+                {key === 'newPassword' && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    8+ characters with uppercase, lowercase, and a number or special character (@$!%*?&#)
+                  </p>
+                )}
               </div>
             ))}
 

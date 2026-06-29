@@ -168,11 +168,47 @@ export default function LocationPicker({
       (pos) => {
         const lat = parseFloat(pos.coords.latitude.toFixed(6));
         const lng = parseFloat(pos.coords.longitude.toFixed(6));
+
+        // Notify the parent so its controlled state (latitude/longitude props) updates.
         onChange(lat, lng);
         setGpsLoading(false);
+
+        // Also update the map directly — we cannot rely solely on the prop
+        // re-render cycle because the sync useEffect does another async
+        // import('leaflet') which may lose the race against this callback,
+        // leaving the map panned to Kigali with no marker placed.
+        //
+        // If the map is already initialised (common case — user clicks the
+        // button after the map has rendered), move immediately.
+        const map = leafletMapRef.current;
+        if (!map) return; // map not ready yet; the sync useEffect will handle it when props arrive
+
+        import('leaflet').then((L) => {
+          if (!leafletMapRef.current) return; // unmounted between callback and import resolve
+          if (markerRef.current) {
+            markerRef.current.setLatLng([lat, lng]);
+          } else {
+            const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+            marker.on('dragend', () => {
+              const p = marker.getLatLng();
+              onChange(parseFloat(p.lat.toFixed(6)), parseFloat(p.lng.toFixed(6)));
+            });
+            markerRef.current = marker;
+          }
+          map.setView([lat, lng], 16);
+        });
       },
       (err) => {
-        setGpsError('Could not get location: ' + err.message);
+        // Map Geolocation API error codes to human-readable messages
+        let message = 'Could not get location.';
+        if (err.code === err.PERMISSION_DENIED) {
+          message = 'Location access was denied. Please allow location access in your browser settings.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          message = 'Location information is unavailable. Try pinning your location on the map manually.';
+        } else if (err.code === err.TIMEOUT) {
+          message = 'Location request timed out. Please try again.';
+        }
+        setGpsError(message);
         setGpsLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 },
