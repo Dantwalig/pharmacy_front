@@ -16,7 +16,7 @@ import {
   AlertCircle, Building2, Eye, EyeOff, Users,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import type { MapMarker } from '@/components/map/BaseMap';
 import { MapSkeleton } from '@/components/map/MapStates';
 

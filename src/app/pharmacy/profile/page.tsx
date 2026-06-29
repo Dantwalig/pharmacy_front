@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CameraIcon, DocumentTextIcon, PencilIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { api } from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import type { PharmacyProfile } from '@/types';
@@ -34,7 +34,7 @@ export default function PharmacyProfilePage() {
   useEffect(() => {
     api.get('/pharmacies/profile/me')
       .then(r => {
-        const d = r.data?.data ?? r.data;
+        const d = unwrapItem<PharmacyProfile>(r.data);
         setProfile(d);
         setOwnerName(d?.representativeName ?? d?.ownerName ?? d?.name ?? '');
         setLogoUrl(d?.logoUrl ?? null);

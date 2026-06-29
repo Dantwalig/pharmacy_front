@@ -73,7 +73,10 @@ export default function PharmacySidebar({ open = false, onClose }: PharmacySideb
       {/* Footer */}
       <div className="px-5 pb-6 shrink-0">
         <button
-          onClick={logout}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-80"
           style={{ color: '#F26B6B' }}
         >

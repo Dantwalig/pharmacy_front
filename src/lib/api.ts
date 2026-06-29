@@ -183,4 +183,15 @@ export function unwrapData<T = unknown>(payload: unknown, fallback: T[] = []): T
   return fallback;
 }
 
+/**
+ * Normalises API responses that sometimes wrap a single object in { data: {...} }
+ * and sometimes return the object directly.
+ */
+export function unwrapItem<T = unknown>(payload: unknown): T {
+  if (payload && typeof payload === 'object' && (payload as any).data != null) {
+    return (payload as any).data as T;
+  }
+  return payload as T;
+}
+
 export default api;
