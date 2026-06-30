@@ -25,8 +25,8 @@ export default function HospitalDoctorDashboardPage() {
   const overviewCards = [
     {
       title: MOCK_DASHBOARD_STATS.appointmentsByStatus.CONFIRMED + MOCK_DASHBOARD_STATS.appointmentsByStatus.PENDING,
-      label: 'Appointments',
-      trend: '+2 than yesterday',
+      label: t('hospital.appointments'),
+      trend: t('hospital.trendVsYesterday'),
       icon: CalendarIcon,
       borderColor: '#E0F2FE',
       iconColor: '#0284C7',
@@ -37,8 +37,8 @@ export default function HospitalDoctorDashboardPage() {
     },
     {
       title: MOCK_DASHBOARD_STATS.totalPatients,
-      label: 'Total Patients',
-      trend: '10% last month',
+      label: t('hospital.totalPatients'),
+      trend: t('hospital.trendLastMonth'),
       icon: UsersIcon,
       borderColor: '#DCFCE7',
       iconColor: '#04802D',
@@ -49,8 +49,8 @@ export default function HospitalDoctorDashboardPage() {
     },
     {
       title: 2,
-      label: 'Emergency Cases',
-      trend: '+2% this week',
+      label: t('hospital.emergencyCases'),
+      trend: t('hospital.trendThisWeek'),
       icon: UserPlusIcon,
       borderColor: '#FEE2E2',
       iconColor: '#FF0000',
@@ -61,8 +61,8 @@ export default function HospitalDoctorDashboardPage() {
     },
     {
       title: '40%',
-      label: 'Medicine Stock Rate',
-      trend: 'this month',
+      label: t('hospital.medicineStockRate'),
+      trend: t('hospital.trendThisMonth'),
       icon: BanknotesIcon,
       borderColor: '#F3E8FF',
       iconColor: '#92009F',
@@ -123,7 +123,7 @@ export default function HospitalDoctorDashboardPage() {
       {/* Hero*/}
       <div className="rounded-2xl w-full" style={{ background: '#EBF5FF', padding: '26px 32px' }}>
         <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#1a3470' }}>
-          {getGreeting()}, Dr. {firstName}
+          {getGreeting()}, {t('hospital.doctorTitlePrefix')} {firstName}
         </h1>
         <p className="text-sm sm:text-base" style={{ color: '#0284C7' }}>{t('hospital.welcomeMessage')}</p>
         <Link

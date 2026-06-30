@@ -70,6 +70,15 @@ export default function HospitalReceptionistAppointmentListPage() {
     );
     });
 
+    // Status label translator (data-driven badge values)
+    const STATUS_LABEL: Record<string, string> = {
+        'SCHEDULED': 'hospital.scheduled',
+        'CHECKED IN': 'hospital.checkedIn',
+        'CANCELLED': 'hospital.cancelled',
+        'WAITING': 'hospital.statusWaiting',
+    };
+    const statusLabel = (s: string) => (STATUS_LABEL[s] ? t(STATUS_LABEL[s]) : s);
+
     // Helper color picker
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -129,21 +138,21 @@ export default function HospitalReceptionistAppointmentListPage() {
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? 'All Departments' : dept}</option>))}
+                {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? t('hospital.allDepartments') : dept}</option>))}
                 </select>
 
                 <select
                 value={doctor}
                 onChange={(e) => setDoctor(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {doctors.map((doc) => ( <option key={doc} value={doc}>{doc === 'ALL' ? 'All Doctors' : doc}</option>))}
+                {doctors.map((doc) => ( <option key={doc} value={doc}>{doc === 'ALL' ? t('hospital.allDoctors') : doc}</option>))}
                 </select>
 
                 <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm" >
-                {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s} </option> ))}
+                {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? t('hospital.allStatuses') : statusLabel(s)} </option> ))}
                 </select>
 
                 <input
@@ -164,7 +173,7 @@ export default function HospitalReceptionistAppointmentListPage() {
                     }}
                     className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
                     >
-                    Reset Filter
+                    {t('hospital.resetFilter')}
                     </button>
                 </div>
             </div>
@@ -175,13 +184,13 @@ export default function HospitalReceptionistAppointmentListPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-gray-100 bg-gray-50/50 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                <th className="py-4 px-6">APPT ID</th>
-                                <th className="py-4 px-6">PATIENT NAME</th>
-                                <th className="py-4 px-6">ASSIGNED DOCTOR</th>
-                                <th className="py-4 px-6">DEPARTMENT</th>
-                                <th className="py-4 px-6">APPOINTMENT TIME</th>
-                                <th className="py-4 px-6">STATUS</th>
-                                <th className="py-4 px-6 text-right">ACTIONS</th>
+                                <th className="py-4 px-6">{t('hospital.thApptId')}</th>
+                                <th className="py-4 px-6">{t('hospital.thPatientName')}</th>
+                                <th className="py-4 px-6">{t('hospital.thAssignedDoctor')}</th>
+                                <th className="py-4 px-6">{t('hospital.thDepartment')}</th>
+                                <th className="py-4 px-6">{t('hospital.thAppointmentTime')}</th>
+                                <th className="py-4 px-6">{t('hospital.status')}</th>
+                                <th className="py-4 px-6 text-right">{t('hospital.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
@@ -198,7 +207,7 @@ export default function HospitalReceptionistAppointmentListPage() {
                                     <td className="py-4 px-6 font-semibold text-gray-800">{patient.appointmentTime}</td>
                                     <td className="py-4 px-6">
                                         <span className={getStatusStyle(patient.status)}>
-                                            {patient.status}
+                                            {statusLabel(patient.status)}
                                         </span>
                                     </td>
                                     <td className="py-4 px-6 text-right">
@@ -208,14 +217,14 @@ export default function HospitalReceptionistAppointmentListPage() {
                                                     onClick={(e) => { e.stopPropagation(); }}
                                                     className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700"
                                                 >
-                                                    Check In
+                                                    {t('hospital.checkIn')}
                                                 </button>
                                             )}
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); setSelectedPatient(patient); }}
                                                 className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                                             >
-                                                Details
+                                                {t('hospital.details')}
                                             </button>
 
                                             {patient.status !== 'CANCELLED' && (
@@ -223,7 +232,7 @@ export default function HospitalReceptionistAppointmentListPage() {
                                                     onClick={(e) => { e.stopPropagation();}}
                                                     className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                                                 >
-                                                    Reschedule
+                                                    {t('hospital.reschedule')}
                                                 </button>
                                             )}
 
@@ -232,7 +241,7 @@ export default function HospitalReceptionistAppointmentListPage() {
                                                     onClick={(e) => { e.stopPropagation();}}
                                                     className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
                                                 >
-                                                    Cancel
+                                                    {t('common.cancel')}
                                                 </button>
                                             )}
                                         </div>

@@ -123,18 +123,18 @@ export default function DoctorSchedulePage() {
 
     const typeMeta = (type?: string) =>
         type === 'ONLINE'
-            ? { label: 'Video Call', Icon: VideoCameraIcon }
-            : { label: 'In-Person', Icon: UserIcon };
+            ? { label: t('hospital.videoCall'), Icon: VideoCameraIcon }
+            : { label: t('hospital.inPerson'), Icon: UserIcon };
 
     return (
         <div className="max-w-7xl mx-auto p-4 lg:p-8 space-y-6">
             {/* ── Page Hero ── */}
             <div className="rounded-2xl px-8 py-8" style={{ background: '#EBF5FF' }}>
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ color: '#1E3A5F' }}>
-                    {t('hospital.schedule') || 'Doctor Schedule & Calendar'}
+                    {t('hospital.scheduleTitle')}
                 </h1>
                 <p className="mt-2 text-sm sm:text-base font-medium" style={{ color: '#0284C7' }}>
-                    Organize, view, and reserve time slots for examinations, surgeries, and clinics.
+                    {t('hospital.scheduleSubtitle')}
                 </p>
             </div>
 
@@ -148,7 +148,7 @@ export default function DoctorSchedulePage() {
                             view === 'LIST' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
                         }`}
                     >
-                        Daily Schedule
+                        {t('hospital.dailySchedule')}
                     </button>
                     <button
                         onClick={() => setView('CALENDAR')}
@@ -156,7 +156,7 @@ export default function DoctorSchedulePage() {
                             view === 'CALENDAR' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
                         }`}
                     >
-                        Weekly Overview
+                        {t('hospital.weeklyOverview')}
                     </button>
                 </div>
 
@@ -177,7 +177,7 @@ export default function DoctorSchedulePage() {
 
                     <button className="flex items-center gap-2 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all hover:opacity-90" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
                         <PlusIcon className="w-4 h-4" />
-                        Reserve Time Slot
+                        {t('hospital.reserveTimeSlot')}
                     </button>
                 </div>
             </div>
@@ -209,10 +209,10 @@ export default function DoctorSchedulePage() {
                                 className="flex items-center gap-4 rounded-xl bg-gray-50/70 px-4 py-3"
                             >
                                 <span className="text-sm font-bold text-gray-500 w-20 shrink-0">{hourLabel(hour)}</span>
-                                <span className="text-sm font-medium text-gray-400 flex-1">Available Time Slot</span>
+                                <span className="text-sm font-medium text-gray-400 flex-1">{t('hospital.availableTimeSlot')}</span>
                                 <button className="text-[11px] font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
                                     <PlusIcon className="w-3 h-3" />
-                                    Reserve
+                                    {t('hospital.reserve')}
                                 </button>
                             </div>
                         );
@@ -232,21 +232,21 @@ export default function DoctorSchedulePage() {
                         <UsersIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search for people"
+                            placeholder={t('hospital.searchForPeople')}
                             className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
                     {/* Booking Pages */}
                     <button className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">
-                        <span>Booking Pages</span>
+                        <span>{t('hospital.bookingPages')}</span>
                         <PlusIcon className="w-4 h-4 text-gray-400" />
                     </button>
 
                     {/* My calendars */}
                     <div>
                         <div className="flex items-center justify-between text-sm font-semibold text-gray-700 mb-2">
-                            <span>My calendars</span>
+                            <span>{t('hospital.myCalendars')}</span>
                             <ChevronUpIcon className="w-4 h-4 text-gray-400" />
                         </div>
                         <div className="flex items-center gap-2 pl-1">
@@ -258,7 +258,7 @@ export default function DoctorSchedulePage() {
 
                     {/* Other calendars */}
                     <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
-                        <span>Other calendars</span>
+                        <span>{t('hospital.otherCalendars')}</span>
                         <div className="flex items-center gap-1">
                             <PlusIcon className="w-4 h-4 text-gray-400" />
                             <ChevronUpIcon className="w-4 h-4 text-gray-400" />
@@ -333,7 +333,7 @@ export default function DoctorSchedulePage() {
 
             {/* Empty-day hint for list view */}
             {view === 'LIST' && entriesForDay(currentDate).length === 0 && (
-                <p className="text-center text-xs text-gray-400">No reservations yet for this day — all slots are available.</p>
+                <p className="text-center text-xs text-gray-400">{t('hospital.noReservations')}</p>
             )}
         </div>
     );
