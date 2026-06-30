@@ -8,12 +8,11 @@ import {
     ChatBubbleLeftRightIcon,
     ClockIcon
 } from '@heroicons/react/24/outline';
-import { MOCK_CONVERSATIONS } from '@/mock/hospital/messages';
 import { Conversation, Message } from '@/types/hospital';
 
 export default function DoctorMessagesPage() {
     const { t } = useTranslation();
-    const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
+    const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [inputText, setInputText] = useState('');
     const [search, setSearch] = useState('');
@@ -96,120 +95,120 @@ export default function DoctorMessagesPage() {
 
                     <div className="flex-1 overflow-y-auto">
                         {filteredConversations.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-8">No conversations found</p>
+                            <p className="text-sm text-gray-400 text-center py-8">{search ? "No conversations found" : "No conversations yet"}</p>
                         ) : (
-                        <ul className="divide-y divide-gray-50">
-                            {filteredConversations.map((conv) => (
-                                <li
-                                    key={conv.id}
-                                    onClick={() => setActiveId(conv.id)}
-                                    className={`px-5 py-4 cursor-pointer transition-all hover:bg-gray-50 ${activeId === conv.id ? 'bg-blue-50/80' : ''
-                                        }`}
-                                >
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                            <h3 className="text-sm font-bold text-gray-900 truncate">{conv.senderName}</h3>
-                                            <p className="text-xs text-gray-500 truncate mt-1">{conv.lastMessage}</p>
+                            <ul className="divide-y divide-gray-50">
+                                {filteredConversations.map((conv) => (
+                                    <li
+                                        key={conv.id}
+                                        onClick={() => setActiveId(conv.id)}
+                                        className={`px-5 py-4 cursor-pointer transition-all hover:bg-gray-50 ${activeId === conv.id ? 'bg-blue-50/80' : ''
+                                            }`}
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h3 className="text-sm font-bold text-gray-900 truncate">{conv.senderName}</h3>
+                                                <p className="text-xs text-gray-500 truncate mt-1">{conv.lastMessage}</p>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                                <span className="text-[10px] font-medium text-gray-400">
+                                                    {new Date(conv.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                </span>
+                                                {(conv.unreadCount ?? 0) > 0 && (
+                                                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                            <span className="text-[10px] font-medium text-gray-400">
-                                                {new Date(conv.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                            </span>
-                                            {(conv.unreadCount ?? 0) > 0 && (
-                                                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                                            )}
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                                    </li>
+                                ))}
+                            </ul>
                         )}
                     </div>
                 </div>
 
                 {/* ── Right Panel: Message Thread ── */}
                 <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-                  {activeConversation ? (
-                   <>
-                    {/* Header */}
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                                {activeConversation.initials}
-                            </div>
-                            <div>
-                                <h2 className="text-base font-bold text-gray-900">{activeConversation.senderName}</h2>
-                                <p className="text-xs font-medium text-gray-500">{activeConversation.role}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                            <span className="text-xs font-medium text-gray-400">Online</span>
-                        </div>
-                    </div>
-
-                    {/* Messages */}
-                    <div
-                        className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30"
-                    >
-                        {activeConversation.messages.map((msg) => (
-                            <div
-                                key={msg.id}
-                                className={`flex ${msg.direction === 'SENT' ? 'justify-end' : 'justify-start'}`}
-                            >
-                                <div className={`max-w-[70%] group flex flex-col ${msg.direction === 'SENT' ? 'items-end' : 'items-start'}`}>
-                                    <div
-                                        className={`px-5 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${msg.direction === 'SENT'
-                                            ? 'bg-blue-600 text-white rounded-tr-none'
-                                            : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
-                                            }`}
-                                    >
-                                        {msg.text}
+                    {activeConversation ? (
+                        <>
+                            {/* Header */}
+                            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+                                        {activeConversation.initials}
                                     </div>
-                                    <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <ClockIcon className="w-3 h-3 text-gray-400" />
-                                        <span className="text-[10px] font-medium text-gray-400">{msg.timestamp}</span>
+                                    <div>
+                                        <h2 className="text-base font-bold text-gray-900">{activeConversation.senderName}</h2>
+                                        <p className="text-xs font-medium text-gray-500">{activeConversation.role}</p>
                                     </div>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                    <span className="text-xs font-medium text-gray-400">Online</span>
+                                </div>
                             </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
 
-                    {/* Input */}
-                    <div className="p-4 border-t border-gray-100">
-                        <form
-                            onSubmit={handleSendMessage}
-                            className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 transition-all"
-                        >
-                            <input
-                                value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
-                                placeholder="Type your message here..."
-                                className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-4 placeholder:text-gray-400 text-gray-700 font-medium"
-                            />
-                            <button
-                                type="submit"
-                                className="p-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
-                                disabled={!inputText.trim()}
+                            {/* Messages */}
+                            <div
+                                className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30"
                             >
-                                <PaperAirplaneIcon className="w-5 h-5 -rotate-45 -translate-y-0.5 translate-x-0.5" />
-                            </button>
-                        </form>
-                    </div>
-                   </>
-                  ) : (
-                    /* Empty state — no conversation selected */
-                    <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ background: '#EBF5FF' }}>
-                            <ChatBubbleLeftRightIcon className="w-9 h-9" style={{ color: '#38BDF8' }} />
+                                {activeConversation.messages.map((msg) => (
+                                    <div
+                                        key={msg.id}
+                                        className={`flex ${msg.direction === 'SENT' ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div className={`max-w-[70%] group flex flex-col ${msg.direction === 'SENT' ? 'items-end' : 'items-start'}`}>
+                                            <div
+                                                className={`px-5 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${msg.direction === 'SENT'
+                                                    ? 'bg-blue-600 text-white rounded-tr-none'
+                                                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                                    }`}
+                                            >
+                                                {msg.text}
+                                            </div>
+                                            <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <ClockIcon className="w-3 h-3 text-gray-400" />
+                                                <span className="text-[10px] font-medium text-gray-400">{msg.timestamp}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input */}
+                            <div className="p-4 border-t border-gray-100">
+                                <form
+                                    onSubmit={handleSendMessage}
+                                    className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 transition-all"
+                                >
+                                    <input
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        placeholder="Type your message here..."
+                                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-4 placeholder:text-gray-400 text-gray-700 font-medium"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="p-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
+                                        disabled={!inputText.trim()}
+                                    >
+                                        <PaperAirplaneIcon className="w-5 h-5 -rotate-45 -translate-y-0.5 translate-x-0.5" />
+                                    </button>
+                                </form>
+                            </div>
+                        </>
+                    ) : (
+                        /* Empty state — no conversation selected */
+                        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+                            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ background: '#EBF5FF' }}>
+                                <ChatBubbleLeftRightIcon className="w-9 h-9" style={{ color: '#38BDF8' }} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">Your Messages</h3>
+                            <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
+                                Select a patient or pharmacy thread from the list on the left to view the message history and start chatting.
+                            </p>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900">Your Messages</h3>
-                        <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
-                            Select a patient or pharmacy thread from the list on the left to view the message history and start chatting.
-                        </p>
-                    </div>
-                  )}
+                    )}
                 </div>
             </div>
         </div>
