@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MagnifyingGlassIcon,
   UserGroupIcon,
@@ -24,6 +25,7 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
 };
 
 export default function HospitalDoctorPatientsPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
@@ -50,7 +52,7 @@ export default function HospitalDoctorPatientsPage() {
         setError(null);
       } catch (err) {
         console.error('Failed to fetch patients:', err);
-        setError('Failed to load patients for this doctor.');
+        setError(t('hospital.failedLoadPatients'));
       } finally {
         setLoading(false);
       }
@@ -93,18 +95,18 @@ export default function HospitalDoctorPatientsPage() {
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>Patients</h1>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.patientsTitle')}</h1>
         <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>
-          Manage and review assigned patients
+          {t('hospital.patientsSubtitle')}
         </p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Patients"  value={total}       icon={<UserGroupIcon className="w-6 h-6" />} color="blue"   trend="+12% from last week"  />
-        <StatCard label="Active Cases"    value={activeCount} icon={<ActiveCasesIcon />}                   color="green"  trend="+12% from last month" />
-        <StatCard label="New Patients"    value={newCount}    icon={<UserPlusIcon className="w-6 h-6" />}  color="orange" trend="+5% from last week"   />
-        <StatCard label="Follow Ups Due"  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend="-12% from last week" />
+        <StatCard label={t('hospital.totalPatients')}  value={total}       icon={<UserGroupIcon className="w-6 h-6" />} color="blue"   trend={t('hospital.patientsTrendWeekUp')}  />
+        <StatCard label={t('hospital.activeCases')}    value={activeCount} icon={<ActiveCasesIcon />}                   color="green"  trend={t('hospital.patientsTrendMonthUp')} />
+        <StatCard label={t('hospital.newPatients')}    value={newCount}    icon={<UserPlusIcon className="w-6 h-6" />}  color="orange" trend={t('hospital.patientsTrendNewUp')}   />
+        <StatCard label={t('hospital.followUpsDue')}  value={followUps}   icon={<CalendarDaysIcon className="w-6 h-6" />} color="purple" trend={t('hospital.patientsTrendFollowDown')} />
       </div>
 
       {/* Filter bar — standalone card */}
@@ -113,7 +115,7 @@ export default function HospitalDoctorPatientsPage() {
           <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search name by ID,..."
+            placeholder={t('hospital.searchByIdShort')}
             value={search}
             onChange={e => applyFilter(() => setSearch(e.target.value))}
             className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -125,10 +127,10 @@ export default function HospitalDoctorPatientsPage() {
           onChange={e => applyFilter(() => setStatus(e.target.value as PatientStatus | 'ALL'))}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
-          <option value="ALL">All Status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="CRITICAL">Critical</option>
-          <option value="INACTIVE">Inactive</option>
+          <option value="ALL">{t('hospital.allStatus')}</option>
+          <option value="ACTIVE">{t('hospital.active')}</option>
+          <option value="CRITICAL">{t('hospital.critical')}</option>
+          <option value="INACTIVE">{t('hospital.inactive')}</option>
         </select>
 
         <select
@@ -137,7 +139,7 @@ export default function HospitalDoctorPatientsPage() {
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           {conditions.map(c => (
-            <option key={c} value={c}>{c === 'ALL' ? 'All Conditions' : c}</option>
+            <option key={c} value={c}>{c === 'ALL' ? t('hospital.allConditions') : c}</option>
           ))}
         </select>
 
@@ -146,15 +148,15 @@ export default function HospitalDoctorPatientsPage() {
           onChange={e => applyFilter(() => setLastVisit(e.target.value))}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
-          <option value="ALL">Last Visit</option>
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
+          <option value="ALL">{t('hospital.lastVisitFilter')}</option>
+          <option value="7">{t('hospital.last7Days')}</option>
+          <option value="30">{t('hospital.last30Days')}</option>
+          <option value="90">{t('hospital.last90Days')}</option>
         </select>
 
         <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
           <FunnelIcon className="w-4 h-4" />
-          Filter
+          {t('common.filter')}
         </button>
       </div>
 
@@ -165,7 +167,7 @@ export default function HospitalDoctorPatientsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Patient', 'Patient ID', 'Age', 'Gender', 'Last visit', 'Condition', 'Status', ''].map((h, i) => (
+                {[t('hospital.thPatient'), t('hospital.thPatientId'), t('hospital.thAge'), t('hospital.thGender'), t('hospital.thLastVisit'), t('hospital.thCondition'), t('hospital.status'), ''].map((h, i) => (
                   <th key={i} className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {h}
                   </th>
@@ -190,8 +192,8 @@ export default function HospitalDoctorPatientsPage() {
               ) : pageItems.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-16 text-center">
-                    <p className="text-gray-500 font-medium">No patients assigned / found</p>
-                    <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
+                    <p className="text-gray-500 font-medium">{t('hospital.noPatientsAssigned')}</p>
+                    <p className="text-gray-400 text-sm mt-1">{t('hospital.adjustSearchFilters')}</p>
                   </td>
                 </tr>
               ) : (
@@ -205,7 +207,7 @@ export default function HospitalDoctorPatientsPage() {
                     <td className="px-6 py-4 text-sm text-gray-600 uppercase">{p.condition}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>
-                        {p.status}
+                        {t(`hospital.${p.status.toLowerCase()}`)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -224,7 +226,7 @@ export default function HospitalDoctorPatientsPage() {
         {filtered.length > 0 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 text-sm text-gray-500">
             <span>
-              Showing {Math.min((safePage - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length} patients
+              {t('hospital.showingRange', { from: Math.min((safePage - 1) * PAGE_SIZE + 1, filtered.length), to: Math.min(safePage * PAGE_SIZE, filtered.length), total: filtered.length })}
             </span>
             <div className="flex items-center gap-1">
               {/* Prev */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search, Check, ChevronLeft, ChevronRight,
   CalendarPlus, UserPlus, ClipboardCheck, Megaphone,
@@ -24,6 +25,7 @@ const iconConfig: Record<ReceptionistNotificationType, { Icon: typeof CalendarPl
 };
 
 export default function ReceptionistNotificationsPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<ReceptionistNotification[]>(MOCK_RECEPTIONIST_NOTIFICATIONS);
   const [tab, setTab] = useState<Tab>('all');
   const [query, setQuery] = useState('');
@@ -46,10 +48,10 @@ export default function ReceptionistNotificationsPage() {
     });
   }, [items, tab, query]);
 
-  const tabs: { key: Tab; label: string; badge?: number }[] = [
-    { key: 'all',    label: 'All' },
-    { key: 'unread', label: 'Unread', badge: unreadCount },
-    { key: 'read',   label: 'Read' },
+  const tabs: { key: Tab; labelKey: string; badge?: number }[] = [
+    { key: 'all',    labelKey: 'common.all' },
+    { key: 'unread', labelKey: 'common.unread', badge: unreadCount },
+    { key: 'read',   labelKey: 'common.read' },
   ];
 
   return (
@@ -57,8 +59,8 @@ export default function ReceptionistNotificationsPage() {
 
       {/* ── Hero header ── */}
       <div className="rounded-2xl px-6 sm:px-10 py-7" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: NAVY }}>Notifications</h1>
-        <p className="mt-2 text-sm sm:text-base" style={{ color: TEAL }}>View recent updates.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: NAVY }}>{t('common.notifications')}</h1>
+        <p className="mt-2 text-sm sm:text-base" style={{ color: TEAL }}>{t('hospital.notificationsViewSubtitle')}</p>
       </div>
 
       {/* ── Search ── */}
@@ -68,7 +70,7 @@ export default function ReceptionistNotificationsPage() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search notifications......"
+          placeholder={t('hospital.searchNotifications')}
           className="w-full bg-white border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm text-gray-700 outline-none focus:ring-2 transition-all"
           style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
         />
@@ -80,25 +82,25 @@ export default function ReceptionistNotificationsPage() {
         {/* Tabs + mark all */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-2">
           <div className="flex items-center gap-5">
-            {tabs.map((t) => (
+            {tabs.map((tabItem) => (
               <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
+                key={tabItem.key}
+                onClick={() => setTab(tabItem.key)}
                 className={`relative flex items-center gap-1.5 pb-2 text-sm font-semibold transition-colors ${
-                  tab === t.key ? '' : 'text-gray-500 hover:text-gray-700'
+                  tab === tabItem.key ? '' : 'text-gray-500 hover:text-gray-700'
                 }`}
-                style={tab === t.key ? { color: '#2563EB' } : {}}
+                style={tab === tabItem.key ? { color: '#2563EB' } : {}}
               >
-                {t.label}
-                {t.badge ? (
+                {t(tabItem.labelKey)}
+                {tabItem.badge ? (
                   <span
                     className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[11px] font-bold text-white"
                     style={{ backgroundColor: '#2563EB' }}
                   >
-                    {t.badge}
+                    {tabItem.badge}
                   </span>
                 ) : null}
-                {tab === t.key && (
+                {tab === tabItem.key && (
                   <span className="absolute left-0 -bottom-[13px] h-0.5 w-full rounded-full" style={{ backgroundColor: '#2563EB' }} />
                 )}
               </button>
@@ -111,13 +113,13 @@ export default function ReceptionistNotificationsPage() {
             style={{ color: '#2563EB' }}
           >
             <Check size={15} />
-            <span className="hidden sm:inline">Mark all as read</span>
+            <span className="hidden sm:inline">{t('common.markAllRead')}</span>
           </button>
         </div>
 
         {/* Items */}
         {filtered.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-12">No notifications found.</p>
+          <p className="text-center text-gray-400 text-sm py-12">{t('hospital.noNotificationsFound')}</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {filtered.map((n) => {

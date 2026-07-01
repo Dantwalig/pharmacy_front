@@ -41,6 +41,8 @@ export default function HospitalReceptionistLeaveRequestPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const statusLabel = (s: LeaveRequest['status']) => t(`hospital.${s.toLowerCase()}`);
+
   // Simple helpers
   const statusBadge = (status: LeaveRequest['status']) => {
     switch (status) {
@@ -75,16 +77,16 @@ export default function HospitalReceptionistLeaveRequestPage() {
   const submitLeaveRequest = () => {
   
     if (!leaveType) {
-      alert('Please select a leave type.');
+      alert(t('hospital.alertSelectLeaveType'));
       return;
     }
     if (!startDate || !endDate) {
-      alert('Please select start and end dates.');
+      alert(t('hospital.alertSelectDates'));
       return;
     }
     const duration = calcDurationDays(startDate, endDate);
     if (duration <= 0) {
-      alert('End date must be the same or after start date.');
+      alert(t('hospital.alertEndDate'));
       return;
     }
 
@@ -120,12 +122,12 @@ export default function HospitalReceptionistLeaveRequestPage() {
 
   const viewRequest = (req: LeaveRequest) => {
 
-    alert(`${req.id}\n${req.leaveType}\n${formatDate(req.startDate)} to ${formatDate(req.endDate)} (${req.durationDays} days)\nStatus: ${req.status}`);
+    alert(`${req.id}\n${req.leaveType}\n${formatDate(req.startDate)} to ${formatDate(req.endDate)} (${req.durationDays} ${t('hospital.daysWord')})\n${t('hospital.statusColon')}: ${statusLabel(req.status)}`);
   };
 
   const cancelRequest = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to cancel this request?')) return;
+    if (!confirm(t('hospital.confirmCancelRequest'))) return;
     setHistory((prev) => prev.map((h) => (h.id === id ? { ...h, status: 'REJECTED' } : h)));
   };
 
@@ -147,39 +149,39 @@ export default function HospitalReceptionistLeaveRequestPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-              <p className="text-xs uppercase text-gray-400">Annual Leave</p>
+              <p className="text-xs uppercase text-gray-400">{t('hospital.annualLeave')}</p>
               <div className="mt-3">
-                <div className="text-2xl font-extrabold text-sky-600">{annualBalance} Days</div>
-                <p className="text-xs text-gray-400 mt-1">Remaining Balance</p>
+                <div className="text-2xl font-extrabold text-sky-600">{annualBalance} {t('hospital.daysWord')}</div>
+                <p className="text-xs text-gray-400 mt-1">{t('hospital.remainingBalance')}</p>
               </div>
             </div>
             <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-              <p className="text-xs uppercase text-gray-400">Sick Leave</p>
+              <p className="text-xs uppercase text-gray-400">{t('hospital.sickLeave')}</p>
               <div className="mt-3">
-                <div className="text-2xl font-extrabold text-amber-600">{sickBalance} Days</div>
-                <p className="text-xs text-gray-400 mt-1">Remaining Balance</p>
+                <div className="text-2xl font-extrabold text-amber-600">{sickBalance} {t('hospital.daysWord')}</div>
+                <p className="text-xs text-gray-400 mt-1">{t('hospital.remainingBalance')}</p>
               </div>
             </div>
           </div>
 
           <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold mb-3">Submit Leave Request</h3>
+            <h3 className="text-lg font-semibold mb-3">{t('hospital.submitLeaveRequest')}</h3>
 
-            <label className="block text-xs font-medium text-gray-600">Leave Type *</label>
+            <label className="block text-xs font-medium text-gray-600">{t('hospital.leaveTypeRequired')}</label>
             <select
               value={leaveType}
               onChange={(e) => setLeaveType(e.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white"
-              aria-label="Leave Type" >
-              <option value="">Select Leave Type...</option>
-              <option value="Annual Leave">Annual Leave</option>
-              <option value="Sick Leave">Sick Leave</option>
-              <option value="Unpaid Leave">Unpaid Leave</option>
+              aria-label={t('hospital.thLeaveType')} >
+              <option value="">{t('hospital.selectLeaveType')}</option>
+              <option value="Annual Leave">{t('hospital.annualLeave')}</option>
+              <option value="Sick Leave">{t('hospital.sickLeave')}</option>
+              <option value="Unpaid Leave">{t('hospital.unpaidLeave')}</option>
             </select>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600">Start Date *</label>
+                <label className="block text-xs font-medium text-gray-600">{t('hospital.startDateRequired')}</label>
                 <input
                   type="date"
                   value={startDate}
@@ -188,7 +190,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600">End Date *</label>
+                <label className="block text-xs font-medium text-gray-600">{t('hospital.endDateRequired')}</label>
                 <input
                   type="date"
                   value={endDate}
@@ -199,25 +201,25 @@ export default function HospitalReceptionistLeaveRequestPage() {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-medium text-gray-600">Reason for Request *</label>
+              <label className="block text-xs font-medium text-gray-600">{t('hospital.reasonRequired')}</label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Provide details regarding your request..."
+                placeholder={t('hospital.reasonPlaceholder')}
                 rows={4}
                 className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white resize-none"
               />
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-medium text-gray-600">Supporting Documents</label>
+              <label className="block text-xs font-medium text-gray-600">{t('hospital.supportingDocuments')}</label>
               <div className="mt-2">
                 <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 px-4 py-3 text-sm text-gray-500 cursor-pointer hover:bg-gray-50">
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  <span>Click to Upload File (PDF, DOC, Images)</span>
+                  <span>{t('hospital.uploadFileHint')}</span>
                   <input ref={fileInputRef} onChange={onFileChange} type="file" className="hidden" />
                 </label>
-                <p className="mt-2 text-xs text-gray-400">{fileName ?? 'No file selected'}</p>
+                <p className="mt-2 text-xs text-gray-400">{fileName ?? t('hospital.noFileSelected')}</p>
               </div>
             </div>
 
@@ -226,7 +228,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
                 onClick={submitLeaveRequest}
                 className="w-full rounded-lg bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 text-sm font-semibold"
               >
-                Submit Leave Request
+                {t('hospital.submitLeaveRequest')}
               </button>
             </div>
           </div>
@@ -235,17 +237,17 @@ export default function HospitalReceptionistLeaveRequestPage() {
         {/* Right column */}
         <div className="lg:col-span-8">
           <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold mb-4">Request History</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('hospital.requestHistory')}</h3>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 text-xs uppercase text-gray-400 font-semibold tracking-wide">
-                    <th className="py-3 px-4">Request Date</th>
-                    <th className="py-3 px-4">Leave Type</th>
-                    <th className="py-3 px-4">Duration</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4">{t('hospital.thRequestDate')}</th>
+                    <th className="py-3 px-4">{t('hospital.thLeaveType')}</th>
+                    <th className="py-3 px-4">{t('hospital.thDuration')}</th>
+                    <th className="py-3 px-4">{t('hospital.status')}</th>
+                    <th className="py-3 px-4 text-right">{t('hospital.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
@@ -254,11 +256,11 @@ export default function HospitalReceptionistLeaveRequestPage() {
                       <td className="py-3 px-4 font-medium">{formatDate(r.requestDate)}</td>
                       <td className="py-3 px-4">{r.leaveType}</td>
                       <td className="py-3 px-4">
-                        <div className="font-semibold">{r.durationDays} Days</div>
+                        <div className="font-semibold">{r.durationDays} {t('hospital.daysWord')}</div>
                         <div className="text-xs text-gray-400">{formatDate(r.startDate)} to {formatDate(r.endDate)}</div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={statusBadge(r.status)}>{r.status}</span>
+                        <span className={statusBadge(r.status)}>{statusLabel(r.status)}</span>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="inline-flex items-center gap-2 justify-end">
@@ -266,7 +268,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
                             onClick={() => viewRequest(r)}
                             className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                           >
-                            View
+                            {t('common.view')}
                           </button>
 
                           {r.status === 'PENDING' && (
@@ -274,7 +276,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
                               onClick={(e) => cancelRequest(e, r.id)}
                               className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           )}
                         </div>
@@ -285,7 +287,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
               </table>
 
               {history.length === 0 && (
-                <div className="p-6 text-center text-sm text-gray-400">No requests yet.</div>
+                <div className="p-6 text-center text-sm text-gray-400">{t('hospital.noRequests')}</div>
               )}
             </div>
           </div>

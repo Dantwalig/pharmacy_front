@@ -86,7 +86,7 @@ export default function AppointmentDetailsStubPage() {
             {t('hospital.detailCardHeader', 'Appointment Profile Reference')}
           </span>
           <h1 className="text-2xl font-extrabold text-gray-900 mt-2">{t('hospital.appointmentDetailsTitle', 'Appointment Details')}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">ID Ref: {params.id}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t('hospital.idRef', 'ID Ref')}: {params.id}</p>
         </div>
 
         <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
@@ -96,11 +96,11 @@ export default function AppointmentDetailsStubPage() {
           </div>
           <div className="flex justify-between py-1 border-b border-gray-50">
             <span className="text-gray-500">{t('hospital.lblCondition', 'Condition / Specialty')}:</span>
-            <span className="text-gray-800">{appointment.reason || appointment.specialization || 'N/A'}</span>
+            <span className="text-gray-800">{appointment?.reason || appointment?.specialization || t('hospital.notAvailableShort', 'N/A')}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-gray-50">
             <span className="text-gray-500">{t('hospital.lblType', 'Interaction Type')}:</span>
-            <span className="text-gray-800 capitalize">{appointment.type?.toLowerCase() || 'In-Person'}</span>
+            <span className="text-gray-800 capitalize">{appointment?.type?.toLowerCase() || t('hospital.inPerson', 'In-Person')}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-gray-50">
             <span className="text-gray-500">{t('hospital.lblStatus', 'Current Status Mapping')}:</span>

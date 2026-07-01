@@ -152,13 +152,13 @@ export default function DoctorSchedulePage() {
     <div className="max-w-7xl mx-auto p-4 lg:p-8 space-y-6">
 
       {/* Hero */}
-      <div className="relative rounded-3xl overflow-hidden px-8 py-12 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-sm">
+      <div className="relative rounded-3xl overflow-hidden px-8 py-12 bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-sm">
         <div className="relative z-10">
           <h1 className="text-4xl font-extrabold text-blue-900 tracking-tight">
-            {t('hospital.schedule') || 'Doctor Schedule & Calendar'}
+            {t('hospital.scheduleTitle')}
           </h1>
           <p className="text-blue-600/80 mt-2 text-lg font-medium">
-            Organize, view, and reserve time slots for examinations, surgeries, and clinics.
+            {t('hospital.scheduleSubtitle')}
           </p>
         </div>
         <div className="absolute top-1/2 -right-8 -translate-y-1/2 opacity-10">
@@ -169,9 +169,9 @@ export default function DoctorSchedulePage() {
       {/* Error banner */}
       {error && (
         <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700 flex items-center gap-3">
-          <span className="font-semibold">Failed to load schedule:</span> {error}
+          <span className="font-semibold">{t('hospital.failedLoadSchedule')}:</span> {error}
           <button onClick={fetchSchedule} className="ml-auto underline text-red-600 hover:text-red-800 text-xs font-semibold">
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       )}
@@ -183,13 +183,13 @@ export default function DoctorSchedulePage() {
             onClick={() => setViewMode('WEEK')}
             className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-800'}`}
           >
-            Weekly Overview
+            {t('hospital.weeklyOverview')}
           </button>
           <button
             onClick={() => setViewMode('MONTH')}
             className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-800'}`}
           >
-            Monthly View
+            {t('hospital.monthlyView')}
           </button>
         </div>
 
@@ -209,7 +209,7 @@ export default function DoctorSchedulePage() {
           </div>
           <button className="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all">
             <PlusIcon className="w-4 h-4" />
-            Reserve Time Slot
+            {t('hospital.reserveTimeSlot')}
           </button>
         </div>
       </div>
@@ -239,7 +239,7 @@ export default function DoctorSchedulePage() {
                       : (
                         <div className="flex flex-col items-center justify-center h-full opacity-20 py-10">
                           <CalendarIcon className="w-8 h-8 mb-2" />
-                          <p className="text-xs font-medium">No shifts</p>
+                          <p className="text-xs font-medium">{t('hospital.noShiftsScheduled')}</p>
                         </div>
                       )}
                   </div>
@@ -277,7 +277,7 @@ export default function DoctorSchedulePage() {
                       <div className="mt-2 space-y-1">
                         <div className="flex items-center gap-1 bg-blue-600 text-white rounded-md px-2 py-1 shadow-sm">
                           <span className="text-[10px] font-bold">{dayEntries.length}</span>
-                          <span className="text-[10px] font-medium">Shifts</span>
+                          <span className="text-[10px] font-medium">{t('hospital.shifts')}</span>
                         </div>
                         <div className="flex -space-x-1.5 overflow-hidden">
                           {dayEntries.slice(0, 3).map((e) => (
