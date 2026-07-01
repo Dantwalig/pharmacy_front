@@ -38,6 +38,7 @@ export default function HospitalAdminDepartmentsPage() {
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [employees, setEmployees]       = useState<Employee[]>([]);
   const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(false);
 
   useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
@@ -74,7 +75,7 @@ export default function HospitalAdminDepartmentsPage() {
         }));
         if (derived.length) setServiceGroups(derived);
       })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [hospitalId]);
 
@@ -99,7 +100,11 @@ export default function HospitalAdminDepartmentsPage() {
               Access and manage doctors, nurses and hospital staff in one place.
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
+          <button
+            disabled
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white opacity-50 cursor-not-allowed"
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
+          >
             <Stethoscope size={15} />
             Select Department
           </button>
@@ -108,6 +113,12 @@ export default function HospitalAdminDepartmentsPage() {
           <GitFork size={72} className="rotate-180" />
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
+          Could not load department data — check your connection and refresh.
+        </div>
+      )}
 
       {/* Service group cards */}
       {loading ? (

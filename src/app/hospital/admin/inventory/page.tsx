@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Hexagon, AlertTriangle, ClipboardList, Search } from 'lucide-react';
 import { useHospitalId } from '@/lib/hospital';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 type Category = 'Drug' | 'Supply' | 'Equipment';
 type Stock = 'IN_STOCK' | 'LOW_STOCK';
@@ -106,12 +107,16 @@ export default function HospitalAdminInventoryPage() {
       ));
       setEditingId(null);
     } catch {
-      // silently fail — toast can be added later
+      toast.error('Failed to update stock — please try again.');
     }
     setSaving(false);
   };
 
-  const filtered = items.filter(i => {
+  const modeFiltered = activeMode === 'alerts'
+    ? items.filter(i => i.alert !== null)
+    : items;
+
+  const filtered = modeFiltered.filter(i => {
     if (tab !== 'ALL' && i.category !== tab) return false;
     if (search.trim() && !i.name.toLowerCase().includes(search.trim().toLowerCase())) return false;
     return true;
@@ -145,7 +150,14 @@ export default function HospitalAdminInventoryPage() {
         })}
       </div>
 
+      {activeMode === 'procurement' && (
+        <div className="flex items-center justify-center py-16 text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          Procurement log is not yet available — no backend endpoint exists for this feature.
+        </div>
+      )}
+
       {/* Tabs + search */}
+      {activeMode !== 'procurement' && (
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {TABS.map(tb => (
@@ -171,9 +183,10 @@ export default function HospitalAdminInventoryPage() {
           />
         </div>
       </div>
+      )}
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {activeMode !== 'procurement' && <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
@@ -254,7 +267,7 @@ export default function HospitalAdminInventoryPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

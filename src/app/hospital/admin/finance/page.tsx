@@ -21,9 +21,10 @@ export default function HospitalAdminFinancePage() {
   const hospitalId = useHospitalId();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(false);
 
   useEffect(() => {
-    if (!hospitalId) return;
+    if (!hospitalId) { setLoading(false); return; }
     api.get(`/hospitals/${hospitalId}/invoices?limit=100`)
       .then(res => {
         const raw: any[] = res.data?.data ?? [];
@@ -36,19 +37,19 @@ export default function HospitalAdminFinancePage() {
           createdAt: item.issuedAt,
         })));
       })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [hospitalId]);
 
-  const totalRevenue   = invoices.reduce((s, i) => s + i.totalAmount, 0);
-  const unpaid         = invoices.filter(i => i.status === 'UNPAID');
+  const totalRevenue     = invoices.reduce((s, i) => s + i.totalAmount, 0);
+  const unpaid           = invoices.filter(i => i.status === 'UNPAID');
   const insurancePending = invoices.filter(i => i.status === 'INSURANCE_PENDING');
 
   const FINANCE_KPIS = [
-    { label: 'Total Revenues',   value: loading ? '—' : (invoices.length ? `RWF ${totalRevenue.toLocaleString()}` : '—'),                                             sub: loading ? '—' : (invoices.length ? `${invoices.length} invoices total` : '—'),    trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
-    { label: 'Pending Payments', value: loading ? '—' : (invoices.length ? `RWF ${unpaid.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'),           sub: loading ? '—' : (invoices.length ? `${unpaid.length} Invoices` : '—'),             trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
-    { label: 'Overdue Payments', value: loading ? '—' : (invoices.length ? `RWF ${insurancePending.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'), sub: loading ? '—' : (invoices.length ? `${insurancePending.length} Invoices` : '—'),    trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-    { label: 'Refunds',          value: '—',                                                                                                                   sub: '—',                                                                               trend: false, icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
+    { label: 'Total Revenues',     value: loading ? '—' : (invoices.length ? `RWF ${totalRevenue.toLocaleString()}` : '—'),                                               sub: loading ? '—' : (invoices.length ? `${invoices.length} invoices total` : '—'),       trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
+    { label: 'Pending Payments',   value: loading ? '—' : (invoices.length ? `RWF ${unpaid.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'),             sub: loading ? '—' : (invoices.length ? `${unpaid.length} Invoices` : '—'),                trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
+    { label: 'Insurance Pending',  value: loading ? '—' : (invoices.length ? `RWF ${insurancePending.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'),   sub: loading ? '—' : (invoices.length ? `${insurancePending.length} Invoices` : '—'),     trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+    { label: 'Refunds',            value: '—',                                                                                                                     sub: '—',                                                                                 trend: false, icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
   ];
 
   return (
@@ -72,6 +73,12 @@ export default function HospitalAdminFinancePage() {
           <polyline points="8,30 34,14 60,22 86,6 112,18" stroke="#2D9B8A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         </svg>
       </div>
+
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
+          Could not load finance data — check your connection and refresh.
+        </div>
+      )}
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

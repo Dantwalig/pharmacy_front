@@ -25,10 +25,14 @@ export default function HospitalAdminDashboardPage() {
 
   const firstName = userName.split(' ')[0];
 
-  const [apiStats, setApiStats]       = useState<DashboardStats | null>(null);
-  const [chartData, setChartData]     = useState<{ label: string; value: number }[]>([]);
+  const [apiStats, setApiStats]           = useState<DashboardStats | null>(null);
+  const [spendData, setSpendData]         = useState<{ label: string; value: number }[]>([]);
+  const [volumeData, setVolumeData]       = useState<{ label: string; value: number }[]>([]);
+  const [chartMode, setChartMode]         = useState<'spend' | 'volume'>('spend');
   const [lowStockCount, setLowStockCount] = useState<number | null>(null);
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading]             = useState(true);
+
+  const chartData = chartMode === 'spend' ? spendData : volumeData;
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -40,9 +44,10 @@ export default function HospitalAdminDashboardPage() {
   useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
     (async () => {
-      const [statsRes, revenueRes, stockRes] = await Promise.allSettled([
+      const [statsRes, revenueRes, appointmentsRes, stockRes] = await Promise.allSettled([
         api.get(`/hospitals/${hospitalId}/dashboard/stats`),
         api.get(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
+        api.get(`/hospitals/${hospitalId}/dashboard/daily-appointments`),
         api.get(`/hospitals/${hospitalId}/drug-stock`),
       ]);
       if (statsRes.status === 'fulfilled')
@@ -51,7 +56,13 @@ export default function HospitalAdminDashboardPage() {
         const rows: { label: string; revenue: number }[] = Array.isArray(revenueRes.value.data)
           ? revenueRes.value.data
           : [];
-        setChartData(rows.map(r => ({ label: r.label, value: r.revenue })));
+        setSpendData(rows.map(r => ({ label: r.label, value: r.revenue })));
+      }
+      if (appointmentsRes.status === 'fulfilled') {
+        const rows: { label: string; count: number }[] = Array.isArray(appointmentsRes.value.data)
+          ? appointmentsRes.value.data
+          : [];
+        setVolumeData(rows.map(r => ({ label: r.label, value: r.count })));
       }
       if (stockRes.status === 'fulfilled') {
         const items = Array.isArray(stockRes.value.data) ? stockRes.value.data : [];
@@ -184,26 +195,42 @@ export default function HospitalAdminDashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-slate-900">{t('hospital.monthlyLogistics')}</h2>
             </div>
-            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1" aria-label='Show spend chart'>
-              <button className="rounded-full px-4 py-2 text-sm font-semibold text-white bg-brand-navy shadow-sm transition hover:bg-brand-navy/5">
+            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1">
+              <button
+                onClick={() => setChartMode('spend')}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${chartMode === 'spend' ? 'text-white bg-brand-navy shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+              >
                 {t('hospital.spend')}
               </button>
-              <button className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200">
+              <button
+                onClick={() => setChartMode('volume')}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${chartMode === 'volume' ? 'text-white bg-brand-navy shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+              >
                 {t('hospital.volume')}
               </button>
             </div>
           </div>
 
           <div className="h-[300px]">
-            {!loading && chartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-sm text-gray-400">No revenue data available</div>
+            {loading ? (
+              <div className="h-full rounded-xl bg-gray-100 animate-pulse" />
+            ) : chartData.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-sm text-gray-400">
+                {chartMode === 'spend' ? 'No revenue data available' : 'No appointment data available'}
+              </div>
             ) : (
               <ResponsiveContainer width="98%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="label" axisLine={false} tickLine={false} />
                   <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip formatter={(v) => [`${(v as number).toLocaleString()} RWF`, 'Revenue']} />
+                  <Tooltip
+                    formatter={(v) =>
+                      chartMode === 'spend'
+                        ? [`${(v as number).toLocaleString()} RWF`, 'Revenue']
+                        : [`${(v as number).toLocaleString()}`, 'Appointments']
+                    }
+                  />
                   <Line type="monotone" dataKey="value" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
