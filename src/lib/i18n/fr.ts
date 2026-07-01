@@ -69,6 +69,9 @@ export const fr = {
     editProfile: 'Modifier le profil',
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
+    unread: 'Non lu',
+    read: 'Lu',
+    markAllRead: 'Tout marquer comme lu',
   },
   verify: {
     title: 'Vérifiez votre email',
@@ -1555,9 +1558,21 @@ export const fr = {
   hospital: {
     doctorPortal: 'Portail Médecin',
     adminPortal: 'Portail Administrateur',
+    nursePortal: 'Portail Infirmier',
+    receptionistPortal: "Portail d'Accueil",
     dashboard: 'Tableau de bord',
     appointments: 'Rendez-vous',
     consultations: 'Consultations',
+    patients: 'Patients',
+    staffManagement: 'Gestion du Personnel',
+    checkingQueue: "File d'Attente",
+    leaveRequest: 'Demande de Congé',
+    profile: 'Profil',
+    vitalsAssessments: 'Constantes & Évaluations',
+    medicationAdministration: 'Administration des Médicaments',
+    nursingNotes: 'Notes Infirmières',
+    inventoryProcurement: 'Inventaire & Approvisionnement',
+    signOut: 'Se Déconnecter',
     refusals: 'Refus',
     schedule: 'Calendrier',
     messages: 'Messages',
@@ -1666,6 +1681,10 @@ export const fr = {
     changePasswordSubtitle: 'Mettez à jour votre mot de passe pour garantir la sécurité du compte.',
 
     // Doctor Dashboard
+    completedConsults: 'Consultations terminées',
+    totalAppointments: 'Total des rendez-vous',
+    notificationsSubtitle: 'Dernières alertes et priorités de l\'hôpital',
+    failedLoadDashboard: 'Échec du chargement du tableau de bord',
     doctorTitlePrefix: 'Dr',
     emergencyCases: "Cas d'urgence",
     medicineStockRate: 'Taux de stock de médicaments',
@@ -1815,6 +1834,8 @@ export const fr = {
     // [FR TODO] best-effort, not verified by a native speaker - Doctor Schedule
     scheduleTitle: 'Calendrier du médecin',
     scheduleSubtitle: 'Organisez, consultez et réservez des créneaux pour les examens, chirurgies et consultations.',
+    failedLoadSchedule: 'Échec du chargement du planning',
+    shifts: 'Plages',
     videoCall: 'Appel vidéo',
     dailySchedule: 'Horaire journalier',
     weeklyOverview: 'Aperçu hebdomadaire',
@@ -1849,6 +1870,21 @@ export const fr = {
     confirm: 'Confirmer',
 
     // Receptionist Appointment List
+    //Receptionist Dashboard
+    welcomeBack: 'Bon retour',
+    receptionistDashboardSubtitle: "Voici ce qui se passe au bureau d'accueil aujourd'hui.",
+    newPatientsThisWeek: 'Nouveaux patients cette semaine',
+    checkInsThisWeek: 'Enregistrements cette semaine',
+    checkInsQueueOverview: "Aperçu des enregistrements et de la file d'attente",
+    tokenNo: 'N° de jeton',
+    manageQueue: "Gérer la file d'attente",
+    todaysAppointments: "Rendez-vous d'aujourd'hui",
+
+    //Receptionist Notifications
+    notificationsViewSubtitle: 'Voir les mises à jour récentes.',
+    searchNotifications: 'Rechercher des notifications...',
+    noNotificationsFound: 'Aucune notification trouvée.',
+
     totalBookings: 'Total des réservations',
     confirmedToday: "Confirmés aujourd'hui",
     checkedIn: 'Enregistré',

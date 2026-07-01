@@ -71,6 +71,9 @@ export const en = {
     orders: 'Orders',
     changePassword: 'Change Password',
     editProfile: 'Edit Profile',
+    unread: 'Unread',
+    read: 'Read',
+    markAllRead: 'Mark all as read',
   },
   verify: {
     title: 'Verify Your Email',
@@ -1560,9 +1563,21 @@ export const en = {
   hospital: {
     doctorPortal: 'Doctor Portal',
     adminPortal: 'Admin Portal',
+    nursePortal: 'Nurse Portal',
+    receptionistPortal: 'Receptionist Portal',
     dashboard: 'Dashboard',
     appointments: 'Appointments',
     consultations: 'Consultations',
+    patients: 'Patients',
+    staffManagement: 'Staff Management',
+    checkingQueue: 'Checking Queue',
+    leaveRequest: 'Leave Request',
+    profile: 'Profile',
+    vitalsAssessments: 'Vitals & Assessments',
+    medicationAdministration: 'Medication Administration',
+    nursingNotes: 'Nursing Notes',
+    inventoryProcurement: 'Inventory & Procurement',
+    signOut: 'Sign Out',
     refusals: 'Refusals',
     schedule: 'Schedule',
     messages: 'Messages',
@@ -1677,6 +1692,10 @@ export const en = {
     changePasswordSubtitle: 'Update your password to ensure account security.',
 
     //Doctor Dashboard (page-level)
+    completedConsults: 'Completed Consults',
+    totalAppointments: 'Total Appointments',
+    notificationsSubtitle: 'Latest hospital alerts and priorities',
+    failedLoadDashboard: 'Failed to load dashboard',
     doctorTitlePrefix: 'Dr.',
     emergencyCases: 'Emergency Cases',
     medicineStockRate: 'Medicine Stock Rate',
@@ -1826,6 +1845,8 @@ export const en = {
     //Doctor Schedule
     scheduleTitle: 'Doctor Schedule & Calendar',
     scheduleSubtitle: 'Organize, view, and reserve time slots for examinations, surgeries, and clinics.',
+    failedLoadSchedule: 'Failed to load schedule',
+    shifts: 'Shifts',
     videoCall: 'Video Call',
     dailySchedule: 'Daily Schedule',
     weeklyOverview: 'Weekly Overview',
@@ -1858,6 +1879,21 @@ export const en = {
     newPassword: 'New Password',
     confirmNewPassword: 'Confirm New Password',
     confirm: 'Confirm',
+
+    //Receptionist Dashboard
+    welcomeBack: 'Welcome Back',
+    receptionistDashboardSubtitle: "Here's what's happening at the front desk today.",
+    newPatientsThisWeek: 'New Patients this week',
+    checkInsThisWeek: 'Check-ins This Week',
+    checkInsQueueOverview: 'Check-ins & Queue overview',
+    tokenNo: 'Token No.',
+    manageQueue: 'Manage Queue',
+    todaysAppointments: "Today's Appointments",
+
+    //Receptionist Notifications
+    notificationsViewSubtitle: 'View recent updates.',
+    searchNotifications: 'Search notifications...',
+    noNotificationsFound: 'No notifications found.',
 
     //Receptionist Appointment List
     totalBookings: 'Total Bookings',
