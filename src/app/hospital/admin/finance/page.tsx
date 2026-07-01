@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BanknotesIcon,
   ClockIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-import RevenueChart from '@/components/hospital/finance/RevenueChart';
+import RevenueChart, {
+  type RevenueChartPeriod,
+  type RevenueDataPoint,
+} from '@/components/hospital/finance/RevenueChart';
 import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdownChart';
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
@@ -19,15 +22,20 @@ import type { Invoice } from '@/types/hospital';
 
 export default function HospitalAdminFinancePage() {
   const hospitalId = useHospitalId();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(false);
+  const [invoices, setInvoices]           = useState<Invoice[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState(false);
+  const [weeklyRevData, setWeeklyRevData] = useState<RevenueDataPoint[]>([]);
+  const [revPeriod, setRevPeriod]         = useState<RevenueChartPeriod>('Weekly');
 
   useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
-    api.get(`/hospitals/${hospitalId}/invoices?limit=100`)
-      .then(res => {
-        const raw: any[] = res.data?.data ?? [];
+    Promise.allSettled([
+      api.get(`/hospitals/${hospitalId}/invoices?limit=100`),
+      api.get(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
+    ]).then(([invoicesRes, weeklyRes]) => {
+      if (invoicesRes.status === 'fulfilled') {
+        const raw: any[] = invoicesRes.value.data?.data ?? [];
         setInvoices(raw.map(item => ({
           id: item.id,
           patientName: `${item.patient?.firstName ?? ''} ${item.patient?.lastName ?? ''}`.trim() || 'Unknown',
@@ -36,10 +44,60 @@ export default function HospitalAdminFinancePage() {
           dueDate: item.issuedAt,
           createdAt: item.issuedAt,
         })));
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      } else {
+        setError(true);
+      }
+      if (weeklyRes.status === 'fulfilled') {
+        const rows: { label: string; revenue: number }[] = Array.isArray(weeklyRes.value.data)
+          ? weeklyRes.value.data
+          : [];
+        setWeeklyRevData(rows.map(r => ({ label: r.label, revenue: r.revenue })));
+      }
+    }).finally(() => setLoading(false));
   }, [hospitalId]);
+
+  const dailyRevData = useMemo<RevenueDataPoint[]>(() => {
+    const today = new Date();
+    const buckets = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (29 - i));
+      return {
+        key: d.toISOString().substring(0, 10),
+        label: d.toLocaleDateString('en', { month: 'short', day: 'numeric' }),
+        revenue: 0,
+      };
+    });
+    const bucketMap = new Map(buckets.map(b => [b.key, b]));
+    invoices.forEach(inv => {
+      if (!inv.dueDate) return;
+      const bucket = bucketMap.get(inv.dueDate.substring(0, 10));
+      if (bucket) bucket.revenue += inv.totalAmount;
+    });
+    return buckets.map(({ label, revenue }) => ({ label, revenue }));
+  }, [invoices]);
+
+  const monthlyRevData = useMemo<RevenueDataPoint[]>(() => {
+    const map = new Map<string, RevenueDataPoint>();
+    invoices.forEach(inv => {
+      if (!inv.dueDate) return;
+      const d = new Date(inv.dueDate);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en', { month: 'short', year: '2-digit' });
+      const existing = map.get(key);
+      if (existing) {
+        existing.revenue += inv.totalAmount;
+      } else {
+        map.set(key, { label, revenue: inv.totalAmount });
+      }
+    });
+    return [...map.values()];
+  }, [invoices]);
+
+  const revData: Record<RevenueChartPeriod, RevenueDataPoint[]> = {
+    Daily:   dailyRevData,
+    Weekly:  weeklyRevData,
+    Monthly: monthlyRevData,
+  };
 
   const totalRevenue     = invoices.reduce((s, i) => s + i.totalAmount, 0);
   const unpaid           = invoices.filter(i => i.status === 'UNPAID');
@@ -104,7 +162,8 @@ export default function HospitalAdminFinancePage() {
       {/* Charts row */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <RevenueChart
-          data={[]}
+          data={revData[revPeriod]}
+          onPeriodChange={setRevPeriod}
           title="Revenue Overview"
           showExpenses={false}
           defaultPeriod="Weekly"
