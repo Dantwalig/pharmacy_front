@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api, unwrapData } from '@/lib/api';
 import { MOCK_DOCTOR } from '@/mock/hospital/user';
 import type { ConsultationStatus, Consultation } from '@/types/hospital';
@@ -11,7 +12,14 @@ const STATUS_BADGE: Record<ConsultationStatus, string> = {
   PENDING: 'bg-amber-50 border border-amber-400 text-amber-600',
 };
 
+const STATUS_KEY: Record<ConsultationStatus, string> = {
+  ACTIVE: 'hospital.active',
+  COMPLETED: 'hospital.completed',
+  PENDING: 'hospital.pending',
+};
+
 export default function HospitalDoctorConsultationsPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selectedId, setSelected] = useState<string | null>(null);
 
@@ -29,7 +37,7 @@ export default function HospitalDoctorConsultationsPage() {
         setError(null);
       } catch (err) {
         console.error('Failed to fetch consultations:', err);
-        setError('Failed to load consultations');
+        setError(t('hospital.failedLoadConsultations'));
       } finally {
         setLoading(false);
       }
@@ -48,10 +56,10 @@ export default function HospitalDoctorConsultationsPage() {
       {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
         <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>
-          Patient Consultations Workflow
+          {t('hospital.patientConsultations')}
         </h1>
         <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>
-          Record medical examinations, patient vitals, diagnosis codes, and treatment instructions.
+          {t('hospital.consultationsSubtitle')}
         </p>
       </div>
 
@@ -61,14 +69,14 @@ export default function HospitalDoctorConsultationsPage() {
         <div className="w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden" style={{ height: 520 }}>
           {/* Title row */}
           <div className="px-5 py-4 border-b border-gray-200 shrink-0">
-            <h2 className="text-base font-bold text-gray-900">Queue for Today</h2>
+            <h2 className="text-base font-bold text-gray-900">{t('hospital.queueForToday')}</h2>
           </div>
 
           {/* Search row */}
           <div className="px-4 py-3 border-b border-gray-200 shrink-0">
             <input
               type="text"
-              placeholder="Search patient queue..."
+              placeholder={t('hospital.searchPatientQueue')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-gray-100 rounded-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -87,7 +95,7 @@ export default function HospitalDoctorConsultationsPage() {
               <p className="text-sm text-red-500 text-center py-8">{error}</p>
             ) : filtered.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">
-                {search ? "No patients found" : "No consultations"}
+                {search ? t('hospital.noPatientsFound') : t('hospital.noConsultations')}
               </p>
             ) : (
               filtered.map(c => (
@@ -105,7 +113,7 @@ export default function HospitalDoctorConsultationsPage() {
                       </p>
                     </div>
                     <span className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[c.status]}`}>
-                      {c.status}
+                      {t(STATUS_KEY[c.status] ?? c.status)}
                     </span>
                   </div>
                 </button>
@@ -128,15 +136,15 @@ export default function HospitalDoctorConsultationsPage() {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <InfoCard label="Consultation Type" value={selected.type} />
-                <InfoCard label="Date" value={selected.date} />
-                <InfoCard label="Diagnosis" value={selected.diagnosis ?? '—'} />
-                <InfoCard label="Duration" value={selected.duration ?? '—'} />
+                <InfoCard label={t('hospital.consultationType')} value={selected.type} />
+                <InfoCard label={t('hospital.date')} value={selected.date} />
+                <InfoCard label={t('hospital.diagnosis')} value={selected.diagnosis ?? '—'} />
+                <InfoCard label={t('hospital.duration')} value={selected.duration ?? '—'} />
                 <InfoCard
-                  label="Status"
+                  label={t('hospital.status')}
                   value={
                     <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-white ${STATUS_BADGE[selected.status]}`}>
-                      {selected.status}
+                      {t(STATUS_KEY[selected.status] ?? selected.status)}
                     </span>
                   }
                 />
@@ -153,9 +161,9 @@ export default function HospitalDoctorConsultationsPage() {
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Begin Consultation</h3>
+              <h3 className="text-xl font-bold text-gray-900">{t('hospital.beginConsultation')}</h3>
               <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
-                Select a patient from the queue on the left to start recording vitals, taking clinical notes, and issuing treatment plans.
+                {t('hospital.beginConsultationHint')}
               </p>
             </div>
           )}
