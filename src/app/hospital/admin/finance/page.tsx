@@ -1,115 +1,50 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import {
   BanknotesIcon,
   ClockIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-import RevenueChart, {
-  type RevenueChartPeriod,
-  type RevenueDataPoint,
-} from '@/components/hospital/finance/RevenueChart';
+import RevenueChart from '@/components/hospital/finance/RevenueChart';
 import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdownChart';
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
 
-import { useHospitalId } from '@/lib/hospital';
-import api from '@/lib/api';
-import type { Invoice } from '@/types/hospital';
+import { MOCK_INVOICES } from '@/mock/hospital/finance';
+import type { PaymentBreakdownItem } from '@/components/hospital/finance/PaymentBreakdownChart';
+import type { RefundItem } from '@/components/hospital/finance/RefundTable';
 
+const REVENUE_CHART_DATA = [
+  { label: 'JAN', revenue: 3_800_000, expenses: 2_200_000 },
+  { label: 'FEB', revenue: 4_500_000, expenses: 2_900_000 },
+  { label: 'MAR', revenue: 3_200_000, expenses: 2_400_000 },
+  { label: 'APR', revenue: 2_900_000, expenses: 2_100_000 },
+  { label: 'MAY', revenue: 4_100_000, expenses: 2_700_000 },
+  { label: 'JUN', revenue: 3_600_000, expenses: 2_500_000 },
+  { label: 'JUL', revenue: 4_800_000, expenses: 3_100_000 },
+];
+
+const PAYMENT_BREAKDOWN: PaymentBreakdownItem[] = [
+  { name: 'Mobile Money', value: 1_530_769, color: '#1E4D8C' },
+  { name: 'Cash',         value: 2_037_670, color: '#93c5fd' },
+];
+
+const REFUNDS: RefundItem[] = [
+  { id: 'RF-008', amount: 1_000,  status: 'APPROVED', date: '2023-05-21' },
+  { id: 'RF-007', amount: 17_000, status: 'REJECTED', date: '2023-05-19' },
+  { id: 'RF-006', amount: 67_090, status: 'PENDING',  date: '2023-05-10' },
+  { id: 'RF-005', amount: 34_100, status: 'REJECTED', date: '2023-05-18' },
+];
+
+const FINANCE_KPIS = [
+  { label: 'Total Revenues',   value: 'RWF 123,456', sub: '+12.5% from last week', trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
+  { label: 'Pending Payments', value: 'RWF 54,321',  sub: '18 Invoices',           trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
+  { label: 'Overdue Payments', value: 'RWF 3,456',   sub: '9 Invoices',            trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: 'Refunds',          value: 'RWF 350,000', sub: '+24% from last week',   trend: true,  icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
+];
 
 export default function HospitalAdminFinancePage() {
-  const hospitalId = useHospitalId();
-  const [invoices, setInvoices]           = useState<Invoice[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState(false);
-  const [weeklyRevData, setWeeklyRevData] = useState<RevenueDataPoint[]>([]);
-  const [revPeriod, setRevPeriod]         = useState<RevenueChartPeriod>('Weekly');
-
-  useEffect(() => {
-    if (!hospitalId) { setLoading(false); return; }
-    Promise.allSettled([
-      api.get(`/hospitals/${hospitalId}/invoices?limit=100`),
-      api.get(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
-    ]).then(([invoicesRes, weeklyRes]) => {
-      if (invoicesRes.status === 'fulfilled') {
-        const raw: any[] = invoicesRes.value.data?.data ?? [];
-        setInvoices(raw.map(item => ({
-          id: item.id,
-          patientName: `${item.patient?.firstName ?? ''} ${item.patient?.lastName ?? ''}`.trim() || 'Unknown',
-          totalAmount: item.totalAmount,
-          status: item.paymentStatus,
-          dueDate: item.issuedAt,
-          createdAt: item.issuedAt,
-        })));
-      } else {
-        setError(true);
-      }
-      if (weeklyRes.status === 'fulfilled') {
-        const rows: { label: string; revenue: number }[] = Array.isArray(weeklyRes.value.data)
-          ? weeklyRes.value.data
-          : [];
-        setWeeklyRevData(rows.map(r => ({ label: r.label, revenue: r.revenue })));
-      }
-    }).finally(() => setLoading(false));
-  }, [hospitalId]);
-
-  const dailyRevData = useMemo<RevenueDataPoint[]>(() => {
-    const today = new Date();
-    const buckets = Array.from({ length: 30 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() - (29 - i));
-      return {
-        key: d.toISOString().substring(0, 10),
-        label: d.toLocaleDateString('en', { month: 'short', day: 'numeric' }),
-        revenue: 0,
-      };
-    });
-    const bucketMap = new Map(buckets.map(b => [b.key, b]));
-    invoices.forEach(inv => {
-      if (!inv.dueDate) return;
-      const bucket = bucketMap.get(inv.dueDate.substring(0, 10));
-      if (bucket) bucket.revenue += inv.totalAmount;
-    });
-    return buckets.map(({ label, revenue }) => ({ label, revenue }));
-  }, [invoices]);
-
-  const monthlyRevData = useMemo<RevenueDataPoint[]>(() => {
-    const map = new Map<string, RevenueDataPoint>();
-    invoices.forEach(inv => {
-      if (!inv.dueDate) return;
-      const d = new Date(inv.dueDate);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('en', { month: 'short', year: '2-digit' });
-      const existing = map.get(key);
-      if (existing) {
-        existing.revenue += inv.totalAmount;
-      } else {
-        map.set(key, { label, revenue: inv.totalAmount });
-      }
-    });
-    return [...map.values()];
-  }, [invoices]);
-
-  const revData: Record<RevenueChartPeriod, RevenueDataPoint[]> = {
-    Daily:   dailyRevData,
-    Weekly:  weeklyRevData,
-    Monthly: monthlyRevData,
-  };
-
-  const totalRevenue     = invoices.reduce((s, i) => s + i.totalAmount, 0);
-  const unpaid           = invoices.filter(i => i.status === 'UNPAID');
-  const insurancePending = invoices.filter(i => i.status === 'INSURANCE_PENDING');
-
-  const FINANCE_KPIS = [
-    { label: 'Total Revenues',     value: loading ? '—' : (invoices.length ? `RWF ${totalRevenue.toLocaleString()}` : '—'),                                               sub: loading ? '—' : (invoices.length ? `${invoices.length} invoices total` : '—'),       trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
-    { label: 'Pending Payments',   value: loading ? '—' : (invoices.length ? `RWF ${unpaid.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'),             sub: loading ? '—' : (invoices.length ? `${unpaid.length} Invoices` : '—'),                trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
-    { label: 'Insurance Pending',  value: loading ? '—' : (invoices.length ? `RWF ${insurancePending.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}` : '—'),   sub: loading ? '—' : (invoices.length ? `${insurancePending.length} Invoices` : '—'),     trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-    { label: 'Refunds',            value: '—',                                                                                                                     sub: '—',                                                                                 trend: false, icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
-  ];
-
   return (
     <div className="space-y-6">
 
@@ -131,12 +66,6 @@ export default function HospitalAdminFinancePage() {
           <polyline points="8,30 34,14 60,22 86,6 112,18" stroke="#2D9B8A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         </svg>
       </div>
-
-      {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
-          Could not load finance data — check your connection and refresh.
-        </div>
-      )}
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -162,15 +91,14 @@ export default function HospitalAdminFinancePage() {
       {/* Charts row */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <RevenueChart
-          data={revData[revPeriod]}
-          onPeriodChange={setRevPeriod}
+          data={REVENUE_CHART_DATA}
           title="Revenue Overview"
           showExpenses={false}
           defaultPeriod="Weekly"
           variant="bar"
         />
         <PaymentBreakdownChart
-          data={[]}
+          data={PAYMENT_BREAKDOWN}
           title="Payment Method Breakdown"
         />
       </div>
@@ -178,11 +106,11 @@ export default function HospitalAdminFinancePage() {
       {/* Invoice table + Refund panel */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <InvoiceTable
-          invoices={invoices}
+          invoices={MOCK_INVOICES}
           onExport={() => console.log('export')}
         />
         <RefundTable
-          refunds={[]}
+          refunds={REFUNDS}
           onViewAll={() => console.log('view all refunds')}
         />
       </div>

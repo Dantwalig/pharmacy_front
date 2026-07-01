@@ -1,39 +1,17 @@
 // src/app/hospital/admin/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useHospitalAdminUser, useHospitalId } from '@/lib/hospital';
+import { useHospitalAdminUser } from '@/lib/hospital';
 import { CalendarIcon, UsersIcon, BanknotesIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import api from '@/lib/api';
-
-interface DashboardStats {
-  totalAppointments: { thisMonth: number; allTime: number };
-  totalRevenue: number;
-  monthlyRevenue: number;
-  totalDoctors: number;
-  activeDoctors: number;
-  totalPatients: number;
-}
 
 export default function HospitalAdminDashboardPage() {
   const { t } = useTranslation();
   const { userName } = useHospitalAdminUser();
-  const hospitalId = useHospitalId();
 
   const firstName = userName.split(' ')[0];
-
-  const [apiStats, setApiStats]           = useState<DashboardStats | null>(null);
-  const [spendData, setSpendData]         = useState<{ label: string; value: number }[]>([]);
-  const [volumeData, setVolumeData]       = useState<{ label: string; value: number }[]>([]);
-  const [chartMode, setChartMode]         = useState<'spend' | 'volume'>('spend');
-  const [lowStockCount, setLowStockCount] = useState<number | null>(null);
-  const [loading, setLoading]             = useState(true);
-
-  const chartData = chartMode === 'spend' ? spendData : volumeData;
-
   const getGreeting = () => {
     const h = new Date().getHours();
     if (h < 12) return t('hospital.goodMorning');
@@ -41,42 +19,11 @@ export default function HospitalAdminDashboardPage() {
     return t('hospital.goodEvening');
   };
 
-  useEffect(() => {
-    if (!hospitalId) { setLoading(false); return; }
-    (async () => {
-      const [statsRes, revenueRes, appointmentsRes, stockRes] = await Promise.allSettled([
-        api.get(`/hospitals/${hospitalId}/dashboard/stats`),
-        api.get(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
-        api.get(`/hospitals/${hospitalId}/dashboard/daily-appointments`),
-        api.get(`/hospitals/${hospitalId}/drug-stock`),
-      ]);
-      if (statsRes.status === 'fulfilled')
-        setApiStats(statsRes.value.data);
-      if (revenueRes.status === 'fulfilled') {
-        const rows: { label: string; revenue: number }[] = Array.isArray(revenueRes.value.data)
-          ? revenueRes.value.data
-          : [];
-        setSpendData(rows.map(r => ({ label: r.label, value: r.revenue })));
-      }
-      if (appointmentsRes.status === 'fulfilled') {
-        const rows: { label: string; count: number }[] = Array.isArray(appointmentsRes.value.data)
-          ? appointmentsRes.value.data
-          : [];
-        setVolumeData(rows.map(r => ({ label: r.label, value: r.count })));
-      }
-      if (stockRes.status === 'fulfilled') {
-        const items = Array.isArray(stockRes.value.data) ? stockRes.value.data : [];
-        setLowStockCount(items.filter((d: any) => d.lowStockAlert).length);
-      }
-      setLoading(false);
-    })();
-  }, [hospitalId]);
-
   const stats = [
     {
       label: t('hospital.appointments'),
-      value: loading ? '—' : (apiStats?.totalAppointments.thisMonth ?? '—'),
-      statusText: apiStats ? `${apiStats.totalAppointments.allTime} all time` : '—',
+      value: 9,
+      statusText: '18% vs yesterday',
       statusColor: 'text-emerald-600',
       up: true,
       accent: 'border-brand-navy',
@@ -87,8 +34,8 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.activeDoctors'),
-      value: loading ? '—' : (apiStats?.activeDoctors ?? '—'),
-      statusText: apiStats ? `${apiStats.totalDoctors} total doctors` : '—',
+      value: 6,
+      statusText: t('hospital.onDutyToday'),
       statusColor: 'text-slate-500',
       up: false,
       accent: 'border-amber-500',
@@ -99,8 +46,8 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.procuredValue'),
-      value: loading ? '—' : (apiStats ? `${apiStats.monthlyRevenue.toLocaleString()} RWF` : '—'),
-      statusText: apiStats ? `${apiStats.totalRevenue.toLocaleString()} RWF total` : '—',
+      value: '1,850,000 RWF',
+      statusText: '12% budget utilization',
       statusColor: 'text-emerald-600',
       up: true,
       accent: 'border-emerald-500',
@@ -111,9 +58,9 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.lowStockExpiry'),
-      value: loading ? '—' : (lowStockCount ?? '—'),
+      value: 7,
       statusText: t('hospital.requiresImmediateAttention'),
-      statusColor: lowStockCount && lowStockCount > 0 ? 'text-red-500' : 'text-emerald-600',
+      statusColor: 'text-red-500',
       up: false,
       accent: 'border-red-500',
       iconBg: 'bg-red-100',
@@ -123,6 +70,37 @@ export default function HospitalAdminDashboardPage() {
     },
   ];
 
+  const chartData = [
+    { label: 'Dec', value: 420 },
+    { label: 'Jan', value: 620 },
+    { label: 'Feb', value: 520 },
+    { label: 'Mar', value: 760 },
+    { label: 'Apr', value: 890 },
+    { label: 'May', value: 940 },
+  ];
+
+  const activityFeed = [
+    {
+      title: 'New appointment scheduled for Kevine Mugisha under Pediatrics.',
+      time: '10 mins ago',
+      color: 'bg-sky-100 text-sky-600',
+    },
+    {
+      title: 'Low stock warning: Amoxicillin 500mg level dropped below threshold limit.',
+      time: '1 hour ago',
+      color: 'bg-amber-100 text-amber-600',
+    },
+    {
+      title: 'Procurement request PR-6644 marked as delivered. Stock levels updated.',
+      time: '3 hours ago',
+      color: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      title: 'Item Insulin Glargine Vials expired on 2026-05-05.',
+      time: '1 day ago',
+      color: 'bg-red-100 text-red-600',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -195,53 +173,42 @@ export default function HospitalAdminDashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-slate-900">{t('hospital.monthlyLogistics')}</h2>
             </div>
-            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1">
-              <button
-                onClick={() => setChartMode('spend')}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${chartMode === 'spend' ? 'text-white bg-brand-navy shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
-              >
+            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1" aria-label='Show spend chart'>
+              <button className="rounded-full px-4 py-2 text-sm font-semibold text-white bg-brand-navy shadow-sm transition hover:bg-brand-navy/5">
                 {t('hospital.spend')}
               </button>
-              <button
-                onClick={() => setChartMode('volume')}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${chartMode === 'volume' ? 'text-white bg-brand-navy shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
-              >
+              <button className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200">
                 {t('hospital.volume')}
               </button>
             </div>
           </div>
 
           <div className="h-[300px]">
-            {loading ? (
-              <div className="h-full rounded-xl bg-gray-100 animate-pulse" />
-            ) : chartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                {chartMode === 'spend' ? 'No revenue data available' : 'No appointment data available'}
-              </div>
-            ) : (
-              <ResponsiveContainer width="98%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="label" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip
-                    formatter={(v) =>
-                      chartMode === 'spend'
-                        ? [`${(v as number).toLocaleString()} RWF`, 'Revenue']
-                        : [`${(v as number).toLocaleString()}`, 'Appointments']
-                    }
-                  />
-                  <Line type="monotone" dataKey="value" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+            <ResponsiveContainer width="98%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="label" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Line type="monotone" dataKey="value" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('hospital.recentActivity')}</h2>
-          <div className="flex items-center justify-center h-32 text-sm text-gray-400">
-            No recent activity
+          <div className="space-y-5">
+            {activityFeed.map((item) => (
+              <div key={item.title} className="flex gap-4">
+                <div className={`mt-1 h-10 w-10 rounded-2xl flex items-center justify-center ${item.color}`}>
+                  <span className="h-2.5 w-2.5 rounded-full bg-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="text-xs text-slate-500 mt-1">{item.time}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
