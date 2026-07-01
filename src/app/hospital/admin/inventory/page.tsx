@@ -47,6 +47,7 @@ const TABS: { key: string; label: string }[] = [
   { key: 'Equipment', label: 'Equipment' },
 ];
 
+
 const STOCK_STYLE: Record<Stock, { bg: string; color: string; dot: string; label: string }> = {
   IN_STOCK:  { bg: '#ECFDF5', color: '#059669', dot: '#10B981', label: 'In Stock' },
   LOW_STOCK: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444', label: 'Low Stock' },
@@ -101,7 +102,7 @@ export default function HospitalAdminInventoryPage() {
     try {
       await api.patch(`/hospitals/${hospitalId}/drug-stock/${item.drugId}`, { qtyOnHand: editQty });
       setItems(prev => prev.map(i =>
-        i.id === item.id
+        i.drugId === item.drugId
           ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
           : i
       ));
@@ -209,7 +210,7 @@ export default function HospitalAdminInventoryPage() {
                 const stock = STOCK_STYLE[item.stock];
                 const alert = item.alert ? ALERT_STYLE[item.alert] : null;
                 return (
-                  <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
+                  <tr key={item.drugId} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
                     <td className="px-6 py-4 text-gray-500">{item.category}</td>
                     <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} units</td>
@@ -229,7 +230,7 @@ export default function HospitalAdminInventoryPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {editingId === item.id ? (
+                      {editingId === item.drugId ? (
                         <div className="flex items-center gap-1.5 justify-end">
                           <input
                             type="number"
@@ -254,7 +255,7 @@ export default function HospitalAdminInventoryPage() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setEditingId(item.id); setEditQty(item.quantity); }}
+                          onClick={() => { setEditingId(item.drugId ?? null); setEditQty(item.quantity); }}
                           className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
                         >
                           Request Stock
