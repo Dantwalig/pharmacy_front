@@ -156,8 +156,8 @@ export const authApi = {
    */
   refreshTokens: async () => {
     const refreshToken = Cookies.get('refreshToken');
-    const response = await api.post('/auth/refresh', {}, {
-      headers: { Authorization: `Bearer ${refreshToken}` }
+    const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
+      headers: { Authorization: `Bearer ${refreshToken}` },
     });
     return response.data;
   },
