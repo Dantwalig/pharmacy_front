@@ -68,10 +68,10 @@ export default function HospitalReceptionistChangePasswordPage() {
 
   const validate = () => {
     const err: { [k: string]: string } = {};
-    if (!currentPassword) err.currentPassword = 'Please enter your current password.';
-    if (!newPassword) err.newPassword = 'Please enter a new password.';
-    if (newPassword && strengthScore < 4) err.newPassword = 'Password does not meet complexity requirements.';
-    if (confirmPassword !== newPassword) err.confirmPassword = 'Passwords do not match.';
+    if (!currentPassword) err.currentPassword = t('hospital.errEnterCurrent');
+    if (!newPassword) err.newPassword = t('hospital.errEnterNew');
+    if (newPassword && strengthScore < 4) err.newPassword = t('hospital.errComplexity');
+    if (confirmPassword !== newPassword) err.confirmPassword = t('hospital.errMismatch');
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -83,9 +83,9 @@ export default function HospitalReceptionistChangePasswordPage() {
     try {
     
       await new Promise((r) => setTimeout(r, 700));
-      alert('Password updated (demo). Replace with real API call.');
+      alert(t('hospital.alertUpdated'));
       resetForm();
-    } catch (err) { alert('Failed to update password. Please try again.');
+    } catch (err) { alert(t('hospital.alertUpdateFailed'));
     } finally { setSubmitting(false);
     }
   };
@@ -104,14 +104,14 @@ export default function HospitalReceptionistChangePasswordPage() {
 
       <div className="max-w-2xl mx-auto">
         <form onSubmit={onSubmit} className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">Update Password</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('hospital.updatePassword')}</h3>
 
           {/* Current Password */}
-          <label className="block text-xs font-medium text-gray-600">Current Password *</label>
+          <label className="block text-xs font-medium text-gray-600">{t('hospital.currentPasswordRequired')}</label>
           <textarea
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter current credentials..."
+            placeholder={t('hospital.currentPasswordPlaceholder')}
             rows={3}
             className={`mt-2 w-full rounded-lg border ${errors.currentPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white resize-none`}
             aria-invalid={!!errors.currentPassword}
@@ -120,17 +120,17 @@ export default function HospitalReceptionistChangePasswordPage() {
 
           {/* New Password */}
           <div className="mt-4">
-            <label className="block text-xs font-medium text-gray-600">New Password *</label>
+            <label className="block text-xs font-medium text-gray-600">{t('hospital.newPasswordRequired')}</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Create a strong password..."
+              placeholder={t('hospital.newPasswordPlaceholder')}
               className={`mt-2 w-full rounded-lg border ${errors.newPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white`}
               aria-invalid={!!errors.newPassword}
             />
             <div className="mt-2 text-xs text-gray-500 flex items-center justify-between">
-              <span>Password Strength: <span className="font-medium text-gray-700 ml-1">{strengthLabel}</span></span>
+              <span>{t('hospital.passwordStrength')} <span className="font-medium text-gray-700 ml-1">{t(`hospital.strength${strengthLabel}`)}</span></span>
             </div>
 
             <div className="mt-2 h-2 w-full rounded-full bg-gray-200 overflow-hidden">
@@ -144,12 +144,12 @@ export default function HospitalReceptionistChangePasswordPage() {
 
           {/* Confirm Password */}
           <div className="mt-4">
-            <label className="block text-xs font-medium text-gray-600">Confirm Password *</label>
+            <label className="block text-xs font-medium text-gray-600">{t('hospital.confirmPasswordRequired')}</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Verify new password..."
+              placeholder={t('hospital.confirmPasswordPlaceholder')}
               className={`mt-2 w-full rounded-lg border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white`}
               aria-invalid={!!errors.confirmPassword}
             />
@@ -157,12 +157,12 @@ export default function HospitalReceptionistChangePasswordPage() {
           </div>
 
           <div className="mt-4 rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
-            <div className="font-medium mb-2">Password Requirements</div>
+            <div className="font-medium mb-2">{t('hospital.passwordRequirementsTitle')}</div>
             <ul className="list-disc pl-5 space-y-1">
-              <li className={checks.hasMinLength ? 'text-gray-700' : 'text-gray-400'}>Must be at least 8 characters long</li>
-              <li className={checks.hasUpper && checks.hasLower ? 'text-gray-700' : 'text-gray-400'}>Must contain both uppercase and lowercase letters</li>
-              <li className={checks.hasNumber ? 'text-gray-700' : 'text-gray-400'}>Must contain at least one number</li>
-              <li className={checks.hasSpecial ? 'text-gray-700' : 'text-gray-400'}>Must contain at least one special character (e.g., @, #, $, %)</li>
+              <li className={checks.hasMinLength ? 'text-gray-700' : 'text-gray-400'}>{t('hospital.reqMinLength')}</li>
+              <li className={checks.hasUpper && checks.hasLower ? 'text-gray-700' : 'text-gray-400'}>{t('hospital.reqCase')}</li>
+              <li className={checks.hasNumber ? 'text-gray-700' : 'text-gray-400'}>{t('hospital.reqNumber')}</li>
+              <li className={checks.hasSpecial ? 'text-gray-700' : 'text-gray-400'}>{t('hospital.reqSpecial')}</li>
             </ul>
           </div>
 
@@ -173,14 +173,14 @@ export default function HospitalReceptionistChangePasswordPage() {
               onClick={resetForm} disabled={submitting}
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
 
             <button
               type="submit" disabled={submitting}
               className="rounded-lg bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 text-sm font-semibold"
             >
-              {submitting ? 'Updating...' : 'Update Password'}
+              {submitting ? t('hospital.updating') : t('hospital.updatePassword')}
             </button>
           </div>
         </form>

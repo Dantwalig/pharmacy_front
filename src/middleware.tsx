@@ -100,7 +100,10 @@ export function middleware(request: NextRequest) {
     // (see src/docs/HOSPITAL_AUTH_INTEGRATION.md for the full writeup).
     const isHospitalNurse = payload.role === 'NURSE' && !!payload.hospitalId;
     const isValidHospitalRole =
-      payload.role === 'HOSPITAL_ADMIN' || payload.role === 'DOCTOR' || isHospitalNurse;
+      payload.role === 'HOSPITAL_ADMIN' ||
+      payload.role === 'DOCTOR' ||
+      payload.role === 'RECEPTIONIST' ||
+      isHospitalNurse;
 
     if (!isValidHospitalRole) {
       return NextResponse.redirect(new URL('/', request.url));
@@ -113,6 +116,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     if (pathname.startsWith('/hospital/nurse') && !isHospitalNurse) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (pathname.startsWith('/hospital/receptionist') && payload.role !== 'RECEPTIONIST') {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
