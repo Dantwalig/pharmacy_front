@@ -37,10 +37,13 @@ export default function NurseDashboardPage() {
     },
   };
 
-  // Merge the text withstyle config for easier rendering
+  // Merge the text with style config for easier rendering
   const statCards = nurseDashboardCardsData.map((card) => ({
     ...card,
     ...cardStylesConfig[card.key],
+    title: t(card.titleKey),
+    subtitle: t(card.subtitleKey),
+    action: t(card.actionKey),
   }));
 
   return (
@@ -81,7 +84,6 @@ export default function NurseDashboardPage() {
           <div key={card.title} className="rounded-2xl bg-white px-6 py-5 min-h-[180px] flex flex-col"
             style={{ border: `1px solid ${card.color}40`, }} >
 
-            {/* Header */}
             <div className="flex items-center gap-3 mb-8">
               <Icon className="h-5 w-5" style={{ color: card.color }} />
               <h3 className="text-sm font-semibold text-gray-800"> {card.title}</h3>
@@ -104,8 +106,7 @@ export default function NurseDashboardPage() {
     </div>
       {/* Patient Overview*/}
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6">
-        
-        {/* Header */}
+       
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <UserGroupIcon className="h-6 w-6 text-[#2563EB]" />
@@ -139,17 +140,17 @@ export default function NurseDashboardPage() {
               <div className="col-span-12 sm:col-span-5 grid grid-cols-3 gap-2 text-center sm:text-left pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                 {/* BP */}
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">BP</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.bloodPressure')}</div>
                   <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.bp}</div>
                 </div>
                 {/* HR */}
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">HR</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.heartRate')}</div>
                   <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.hr}</div>
                 </div>
                 {/* Temp */}
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Temp</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.temperature')}</div>
                   <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.temperature}</div>
                 </div>
               </div>

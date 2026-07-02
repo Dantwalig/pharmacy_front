@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import type { PatientStatus } from '@/types/hospital';
+import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 3;
 
@@ -17,6 +18,8 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
 };
 
 export default function NursePatientsPage() {
+  const { t } = useTranslation();
+
   const [search, setSearch]             = useState('');
   const [statusFilter, setStatus]       = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
@@ -51,16 +54,16 @@ export default function NursePatientsPage() {
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>Patients</h1>
-        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Tracking Patients Information</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.patientsTitle')}</h1>
+        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.patientsSubtitle')}</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Patients"     value={50} icon={<Users className="w-6 h-6" />}     color="red"    sub="View all patients" />
-        <StatCard label="Admit Patients"     value={20} icon={<BedDouble className="w-6 h-6" />} color="purple" sub="Admitted" />
-        <StatCard label="Critical Patients"  value={15} icon={<Activity className="w-6 h-6" />}  color="blue"   sub="Immediate Care" />
-        <StatCard label="Discharged Patients" value={25} icon={<UserCheck className="w-6 h-6" />} color="green"  sub="Today" />
+        <StatCard label={t('hospital.totalPatients')}     value={50} icon={<Users className="w-6 h-6" />}     color="red"    sub={t('hospital.viewAllPatients')} />
+        <StatCard label={t('hospital.admitPatients')}     value={20} icon={<BedDouble className="w-6 h-6" />} color="purple" sub={t('hospital.admitted')} />
+        <StatCard label={t('hospital.criticalPatients')}  value={15} icon={<Activity className="w-6 h-6" />}  color="blue"   sub={t('hospital.immediateCare')} />
+        <StatCard label={t('hospital.dischargedPatients')} value={25} icon={<UserCheck className="w-6 h-6" />} color="green"  sub={t('hospital.today')} />
       </div>
 
       {/* Filter bar */}
@@ -69,30 +72,30 @@ export default function NursePatientsPage() {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search name by ID,..."
+            placeholder={t('hospital.searchPlaceholder')}
             value={search}
             onChange={e => applyFilter(() => setSearch(e.target.value))}
             className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <select value={statusFilter} onChange={e => applyFilter(() => setStatus(e.target.value as PatientStatus | 'ALL'))} className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="ALL">All Status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="CRITICAL">Critical</option>
-          <option value="INACTIVE">Inactive</option>
+          <option value="ALL">{t('hospital.allStatus')}</option>
+          <option value="ACTIVE">{t('hospital.active')}</option>
+          <option value="CRITICAL">{t('hospital.critical')}</option>
+          <option value="INACTIVE">{t('hospital.inactive')}</option>
         </select>
         <select value={conditionFilter} onChange={e => applyFilter(() => setCondition(e.target.value))} className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-          {conditions.map(c => <option key={c} value={c}>{c === 'ALL' ? 'All Conditions' : c}</option>)}
+          {conditions.map(c => <option key={c} value={c}>{c === 'ALL' ? t('hospital.allConditions') : c}</option>)}
         </select>
         <select value={lastVisitFilter} onChange={e => applyFilter(() => setLastVisit(e.target.value))} className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="ALL">Last Visit</option>
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
+          <option value="ALL">{t('hospital.lastVisit')}</option>
+          <option value="7">{t('hospital.last7Days')}</option>
+          <option value="30">{t('hospital.last30Days')}</option>
+          <option value="90">{t('hospital.last90Days')}</option>
         </select>
         <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
           <Filter className="w-4 h-4" />
-          Filter
+          {t('hospital.filter')}
         </button>
       </div>
 
@@ -102,7 +105,16 @@ export default function NursePatientsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Patient', 'Patient ID', 'Age', 'Gender', 'Last visit', 'Condition', 'Status', ''].map((h, i) => (
+                {[
+                  t('hospital.patient'),
+                  t('hospital.patientId'),
+                  t('hospital.age'),
+                  t('hospital.gender'),
+                  t('hospital.lastVisit'),
+                  t('hospital.condition'),
+                  t('hospital.status'),
+                  ''
+                ].map((h, i) => (
                   <th key={i} className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -111,8 +123,8 @@ export default function NursePatientsPage() {
               {pageItems.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-16 text-center">
-                    <p className="text-gray-500 font-medium">No patients found</p>
-                    <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
+                    <p className="text-gray-500 font-medium">{t('hospital.noPatientsFound')}</p>
+                    <p className="text-gray-400 text-sm mt-1">{t('hospital.adjustSearchFilters')}</p>
                   </td>
                 </tr>
               ) : pageItems.map(p => (
@@ -137,7 +149,9 @@ export default function NursePatientsPage() {
 
         {filtered.length > 0 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 text-sm text-gray-500">
-            <span>Showing {pageItems.length} of {filtered.length} patients</span>
+
+            <span> {t('hospital.showingPatients', { current: pageItems.length, total: filtered.length})}</span>
+
             <div className="flex items-center gap-1">
               <NavButton onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}><ChevronLeft className="w-3.5 h-3.5" /></NavButton>
               {pageNumbers(safePage, totalPages).map((n, i) =>
