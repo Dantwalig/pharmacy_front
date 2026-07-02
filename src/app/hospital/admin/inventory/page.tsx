@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Hexagon, AlertTriangle, ClipboardList, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type Category = 'Drug' | 'Supply' | 'Equipment';
 type Stock = 'IN_STOCK' | 'LOW_STOCK';
@@ -28,11 +29,17 @@ const ITEMS: InventoryItem[] = [
   { name: 'Automated Defibrillator',category: 'Equipment', quantity: 1,   reorder: 2,   expiry: null,         stock: 'LOW_STOCK', alert: null },
 ];
 
-const MODE_CARDS = [
-  { id: 'stock',       title: 'Hospital Stock',  desc: 'Track current drug supplies, equipment, and medical inventory levels.', icon: Hexagon,       color: '#2563EB' },
-  { id: 'alerts',      title: 'Alerts Queue',    desc: 'Instantly find expired, expiring, or critical low-stock items.',         icon: AlertTriangle, color: '#DC2626' },
-  { id: 'procurement', title: 'Procurement Log', desc: 'Submit and review procurement requests, tracking approval & delivery stages.', icon: ClipboardList, color: '#059669' },
-];
+
+
+export default function HospitalAdminInventoryPage() {
+
+  const { t } = useTranslation();
+
+  const MODE_CARDS = [
+  { id: 'stock',       title: t('hospital.hospitalStock'),  desc: t('hospital.hospitalStockDesc'), icon: Hexagon,       color: '#2563EB' },
+  { id: 'alerts',      title: t('hospital.alertsQueue'),    desc: t('hospital.alertsQueueDesc'),         icon: AlertTriangle, color: '#DC2626' },
+  { id: 'procurement', title: t('hospital.procurementLog'), desc: t('hospital.procurementLogDesc'), icon: ClipboardList, color: '#059669' },
+ ];
 
 const TABS: { key: string; label: string }[] = [
   { key: 'ALL',       label: 'All Items' },
@@ -52,7 +59,6 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
   EXPIRED:  { bg: '#FEF2F2', color: '#DC2626', label: 'Expired' },
 };
 
-export default function HospitalAdminInventoryPage() {
   const [activeMode, setActiveMode] = useState('stock');
   const [tab, setTab] = useState('ALL');
   const [search, setSearch] = useState('');
@@ -67,8 +73,10 @@ export default function HospitalAdminInventoryPage() {
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>Inventory Control &amp; Supply Chain</h1>
-        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Track and manage hospital stock levels, alerts, and procurement requests</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.inventoryControl')}</h1>
+        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.inventoryControlDesc')}</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.inventoryControl')}</h1>
+        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.inventoryControlDesc')}</p>
       </div>
 
       {/* Mode cards */}
@@ -112,7 +120,7 @@ export default function HospitalAdminInventoryPage() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search stock inventory..."
+            placeholder={t('hospital.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -124,13 +132,20 @@ export default function HospitalAdminInventoryPage() {
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
               <tr className="border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="px-6 py-4">Item Name</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Available Quantity</th>
-                <th className="px-6 py-4">Min. Reorder Limit</th>
-                <th className="px-6 py-4">Expiry Date</th>
-                <th className="px-6 py-4">Status / Alerts</th>
-                <th className="px-6 py-4 text-right">Quick Actions</th>
+                <th className="px-6 py-4">{t('hospital.itemName')}</th>
+                <th className="px-6 py-4">{t('hospital.category')}</th>
+                <th className="px-6 py-4">{t('hospital.availableQuantity')}</th>
+                <th className="px-6 py-4">{t('hospital.minReorderLimit')}</th>
+                <th className="px-6 py-4">{t('hospital.expiryDate')}</th>
+                <th className="px-6 py-4">{t('hospital.statusAlerts')}</th>
+                <th className="px-6 py-4 text-right">{t('hospital.quickActions')}</th>
+                <th className="px-6 py-4">{t('hospital.itemName')}</th>
+                <th className="px-6 py-4">{t('hospital.category')}</th>
+                <th className="px-6 py-4">{t('hospital.availableQuantity')}</th>
+                <th className="px-6 py-4">{t('hospital.minReorderLimit')}</th>
+                <th className="px-6 py-4">{t('hospital.expiryDate')}</th>
+                <th className="px-6 py-4">{t('hospital.statusAlerts')}</th>
+                <th className="px-6 py-4 text-right">{t('hospital.quickActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
@@ -143,8 +158,10 @@ export default function HospitalAdminInventoryPage() {
                   <tr key={item.name} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
                     <td className="px-6 py-4 text-gray-500">{item.category}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} units</td>
-                    <td className="px-6 py-4 text-gray-500">{item.reorder} units</td>
+                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
+                    <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
+                    <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.expiry ?? '—'}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -174,3 +191,4 @@ export default function HospitalAdminInventoryPage() {
     </div>
   );
 }
+

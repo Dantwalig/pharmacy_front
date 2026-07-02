@@ -10,7 +10,7 @@ import RevenueChart from '@/components/hospital/finance/RevenueChart';
 import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdownChart';
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
-
+import {useTranslation} from 'react-i18next';
 import { MOCK_INVOICES } from '@/mock/hospital/finance';
 import type { PaymentBreakdownItem } from '@/components/hospital/finance/PaymentBreakdownChart';
 import type { RefundItem } from '@/components/hospital/finance/RefundTable';
@@ -25,10 +25,7 @@ const REVENUE_CHART_DATA = [
   { label: 'JUL', revenue: 4_800_000, expenses: 3_100_000 },
 ];
 
-const PAYMENT_BREAKDOWN: PaymentBreakdownItem[] = [
-  { name: 'Mobile Money', value: 1_530_769, color: '#1E4D8C' },
-  { name: 'Cash',         value: 2_037_670, color: '#93c5fd' },
-];
+
 
 const REFUNDS: RefundItem[] = [
   { id: 'RF-008', amount: 1_000,  status: 'APPROVED', date: '2023-05-21' },
@@ -37,22 +34,28 @@ const REFUNDS: RefundItem[] = [
   { id: 'RF-005', amount: 34_100, status: 'REJECTED', date: '2023-05-18' },
 ];
 
-const FINANCE_KPIS = [
-  { label: 'Total Revenues',   value: 'RWF 123,456', sub: '+12.5% from last week', trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
-  { label: 'Pending Payments', value: 'RWF 54,321',  sub: '18 Invoices',           trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
-  { label: 'Overdue Payments', value: 'RWF 3,456',   sub: '9 Invoices',            trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-  { label: 'Refunds',          value: 'RWF 350,000', sub: '+24% from last week',   trend: true,  icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
-];
-
 export default function HospitalAdminFinancePage() {
+  const { t } = useTranslation();
+  
+  const PAYMENT_BREAKDOWN: PaymentBreakdownItem[] = [
+  { name: t('hospital.mobileMoney'), value: 1_530_769, color: '#1E4D8C' },
+  { name: t('hospital.cash'),         value: 2_037_670, color: '#93c5fd' },
+  ];
+  const FINANCE_KPIS = [
+  { label: t('hospital.totalRevenue'),   value: 'RWF 123,456', sub: '+12.5% ' + t('hospital.fromLastWeek'), trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
+  { label: t('hospital.pendingPayments'), value: 'RWF 54,321',  sub: '18 ' + t('hospital.invoices'),           trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
+  { label: t('hospital.overduePayments'), value: 'RWF 3,456',   sub: '9 ' + t('hospital.invoices'),            trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: t('hospital.refund'),          value: 'RWF 350,000', sub: '+24% ' + t('hospital.fromLastWeek'),   trend: true,  icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
+  ];
+
   return (
     <div className="space-y-6">
 
       {/* Hero */}
       <div className="rounded-2xl p-7 bg-brand-hero relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold text-brand-navy">Finance</h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Overview of hospital finances and transactions</p>
+          <h1 className="text-3xl font-bold text-brand-navy">{t('hospital.finance')}</h1>
+          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.financeDescription')}</p>
         </div>
         <svg
           className="absolute right-6 bottom-0 opacity-20 hidden sm:block"
@@ -92,14 +95,14 @@ export default function HospitalAdminFinancePage() {
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <RevenueChart
           data={REVENUE_CHART_DATA}
-          title="Revenue Overview"
+          title={t('hospital.revenueOverview')}
           showExpenses={false}
           defaultPeriod="Weekly"
           variant="bar"
         />
         <PaymentBreakdownChart
           data={PAYMENT_BREAKDOWN}
-          title="Payment Method Breakdown"
+          title={t('hospital.paymentBreakdown')}
         />
       </div>
 
