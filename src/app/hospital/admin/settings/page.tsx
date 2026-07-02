@@ -19,18 +19,13 @@ import {
   MOCK_HOSPITAL_ANNOUNCEMENTS,
   MOCK_HOSPITAL_DEPARTMENTS,
 } from '@/mock/hospital/settings';
+import { useTranslation } from 'react-i18next';
 
 const NAVY     = '#1E3A5F';
 const GRADIENT = 'linear-gradient(90deg, #1E4D8C 0%, #2D9B8A 100%)';
 
 type Tab = 'general' | 'fees' | 'announcements' | 'departments';
 
-const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-  { key: 'general',       label: 'General',       icon: UserCircle2    },
-  { key: 'fees',          label: 'Fees',           icon: BadgeDollarSign},
-  { key: 'announcements', label: 'Announcements',  icon: Megaphone      },
-  { key: 'departments',   label: 'Departments',    icon: Building2      },
-];
 
 const announcementBadge: Record<string, { bg: string; color: string }> = {
   Urgent:  { bg: '#FFF3E0', color: '#E65100' },
@@ -39,6 +34,15 @@ const announcementBadge: Record<string, { bg: string; color: string }> = {
 };
 
 export default function HospitalAdminSettingsPage() {
+  const { t } = useTranslation();
+
+  const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
+  { key: 'general',       label: t('hospital.general'),       icon: UserCircle2    },
+  { key: 'fees',          label: t('hospital.fees'),           icon: BadgeDollarSign},
+  { key: 'announcements', label: t('hospital.announcements'),  icon: Megaphone      },
+  { key: 'departments',   label: t('hospital.departments'),    icon: Building2      },
+  ];
+
   const [activeTab, setActiveTab] = useState<Tab>('general');
 
   return (
@@ -53,10 +57,10 @@ export default function HospitalAdminSettingsPage() {
         <div className="min-w-0">
           {/* Fix 5: semibold instead of bold — matches portal design language */}
           <h1 className="text-2xl sm:text-3xl font-semibold truncate" style={{ color: NAVY }}>
-            Settings
+            {t('hospital.settings')}
           </h1>
           <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>
-            Manage Hospital Preferences and Configurations
+            {t('hospital.settingsSubtitle')}
           </p>
         </div>
         <div className="relative opacity-20 shrink-0 ml-4" style={{ color: NAVY }}>
@@ -95,7 +99,7 @@ export default function HospitalAdminSettingsPage() {
           style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
           <Save size={15} />
-          Save Changes
+          {t('hospital.saveChanges')}
         </button>
       </div>
 
@@ -150,8 +154,9 @@ function ActionBtn({ label, onClick }: { label: string; onClick?: () => void }) 
 
 /* ── Hospital Page ── */
 function HospitalPageCard() {
+  const { t } = useTranslation();
   return (
-    <CardShell title="Hospital Page" subtitle="Update your hospital information">
+    <CardShell title={t("hospital.hospitalPage")} subtitle={t("hospital.updateHospitalInfo")}>
       {/* Fix 2: stack vertically on mobile, side-by-side on sm+ */}
       <div className="flex flex-col sm:flex-row gap-5 items-start">
         <div className="relative shrink-0 w-full sm:w-auto" style={{ height: 177 }}>
@@ -175,10 +180,10 @@ function HospitalPageCard() {
 
         <div className="space-y-2.5 flex-1 min-w-0 text-sm">
           {[
-            { label: 'Hospital Name', value: MOCK_HOSPITAL_SETTINGS.hospitalName },
-            { label: 'Phone Number',  value: MOCK_HOSPITAL_SETTINGS.phone        },
-            { label: 'Info Address',  value: MOCK_HOSPITAL_SETTINGS.address      },
-            { label: 'Website',       value: 'www.evuzehospital.rw'              },
+            { label: t('hospital.hospitalName'), value: MOCK_HOSPITAL_SETTINGS.hospitalName },
+            { label: t('hospital.phoneNumber'),  value: MOCK_HOSPITAL_SETTINGS.phone        },
+            { label: t('hospital.address'),  value: MOCK_HOSPITAL_SETTINGS.address      },
+            { label: t('hospital.website'),       value: 'www.evuzehospital.rw'              },
           ].map(({ label, value }) => (
             <div key={label}>
               <span className="text-xs text-gray-400 font-medium">{label}</span>
@@ -193,19 +198,20 @@ function HospitalPageCard() {
 
 /* ── Fee Structure ── */
 function FeeStructureCard({ full }: { full?: boolean }) {
+  const { t } = useTranslation();
   return (
     <CardShell
-      title="Fee Structure"
-      subtitle="Manage service fees"
-      action={<ActionBtn label="Add Service" />}
+      title={t("hospital.feeStructure")}
+      subtitle={t("hospital.manageServiceFees")}
+      action={<ActionBtn label={t("hospital.addService")} />}
     >
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[260px]">
           <thead>
             <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
-              <th className="text-left py-2 font-medium">Service</th>
-              <th className="text-left py-2 font-medium">Price</th>
-              <th className="text-left py-2 font-medium">Status</th>
+              <th className="text-left py-2 font-medium">{t('hospital.service')}</th>
+              <th className="text-left py-2 font-medium">{t('hospital.price')}</th>
+              <th className="text-left py-2 font-medium">{t('hospital.status')}</th>
               <th className="py-2" />
             </tr>
           </thead>
@@ -230,7 +236,7 @@ function FeeStructureCard({ full }: { full?: boolean }) {
         </table>
       </div>
       <button className="mt-3 w-full text-xs font-semibold py-2 rounded-lg border border-dashed border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-all flex items-center justify-center gap-1">
-        <Plus size={12} /> New Service
+        <Plus size={12} /> {t('hospital.addService')}
       </button>
     </CardShell>
   );
@@ -238,11 +244,12 @@ function FeeStructureCard({ full }: { full?: boolean }) {
 
 /* ── Announcements ── */
 function AnnouncementsCard({ full }: { full?: boolean }) {
+  const { t } = useTranslation();
   return (
     <CardShell
-      title="Announcements"
-      subtitle="Manage Announcements"
-      action={<ActionBtn label="Add Announcements" />}
+      title={t("hospital.announcements")}
+      subtitle={t("hospital.manageAnnouncements")}
+      action={<ActionBtn label={t("hospital.addAnnouncement")} />}
     >
       <div className="space-y-3">
         {MOCK_HOSPITAL_ANNOUNCEMENTS.map((ann) => {
@@ -273,19 +280,21 @@ function AnnouncementsCard({ full }: { full?: boolean }) {
 
 /* ── Departments ── */
 function DepartmentsCard({ full }: { full?: boolean }) {
+  const { t } = useTranslation();
+
   return (
     <CardShell
-      title="Departments"
-      subtitle="Manage Departments"
-      action={<ActionBtn label="Add Department" />}
+      title={t("hospital.departments")}
+      subtitle={t("hospital.manageDepartments")}
+      action={<ActionBtn label={t("hospital.addDepartment")} />}
     >
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[260px]">
           <thead>
             <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
-              <th className="text-left py-2 font-medium">Department</th>
-              <th className="text-left py-2 font-medium">Head</th>
-              <th className="text-left py-2 font-medium">Staff Count</th>
+              <th className="text-left py-2 font-medium">{t('hospital.department')}</th>
+              <th className="text-left py-2 font-medium">{t('hospital.head')}</th>
+              <th className="text-left py-2 font-medium">{t('hospital.staffCount')}</th>
               <th className="py-2" />
             </tr>
           </thead>

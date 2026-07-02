@@ -7,6 +7,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
 } from 'recharts';
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 
 const NAVY = '#1E4D8C';
 
@@ -17,12 +18,6 @@ const WAIT_TIMES = [
   { dept: 'Orthopedics',  value: 55 },
   { dept: 'Surgery',      value: 48 },
   { dept: 'Gynecology',   value: 78 },
-];
-
-const SATISFACTION = [
-  { name: 'Excellent', value: 50, color: '#1E4D8C' },
-  { name: 'Good',      value: 35, color: '#3B82F6' },
-  { name: 'Poor',      value: 15, color: '#93C5FD' },
 ];
 
 const STAFF_PER_DEPT = [
@@ -57,16 +52,23 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 export default function HospitalAdminReportsPage() {
+  const { t } = useTranslation();
+
+  const SATISFACTION = [
+  { name: (t('hospital.excellent')), value: 50, color: '#1E4D8C' },
+  { name: t('hospital.good'),      value: 35, color: '#3B82F6' },
+  { name: t('hospital.poor'),      value: 15, color: '#93C5FD' },
+  ];
   return (
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-8 relative overflow-hidden" style={{ background: '#EBF5FF' }}>
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>Reports &amp; Analysis</h1>
-          <p className="mt-1 text-sm font-semibold" style={{ color: '#0284C7' }}>Track the hospital reports and performance</p>
+          <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.reportsTitle')}</h1>
+          <p className="mt-1 text-sm font-semibold" style={{ color: '#0284C7' }}>{t('hospital.reportsSubtitle')}</p>
           <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
             <ClipboardDocumentListIcon className="w-4 h-4" />
-            This Month
+            {t('hospital.thisMonth')}
           </button>
         </div>
         <svg className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20 hidden sm:block" width="140" height="90" viewBox="0 0 140 90" fill="none">
@@ -81,7 +83,7 @@ export default function HospitalAdminReportsPage() {
 
       {/* Charts grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Average wait times by Department">
+        <ChartCard title={t('hospital.averageWaitTimes')}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={WAIT_TIMES} layout="vertical" margin={{ left: 20, right: 20 }}>
               <CartesianGrid horizontal={false} stroke="#F1F5F9" />
@@ -93,7 +95,7 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Patient Satisfaction">
+        <ChartCard title={t('hospital.patientSatisfaction')}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie data={SATISFACTION} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2}>
@@ -108,7 +110,7 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Staff Per Department">
+        <ChartCard title={t('hospital.staffPerDepartment')}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={STAFF_PER_DEPT} outerRadius="70%">
               <PolarGrid stroke="#E2E8F0" />
@@ -118,7 +120,7 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Admitted Patients over time">
+        <ChartCard title={t('hospital.admittedPatientsOverTime')}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={ADMITTED} margin={{ top: 8 }}>
               <CartesianGrid vertical={false} stroke="#F1F5F9" />
@@ -126,8 +128,8 @@ export default function HospitalAdminReportsPage() {
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />
               <Tooltip cursor={{ fill: '#F8FAFC' }} />
               <Legend verticalAlign="bottom" height={24} iconType="square" formatter={(v) => <span className="text-xs text-gray-500">{v}</span>} />
-              <Bar dataKey="admitted" name="Admitted Patients" fill="#1E4D8C" radius={[3, 3, 0, 0]} barSize={10} />
-              <Bar dataKey="out" name="OutPatients" fill="#7DD3FC" radius={[3, 3, 0, 0]} barSize={10} />
+              <Bar dataKey="admitted" name={t('hospital.admittedPatients')} fill="#1E4D8C" radius={[3, 3, 0, 0]} barSize={10} />
+              <Bar dataKey="out" name={t('hospital.outPatients')} fill="#7DD3FC" radius={[3, 3, 0, 0]} barSize={10} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
