@@ -30,6 +30,13 @@ interface ServiceRow { icon: LucideIcon; label: string; value: string; }
 interface ServiceGroup { title: string; color: string; icon: LucideIcon; rows: ServiceRow[]; }
 interface Employee { name: string; department: string; phone: string; available: boolean; }
 
+const EMPLOYEES: Employee[] = [
+  { name: 'Ella Mutesi',  department: 'Clinical Services',         phone: '+250784266000', available: true  },
+  { name: 'Kelly Butera', department: 'Patient Support Services',  phone: '+250788013456', available: true  },
+  { name: 'Mary Kagabo',  department: 'Administrative & Operations', phone: '+250783000876', available: false },
+  { name: 'Howard Magaju',department: 'Diagnostic Services',       phone: '+250788456521', available: false },
+];
+
 export default function HospitalAdminDepartmentsPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
