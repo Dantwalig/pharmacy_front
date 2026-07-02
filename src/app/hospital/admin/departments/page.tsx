@@ -20,7 +20,6 @@ import {
   Search,
   type LucideIcon,
 } from 'lucide-react';
-import { useHospitalId } from '@/lib/hospital';
 import api from '@/lib/api';
 
 const NAVY = '#1E3A5F';

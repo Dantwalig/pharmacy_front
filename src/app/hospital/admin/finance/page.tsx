@@ -74,12 +74,6 @@ export default function HospitalAdminFinancePage() {
         </svg>
       </div>
 
-      {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
-          Could not load finance data — check your connection and refresh.
-        </div>
-      )}
-
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {FINANCE_KPIS.map((kpi) => (
@@ -119,7 +113,7 @@ export default function HospitalAdminFinancePage() {
       {/* Invoice table + Refund panel */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <InvoiceTable
-          invoices={invoices}
+          invoices={MOCK_INVOICES}
           onExport={() => console.log('export')}
         />
         <RefundTable

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Hexagon, AlertTriangle, ClipboardList, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,13 +22,13 @@ interface InventoryItem {
 }
 
 const ITEMS: InventoryItem[] = [
-  { name: 'Amoxicillin 500mg',      category: 'Drug',      quantity: 45,  reorder: 100, expiry: '2026-09-12', stock: 'LOW_STOCK', alert: 'SAFE' },
-  { name: 'Ibuprofen 400mg',        category: 'Drug',      quantity: 210, reorder: 50,  expiry: '2027-02-15', stock: 'IN_STOCK',  alert: 'SAFE' },
-  { name: 'Lisinopril 10mg',        category: 'Drug',      quantity: 12,  reorder: 20,  expiry: '2026-06-25', stock: 'LOW_STOCK', alert: 'EXPIRING', alertLabel: 'Expiring (35d)' },
-  { name: 'Surgical Sterile Gloves',category: 'Supply',    quantity: 850, reorder: 200, expiry: '2029-10-30', stock: 'IN_STOCK',  alert: 'SAFE' },
-  { name: 'N95 Respirator Masks',   category: 'Supply',    quantity: 80,  reorder: 150, expiry: '2026-04-10', stock: 'LOW_STOCK', alert: 'EXPIRED' },
-  { name: 'ECG Patient Monitor',    category: 'Equipment', quantity: 6,   reorder: 2,   expiry: null,         stock: 'IN_STOCK',  alert: null },
-  { name: 'Automated Defibrillator',category: 'Equipment', quantity: 1,   reorder: 2,   expiry: null,         stock: 'LOW_STOCK', alert: null },
+  { id: 'amox-500', name: 'Amoxicillin 500mg', category: 'Drug', quantity: 45, reorder: 100, expiry: '2026-09-12', stock: 'LOW_STOCK', alert: 'SAFE' },
+  { id: 'ibu-400', name: 'Ibuprofen 400mg', category: 'Drug', quantity: 210, reorder: 50, expiry: '2027-02-15', stock: 'IN_STOCK', alert: 'SAFE' },
+  { id: 'lisinopril-10', name: 'Lisinopril 10mg', category: 'Drug', quantity: 12, reorder: 20, expiry: '2026-06-25', stock: 'LOW_STOCK', alert: 'EXPIRING', alertLabel: 'Expiring (35d)' },
+  { id: 'gloves-sterile', name: 'Surgical Sterile Gloves', category: 'Supply', quantity: 850, reorder: 200, expiry: '2029-10-30', stock: 'IN_STOCK', alert: 'SAFE' },
+  { id: 'masks-n95', name: 'N95 Respirator Masks', category: 'Supply', quantity: 80, reorder: 150, expiry: '2026-04-10', stock: 'LOW_STOCK', alert: 'EXPIRED' },
+  { id: 'ecg-monitor', name: 'ECG Patient Monitor', category: 'Equipment', quantity: 6, reorder: 2, expiry: null, stock: 'IN_STOCK', alert: null },
+  { id: 'defib-auto', name: 'Automated Defibrillator', category: 'Equipment', quantity: 1, reorder: 2, expiry: null, stock: 'LOW_STOCK', alert: null },
 ];
 
 
@@ -63,54 +63,21 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
 };
 
   const [activeMode, setActiveMode] = useState('stock');
-  const [tab, setTab]               = useState('ALL');
-  const [search, setSearch]         = useState('');
-  const [items, setItems]           = useState<InventoryItem[]>([]);
-  const [loadingItems, setLoadingItems] = useState(true);
-  const [editingId, setEditingId]   = useState<string | null>(null);
-  const [editQty, setEditQty]       = useState<number>(0);
-  const [saving, setSaving]         = useState(false);
+  const [tab, setTab] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [items, setItems] = useState<InventoryItem[]>(ITEMS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQty, setEditQty] = useState<number>(0);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!hospitalId) { setLoadingItems(false); return; }
-    api.get(`/hospitals/${hospitalId}/drug-stock`)
-      .then(res => {
-        const raw: any[] = Array.isArray(res.data) ? res.data : [];
-        const mapped: InventoryItem[] = raw.map(item => {
-          const { alert, alertLabel } = computeAlert(item.expiryDate);
-          return {
-            id:       item.id,
-            drugId:   item.drugId,
-            name:     item.drug?.brandName ?? 'Unknown',
-            category: 'Drug' as Category,
-            quantity: item.quantity,
-            reorder:  item.reorderLevel,
-            expiry:   item.expiryDate ? item.expiryDate.substring(0, 10) : null,
-            stock:    item.lowStockAlert ? 'LOW_STOCK' : 'IN_STOCK',
-            alert,
-            alertLabel,
-          };
-        });
-        setItems(mapped);
-      })
-      .catch(() => {})
-      .finally(() => setLoadingItems(false));
-  }, [hospitalId]);
-
-  const handleSaveQty = async (item: InventoryItem) => {
-    if (!hospitalId || !item.drugId) return;
+  const handleSaveQty = (item: InventoryItem) => {
     setSaving(true);
-    try {
-      await api.patch(`/hospitals/${hospitalId}/drug-stock/${item.drugId}`, { qtyOnHand: editQty });
-      setItems(prev => prev.map(i =>
-        i.drugId === item.drugId
-          ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
-          : i
-      ));
-      setEditingId(null);
-    } catch {
-      toast.error('Failed to update stock — please try again.');
-    }
+    setItems(prev => prev.map(i =>
+      i.id === item.id
+        ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
+        : i
+    ));
+    setEditingId(null);
     setSaving(false);
   };
 
@@ -202,29 +169,18 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                 <th className="px-6 py-4">{t('hospital.expiryDate')}</th>
                 <th className="px-6 py-4">{t('hospital.statusAlerts')}</th>
                 <th className="px-6 py-4 text-right">{t('hospital.quickActions')}</th>
-                <th className="px-6 py-4">{t('hospital.itemName')}</th>
-                <th className="px-6 py-4">{t('hospital.category')}</th>
-                <th className="px-6 py-4">{t('hospital.availableQuantity')}</th>
-                <th className="px-6 py-4">{t('hospital.minReorderLimit')}</th>
-                <th className="px-6 py-4">{t('hospital.expiryDate')}</th>
-                <th className="px-6 py-4">{t('hospital.statusAlerts')}</th>
-                <th className="px-6 py-4 text-right">{t('hospital.quickActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
-              {loadingItems ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">Loading inventory…</td></tr>
-              ) : filtered.length === 0 ? (
+              {filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">No items found.</td></tr>
               ) : filtered.map(item => {
                 const stock = STOCK_STYLE[item.stock];
                 const alert = item.alert ? ALERT_STYLE[item.alert] : null;
                 return (
-                  <tr key={item.drugId} className="hover:bg-gray-50/70 transition-colors">
+                  <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
                     <td className="px-6 py-4 text-gray-500">{item.category}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
-                    <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
                     <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.expiry ?? '—'}</td>
@@ -242,7 +198,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {editingId === item.drugId ? (
+                      {editingId === item.id ? (
                         <div className="flex items-center gap-1.5 justify-end">
                           <input
                             type="number"
@@ -267,7 +223,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setEditingId(item.drugId ?? null); setEditQty(item.quantity); }}
+                          onClick={() => { setEditingId(item.id ?? null); setEditQty(item.quantity); }}
                           className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
                         >
                           Request Stock
