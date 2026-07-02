@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Hexagon, AlertTriangle, ClipboardList, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +9,8 @@ type Stock = 'IN_STOCK' | 'LOW_STOCK';
 type Alert = 'SAFE' | 'EXPIRING' | 'EXPIRED' | null;
 
 interface InventoryItem {
+  id: string;
+  drugId?: string;
   name: string;
   category: Category;
   quantity: number;
@@ -48,6 +50,7 @@ const TABS: { key: string; label: string }[] = [
   { key: 'Equipment', label: 'Equipment' },
 ];
 
+
 const STOCK_STYLE: Record<Stock, { bg: string; color: string; dot: string; label: string }> = {
   IN_STOCK:  { bg: '#ECFDF5', color: '#059669', dot: '#10B981', label: 'In Stock' },
   LOW_STOCK: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444', label: 'Low Stock' },
@@ -60,10 +63,62 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
 };
 
   const [activeMode, setActiveMode] = useState('stock');
-  const [tab, setTab] = useState('ALL');
-  const [search, setSearch] = useState('');
+  const [tab, setTab]               = useState('ALL');
+  const [search, setSearch]         = useState('');
+  const [items, setItems]           = useState<InventoryItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [editingId, setEditingId]   = useState<string | null>(null);
+  const [editQty, setEditQty]       = useState<number>(0);
+  const [saving, setSaving]         = useState(false);
 
-  const filtered = ITEMS.filter(i => {
+  useEffect(() => {
+    if (!hospitalId) { setLoadingItems(false); return; }
+    api.get(`/hospitals/${hospitalId}/drug-stock`)
+      .then(res => {
+        const raw: any[] = Array.isArray(res.data) ? res.data : [];
+        const mapped: InventoryItem[] = raw.map(item => {
+          const { alert, alertLabel } = computeAlert(item.expiryDate);
+          return {
+            id:       item.id,
+            drugId:   item.drugId,
+            name:     item.drug?.brandName ?? 'Unknown',
+            category: 'Drug' as Category,
+            quantity: item.quantity,
+            reorder:  item.reorderLevel,
+            expiry:   item.expiryDate ? item.expiryDate.substring(0, 10) : null,
+            stock:    item.lowStockAlert ? 'LOW_STOCK' : 'IN_STOCK',
+            alert,
+            alertLabel,
+          };
+        });
+        setItems(mapped);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingItems(false));
+  }, [hospitalId]);
+
+  const handleSaveQty = async (item: InventoryItem) => {
+    if (!hospitalId || !item.drugId) return;
+    setSaving(true);
+    try {
+      await api.patch(`/hospitals/${hospitalId}/drug-stock/${item.drugId}`, { qtyOnHand: editQty });
+      setItems(prev => prev.map(i =>
+        i.drugId === item.drugId
+          ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
+          : i
+      ));
+      setEditingId(null);
+    } catch {
+      toast.error('Failed to update stock — please try again.');
+    }
+    setSaving(false);
+  };
+
+  const modeFiltered = activeMode === 'alerts'
+    ? items.filter(i => i.alert !== null)
+    : items;
+
+  const filtered = modeFiltered.filter(i => {
     if (tab !== 'ALL' && i.category !== tab) return false;
     if (search.trim() && !i.name.toLowerCase().includes(search.trim().toLowerCase())) return false;
     return true;
@@ -99,7 +154,14 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
         })}
       </div>
 
+      {activeMode === 'procurement' && (
+        <div className="flex items-center justify-center py-16 text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          Procurement log is not yet available — no backend endpoint exists for this feature.
+        </div>
+      )}
+
       {/* Tabs + search */}
+      {activeMode !== 'procurement' && (
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {TABS.map(tb => (
@@ -125,9 +187,10 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
           />
         </div>
       </div>
+      )}
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {activeMode !== 'procurement' && <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
@@ -149,13 +212,15 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
-              {filtered.length === 0 ? (
+              {loadingItems ? (
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">Loading inventory…</td></tr>
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">No items found.</td></tr>
               ) : filtered.map(item => {
                 const stock = STOCK_STYLE[item.stock];
                 const alert = item.alert ? ALERT_STYLE[item.alert] : null;
                 return (
-                  <tr key={item.name} className="hover:bg-gray-50/70 transition-colors">
+                  <tr key={item.drugId} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
                     <td className="px-6 py-4 text-gray-500">{item.category}</td>
                     <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
@@ -177,9 +242,37 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap">
-                        Request Stock
-                      </button>
+                      {editingId === item.drugId ? (
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <input
+                            type="number"
+                            min={0}
+                            value={editQty}
+                            onChange={e => setEditQty(Number(e.target.value))}
+                            className="w-20 px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => handleSaveQty(item)}
+                            disabled={saving}
+                            className="px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            {saving ? '…' : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="px-2 py-1 text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingId(item.drugId ?? null); setEditQty(item.quantity); }}
+                          className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                        >
+                          Request Stock
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -187,7 +280,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

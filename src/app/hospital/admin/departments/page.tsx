@@ -20,19 +20,16 @@ import {
   Search,
   type LucideIcon,
 } from 'lucide-react';
+import { useHospitalId } from '@/lib/hospital';
+import api from '@/lib/api';
 
 const NAVY = '#1E3A5F';
+const DEPT_COLORS = ['#16A34A', '#7C3AED', '#2563EB', '#EA580C', '#0891B2', '#D97706', '#9333EA', '#0F766E'];
+const DEPT_ICONS: LucideIcon[] = [Stethoscope, Microscope, HeartHandshake, Briefcase, Building2, FlaskConical, HeartPulse, Truck];
 
 interface ServiceRow { icon: LucideIcon; label: string; value: string; }
 interface ServiceGroup { title: string; color: string; icon: LucideIcon; rows: ServiceRow[]; }
 interface Employee { name: string; department: string; phone: string; available: boolean; }
-
-const EMPLOYEES: Employee[] = [
-  { name: 'Ella Mutesi',  department: 'Clinical Services',         phone: '+250784266000', available: true  },
-  { name: 'Kelly Butera', department: 'Patient Support Services',  phone: '+250788013456', available: true  },
-  { name: 'Mary Kagabo',  department: 'Administrative & Operations', phone: '+250783000876', available: false },
-  { name: 'Howard Magaju',department: 'Diagnostic Services',       phone: '+250788456521', available: false },
-];
 
 export default function HospitalAdminDepartmentsPage() {
   const { t } = useTranslation();
@@ -76,10 +73,53 @@ export default function HospitalAdminDepartmentsPage() {
   const [search, setSearch] = useState('');
   const [dept, setDept] = useState('All');
   const [availability, setAvailability] = useState('All');
+  const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
+  const [employees, setEmployees]       = useState<Employee[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(false);
 
-  const departments = ['All', ...SERVICE_GROUPS.map(g => g.title)];
+  useEffect(() => {
+    if (!hospitalId) { setLoading(false); return; }
+    api.get(`/hospitals/${hospitalId}/doctors`)
+      .then(res => {
+        const doctors: any[] = Array.isArray(res.data) ? res.data : [];
 
-  const filtered = EMPLOYEES.filter(e => {
+        const mapped: Employee[] = doctors.map(doc => ({
+          name: doc.user?.hospitalStaff
+            ? `${doc.user.hospitalStaff.firstName} ${doc.user.hospitalStaff.lastName}`.trim()
+            : (doc.user?.email ?? 'Unknown'),
+          department: doc.specialization ?? 'General',
+          phone: doc.user?.hospitalStaff?.phone ?? '—',
+          available: !!doc.isAvailable,
+        }));
+        if (mapped.length) setEmployees(mapped);
+
+        const bySpec = doctors.reduce((acc: Record<string, any[]>, doc) => {
+          const key = doc.specialization ?? 'General';
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(doc);
+          return acc;
+        }, {});
+
+        const derived: ServiceGroup[] = Object.entries(bySpec).map(([spec, docs], i) => ({
+          title: spec,
+          color: DEPT_COLORS[i % DEPT_COLORS.length],
+          icon: DEPT_ICONS[i % DEPT_ICONS.length],
+          rows: [
+            { icon: Users,     label: 'Doctors',   value: docs.length.toString() },
+            { icon: Activity,  label: 'Available', value: docs.filter((d: any) => d.isAvailable).length.toString() },
+            { icon: Building2, label: 'Status',    value: docs.some((d: any) => d.isAvailable) ? 'Active' : 'Inactive' },
+          ],
+        }));
+        if (derived.length) setServiceGroups(derived);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
+
+  const departments = ['All', ...serviceGroups.map(g => g.title)];
+
+  const filtered = employees.filter(e => {
     if (search.trim() && !e.name.toLowerCase().includes(search.trim().toLowerCase())) return false;
     if (dept !== 'All' && e.department !== dept) return false;
     if (availability === 'Available' && !e.available) return false;
@@ -98,7 +138,11 @@ export default function HospitalAdminDepartmentsPage() {
               {t('hospital.departmentsSubtitle')}
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
+          <button
+            disabled
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white opacity-50 cursor-not-allowed"
+            style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
+          >
             <Stethoscope size={15} />
             {t('hospital.selectDepartment')}
           </button>
@@ -108,9 +152,20 @@ export default function HospitalAdminDepartmentsPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
+          Could not load department data — check your connection and refresh.
+        </div>
+      )}
+
       {/* Service group cards */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12 text-sm text-gray-400">Loading departments…</div>
+      ) : serviceGroups.length === 0 ? (
+        <div className="flex items-center justify-center py-12 text-sm text-gray-400">No departments found.</div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {SERVICE_GROUPS.map(group => {
+        {serviceGroups.map(group => {
           const Icon = group.icon;
           return (
             <div key={group.title} className="bg-white rounded-2xl border shadow-sm p-6" style={{ borderColor: `${group.color}25` }}>
@@ -139,6 +194,7 @@ export default function HospitalAdminDepartmentsPage() {
           );
         })}
       </div>
+      )}
 
       {/* Employee Directory */}
       <div>
@@ -190,8 +246,8 @@ export default function HospitalAdminDepartmentsPage() {
               <tbody className="divide-y divide-gray-50 text-sm">
                 {filtered.length === 0 ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-gray-400 font-medium">No employees found.</td></tr>
-                ) : filtered.map(emp => (
-                  <tr key={emp.name} className="hover:bg-gray-50/70 transition-colors">
+                ) : filtered.map((emp, idx) => (
+                  <tr key={`${emp.name}-${idx}`} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{emp.name}</td>
                     <td className="px-6 py-4 text-gray-600">{emp.department}</td>
                     <td className="px-6 py-4 text-gray-600">{emp.phone}</td>
