@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
   Settings,
@@ -12,13 +12,13 @@ import {
   ChevronRight,
   MoreVertical,
   Save,
+  Loader2,
 } from 'lucide-react';
-import {
-  MOCK_HOSPITAL_SETTINGS,
-  MOCK_HOSPITAL_FEES,
-  MOCK_HOSPITAL_ANNOUNCEMENTS,
-  MOCK_HOSPITAL_DEPARTMENTS,
-} from '@/mock/hospital/settings';
+import toast from 'react-hot-toast';
+import { useHospitalId } from '@/lib/hospital';
+import api from '@/lib/api';
+import type { HospitalSettings } from '@/types/hospital';
+import type { HospitalFee, HospitalAnnouncement, HospitalDepartment } from '@/mock/hospital/settings';
 
 const NAVY     = '#1E3A5F';
 const GRADIENT = 'linear-gradient(90deg, #1E4D8C 0%, #2D9B8A 100%)';
@@ -38,8 +38,106 @@ const announcementBadge: Record<string, { bg: string; color: string }> = {
   General: { bg: '#F3F4F6', color: '#374151' },
 };
 
+const EMPTY_SETTINGS: HospitalSettings = { hospitalName: '', address: '', phone: '', email: '' };
+
+// ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
+// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap S-2)
+// There is no HospitalFee model/table anywhere in schema.prisma and no
+// /hospitals/:id/fees route. Demo data only — deliberately given a distinct
+// "DEMO_" name (not the old mock-file export name) so it's obvious at a
+// glance this is a local placeholder, not a wired integration.
+const DEMO_FEES: HospitalFee[] = [
+  { id: 'fee-001', service: 'Consultation', price: 10000, status: 'Active' },
+  { id: 'fee-002', service: 'X-RAY',        price: 70000, status: 'Active' },
+  { id: 'fee-003', service: 'Emergency',    price: 5000,  status: 'Active' },
+];
+
+// ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
+// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap S-3)
+// No HospitalAnnouncement model/table anywhere in schema.prisma. Demo data only.
+const DEMO_ANNOUNCEMENTS: HospitalAnnouncement[] = [
+  { id: 'ann-001', title: 'Staff Meeting',      date: 'May 3, 2025',  time: '10 am', type: 'Urgent'  },
+  { id: 'ann-002', title: 'New Policy Update',  date: 'May 1, 2025',  time: '12 pm', type: 'Formal'  },
+];
+
 export default function HospitalAdminSettingsPage() {
+  const hospitalId = useHospitalId();
   const [activeTab, setActiveTab] = useState<Tab>('general');
+
+  // ── General / Hospital profile ────────────────────────────────────────────
+  // Read: GET /hospitals/:id (real, confirmed working).
+  // Write: PATCH /hospitals/:id — added on the backend alongside this page
+  // (Role.HOSPITAL_ADMIN, ownership-checked). Accepts name/address/phone;
+  // email is not persisted server-side (it lives on the linked User row, out
+  // of scope for this route — see gap doc Gap S-1). Save calls the real
+  // endpoint; on any failure it surfaces an error toast rather than silently
+  // pretending to succeed.
+  const [settings, setSettings]   = useState<HospitalSettings>(EMPTY_SETTINGS);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError]     = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // ── Departments ────────────────────────────────────────────────────────────
+  // No HospitalDepartment model/table exists (Gap S-4). Derived read-only from
+  // GET /hospitals/:id/doctors, grouped by specialization, same approach as
+  // admin/departments. "Head" has no backend source (no isDepartmentHead field
+  // exists on Doctor), so it's shown as "—" rather than invented.
+  const [departments, setDepartments] = useState<HospitalDepartment[]>([]);
+  const [deptLoading, setDeptLoading] = useState(true);
+  const [deptError, setDeptError]     = useState(false);
+
+  useEffect(() => {
+    if (!hospitalId) { setProfileLoading(false); setDeptLoading(false); return; }
+
+    api.get(`/hospitals/${hospitalId}`)
+      .then(res => {
+        const h = res.data ?? {};
+        setSettings({
+          hospitalName: h.name ?? '',
+          address: h.address ?? '',
+          phone: h.phone ?? '',
+          email: h.email ?? '',
+        });
+      })
+      .catch(() => setProfileError(true))
+      .finally(() => setProfileLoading(false));
+
+    api.get(`/hospitals/${hospitalId}/doctors`)
+      .then(res => {
+        const doctors: any[] = Array.isArray(res.data) ? res.data : [];
+        const bySpec = doctors.reduce((acc: Record<string, number>, doc) => {
+          const key = doc.specialization ?? 'General';
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
+        setDepartments(Object.entries(bySpec).map(([name, staffCount], i) => ({
+          id: `dept-${i}`,
+          name,
+          head: '—',
+          staffCount,
+        })));
+      })
+      .catch(() => setDeptError(true))
+      .finally(() => setDeptLoading(false));
+  }, [hospitalId]);
+
+  async function handleSave() {
+    if (!hospitalId) return;
+    setSaving(true);
+    try {
+      await api.patch(`/hospitals/${hospitalId}`, {
+        name: settings.hospitalName,
+        address: settings.address,
+        phone: settings.phone,
+        email: settings.email,
+      });
+      toast.success('Settings saved.');
+    } catch {
+      toast.error('Failed to save settings — please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     /* Fix 1: prevent any child from blowing out the page width */
@@ -63,6 +161,12 @@ export default function HospitalAdminSettingsPage() {
           <Settings size={56} />
         </div>
       </div>
+
+      {profileError && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
+          Could not load hospital profile — check your connection and refresh.
+        </div>
+      )}
 
       {/* ── Tabs + Save Changes ── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -91,26 +195,28 @@ export default function HospitalAdminSettingsPage() {
 
         {/* Fix 4: full-width on mobile, auto on sm+ */}
         <button
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-all min-h-11 shrink-0"
+          onClick={handleSave}
+          disabled={saving || profileLoading}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-all min-h-11 shrink-0 disabled:opacity-60"
           style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
         >
-          <Save size={15} />
-          Save Changes
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
 
       {/* ── Content ── */}
       {activeTab === 'general' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <HospitalPageCard />
+          <HospitalPageCard settings={settings} setSettings={setSettings} loading={profileLoading} />
           <FeeStructureCard />
           <AnnouncementsCard />
-          <DepartmentsCard />
+          <DepartmentsCard departments={departments} loading={deptLoading} error={deptError} />
         </div>
       )}
       {activeTab === 'fees'          && <FeeStructureCard full />}
       {activeTab === 'announcements' && <AnnouncementsCard full />}
-      {activeTab === 'departments'   && <DepartmentsCard full />}
+      {activeTab === 'departments'   && <DepartmentsCard departments={departments} loading={deptLoading} error={deptError} full />}
     </div>
   );
 }
@@ -135,11 +241,13 @@ function CardShell({
   );
 }
 
-function ActionBtn({ label, onClick }: { label: string; onClick?: () => void }) {
+function ActionBtn({ label, onClick, disabled }: { label: string; onClick?: () => void; disabled?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg hover:opacity-90 transition-all whitespace-nowrap"
+      disabled={disabled}
+      title={disabled ? 'Not available yet — see gap doc' : undefined}
+      className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg hover:opacity-90 transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
       style={{ background: '#EFF6FF', color: '#2563EB' }}
     >
       <Plus size={12} />
@@ -149,7 +257,19 @@ function ActionBtn({ label, onClick }: { label: string; onClick?: () => void }) 
 }
 
 /* ── Hospital Page ── */
-function HospitalPageCard() {
+function HospitalPageCard({
+  settings, setSettings, loading,
+}: {
+  settings: HospitalSettings;
+  setSettings: React.Dispatch<React.SetStateAction<HospitalSettings>>;
+  loading: boolean;
+}) {
+  const fields: { key: keyof HospitalSettings; label: string }[] = [
+    { key: 'hospitalName', label: 'Hospital Name' },
+    { key: 'phone',        label: 'Phone Number'  },
+    { key: 'address',      label: 'Info Address'  },
+  ];
+
   return (
     <CardShell title="Hospital Page" subtitle="Update your hospital information">
       {/* Fix 2: stack vertically on mobile, side-by-side on sm+ */}
@@ -174,17 +294,20 @@ function HospitalPageCard() {
         </div>
 
         <div className="space-y-2.5 flex-1 min-w-0 text-sm">
-          {[
-            { label: 'Hospital Name', value: MOCK_HOSPITAL_SETTINGS.hospitalName },
-            { label: 'Phone Number',  value: MOCK_HOSPITAL_SETTINGS.phone        },
-            { label: 'Info Address',  value: MOCK_HOSPITAL_SETTINGS.address      },
-            { label: 'Website',       value: 'www.evuzehospital.rw'              },
-          ].map(({ label, value }) => (
-            <div key={label}>
-              <span className="text-xs text-gray-400 font-medium">{label}</span>
-              <p className="text-gray-700 font-medium wrap-break-word">{value}</p>
-            </div>
-          ))}
+          {loading ? (
+            [0, 1, 2].map(i => <div key={i} className="h-9 rounded-lg bg-gray-100 animate-pulse" />)
+          ) : (
+            fields.map(({ key, label }) => (
+              <div key={key}>
+                <label className="text-xs text-gray-400 font-medium block mb-0.5">{label}</label>
+                <input
+                  value={settings[key]}
+                  onChange={(e) => setSettings(prev => ({ ...prev, [key]: e.target.value }))}
+                  className="w-full text-gray-700 font-medium border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </CardShell>
@@ -196,8 +319,8 @@ function FeeStructureCard({ full }: { full?: boolean }) {
   return (
     <CardShell
       title="Fee Structure"
-      subtitle="Manage service fees"
-      action={<ActionBtn label="Add Service" />}
+      subtitle="Manage service fees (demo data — see gap doc)"
+      action={<ActionBtn label="Add Service" disabled />}
     >
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[260px]">
@@ -210,7 +333,7 @@ function FeeStructureCard({ full }: { full?: boolean }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {MOCK_HOSPITAL_FEES.map((fee) => (
+            {DEMO_FEES.map((fee) => (
               <tr key={fee.id}>
                 <td className="py-2.5 font-medium text-gray-700">{fee.service}</td>
                 <td className="py-2.5 text-gray-600">{fee.price.toLocaleString()}</td>
@@ -229,7 +352,7 @@ function FeeStructureCard({ full }: { full?: boolean }) {
           </tbody>
         </table>
       </div>
-      <button className="mt-3 w-full text-xs font-semibold py-2 rounded-lg border border-dashed border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-all flex items-center justify-center gap-1">
+      <button disabled className="mt-3 w-full text-xs font-semibold py-2 rounded-lg border border-dashed border-gray-200 text-gray-400 flex items-center justify-center gap-1 cursor-not-allowed">
         <Plus size={12} /> New Service
       </button>
     </CardShell>
@@ -241,11 +364,11 @@ function AnnouncementsCard({ full }: { full?: boolean }) {
   return (
     <CardShell
       title="Announcements"
-      subtitle="Manage Announcements"
-      action={<ActionBtn label="Add Announcements" />}
+      subtitle="Manage Announcements (demo data — see gap doc)"
+      action={<ActionBtn label="Add Announcements" disabled />}
     >
       <div className="space-y-3">
-        {MOCK_HOSPITAL_ANNOUNCEMENTS.map((ann) => {
+        {DEMO_ANNOUNCEMENTS.map((ann) => {
           const badge = announcementBadge[ann.type] ?? announcementBadge.General;
           return (
             <div
@@ -272,39 +395,56 @@ function AnnouncementsCard({ full }: { full?: boolean }) {
 }
 
 /* ── Departments ── */
-function DepartmentsCard({ full }: { full?: boolean }) {
+function DepartmentsCard({
+  departments, loading, error, full,
+}: {
+  departments: HospitalDepartment[];
+  loading: boolean;
+  error: boolean;
+  full?: boolean;
+}) {
   return (
     <CardShell
       title="Departments"
       subtitle="Manage Departments"
-      action={<ActionBtn label="Add Department" />}
+      action={<ActionBtn label="Add Department" disabled />}
     >
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[260px]">
-          <thead>
-            <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
-              <th className="text-left py-2 font-medium">Department</th>
-              <th className="text-left py-2 font-medium">Head</th>
-              <th className="text-left py-2 font-medium">Staff Count</th>
-              <th className="py-2" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {MOCK_HOSPITAL_DEPARTMENTS.map((dept) => (
-              <tr key={dept.id}>
-                <td className="py-2.5 font-medium text-gray-700">{dept.name}</td>
-                <td className="py-2.5 text-gray-600">{dept.head}</td>
-                <td className="py-2.5 text-gray-600">{dept.staffCount}</td>
-                <td className="py-2.5 text-right">
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <MoreVertical size={14} />
-                  </button>
-                </td>
+      {loading ? (
+        <div className="space-y-2">
+          {[0, 1, 2].map(i => <div key={i} className="h-8 rounded-lg bg-gray-100 animate-pulse" />)}
+        </div>
+      ) : error ? (
+        <div className="text-sm text-red-500 py-4 text-center">Could not load departments.</div>
+      ) : departments.length === 0 ? (
+        <div className="text-sm text-gray-400 py-4 text-center">No departments found.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[260px]">
+            <thead>
+              <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
+                <th className="text-left py-2 font-medium">Department</th>
+                <th className="text-left py-2 font-medium">Head</th>
+                <th className="text-left py-2 font-medium">Staff Count</th>
+                <th className="py-2" />
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {departments.map((dept) => (
+                <tr key={dept.id}>
+                  <td className="py-2.5 font-medium text-gray-700">{dept.name}</td>
+                  <td className="py-2.5 text-gray-600">{dept.head}</td>
+                  <td className="py-2.5 text-gray-600">{dept.staffCount}</td>
+                  <td className="py-2.5 text-right">
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <MoreVertical size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </CardShell>
   );
 }
