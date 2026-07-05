@@ -3,7 +3,7 @@
 > **Scope:** `admin/dashboard`, `admin/departments`, `admin/finance`, `admin/inventory`
 > **Source-verified against:** `back-end/src/hospitals/hospitals.controller.ts`, `hospitals.service.ts`, `invoices/invoices.service.ts`
 > **Last updated:** 2026-06-29
-> **See also:** [`HOSPITAL_ADMIN_DASHBOARD_DEPARTMENTS_INTEGRATION.md`](./HOSPITAL_ADMIN_DASHBOARD_DEPARTMENTS_INTEGRATION.md) for the earlier dashboard/departments integration writeup with full fix history.
+> **See also:** [`HOSPITAL_ADMIN_DASHBOARD_DEPARTMENTS_INTEGRATION.md`](./HOSPITAL_ADMIN_DASHBOARD_DEPARTMENTS_INTEGRATION.md) for the earlier dashboard/departments integration writeup with full fix history. See [`HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md`](./HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md) for `admin/reports` and `admin/settings` (out of scope here) — that doc also flags that the `GET /hospitals/:id/departments` endpoint described below was not found in the backend snapshot it was verified against.
 
 ---
 
