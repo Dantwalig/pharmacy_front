@@ -27,37 +27,11 @@ export default function HospitalDoctorAppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [page, setPage] = useState(1);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchAppointments() {
-      try {
-        setLoading(true);
-        const res = await api.get('/appointments');
-        setAppointments(
-          unwrapData<any>(res.data).map((a: any) => ({
-            ...a,
-            patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
-            doctorName: a.doctor?.user?.hospitalStaff
-              ? `Dr. ${a.doctor.user.hospitalStaff.firstName} ${a.doctor.user.hospitalStaff.lastName}`
-              : '—',
-          }))
-        );
-      } catch (err) {
-        toast.error('Failed to load appointments');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAppointments();
-  }, []);
-
-  const todayStr = new Date().toDateString();
-  const todayCount = appointments.filter(a => new Date(a.date).toDateString() === todayStr).length;
-  const confirmedCount = appointments.filter((a) => a.status === 'CONFIRMED').length;
-  const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
-  const cancelledCount = appointments.filter((a) => a.status === 'CANCELLED').length;
+  const totalCount = MOCK_APPOINTMENTS.length;
+  const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'ARRIVED').length;
+  const completedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'COMPLETED').length;
+  const cancelledCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CANCELLED').length;
 
   //stats
   const statCards = [

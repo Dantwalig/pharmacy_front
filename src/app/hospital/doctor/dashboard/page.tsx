@@ -6,23 +6,11 @@ import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { CalendarIcon, UsersIcon, UserPlusIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
+import { useHospitalId, useHospitalDoctorUser, useHospitalDashboardStats } from '@/lib/hospital';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-// GET /api/doctors/dashboard response
-interface DoctorDashboard {
-  todayAppointments:    number;
-  totalPatients:        number;
-  completedConsults:    number;
-  totalAppointments:    number;
-  appointmentsByStatus: Record<string, number>;
-  weeklyVisits:         { label: string; count: number }[];
-  doctorName:           string | null;
-  specialization:       string;
-  hospitalName:         string | null;
-}
-
-// GET /api/appointments (doctor-scoped, last 5)
+// GET /appointments (doctor-scoped, last 5)
 interface BackendAppointment {
   id: string;
   date: string;
@@ -32,7 +20,7 @@ interface BackendAppointment {
   patient: { firstName: string; lastName: string };
 }
 
-// GET /api/notifications
+// GET /notifications
 interface BackendNotification {
   id: string;
   type: string;
@@ -97,14 +85,21 @@ function RowSkeleton() {
 
 export default function HospitalDoctorDashboardPage() {
   const { t } = useTranslation();
+  const hospitalId = useHospitalId();
+  const { userName: doctorName } = useHospitalDoctorUser();
 
-  const [dashboard,      setDashboard]      = useState<DoctorDashboard | null>(null);
+  // KPI cards + weekly revenue chart — shared with admin/dashboard, see
+  // src/lib/hospital.ts useHospitalDashboardStats and
+  // src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md (Gap D-1).
+  // These are hospital-wide numbers (same as what admin/dashboard shows), not
+  // this doctor's personal caseload — that's what the ticket asked for, see
+  // the gap doc for the product tradeoff this implies.
+  const { stats, weeklyRevenue, loading: loadingStats, error: statsError } = useHospitalDashboardStats(hospitalId);
+
   const [appointments,   setAppointments]   = useState<BackendAppointment[]>([]);
   const [notifications,  setNotifications]  = useState<BackendNotification[]>([]);
-  const [loadingStats,   setLoadingStats]   = useState(true);
   const [loadingAppts,   setLoadingAppts]   = useState(true);
   const [loadingNotes,   setLoadingNotes]   = useState(true);
-  const [error,          setError]          = useState<string | null>(null);
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -113,33 +108,15 @@ export default function HospitalDoctorDashboardPage() {
     return t('hospital.goodEvening');
   };
 
-  // ── Fetch 1: GET /api/doctors/dashboard ───────────────────────────────────
-  // New doctor-scoped stats endpoint. Returns today's count, total patients,
-  // completed consults, total appointments, status breakdown, weekly visit buckets,
-  // and the doctor's name + specialisation.
-
-  const fetchDashboard = useCallback(async () => {
-    setLoadingStats(true);
-    setError(null);
-    try {
-      const res = await api.get<DoctorDashboard>('/doctors/dashboard');
-      setDashboard(res.data);
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? err?.message ?? 'Failed to load dashboard stats.');
-    } finally {
-      setLoadingStats(false);
-    }
-  }, []);
-
-  // ── Fetch 2: GET /api/appointments ────────────────────────────────────────
-  // Auto-scoped to this doctor. Used only for the recent appointments table.
+  // ── Fetch: GET /appointments ──────────────────────────────────────────────
+  // Auto-scoped to this doctor. Used only for the recent appointments table,
+  // this is the doctor's own caseload, unlike the hospital-wide KPI cards above.
 
   const fetchAppointments = useCallback(async () => {
     setLoadingAppts(true);
     try {
       const res = await api.get<BackendAppointment[] | { data: BackendAppointment[] }>('/appointments');
       const raw = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
-      // Sort descending by date, keep last 5
       const sorted = [...raw].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setAppointments(sorted.slice(0, 5));
     } catch {
@@ -149,9 +126,7 @@ export default function HospitalDoctorDashboardPage() {
     }
   }, []);
 
-  // ── Fetch 3: GET /api/notifications ──────────────────────────────────────
-  // userType param is accepted by the controller but unused in the service —
-  // the query filters solely by userId. Safe to call with any userType value.
+  // ── Fetch: GET /notifications ─────────────────────────────────────────────
 
   const fetchNotifications = useCallback(async () => {
     setLoadingNotes(true);
@@ -169,43 +144,39 @@ export default function HospitalDoctorDashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
     fetchAppointments();
     fetchNotifications();
-  }, [fetchDashboard, fetchAppointments, fetchNotifications]);
+  }, [fetchAppointments, fetchNotifications]);
 
   const handleRetry = () => {
-    fetchDashboard();
     fetchAppointments();
     fetchNotifications();
   };
 
   // ── Derived display values ─────────────────────────────────────────────────
 
-  const doctorName = dashboard?.doctorName || 'Doctor';
-
   const overviewCards = [
-    { title: dashboard?.todayAppointments ?? 0,   label: t('hospital.todayAppointments'), icon: CalendarIcon,  borderColor: '#E0F2FE', iconColor: '#0284C7', iconBg: '#EBF5FF' },
-    { title: dashboard?.totalPatients     ?? 0,   label: t('hospital.totalPatients'),     icon: UsersIcon,     borderColor: '#DCFCE7', iconColor: '#04802D', iconBg: '#F0FDF4' },
-    { title: dashboard?.completedConsults ?? 0,   label: t('hospital.completedConsults', 'Completed Consults'),  icon: UserPlusIcon,  borderColor: '#FEE2E2', iconColor: '#FF0000', iconBg: '#FEF2F2' },
-    { title: dashboard?.totalAppointments ?? 0,   label: t('hospital.totalAppointments', 'Total Appointments'),  icon: BanknotesIcon, borderColor: '#F3E8FF', iconColor: '#92009F', iconBg: '#F3E8FF' },
+    { title: stats?.totalAppointments.thisMonth ?? 0, label: t('hospital.totalAppointments', 'Total Appointments'), icon: CalendarIcon,  borderColor: '#E0F2FE', iconColor: '#0284C7', iconBg: '#EBF5FF' },
+    { title: stats?.totalPatients               ?? 0, label: t('hospital.totalPatients'),                           icon: UsersIcon,     borderColor: '#DCFCE7', iconColor: '#04802D', iconBg: '#F0FDF4' },
+    { title: stats?.totalDoctors                ?? 0, label: t('hospital.totalDoctors', 'Total Doctors'),           icon: UserPlusIcon,  borderColor: '#FEE2E2', iconColor: '#FF0000', iconBg: '#FEF2F2' },
+    { title: stats ? `${stats.totalRevenue.toLocaleString()} RWF` : 0, label: t('hospital.totalRevenue', 'Total Revenue'), icon: BanknotesIcon, borderColor: '#F3E8FF', iconColor: '#92009F', iconBg: '#F3E8FF' },
   ];
 
-  // Weekly chart from GET /doctors/dashboard weeklyVisits
-  const weeklyPoints  = dashboard?.weeklyVisits ?? [];
-  const maxWeekly     = Math.max(...weeklyPoints.map((w) => w.count), 1);
-  const weeklyCoords  = weeklyPoints.map((item, index) => ({
-    x: 20 + index * (560 / Math.max(weeklyPoints.length - 1, 1)),
-    y: 140 - (item.count / maxWeekly) * 100,
+  // Weekly chart from GET /hospitals/:id/dashboard/weekly-revenue
+  const maxWeekly     = Math.max(...weeklyRevenue.map((w) => w.revenue), 1);
+  const weeklyCoords  = weeklyRevenue.map((item, index) => ({
+    x: 20 + index * (560 / Math.max(weeklyRevenue.length - 1, 1)),
+    y: 140 - (item.revenue / maxWeekly) * 100,
   }));
   const weeklyPath    = weeklyCoords.map((p) => `${p.x},${p.y}`).join(' ');
 
-  // Donut from GET /doctors/dashboard appointmentsByStatus
-  const statusCounts  = dashboard?.appointmentsByStatus ?? {};
+  // Donut from GET /hospitals/:id/dashboard/stats appointmentsByStatus
+  // (hospital-wide status breakdown — same source admin/dashboard could use)
+  const statusCounts  = stats?.appointmentsByStatus ?? { PENDING: 0, CONFIRMED: 0, COMPLETED: 0, CANCELLED: 0 };
   const categories    = [
-    { label: t('hospital.completed', 'Completed'), value: statusCounts['COMPLETED'] ?? 0, color: '#059669' },
-    { label: t('hospital.active',    'Active'),    value: (statusCounts['SCHEDULED'] ?? 0) + (statusCounts['PENDING'] ?? 0) + (statusCounts['READY_FOR_DOCTOR'] ?? 0) + (statusCounts['ARRIVED'] ?? 0), color: '#2563EB' },
-    { label: t('hospital.cancelled', 'Cancelled'), value: statusCounts['CANCELLED'] ?? 0, color: '#DC2626' },
+    { label: t('hospital.completed', 'Completed'), value: statusCounts.COMPLETED ?? 0, color: '#059669' },
+    { label: t('hospital.active',    'Active'),    value: (statusCounts.PENDING ?? 0) + (statusCounts.CONFIRMED ?? 0), color: '#2563EB' },
+    { label: t('hospital.cancelled', 'Cancelled'), value: statusCounts.CANCELLED ?? 0, color: '#DC2626' },
   ].filter((c) => c.value > 0);
   const catTotal      = categories.reduce((s, c) => s + c.value, 0) || 0;
   let   startPct      = 0;
@@ -222,17 +193,15 @@ export default function HospitalDoctorDashboardPage() {
     status:       n.isRead ? 'Viewed' : 'New',
   }));
 
-  const loadingStats2 = loadingStats;
-
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
 
       {/* Error banner */}
-      {error && (
+      {statsError && (
         <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700 flex items-center gap-3">
-          <span className="font-semibold">{t('hospital.failedLoadDashboard', 'Failed to load dashboard')}:</span> {error}
+          <span className="font-semibold">{t('hospital.failedLoadDashboard', 'Failed to load dashboard')}:</span> Could not load stats.
           <button onClick={handleRetry} className="ml-auto underline text-red-600 hover:text-red-800 text-xs font-semibold">
             {t('common.retry', 'Retry')}
           </button>
@@ -249,7 +218,7 @@ export default function HospitalDoctorDashboardPage() {
         </svg>
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
-            {getGreeting()}, {loadingStats2 ? 'Doctor.' : `${doctorName}.`}
+            {getGreeting()}, {loadingStats ? 'Doctor.' : `${doctorName}.`}
           </h1>
           <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeMessage')}</p>
           <Link
@@ -265,7 +234,7 @@ export default function HospitalDoctorDashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {loadingStats2
+        {loadingStats
           ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
           : overviewCards.map((card) => {
               const Icon = card.icon;
@@ -289,14 +258,14 @@ export default function HospitalDoctorDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Weekly Visit Chart */}
+        {/* Weekly Revenue Chart */}
         <div className="lg:col-span-6 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col justify-between">
           <div className="text-center mb-6">
             <h3 className="text-xs font-bold tracking-wider uppercase text-slate-700">
-              {t('hospital.weeklyPatientVisitsRates')}
+              {t('hospital.weeklyRevenue', 'Weekly Revenue')}
             </h3>
           </div>
-          {loadingStats2 ? (
+          {loadingStats ? (
             <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
           ) : (
             <div className="relative w-full h-64 flex flex-col justify-between">
@@ -317,7 +286,7 @@ export default function HospitalDoctorDashboardPage() {
                 </svg>
               </div>
               <div className="flex justify-between text-[10px] font-semibold text-gray-400 pl-12 pr-4 pt-2">
-                {weeklyPoints.map((item) => (
+                {weeklyRevenue.map((item) => (
                   <span key={item.label} className="max-w-[70px] text-left">{item.label}</span>
                 ))}
               </div>
@@ -325,7 +294,7 @@ export default function HospitalDoctorDashboardPage() {
           )}
         </div>
 
-        {/* Recent Appointments Table */}
+        {/* Recent Appointments Table (doctor-scoped) */}
         <div className="lg:col-span-6 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm overflow-hidden flex flex-col justify-between">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -376,7 +345,7 @@ export default function HospitalDoctorDashboardPage() {
           <div className="text-xs font-bold tracking-wider uppercase text-slate-700 mb-4">
             {t('hospital.patientCategories')}
           </div>
-          {loadingStats2 ? (
+          {loadingStats ? (
             <div className="flex justify-center"><div className="w-64 h-64 rounded-full bg-gray-100 animate-pulse" /></div>
           ) : (
             <>

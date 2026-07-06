@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Users,
   UserCheck,
@@ -11,7 +11,8 @@ import {
   ChevronRight,
   MoreVertical,
 } from 'lucide-react';
-import { MOCK_HOSPITAL_STAFF } from '@/mock/hospital/staff';
+import api from '@/lib/api';
+import { useHospitalId } from '@/lib/hospital';
 import type { HospitalStaffMember } from '@/types/hospital';
 
 const NAVY = '#1E3A5F';
@@ -53,6 +54,17 @@ function deptBadge(dept?: string) {
 function displayName(s: HospitalStaffMember) {
   const prefix = s.role === 'DOCTOR' ? 'Dr. ' : '';
   return `${prefix}${s.firstName} ${s.lastName}`;
+}
+
+// GET /hospitals/:id/doctors response row — see mapping notes below.
+interface BackendDoctor {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  specialization: string;
+  isAvailable: boolean;
+  createdAt: string;
+  user?: { email: string };
 }
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
@@ -107,28 +119,61 @@ function FilterSelect({
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function HospitalAdminStaffManagementPage() {
+  const hospitalId = useHospitalId();
+
+  const [staff, setStaff]       = useState<HospitalStaffMember[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(false);
+
   const [search, setSearch]     = useState('');
   const [deptFilter, setDept]   = useState('');
   const [roleFilter, setRole]   = useState('');
   const [statusFilter, setStatus] = useState('');
   const [page, setPage]         = useState(1);
 
+  // GET /hospitals/:id/doctors — the backend only returns doctors here.
+  // TODO: add nurses once GET /hospitals/:id/staff is available. Nurses and
+  // receptionists exist on the backend (HospitalStaff model) but there is no
+  // endpoint to list them yet, so the Staff Directory below is doctors-only
+  // until that ships. See src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md
+  // (Gap S-1) for detail.
+  useEffect(() => {
+    if (!hospitalId) { setLoading(false); return; }
+    api.get<BackendDoctor[]>(`/hospitals/${hospitalId}/doctors`)
+      .then(res => {
+        const doctors = Array.isArray(res.data) ? res.data : [];
+        setStaff(doctors.map((d): HospitalStaffMember => ({
+          id: d.id,
+          firstName: d.firstName ?? '',
+          lastName: d.lastName ?? '',
+          role: 'DOCTOR',
+          specialization: d.specialization,
+          department: d.specialization,
+          email: d.user?.email ?? '',
+          status: d.isAvailable ? 'ACTIVE' : 'INACTIVE',
+          joinedAt: d.createdAt,
+        })));
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
+
   // ── Derived stats ─────────────────────────────────────────────────────────
-  const totalStaff   = MOCK_HOSPITAL_STAFF.length;
-  const activeStaff  = MOCK_HOSPITAL_STAFF.filter(s => s.status === 'ACTIVE').length;
-  const inactiveStaff = MOCK_HOSPITAL_STAFF.filter(s => s.status !== 'ACTIVE').length;
-  const deptCount    = new Set(MOCK_HOSPITAL_STAFF.map(s => s.department)).size;
-  const activePct    = Math.round((activeStaff / totalStaff) * 100);
-  const inactivePct  = +(100 - activePct).toFixed(1);
+  const totalStaff   = staff.length;
+  const activeStaff  = staff.filter(s => s.status === 'ACTIVE').length;
+  const inactiveStaff = staff.filter(s => s.status !== 'ACTIVE').length;
+  const deptCount    = new Set(staff.map(s => s.department)).size;
+  const activePct    = totalStaff === 0 ? 0 : Math.round((activeStaff / totalStaff) * 100);
+  const inactivePct  = totalStaff === 0 ? 0 : +(100 - activePct).toFixed(1);
 
   // ── Filter options ────────────────────────────────────────────────────────
-  const allDepts   = useMemo(() => [...new Set(MOCK_HOSPITAL_STAFF.map(s => s.department ?? '').filter(Boolean))].sort(), []);
+  const allDepts   = useMemo(() => [...new Set(staff.map(s => s.department ?? '').filter(Boolean))].sort(), [staff]);
   const allRoles   = ['Doctor', 'Nurse', 'Receptionist'];
   const allStatuses = ['Active', 'Inactive', 'On Leave'];
 
   // ── Filtered + paginated ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    return MOCK_HOSPITAL_STAFF.filter(s => {
+    return staff.filter(s => {
       const name = displayName(s).toLowerCase();
       if (search && !name.includes(search.toLowerCase()) && !s.id.toLowerCase().includes(search.toLowerCase())) return false;
       if (deptFilter && s.department !== deptFilter) return false;
@@ -136,7 +181,7 @@ export default function HospitalAdminStaffManagementPage() {
       if (statusFilter && STATUS_BADGE[s.status].label !== statusFilter) return false;
       return true;
     });
-  }, [search, deptFilter, roleFilter, statusFilter]);
+  }, [staff, search, deptFilter, roleFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage   = Math.min(page, totalPages);
@@ -171,36 +216,42 @@ export default function HospitalAdminStaffManagementPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
+          Could not load staff — check your connection and refresh.
+        </div>
+      )}
+
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={Users}
           label="Total Staff"
-          value={totalStaff}
-          sub="All employees"
+          value={loading ? '—' : totalStaff}
+          sub="Doctors only — see TODO"
           iconBg="#EFF6FF"
           iconColor="#2563EB"
         />
         <StatCard
           icon={UserCheck}
           label="Active Staff"
-          value={activeStaff}
-          sub={`${activePct}%`}
+          value={loading ? '—' : activeStaff}
+          sub={loading ? '—' : `${activePct}%`}
           iconBg="#F0FDF4"
           iconColor="#16A34A"
         />
         <StatCard
           icon={UserX}
           label="Inactive Staff"
-          value={inactiveStaff}
-          sub={`${inactivePct}%`}
+          value={loading ? '—' : inactiveStaff}
+          sub={loading ? '—' : `${inactivePct}%`}
           iconBg="#FFF7ED"
           iconColor="#EA580C"
         />
         <StatCard
           icon={Building2}
           label="Departments"
-          value={deptCount}
+          value={loading ? '—' : deptCount}
           sub="Total Departments"
           iconBg="#FEFCE8"
           iconColor="#CA8A04"
@@ -263,7 +314,13 @@ export default function HospitalAdminStaffManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {pageSlice.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={6} className="px-6 py-3.5"><div className="h-4 bg-gray-100 rounded w-full" /></td>
+                  </tr>
+                ))
+              ) : pageSlice.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-400">
                     No staff members found.
@@ -274,7 +331,7 @@ export default function HospitalAdminStaffManagementPage() {
                 const status  = STATUS_BADGE[s.status];
                 return (
                   <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-3.5 font-mono text-xs font-semibold text-gray-500">{s.id}</td>
+                    <td className="px-6 py-3.5 font-mono text-xs font-semibold text-gray-500">{s.id.slice(0, 8)}</td>
                     <td className="px-4 py-3.5 font-semibold text-gray-800">{displayName(s)}</td>
                     <td className="px-4 py-3.5 text-gray-600">{ROLE_LABEL[s.role]}</td>
                     <td className="px-4 py-3.5">

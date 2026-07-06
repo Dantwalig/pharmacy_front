@@ -5,18 +5,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useHospitalAdminUser, useHospitalId } from '@/lib/hospital';
+import { useHospitalAdminUser, useHospitalId, useHospitalDashboardStats } from '@/lib/hospital';
 import { CalendarIcon, UsersIcon, BanknotesIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import api from '@/lib/api';
-
-interface DashboardStats {
-  totalAppointments: { thisMonth: number; allTime: number };
-  totalRevenue: number;
-  monthlyRevenue: number;
-  totalDoctors: number;
-  activeDoctors: number;
-  totalPatients: number;
-}
 
 export default function HospitalAdminDashboardPage() {
   const { t } = useTranslation();
@@ -25,7 +16,12 @@ export default function HospitalAdminDashboardPage() {
 
   const firstName = userName.split(' ')[0];
 
-  const [apiStats, setApiStats]           = useState<DashboardStats | null>(null);
+  // Shared with doctor/dashboard — see src/lib/hospital.ts useHospitalDashboardStats.
+  // Keeps both dashboards pulling from the same fetch helper and the same
+  // DashboardStats/WeeklyRevenue types in src/types/hospital.ts, instead of
+  // each page maintaining its own copy that can silently drift apart.
+  const { stats: apiStats, weeklyRevenue, loading: statsLoading } = useHospitalDashboardStats(hospitalId);
+
   const [spendData, setSpendData]         = useState<{ label: string; value: number }[]>([]);
   const [volumeData, setVolumeData]       = useState<{ label: string; value: number }[]>([]);
   const [chartMode, setChartMode]         = useState<'spend' | 'volume'>('spend');
@@ -42,22 +38,16 @@ export default function HospitalAdminDashboardPage() {
   };
 
   useEffect(() => {
+    setSpendData(weeklyRevenue.map(r => ({ label: r.label, value: r.revenue })));
+  }, [weeklyRevenue]);
+
+  useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
     (async () => {
-      const [statsRes, revenueRes, appointmentsRes, stockRes] = await Promise.allSettled([
-        api.get(`/hospitals/${hospitalId}/dashboard/stats`),
-        api.get(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
+      const [appointmentsRes, stockRes] = await Promise.allSettled([
         api.get(`/hospitals/${hospitalId}/dashboard/daily-appointments`),
         api.get(`/hospitals/${hospitalId}/drug-stock`),
       ]);
-      if (statsRes.status === 'fulfilled')
-        setApiStats(statsRes.value.data);
-      if (revenueRes.status === 'fulfilled') {
-        const rows: { label: string; revenue: number }[] = Array.isArray(revenueRes.value.data)
-          ? revenueRes.value.data
-          : [];
-        setSpendData(rows.map(r => ({ label: r.label, value: r.revenue })));
-      }
       if (appointmentsRes.status === 'fulfilled') {
         const rows: { label: string; count: number }[] = Array.isArray(appointmentsRes.value.data)
           ? appointmentsRes.value.data
@@ -72,10 +62,12 @@ export default function HospitalAdminDashboardPage() {
     })();
   }, [hospitalId]);
 
+  const loadingCombined = loading || statsLoading;
+
   const stats = [
     {
       label: t('hospital.appointments'),
-      value: loading ? '—' : (apiStats?.totalAppointments.thisMonth ?? '—'),
+      value: loadingCombined ? '—' : (apiStats?.totalAppointments.thisMonth ?? '—'),
       statusText: apiStats ? `${apiStats.totalAppointments.allTime} all time` : '—',
       statusColor: 'text-emerald-600',
       up: true,
@@ -87,7 +79,7 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.activeDoctors'),
-      value: loading ? '—' : (apiStats?.activeDoctors ?? '—'),
+      value: loadingCombined ? '—' : (apiStats?.activeDoctors ?? '—'),
       statusText: apiStats ? `${apiStats.totalDoctors} total doctors` : '—',
       statusColor: 'text-slate-500',
       up: false,
@@ -99,7 +91,7 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.procuredValue'),
-      value: loading ? '—' : (apiStats ? `${apiStats.monthlyRevenue.toLocaleString()} RWF` : '—'),
+      value: loadingCombined ? '—' : (apiStats ? `${apiStats.monthlyRevenue.toLocaleString()} RWF` : '—'),
       statusText: apiStats ? `${apiStats.totalRevenue.toLocaleString()} RWF total` : '—',
       statusColor: 'text-emerald-600',
       up: true,
@@ -111,7 +103,7 @@ export default function HospitalAdminDashboardPage() {
     },
     {
       label: t('hospital.lowStockExpiry'),
-      value: loading ? '—' : (lowStockCount ?? '—'),
+      value: loadingCombined ? '—' : (lowStockCount ?? '—'),
       statusText: t('hospital.requiresImmediateAttention'),
       statusColor: lowStockCount && lowStockCount > 0 ? 'text-red-500' : 'text-emerald-600',
       up: false,
@@ -212,7 +204,7 @@ export default function HospitalAdminDashboardPage() {
           </div>
 
           <div className="h-[300px]">
-            {loading ? (
+            {loadingCombined ? (
               <div className="h-full rounded-xl bg-gray-100 animate-pulse" />
             ) : chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full text-sm text-gray-400">

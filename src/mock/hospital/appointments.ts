@@ -14,7 +14,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Cardiology',
     date: '2026-06-01T08:30:00Z',
     reason: 'Chest pain and shortness of breath',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -40,7 +40,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Paediatrics',
     date: '2026-06-01T09:30:00Z',
     reason: 'Child vaccination — 6-month schedule',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'IN_PERSON',
   },
   {
@@ -53,7 +53,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Surgery',
     date: '2026-06-01T10:00:00Z',
     reason: 'Pre-operative assessment',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -82,7 +82,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Neurology',
     date: '2026-06-01T11:00:00Z',
     reason: 'Recurring migraines',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'ONLINE',
   },
   {
@@ -95,7 +95,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'General Medicine',
     date: '2026-06-01T11:30:00Z',
     reason: 'Annual health check-up',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -121,7 +121,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Paediatrics',
     date: '2026-06-02T08:00:00Z',
     reason: 'Respiratory infection — 4-year-old',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'IN_PERSON',
   },
   {
@@ -134,7 +134,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Surgery',
     date: '2026-06-02T09:00:00Z',
     reason: 'Post-operative wound check',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -175,7 +175,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Dermatology',
     date: '2026-06-02T11:00:00Z',
     reason: 'Persistent skin rash',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'ONLINE',
   },
   {
@@ -203,7 +203,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Orthopaedics',
     date: '2026-06-03T09:00:00Z',
     reason: 'Back pain — lumbar region',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -216,7 +216,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Paediatrics',
     date: '2026-06-03T10:00:00Z',
     reason: 'Growth and development milestone check — 18 months',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'IN_PERSON',
   },
   {
@@ -229,7 +229,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Surgery',
     date: '2026-06-03T11:00:00Z',
     reason: 'Consultation for appendectomy',
-    status: 'CONFIRMED',
+    status: 'ARRIVED',
     type: 'IN_PERSON',
   },
   {
@@ -242,7 +242,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     specialization: 'Cardiology',
     date: '2026-06-04T09:00:00Z',
     reason: 'Palpitations and irregular heartbeat',
-    status: 'PENDING',
+    status: 'SCHEDULED',
     type: 'IN_PERSON',
   },
   {
