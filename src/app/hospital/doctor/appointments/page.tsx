@@ -28,7 +28,7 @@ export default function HospitalDoctorAppointmentsPage() {
   const [page, setPage] = useState(1);
 
   const totalCount = MOCK_APPOINTMENTS.length;
-  const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CONFIRMED').length;
+  const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'ARRIVED').length;
   const completedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'COMPLETED').length;
   const cancelledCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CANCELLED').length;
 

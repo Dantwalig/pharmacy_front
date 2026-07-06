@@ -5,7 +5,7 @@
 > **Source-verified against:** `back-end/src/reports/*`, `back-end/src/analytics/*`,
 > `back-end/src/inpatient/*`, `back-end/src/hospitals/*`, `back-end/src/prisma/schema.prisma`.
 > **Last updated:** 2026-07-04
-> **See also:** [`HOSPITAL_ADMIN_BACKEND_CONTRACT.md`](./HOSPITAL_ADMIN_BACKEND_CONTRACT.md) (dashboard/departments/finance/inventory).
+> **See also:** [`HOSPITAL_ADMIN_BACKEND_CONTRACT.md`](./HOSPITAL_ADMIN_BACKEND_CONTRACT.md) (dashboard/departments/finance/inventory). See [`HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md`](./HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md) for the next batch (doctor/dashboard, admin/appointments, admin/staff, admin/schedule), including a security fix found while integrating admin/staff.
 
 > **Note on staleness:** `HOSPITAL_ADMIN_BACKEND_CONTRACT.md` describes a
 > `GET /hospitals/:id/departments` endpoint as "migration pending." That route

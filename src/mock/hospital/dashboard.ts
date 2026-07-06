@@ -52,9 +52,9 @@ export const MOCK_RECENT_APPOINTMENTS: Pick<
   Appointment,
   'id' | 'patientName' | 'doctorName' | 'date' | 'status' | 'specialization' | 'condition' | 'healthStatus'
 >[] = [
-  { id: 'apt-001', patientName: 'Jean Bosco Niyonzima',  doctorName: 'Dr. Alice Mutoni',   date: '2026-06-01T08:30:00Z', status: 'CONFIRMED',       specialization: 'Cardiology',       condition: 'HYPERTENSION', healthStatus: 'STABLE' },
+  { id: 'apt-001', patientName: 'Jean Bosco Niyonzima',  doctorName: 'Dr. Alice Mutoni',   date: '2026-06-01T08:30:00Z', status: 'ARRIVED',         specialization: 'Cardiology',       condition: 'HYPERTENSION', healthStatus: 'STABLE' },
   { id: 'apt-002', patientName: 'Claudine Uwimana',       doctorName: 'Dr. Patrick Habimana', date: '2026-06-01T09:00:00Z', status: 'READY_FOR_DOCTOR', specialization: 'General Medicine', condition: 'DIABETES',    healthStatus: 'UNDER_REVIEW' },
-  { id: 'apt-003', patientName: 'Thierry Nkurunziza',     doctorName: 'Dr. Diane Mukamana',  date: '2026-06-01T09:30:00Z', status: 'PENDING',         specialization: 'Paediatrics',      condition: 'ASTHMA',      healthStatus: 'STABLE' },
+  { id: 'apt-003', patientName: 'Thierry Nkurunziza',     doctorName: 'Dr. Diane Mukamana',  date: '2026-06-01T09:30:00Z', status: 'SCHEDULED',       specialization: 'Paediatrics',      condition: 'ASTHMA',      healthStatus: 'STABLE' },
   { id: 'apt-004', patientName: 'Esperance Mukandoli',    doctorName: 'Dr. Eric Nsanzimana', date: '2026-05-31T14:00:00Z', status: 'COMPLETED',       specialization: 'Surgery',         condition: 'MIGRAINE',    healthStatus: 'FOLLOW-UP' },
   { id: 'apt-005', patientName: 'Aimable Tuyishimire',    doctorName: 'Dr. Alice Mutoni',    date: '2026-05-31T11:00:00Z', status: 'CANCELLED',       specialization: 'Cardiology',      condition: 'HYPERTENSION', healthStatus: 'UNDER_REVIEW' },
 ];
