@@ -28,15 +28,11 @@ export default function DoctorMessagesPage() {
             (c.role?.toLowerCase().includes(q) ?? false)
         );
     });
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to bottom of messages
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
     useEffect(() => {
-        scrollToBottom();
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [activeConversation?.messages]);
 
     const handleSendMessage = (e?: React.FormEvent) => {
@@ -56,7 +52,7 @@ export default function DoctorMessagesPage() {
                     ...c,
                     messages: [...c.messages, newMessage],
                     lastMessage: inputText,
-                    timestamp: 'Just now'
+                    timestamp: t('common.justNow')
                 };
             }
             return c;
@@ -70,10 +66,10 @@ export default function DoctorMessagesPage() {
             {/* ── Page Hero ── */}
             <div className="rounded-2xl px-8 py-8 shrink-0" style={{ background: '#EBF5FF' }}>
                 <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#1E3A5F' }}>
-                    {t('hospital.messages') || 'Doctor Messaging Hub'}
+                    {t('hospital.doctorMessagingHub')}
                 </h1>
                 <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>
-                    Communicate directly with patients, pharmacists, and medical staff in real-time.
+                    {t('hospital.messagesSubtitle')}
                 </p>
             </div>
 
@@ -87,7 +83,7 @@ export default function DoctorMessagesPage() {
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search conversations..."
+                                placeholder={t('hospital.searchConversations')}
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             />
                         </div>
@@ -95,15 +91,16 @@ export default function DoctorMessagesPage() {
 
                     <div className="flex-1 overflow-y-auto">
                         {filteredConversations.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-8">{search ? "No conversations found" : "No conversations yet"}</p>
+                            <p className="text-sm text-gray-400 text-center py-8">
+                                {t('hospital.noConversationsFound')}
+                            </p>
                         ) : (
                             <ul className="divide-y divide-gray-50">
                                 {filteredConversations.map((conv) => (
                                     <li
                                         key={conv.id}
                                         onClick={() => setActiveId(conv.id)}
-                                        className={`px-5 py-4 cursor-pointer transition-all hover:bg-gray-50 ${activeId === conv.id ? 'bg-blue-50/80' : ''
-                                            }`}
+                                        className={`px-5 py-4 cursor-pointer transition-all hover:bg-gray-50 ${activeId === conv.id ? 'bg-blue-50/80' : ''}`}
                                     >
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
@@ -142,15 +139,13 @@ export default function DoctorMessagesPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                    <span className="text-xs font-medium text-gray-400">Online</span>
+                                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                                    <span className="text-xs font-medium text-gray-400">{t('hospital.online')}</span>
                                 </div>
                             </div>
 
                             {/* Messages */}
-                            <div
-                                className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30"
-                            >
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
                                 {activeConversation.messages.map((msg) => (
                                     <div
                                         key={msg.id}
@@ -184,7 +179,7 @@ export default function DoctorMessagesPage() {
                                     <input
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
-                                        placeholder="Type your message here..."
+                                        placeholder={t('hospital.typeMessage')}
                                         className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-4 placeholder:text-gray-400 text-gray-700 font-medium"
                                     />
                                     <button
@@ -198,14 +193,14 @@ export default function DoctorMessagesPage() {
                             </div>
                         </>
                     ) : (
-                        /* Empty state — no conversation selected */
+                        /* Empty state — no conversation selected / no conversations yet */
                         <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
                             <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ background: '#EBF5FF' }}>
                                 <ChatBubbleLeftRightIcon className="w-9 h-9" style={{ color: '#38BDF8' }} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">Your Messages</h3>
+                            <h3 className="text-xl font-bold text-gray-900">{t('hospital.yourMessages')}</h3>
                             <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
-                                Select a patient or pharmacy thread from the list on the left to view the message history and start chatting.
+                                {t('hospital.selectConversationHint')}
                             </p>
                         </div>
                     )}

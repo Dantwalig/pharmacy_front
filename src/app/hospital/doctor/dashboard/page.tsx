@@ -187,8 +187,8 @@ export default function HospitalDoctorDashboardPage() {
   const overviewCards = [
     { title: dashboard?.todayAppointments ?? 0,   label: t('hospital.todayAppointments'), icon: CalendarIcon,  borderColor: '#E0F2FE', iconColor: '#0284C7', iconBg: '#EBF5FF' },
     { title: dashboard?.totalPatients     ?? 0,   label: t('hospital.totalPatients'),     icon: UsersIcon,     borderColor: '#DCFCE7', iconColor: '#04802D', iconBg: '#F0FDF4' },
-    { title: dashboard?.completedConsults ?? 0,   label: 'Completed Consults',            icon: UserPlusIcon,  borderColor: '#FEE2E2', iconColor: '#FF0000', iconBg: '#FEF2F2' },
-    { title: dashboard?.totalAppointments ?? 0,   label: 'Total Appointments',            icon: BanknotesIcon, borderColor: '#F3E8FF', iconColor: '#92009F', iconBg: '#F3E8FF' },
+    { title: dashboard?.completedConsults ?? 0,   label: t('hospital.completedConsults', 'Completed Consults'),  icon: UserPlusIcon,  borderColor: '#FEE2E2', iconColor: '#FF0000', iconBg: '#FEF2F2' },
+    { title: dashboard?.totalAppointments ?? 0,   label: t('hospital.totalAppointments', 'Total Appointments'),  icon: BanknotesIcon, borderColor: '#F3E8FF', iconColor: '#92009F', iconBg: '#F3E8FF' },
   ];
 
   // Weekly chart from GET /doctors/dashboard weeklyVisits
@@ -203,9 +203,9 @@ export default function HospitalDoctorDashboardPage() {
   // Donut from GET /doctors/dashboard appointmentsByStatus
   const statusCounts  = dashboard?.appointmentsByStatus ?? {};
   const categories    = [
-    { label: 'Completed', value: statusCounts['COMPLETED'] ?? 0, color: '#059669' },
-    { label: 'Active',    value: (statusCounts['SCHEDULED'] ?? 0) + (statusCounts['PENDING'] ?? 0) + (statusCounts['READY_FOR_DOCTOR'] ?? 0) + (statusCounts['ARRIVED'] ?? 0), color: '#2563EB' },
-    { label: 'Cancelled', value: statusCounts['CANCELLED'] ?? 0, color: '#DC2626' },
+    { label: t('hospital.completed', 'Completed'), value: statusCounts['COMPLETED'] ?? 0, color: '#059669' },
+    { label: t('hospital.active',    'Active'),    value: (statusCounts['SCHEDULED'] ?? 0) + (statusCounts['PENDING'] ?? 0) + (statusCounts['READY_FOR_DOCTOR'] ?? 0) + (statusCounts['ARRIVED'] ?? 0), color: '#2563EB' },
+    { label: t('hospital.cancelled', 'Cancelled'), value: statusCounts['CANCELLED'] ?? 0, color: '#DC2626' },
   ].filter((c) => c.value > 0);
   const catTotal      = categories.reduce((s, c) => s + c.value, 0) || 0;
   let   startPct      = 0;
@@ -232,9 +232,9 @@ export default function HospitalDoctorDashboardPage() {
       {/* Error banner */}
       {error && (
         <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700 flex items-center gap-3">
-          <span className="font-semibold">Failed to load dashboard:</span> {error}
+          <span className="font-semibold">{t('hospital.failedLoadDashboard', 'Failed to load dashboard')}:</span> {error}
           <button onClick={handleRetry} className="ml-auto underline text-red-600 hover:text-red-800 text-xs font-semibold">
-            Retry
+            {t('common.retry', 'Retry')}
           </button>
         </div>
       )}
@@ -340,7 +340,7 @@ export default function HospitalDoctorDashboardPage() {
                 {loadingAppts
                   ? Array.from({ length: 5 }).map((_, i) => <RowSkeleton key={i} />)
                   : appointments.length === 0
-                  ? <tr><td colSpan={3} className="py-8 text-center text-gray-400 text-sm">No appointments found.</td></tr>
+                  ? <tr><td colSpan={3} className="py-8 text-center text-gray-400 text-sm">{t('hospital.noAppointmentsFound', 'No appointments found.')}</td></tr>
                   : appointments.map((row, idx) => {
                       const patientName  = `${row.patient?.firstName ?? ''} ${row.patient?.lastName ?? ''}`.trim();
                       const condition    = row.reason ?? row.type ?? 'N/A';
@@ -408,7 +408,7 @@ export default function HospitalDoctorDashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900">{t('hospital.notification')}</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Latest hospital alerts and priorities</p>
+              <p className="text-xs text-gray-400 mt-0.5">{t('hospital.notificationsSubtitle', 'Latest hospital alerts and priorities')}</p>
             </div>
           </div>
           {loadingNotes ? (
@@ -426,7 +426,7 @@ export default function HospitalDoctorDashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50 text-sm">
                   {displayNotes.length === 0
-                    ? <tr><td colSpan={4} className="py-8 text-center text-gray-400 text-sm">No notifications yet.</td></tr>
+                    ? <tr><td colSpan={4} className="py-8 text-center text-gray-400 text-sm">{t('hospital.noNotificationsYet', 'No notifications yet.')}</td></tr>
                     : displayNotes.map((note) => (
                         <tr key={note.id} className="hover:bg-gray-50/80 transition-colors">
                           <td className="py-4 px-4 font-semibold text-gray-900">{note.time}</td>

@@ -35,7 +35,15 @@ export default function HospitalDoctorAppointmentsPage() {
       try {
         setLoading(true);
         const res = await api.get('/appointments');
-        setAppointments(unwrapData<Appointment>(res.data));
+        setAppointments(
+          unwrapData<any>(res.data).map((a: any) => ({
+            ...a,
+            patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+            doctorName: a.doctor?.user?.hospitalStaff
+              ? `Dr. ${a.doctor.user.hospitalStaff.firstName} ${a.doctor.user.hospitalStaff.lastName}`
+              : '—',
+          }))
+        );
       } catch (err) {
         toast.error('Failed to load appointments');
       } finally {
@@ -45,14 +53,15 @@ export default function HospitalDoctorAppointmentsPage() {
     fetchAppointments();
   }, []);
 
-  const totalCount = appointments.length;
+  const todayStr = new Date().toDateString();
+  const todayCount = appointments.filter(a => new Date(a.date).toDateString() === todayStr).length;
   const confirmedCount = appointments.filter((a) => a.status === 'CONFIRMED').length;
   const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
   const cancelledCount = appointments.filter((a) => a.status === 'CANCELLED').length;
 
   //stats
   const statCards = [
-    { label: t('hospital.today', 'Today'), value: totalCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.today', 'Today'), value: todayCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
     { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
     { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
     { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
@@ -105,8 +114,8 @@ export default function HospitalDoctorAppointmentsPage() {
     <div className="space-y-6">
       {/* Hero Header */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.appointmentsTitle', 'Appointments')}</h1>
-        <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>{t('hospital.appointmentsSubtitle', 'Manage and track patients appointments')}</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.doctorAppointmentsTitle', 'Appointments')}</h1>
+        <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>{t('hospital.doctorAppointmentsSubtitle', 'Manage and track patient appointments')}</p>
       </div>
 
       {/* Stats Cards Section */}
@@ -146,7 +155,7 @@ export default function HospitalDoctorAppointmentsPage() {
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider hidden lg:inline">{t('hospital.statusFilter', 'Status')}:</span>
           <div className="flex flex-wrap gap-1">
             {filterTabs.map((tab) => {
-              const count = tab.id === 'ALL' ? totalCount : appointments.filter(a => a.status === tab.id).length;
+              const count = tab.id === 'ALL' ? appointments.length : appointments.filter(a => a.status === tab.id).length;
               return (
                 <button
                   key={tab.id}

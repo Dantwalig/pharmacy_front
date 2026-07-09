@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
@@ -20,24 +21,22 @@ const TEAL = '#38BDF8';
 
 const BAR_COLORS = ['#1D4ED8', '#60A5FA', '#38BDF8', '#2563EB', '#3B82F6', '#1E40AF', '#0EA5E9'];
 
-const queueStatusStyles: Record<QueueStatus, { bg: string; color: string; label: string }> = {
-  WAITING:         { bg: '#EBF5FF', color: '#2563EB', label: 'Waiting' },
-  IN_CONSULTATION: { bg: '#ECFDF5', color: '#059669', label: 'In-Consultation' },
-  COMPLETED:       { bg: '#F1F5F9', color: '#475569', label: 'Completed' },
+const queueStatusStyles: Record<QueueStatus, { bg: string; color: string; labelKey: string }> = {
+  WAITING:         { bg: '#EBF5FF', color: '#2563EB', labelKey: 'hospital.statusWaiting' },
+  IN_CONSULTATION: { bg: '#ECFDF5', color: '#059669', labelKey: 'hospital.statusInConsultation' },
+  COMPLETED:       { bg: '#F1F5F9', color: '#475569', labelKey: 'hospital.completed' },
 };
 
-const apptStatusStyles: Record<TodayAppointmentStatus, { bg: string; color: string; label: string }> = {
-  COMPLETED:  { bg: '#ECFDF5', color: '#059669', label: 'Completed' },
-  UPCOMING:   { bg: '#EFF6FF', color: '#2563EB', label: 'Upcoming' },
-  CHECKED_IN: { bg: '#EEF2FF', color: '#4F46E5', label: 'Checked In' },
+const apptStatusStyles: Record<TodayAppointmentStatus, { bg: string; color: string; labelKey: string }> = {
+  COMPLETED:  { bg: '#ECFDF5', color: '#059669', labelKey: 'hospital.completed' },
+  UPCOMING:   { bg: '#EFF6FF', color: '#2563EB', labelKey: 'hospital.upcoming' },
+  CHECKED_IN: { bg: '#EEF2FF', color: '#4F46E5', labelKey: 'hospital.checkedIn' },
 };
 
 export default function ReceptionistDashboardPage() {
+  const { t } = useTranslation();
   const firstName = MOCK_RECEPTIONIST.firstName;
 
-  // ResponsiveContainer can't measure its parent during SSR / first paint
-  // (reads width/height = -1). Render charts only after mount, when the
-  // container has a real size.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -47,10 +46,10 @@ export default function ReceptionistDashboardPage() {
       {/* ── Hero header ── */}
       <div className="rounded-2xl px-6 sm:px-10 py-8" style={{ background: '#EBF5FF' }}>
         <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: NAVY }}>
-          Welcome Back, {firstName}
+          {t('hospital.welcomeBack')}, {firstName}
         </h1>
         <p className="mt-2 text-sm sm:text-base" style={{ color: TEAL }}>
-          Here&apos;s what&apos;s happening at the front desk today.
+          {t('hospital.receptionistDashboardSubtitle')}
         </p>
       </div>
 
@@ -59,7 +58,7 @@ export default function ReceptionistDashboardPage() {
         {/* New Patients this week */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <h3 className="text-sm font-bold text-center mb-4" style={{ color: NAVY }}>
-            New Patients this week
+            {t('hospital.newPatientsThisWeek')}
           </h3>
           <div className="h-56">
             {mounted && (
@@ -80,7 +79,7 @@ export default function ReceptionistDashboardPage() {
         {/* Check-ins This Week */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <h3 className="text-sm font-bold text-center mb-4" style={{ color: NAVY }}>
-            Check-ins This Week
+            {t('hospital.checkInsThisWeek')}
           </h3>
           <div className="h-56">
             {mounted && (
@@ -107,9 +106,9 @@ export default function ReceptionistDashboardPage() {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <Users size={18} style={{ color: TEAL }} />
-            <h2 className="text-base font-bold" style={{ color: NAVY }}>Check-ins &amp; Queue overview</h2>
+            <h2 className="text-base font-bold" style={{ color: NAVY }}>{t('hospital.checkInsQueueOverview')}</h2>
           </div>
-          <button className="text-sm font-semibold" style={{ color: TEAL }}>View All</button>
+          <button className="text-sm font-semibold" style={{ color: TEAL }}>{t('common.viewAll')}</button>
         </div>
 
         <div className="overflow-x-auto">
@@ -117,10 +116,10 @@ export default function ReceptionistDashboardPage() {
             <thead>
               <tr className="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-lg">#</th>
-                <th className="py-3 px-4">Patient Name</th>
-                <th className="py-3 px-4">Token No.</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4 text-right rounded-r-lg">Status</th>
+                <th className="py-3 px-4">{t('hospital.thPatientName')}</th>
+                <th className="py-3 px-4">{t('hospital.tokenNo')}</th>
+                <th className="py-3 px-4">{t('hospital.thDepartment')}</th>
+                <th className="py-3 px-4 text-right rounded-r-lg">{t('hospital.thStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
@@ -137,7 +136,7 @@ export default function ReceptionistDashboardPage() {
                         className="inline-flex px-3 py-1 rounded-full text-xs font-semibold"
                         style={{ backgroundColor: s.bg, color: s.color }}
                       >
-                        {s.label}
+                        {t(s.labelKey)}
                       </span>
                     </td>
                   </tr>
@@ -153,7 +152,7 @@ export default function ReceptionistDashboardPage() {
             style={{ backgroundColor: '#EBF5FF', color: '#2563EB' }}
           >
             <Users size={16} />
-            Manage Queue
+            {t('hospital.manageQueue')}
           </button>
         </div>
       </div>
@@ -166,9 +165,9 @@ export default function ReceptionistDashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <h2 className="text-base font-bold" style={{ color: NAVY }}>Today&apos;s Appointments</h2>
+            <h2 className="text-base font-bold" style={{ color: NAVY }}>{t('hospital.todaysAppointments')}</h2>
           </div>
-          <button className="text-sm font-semibold" style={{ color: TEAL }}>View All</button>
+          <button className="text-sm font-semibold" style={{ color: TEAL }}>{t('common.viewAll')}</button>
         </div>
 
         <div className="divide-y divide-gray-100">
@@ -186,7 +185,7 @@ export default function ReceptionistDashboardPage() {
                   className="inline-flex px-3 py-1 rounded-full text-xs font-semibold shrink-0"
                   style={{ backgroundColor: s.bg, color: s.color }}
                 >
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
                 <ChevronRight size={18} className="text-gray-400 shrink-0" />
               </button>

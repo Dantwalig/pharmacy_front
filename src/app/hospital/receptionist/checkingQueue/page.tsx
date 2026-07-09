@@ -63,6 +63,14 @@ export default function HospitalCheckingQueuePage() {
     );
     });
 
+    // Status label translator (data-driven badge values)
+    const STATUS_LABEL: Record<string, string> = {
+        'WAITING': 'hospital.statusWaiting',
+        'CALLED': 'hospital.statusCalled',
+        'IN CONSULTATION': 'hospital.statusInConsultation',
+    };
+    const statusLabel = (s: string) => (STATUS_LABEL[s] ? t(STATUS_LABEL[s]) : s);
+
     // Helper color picker
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -121,21 +129,21 @@ export default function HospitalCheckingQueuePage() {
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? 'All Departments' : dept}</option>))}
+                {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? t('hospital.allDepartments') : dept}</option>))}
                 </select>
 
                 <select
                 value={doctor}
                 onChange={(e) => setDoctor(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {doctors.map((doc) => ( <option key={doc} value={doc}>{doc === 'ALL' ? 'All Doctors' : doc}</option>))}
+                {doctors.map((doc) => ( <option key={doc} value={doc}>{doc === 'ALL' ? t('hospital.allDoctors') : doc}</option>))}
                 </select>
 
                 <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm" >
-                {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s} </option> ))}
+                {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? t('hospital.allStatuses') : statusLabel(s)} </option> ))}
                 </select>
                 <div className="flex items-center gap-2 lg:ml-auto">
                     <button
@@ -148,7 +156,7 @@ export default function HospitalCheckingQueuePage() {
                     }}
                     className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
                     >
-                    Reset
+                    {t('hospital.reset')}
                     </button>
                     <button className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600">
                         <PlusIcon className="h-4 w-4" />
@@ -166,12 +174,12 @@ export default function HospitalCheckingQueuePage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50/50 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                    <th className="py-4 px-6">No.</th>
-                                    <th className="py-4 px-6">Patient Name</th>
-                                    <th className="py-4 px-6">Assigned Doctor</th>
-                                    <th className="py-4 px-6">Department</th>
-                                    <th className="py-4 px-6">Wait Duration</th>
-                                    <th className="py-4 px-6">Status</th>
+                                    <th className="py-4 px-6">{t('hospital.thNo')}</th>
+                                    <th className="py-4 px-6">{t('hospital.thPatientName')}</th>
+                                    <th className="py-4 px-6">{t('hospital.thAssignedDoctor')}</th>
+                                    <th className="py-4 px-6">{t('hospital.department')}</th>
+                                    <th className="py-4 px-6">{t('hospital.thWaitDuration')}</th>
+                                    <th className="py-4 px-6">{t('hospital.status')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
@@ -188,7 +196,7 @@ export default function HospitalCheckingQueuePage() {
                                         <td className="py-4 px-6 text-gray-500">{patient.waitTime}</td>
                                         <td className="py-4 px-6">
                                             <span className={getStatusStyle(patient.status)}>
-                                                {patient.status}
+                                                {statusLabel(patient.status)}
                                             </span>
                                         </td>
                                     </tr>
@@ -205,9 +213,9 @@ export default function HospitalCheckingQueuePage() {
                             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-gray-200 text-gray-400 mb-4 text-xl font-light">
                                 i
                             </div>
-                            <h3 className="text-base font-bold text-slate-800 mb-1">No Patient Selected</h3>
+                            <h3 className="text-base font-bold text-slate-800 mb-1">{t('hospital.noPatientSelected')}</h3>
                             <p className="text-xs text-gray-400 leading-relaxed">
-                                Select a patient from the queue table to view detailed visit charts, insurance status, and check-in options.
+                                {t('hospital.noPatientSelectedHint')}
                             </p>
                         </div>
                     ) : (
@@ -218,17 +226,17 @@ export default function HospitalCheckingQueuePage() {
                                     <span className={getStatusStyle(selectedPatient.status)}>{selectedPatient.status}</span>
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPatient.name}</h3>
-                                <p className="text-xs text-gray-400 mb-4">Waiting for {selectedPatient.waitTime}</p>
+                                <p className="text-xs text-gray-400 mb-4">{t('hospital.waitingFor', { time: selectedPatient.waitTime })}</p>
                                 
                                 <hr className="border-gray-100 my-3" />
                                 
                                 <div className="space-y-3 text-xs">
                                     <div>
-                                        <span className="block text-gray-400 uppercase tracking-wider font-medium mb-0.5">Assigned Provider</span>
+                                        <span className="block text-gray-400 uppercase tracking-wider font-medium mb-0.5">{t('hospital.assignedProvider')}</span>
                                         <span className="text-gray-800 font-semibold">{selectedPatient.doctor}</span>
                                     </div>
                                     <div>
-                                        <span className="block text-gray-400 uppercase tracking-wider font-medium mb-0.5">Department unit</span>
+                                        <span className="block text-gray-400 uppercase tracking-wider font-medium mb-0.5">{t('hospital.departmentUnit')}</span>
                                         <span className="text-gray-800 font-semibold">{selectedPatient.department}</span>
                                     </div>
                                 </div>
@@ -238,7 +246,7 @@ export default function HospitalCheckingQueuePage() {
                                 onClick={() => setSelectedPatient(null)}
                                 className="mt-8 w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold text-gray-600 transition-colors"
                             >
-                                Clear Selection
+                                {t('hospital.clearSelection')}
                             </button>
                         </div>
                     )}
