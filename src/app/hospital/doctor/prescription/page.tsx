@@ -1,494 +1,359 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Search, Plus, Minus, Pill,
-  User, Phone, Mail, MapPin, Heart, AlertTriangle, ShieldCheck, UserCircle2,
-  ChevronDown,
-} from 'lucide-react';
-import { MOCK_PATIENTS, MOCK_PATIENT_RX, MOCK_PATIENT_DETAILS } from '@/mock/hospital/consultations';
-import { MOCK_DRUG_STOCK } from '@/mock/hospital/inventory';
-import type { PatientDetail, PrescriptionTab } from '@/types/hospital';
+import { Pill, Phone, Plus, Minus, Trash2 } from 'lucide-react';
+import { api, unwrapData } from '@/lib/api';
+import { ArrowPathIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#2D9B8A';
 
-// ── Info field row ────────────────────────────────────────────────────────────
-function InfoRow({ icon: Icon, label, value, color = '#6B7280' }: {
-  icon: React.ElementType; label: string; value: string; color?: string;
-}) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${color}15` }}>
-        <Icon size={13} style={{ color }} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs text-gray-400 font-medium">{label}</p>
-        <p className="text-sm font-semibold text-gray-700 mt-0.5 leading-tight">{value}</p>
-      </div>
-    </div>
-  );
+// Unique patient derived from the doctor's appointments
+interface PatientSummary {
+  patientId: string;
+  hospitalId: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  lastReason?: string;
 }
 
-// ── Patient Info tab ──────────────────────────────────────────────────────────
-function PatientInfoTab({ patient, detail }: {
-  patient: (typeof MOCK_PATIENTS)[number];
-  detail: PatientDetail | undefined;
-}) {
-  const { t } = useTranslation();
-  const STATUS_COLOR: Record<string, string> = {
-    ACTIVE: '#15803D', CRITICAL: '#DC2626', INACTIVE: '#6B7280',
-  };
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1">{t('hospital.personalInformation')}</h4>
-        <div className="divide-y divide-gray-50">
-          <InfoRow icon={User}    label={t('hospital.fullName')}     value={patient.name}                                       color="#2563EB" />
-          <InfoRow icon={User}    label={t('hospital.age')}           value={`${patient.age} ${t('hospital.yearsOld')}`}                         color="#2563EB" />
-          <InfoRow icon={User}    label={t('hospital.gender')}        value={patient.gender}                                     color="#2563EB" />
-          {detail && <InfoRow icon={User}  label={t('hospital.dateOfBirth')} value={detail.dob}         color="#2563EB" />}
-          {detail && <InfoRow icon={Heart} label={t('hospital.bloodType')}    value={detail.bloodType}   color="#DC2626" />}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1">{t('hospital.contactInformation')}</h4>
-        <div className="divide-y divide-gray-50">
-          {detail ? (
-            <>
-              <InfoRow icon={Phone}  label={t('common.phone')}   value={detail.phone}   color={TEAL} />
-              <InfoRow icon={Mail}   label={t('common.email')}   value={detail.email}   color={TEAL} />
-              <InfoRow icon={MapPin} label={t('common.address')} value={detail.address} color={TEAL} />
-            </>
-          ) : <p className="text-xs text-gray-400 py-3">{t('hospital.noContactData')}</p>}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1">{t('hospital.medicalSummary')}</h4>
-        <div className="divide-y divide-gray-50">
-          <InfoRow icon={Heart}        label={t('hospital.currentCondition')} value={patient.condition}                                                     color="#BE185D" />
-          <InfoRow icon={User}         label={t('hospital.lastVisit')}        value={patient.lastVisit}                                                     color="#BE185D" />
-          <InfoRow icon={UserCircle2}  label={t('hospital.status')}            value={patient.status.charAt(0) + patient.status.slice(1).toLowerCase()}     color={STATUS_COLOR[patient.status]} />
-          {detail && (
-            <InfoRow icon={AlertTriangle} label={t('hospital.allergies')} value={detail.allergies.length > 0 ? detail.allergies.join(', ') : t('hospital.noneReported')} color="#EA580C" />
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1">{t('hospital.insuranceEmergency')}</h4>
-        <div className="divide-y divide-gray-50">
-          {detail ? (
-            <>
-              <InfoRow icon={ShieldCheck} label={t('hospital.insuranceProvider')} value={detail.insurance}                                                           color="#7C3AED" />
-              <InfoRow icon={ShieldCheck} label={t('hospital.insuranceId')}       value={detail.insuranceId}                                                         color="#7C3AED" />
-              <InfoRow icon={Phone}       label={t('hospital.emergencyContact')}  value={`${detail.emergencyContact.name} (${detail.emergencyContact.relation})`}    color="#DC2626" />
-              <InfoRow icon={Phone}       label={t('hospital.emergencyPhone')}    value={detail.emergencyContact.phone}                                              color="#DC2626" />
-            </>
-          ) : <p className="text-xs text-gray-400 py-3">{t('hospital.noInsuranceData')}</p>}
-        </div>
-      </div>
-    </div>
-  );
+interface BackendAppointment {
+  id: string;
+  date: string;
+  status: string;
+  reason?: string;
+  patientId: string;
+  hospitalId: string;
+  patient: { firstName: string; lastName: string; phone?: string };
+  hospital: { id: string; name: string };
 }
 
-// ── Toggle pill helper ────────────────────────────────────────────────────────
-function TogglePill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all border"
-      style={
-        active
-          ? { background: '#DBEAFE', color: '#2563EB', borderColor: '#DBEAFE' }
-          : { background: '#F3F4F6', color: '#6B7280', borderColor: '#F3F4F6' }
-      }
-    >
-      {label}
-    </button>
-  );
+interface MedicationItem {
+  key:       number;
+  name:      string;
+  dosage:    string;
+  frequency: string;
+  duration:  string;
+  quantity:  number;
 }
 
-// ── Stepper ───────────────────────────────────────────────────────────────────
-function Stepper({ value, unit, onDecrement, onIncrement }: {
-  value: number; unit: string; onDecrement: () => void; onIncrement: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
-      <button onClick={onDecrement} className="w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors">
-        <Minus size={12} />
-      </button>
-      <span className="text-sm font-semibold text-gray-700 min-w-[60px] text-center">{value} {unit}</span>
-      <button onClick={onIncrement} className="w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors">
-        <Plus size={12} />
-      </button>
-    </div>
-  );
-}
-
-// ── Drug search input with dropdown ──────────────────────────────────────────
-function DrugSearchInput({ value, onChange }: { value: string; onChange: (name: string) => void }) {
-  const { t } = useTranslation();
-  const [query, setQuery]       = useState(value);
-  const [open, setOpen]         = useState(false);
-  const containerRef            = useRef<HTMLDivElement>(null);
-
-  const results = query.trim().length > 0
-    ? MOCK_DRUG_STOCK.filter(d =>
-        d.drug.brandName.toLowerCase().includes(query.toLowerCase()) ||
-        d.drug.genericName.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8)
-    : [];
-
-  function select(drug: (typeof MOCK_DRUG_STOCK)[number]) {
-    const label = `${drug.drug.brandName} ${drug.drug.dosageStrength}`;
-    setQuery(label);
-    onChange(label);
-    setOpen(false);
-  }
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+function uniquePatients(appointments: BackendAppointment[]): PatientSummary[] {
+  const map = new Map<string, PatientSummary>();
+  for (const a of appointments) {
+    if (!map.has(a.patientId)) {
+      map.set(a.patientId, {
+        patientId:  a.patientId,
+        hospitalId: a.hospitalId,
+        firstName:  a.patient?.firstName ?? '',
+        lastName:   a.patient?.lastName  ?? '',
+        phone:      a.patient?.phone,
+        lastReason: a.reason,
+      });
     }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const STOCK_COLOR: Record<string, { bg: string; color: string }> = {
-    IN_STOCK:  { bg: '#F0FDF4', color: '#15803D' },
-    LOW_STOCK: { bg: '#FFF7ED', color: '#C2410C' },
-    OUT:       { bg: '#FEF2F2', color: '#DC2626' },
-  };
-
-  return (
-    <div ref={containerRef} className="relative">
-      <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        <input
-          type="text"
-          placeholder={t('hospital.searchMedicineName')}
-          value={query}
-          onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
-          className="w-full pl-8 pr-8 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2"
-          style={{ '--tw-ring-color': '#3B82F6' } as React.CSSProperties}
-        />
-        <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-      </div>
-
-      {open && results.length > 0 && (
-        <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden max-h-52 overflow-y-auto">
-          {results.map(d => {
-            const stockStatus = d.quantity === 0 ? 'OUT' : d.lowStockAlert ? 'LOW_STOCK' : 'IN_STOCK';
-            const badge = STOCK_COLOR[stockStatus];
-            return (
-              <li key={d.drugId}>
-                <button
-                  onMouseDown={() => select(d)}
-                  className="w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors flex items-center justify-between gap-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{d.drug.brandName} {d.drug.dosageStrength}</p>
-                    <p className="text-xs text-gray-400 truncate">{d.drug.genericName} · {d.drug.dosageForm}</p>
-                  </div>
-                  <span
-                    className="shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold"
-                    style={{ background: badge.bg, color: badge.color }}
-                  >
-                    {stockStatus === 'OUT' ? t('hospital.outOfStock') : stockStatus === 'LOW_STOCK' ? t('hospital.lowStock') : t('hospital.qtyLabel', { count: d.quantity })}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {open && query.trim().length > 0 && results.length === 0 && (
-        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 text-xs text-gray-400">
-          {t('hospital.noMedicinesFound', { query })}
-        </div>
-      )}
-    </div>
-  );
+  }
+  return Array.from(map.values());
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+let _key = 0;
+function newMed(): MedicationItem {
+  return { key: ++_key, name: '', dosage: '', frequency: '', duration: '', quantity: 1 };
+}
+
 export default function HospitalDoctorPrescriptionPage() {
   const { t } = useTranslation();
-  const [search, setSearch]       = useState('');
-  const [selectedId, setSelected] = useState(MOCK_PATIENTS[0].id);
-  const [activeTab, setTab]       = useState<PrescriptionTab>('prescriptions');
 
-  // Form state
-  const [medName, setMedName]   = useState('');
-  const [doseQty, setDoseQty]   = useState(1);
-  const [doseUnit, setDoseUnit] = useState('Tablet');
-  const [durQty, setDurQty]     = useState(1);
-  const [durUnit, setDurUnit]   = useState('Week');
-  const [repeat, setRepeat]     = useState<'everyday' | 'alternative' | 'specific'>('everyday');
-  const [altDays, setAltDays]   = useState<Set<string>>(new Set());
-  const [times, setTimes]       = useState<Set<string>>(new Set(['Morning', 'Lunch']));
-  const [foodTiming, setFood]   = useState<'after' | 'before'>('after');
+  const [patients,       setPatients]       = useState<PatientSummary[]>([]);
+  const [loadingPts,     setLoadingPts]     = useState(true);
+  const [errorPts,       setErrorPts]       = useState<string | null>(null);
+  const [search,         setSearch]         = useState('');
+  const [selectedId,     setSelectedId]     = useState<string | null>(null);
 
-  const patient  = MOCK_PATIENTS.find(p => p.id === selectedId)!;
-  const rxList   = MOCK_PATIENT_RX[selectedId] ?? [];
-  const initials = patient.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  // Prescription form
+  const [diagnosis,      setDiagnosis]      = useState('');
+  const [medications,    setMedications]    = useState<MedicationItem[]>([newMed()]);
+  const [submitting,     setSubmitting]     = useState(false);
 
-  const filtered = MOCK_PATIENTS.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const fetchPatients = useCallback(async () => {
+    setLoadingPts(true);
+    setErrorPts(null);
+    try {
+      const res = await api.get('/appointments');
+      const raw = unwrapData<BackendAppointment>(res.data);
+      setPatients(uniquePatients(raw));
+    } catch (err: any) {
+      setErrorPts(err?.response?.data?.message ?? err?.message ?? 'Failed to load patients.');
+    } finally {
+      setLoadingPts(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchPatients(); }, [fetchPatients]);
+  useEffect(() => {
+    if (patients.length > 0 && !selectedId) setSelectedId(patients[0].patientId);
+  }, [patients, selectedId]);
+
+  const filtered = patients.filter(p =>
+    `${p.firstName} ${p.lastName}`.toLowerCase().includes(search.toLowerCase())
   );
 
-  function toggleTime(id: string) {
-    setTimes(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const selected = patients.find(p => p.patientId === selectedId) ?? null;
+
+  function addMed()  { setMedications(prev => [...prev, newMed()]); }
+  function removeMed(key: number) { setMedications(prev => prev.filter(m => m.key !== key)); }
+  function updateMed(key: number, field: keyof MedicationItem, value: string | number) {
+    setMedications(prev => prev.map(m => m.key === key ? { ...m, [field]: value } : m));
   }
 
-  const unitLabel = (u: string) => t(`hospital.unit${u === 'ml' ? 'Ml' : u}`);
-  const dayLabel = (d: string) => t(`hospital.day${d}`);
-  const timeLabel = (id: string) => t(`hospital.time${id}`);
-
-  const TABS: { id: PrescriptionTab; label: string }[] = [
-    { id: 'info',          label: t('hospital.patientInfo')   },
-    { id: 'visits',        label: t('hospital.visits')        },
-    { id: 'labs',          label: t('hospital.labs')          },
-    { id: 'prescriptions', label: t('hospital.prescriptions') },
-  ];
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected) return;
+    if (!diagnosis.trim()) { toast.error('Please enter a diagnosis.'); return; }
+    if (medications.some(m => !m.name.trim() || !m.dosage.trim() || !m.frequency.trim() || !m.duration.trim())) {
+      toast.error('Please fill in all medication fields.'); return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/prescriptions/hospital-issue', {
+        patientId:  selected.patientId,
+        hospitalId: selected.hospitalId,
+        diagnosis:  diagnosis.trim(),
+        medications: medications.map(m => ({
+          name:      m.name,
+          dosage:    m.dosage,
+          frequency: m.frequency,
+          duration:  m.duration,
+          ...(m.quantity > 0 ? { quantity: m.quantity } : {}),
+        })),
+      });
+      toast.success('Prescription issued successfully.');
+      setDiagnosis('');
+      setMedications([newMed()]);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to issue prescription.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex gap-4 h-[calc(100vh-88px)] min-h-0">
 
-      {/* ── Patient list ── */}
+      {/* Patient list */}
       <div className="w-52 shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
         <div className="px-4 pt-4 pb-2">
-          <h2 className="text-sm font-bold mb-3" style={{ color: NAVY }}>{t('hospital.patientsTitle')}</h2>
-          <div className="relative">
-            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('common.search')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-1"
-              style={{ '--tw-ring-color': TEAL } as React.CSSProperties}
-            />
-          </div>
+          <h2 className="text-sm font-bold mb-3" style={{ color: NAVY }}>{t('hospital.patientsTitle', 'Patients')}</h2>
+          <input
+            type="text"
+            placeholder={t('common.search', 'Search')}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 focus:outline-none"
+          />
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1">
-          {filtered.map(p => {
-            const isActive = p.id === selectedId;
-            return (
-              <button
-                key={p.id}
-                onClick={() => { setSelected(p.id); setTab('prescriptions'); }}
-                className="w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-2.5"
-                style={isActive ? { background: '#3B82F6', color: '#fff' } : { color: NAVY }}
-              >
-                <span
-                  className="w-7 h-7 rounded-full shrink-0"
-                  style={{ background: isActive ? 'rgba(255,255,255,0.4)' : '#E5E7EB' }}
-                />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold leading-tight truncate">{p.name}</p>
-                  <p
-                    className="text-xs mt-0.5 leading-tight truncate"
-                    style={{ color: isActive ? 'rgba(255,255,255,0.75)' : '#9CA3AF' }}
-                  >
-                    {p.condition.charAt(0) + p.condition.slice(1).toLowerCase()}
-                  </p>
-                </div>
+          {loadingPts ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="animate-pulse px-3 py-2.5 rounded-xl">
+                <div className="h-3 w-28 bg-gray-200 rounded mb-1" />
+                <div className="h-2.5 w-20 bg-gray-200 rounded" />
+              </div>
+            ))
+          ) : errorPts ? (
+            <div className="px-3 py-4 text-center space-y-2">
+              <p className="text-xs text-gray-400">{errorPts}</p>
+              <button onClick={fetchPatients} className="text-xs text-blue-600 flex items-center gap-1 mx-auto">
+                <ArrowPathIcon className="w-3 h-3" /> Retry
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Patient detail ── */}
-      <div className="flex-1 min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-
-        {/* Patient header */}
-        <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0"
-            style={{ background: '#CBD5E1' }}
-          >
-            {initials}
-          </div>
-          <div>
-            <h2 className="text-lg font-bold" style={{ color: NAVY }}>{patient.name}</h2>
-            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-              <span className="font-semibold" style={{ color: '#3B82F6' }}>
-                {patient.condition.charAt(0) + patient.condition.slice(1).toLowerCase()}
-              </span>
-              <span className="text-gray-300">←</span>
-              <span>{t('hospital.latestDiagnosis')}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Tabs — segmented control */}
-        <div className="px-6 py-3 border-b border-gray-100">
-          <div className="flex items-center bg-gray-100 rounded-xl p-1">
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setTab(tab.id)}
-                className={`flex-1 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === tab.id ? 'bg-white shadow-sm' : ''
-                }`}
-                style={{ color: activeTab === tab.id ? '#1D4ED8' : '#6B7280' }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tab content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'info' ? (
-            <PatientInfoTab patient={patient} detail={MOCK_PATIENT_DETAILS[patient.id]} />
-          ) : activeTab !== 'prescriptions' ? (
-            <div className="flex items-center justify-center h-32 text-sm text-gray-400">
-              {t('hospital.noTabData')}
             </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-xs text-gray-400 text-center py-4">No patients found.</p>
           ) : (
-            <div className="flex gap-5 items-start">
-
-              {/* ── Prescription form ── */}
-              <div className="flex-1 min-w-0 bg-gray-50 rounded-2xl border border-gray-100 p-5 flex flex-col gap-4">
-                <h3 className="text-sm font-bold" style={{ color: NAVY }}>
-                  {t('hospital.prescriptionFor')}{' '}
-                  <span style={{ color: '#3B82F6' }}>{medName || '…'}</span>
-                </h3>
-
-                {/* Medicine search */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-1 block">{t('hospital.medicine')}</label>
-                  <DrugSearchInput value={medName} onChange={setMedName} />
-                </div>
-
-                {/* Dosage */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">{t('hospital.dosage')}</label>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <Stepper value={doseQty} unit={unitLabel(doseUnit)} onDecrement={() => setDoseQty(q => Math.max(1, q - 1))} onIncrement={() => setDoseQty(q => q + 1)} />
-                    <select value={doseUnit} onChange={e => setDoseUnit(e.target.value)} className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none">
-                      {['Tablet', 'Capsule', 'Teaspoon', 'ml'].map(u => <option key={u} value={u}>{unitLabel(u)}</option>)}
-                    </select>
-                    <Stepper value={durQty} unit={unitLabel(durUnit)} onDecrement={() => setDurQty(q => Math.max(1, q - 1))} onIncrement={() => setDurQty(q => q + 1)} />
-                    <select value={durUnit} onChange={e => setDurUnit(e.target.value)} className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none">
-                      {['Day', 'Week', 'Month'].map(u => <option key={u} value={u}>{unitLabel(u)}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Repeat */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">{t('hospital.repeat')}</label>
-                  <div className="flex gap-2 flex-wrap">
-                    <TogglePill label={t('hospital.everyday')}         active={repeat === 'everyday'}    onClick={() => setRepeat('everyday')}    />
-                    <TogglePill label={t('hospital.alternativeDays')} active={repeat === 'alternative'} onClick={() => setRepeat('alternative')} />
-                    <TogglePill label={t('hospital.specificDays')}    active={repeat === 'specific'}    onClick={() => setRepeat('specific')}    />
-                  </div>
-
-                  {repeat === 'alternative' && (
-                    <div className="flex gap-1.5 mt-3 flex-wrap">
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
-                        const active = altDays.has(day);
-                        return (
-                          <button
-                            key={day}
-                            onClick={() => setAltDays(prev => {
-                              const next = new Set(prev);
-                              next.has(day) ? next.delete(day) : next.add(day);
-                              return next;
-                            })}
-                            className="w-9 h-9 rounded-lg text-xs font-semibold transition-all border"
-                            style={
-                              active
-                                ? { background: '#DBEAFE', color: '#2563EB', borderColor: '#DBEAFE' }
-                                : { background: '#F3F4F6', color: '#6B7280', borderColor: '#F3F4F6' }
-                            }
-                          >
-                            {dayLabel(day)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Time of day */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">{t('hospital.timeOfDay')}</label>
-                  <div className="flex gap-2">
-                    {['Morning', 'Lunch', 'Night'].map(id => (
-                      <TogglePill key={id} label={timeLabel(id)} active={times.has(id)} onClick={() => toggleTime(id)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* To be taken */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">{t('hospital.toBeTaken')}</label>
-                  <div className="flex gap-2">
-                    <TogglePill label={t('hospital.afterFood')}  active={foodTiming === 'after'}  onClick={() => setFood('after')}  />
-                    <TogglePill label={t('hospital.beforeFood')} active={foodTiming === 'before'} onClick={() => setFood('before')} />
-                  </div>
-                </div>
-
+            filtered.map(p => {
+              const isActive = p.patientId === selectedId;
+              return (
                 <button
-                  className="mt-auto w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
+                  key={p.patientId}
+                  onClick={() => { setSelectedId(p.patientId); setDiagnosis(''); setMedications([newMed()]); }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-2.5"
+                  style={isActive ? { background: '#3B82F6', color: '#fff' } : { color: NAVY }}
                 >
-                  {t('hospital.addMedicine')}
+                  <span className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
+                    style={{ background: isActive ? 'rgba(255,255,255,0.3)' : '#E5E7EB', color: isActive ? '#fff' : NAVY }}>
+                    {p.firstName[0]}{p.lastName[0]}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold leading-tight truncate">{p.firstName} {p.lastName}</p>
+                    {p.lastReason && (
+                      <p className="text-xs mt-0.5 leading-tight truncate" style={{ color: isActive ? 'rgba(255,255,255,0.75)' : '#9CA3AF' }}>
+                        {p.lastReason}
+                      </p>
+                    )}
+                  </div>
                 </button>
-              </div>
-
-              {/* ── Current prescriptions ── */}
-              <div className="w-64 shrink-0 flex flex-col gap-3">
-                {rxList.length === 0 ? (
-                  <div className="flex items-center justify-center h-24 text-xs text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">
-                    {t('hospital.noPrescriptions')}
-                  </div>
-                ) : rxList.map(rx => (
-                  <div key={rx.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${TEAL}15` }}>
-                        <Pill size={16} style={{ color: TEAL }} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold leading-tight" style={{ color: NAVY }}>{rx.name}</p>
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{rx.description}</p>
-                      </div>
-                    </div>
-                    <button
-                      className="w-full py-1.5 rounded-lg border text-xs font-semibold transition-colors hover:bg-blue-50"
-                      style={{ borderColor: '#BFDBFE', color: '#1D4ED8' }}
-                    >
-                      {t('hospital.changePrescription')}
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-            </div>
+              );
+            })
           )}
         </div>
       </div>
 
+      {/* Right panel */}
+      <div className="flex-1 min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+        {!selected ? (
+          <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+            {loadingPts ? 'Loading patients…' : 'Select a patient to write a prescription.'}
+          </div>
+        ) : (
+          <>
+            {/* Patient header */}
+            <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0" style={{ background: '#CBD5E1' }}>
+                {selected.firstName[0]}{selected.lastName[0]}
+              </div>
+              <div>
+                <h2 className="text-lg font-bold" style={{ color: NAVY }}>{selected.firstName} {selected.lastName}</h2>
+                {selected.phone && (
+                  <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                    <Phone size={11} /> {selected.phone}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Gap notice */}
+            <div className="mx-6 mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+              <InformationCircleIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800">
+                <span className="font-semibold">Prescription history unavailable:</span>{' '}
+                Loading a patient&apos;s past prescriptions requires their MRN, which is not included in the appointments response.
+                See <code className="bg-amber-100 px-1 rounded">DOCTOR_REMAINING_PAGES_API_GAPS.md</code>.
+              </p>
+            </div>
+
+            {/* Prescription form */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <h3 className="text-sm font-bold" style={{ color: NAVY }}>
+                  {t('hospital.prescriptionFor', 'Issue prescription for')}{' '}
+                  <span style={{ color: '#3B82F6' }}>{selected.firstName} {selected.lastName}</span>
+                </h3>
+
+                {/* Diagnosis */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 mb-1 block">{t('hospital.diagnosis', 'Diagnosis')} *</label>
+                  <input
+                    type="text"
+                    value={diagnosis}
+                    onChange={e => setDiagnosis(e.target.value)}
+                    placeholder="e.g. Upper respiratory tract infection"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                    required
+                  />
+                </div>
+
+                {/* Medications */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold text-gray-500">{t('hospital.medications', 'Medications')} *</label>
+                    <button type="button" onClick={addMed} className="flex items-center gap-1 text-xs text-blue-600 font-semibold hover:text-blue-800">
+                      <Plus size={12} /> Add
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {medications.map(med => (
+                      <div key={med.key} className="bg-gray-50 rounded-xl border border-gray-100 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Pill size={14} style={{ color: TEAL }} />
+                            <span className="text-xs font-semibold text-gray-600">Medication</span>
+                          </div>
+                          {medications.length > 1 && (
+                            <button type="button" onClick={() => removeMed(med.key)} className="text-red-400 hover:text-red-600">
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2">
+                            <label className="text-xs text-gray-400 mb-0.5 block">Name *</label>
+                            <input
+                              type="text"
+                              value={med.name}
+                              onChange={e => updateMed(med.key, 'name', e.target.value)}
+                              placeholder="e.g. Amoxicillin 500mg"
+                              className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-400 mb-0.5 block">Dosage *</label>
+                            <input
+                              type="text"
+                              value={med.dosage}
+                              onChange={e => updateMed(med.key, 'dosage', e.target.value)}
+                              placeholder="1 capsule"
+                              className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-400 mb-0.5 block">Frequency *</label>
+                            <input
+                              type="text"
+                              value={med.frequency}
+                              onChange={e => updateMed(med.key, 'frequency', e.target.value)}
+                              placeholder="3× daily"
+                              className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-400 mb-0.5 block">Duration *</label>
+                            <input
+                              type="text"
+                              value={med.duration}
+                              onChange={e => updateMed(med.key, 'duration', e.target.value)}
+                              placeholder="7 days"
+                              className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-400 mb-0.5 block">Qty</label>
+                            <div className="flex items-center gap-1.5 bg-white rounded-lg border border-gray-200 px-2 py-1">
+                              <button type="button" onClick={() => updateMed(med.key, 'quantity', Math.max(1, Number(med.quantity) - 1))}
+                                className="w-5 h-5 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100">
+                                <Minus size={10} />
+                              </button>
+                              <span className="text-xs font-semibold text-gray-700 w-6 text-center">{med.quantity}</span>
+                              <button type="button" onClick={() => updateMed(med.key, 'quantity', Number(med.quantity) + 1)}
+                                className="w-5 h-5 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100">
+                                <Plus size={10} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}
+                >
+                  {submitting ? t('common.saving', 'Issuing…') : t('hospital.issuePrescription', 'Issue Prescription')}
+                </button>
+              </form>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
