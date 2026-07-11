@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Search, Filter, MoreVertical, ChevronLeft, ChevronRight,
   Users, BedDouble, Activity, UserCheck,
@@ -8,47 +8,163 @@ import {
 import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import type { PatientStatus } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
+import api from '@/lib/api';
+import { useHospitalId } from '@/lib/hospital';
+import axios from 'axios';
 
 const PAGE_SIZE = 3;
 
 const STATUS_BADGE: Record<PatientStatus, string> = {
-  ACTIVE:   'bg-green-100 text-green-700',
-  CRITICAL: 'bg-red-100   text-red-600',
-  INACTIVE: 'bg-gray-100  text-gray-600',
+  ACTIVE: 'bg-green-100 text-green-700',
+  CRITICAL: 'bg-red-100 text-red-600',
+  INACTIVE: 'bg-gray-100 text-gray-600',
 };
+
+interface PatientRow {
+  id: string;
+  patientId: string;
+  name: string;
+  age: string;
+  gender: string;
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+}
+
+function formatLastVisit(value?: string) {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function deriveStatus(status?: string): PatientStatus {
+  const normalized = (status ?? '').toUpperCase();
+  if (normalized === 'CRITICAL') return 'CRITICAL';
+  if (normalized === 'ACTIVE') return 'ACTIVE';
+  return 'INACTIVE';
+}
 
 export default function NursePatientsPage() {
   const { t } = useTranslation();
+  const hospitalId = useHospitalId();
 
-  const [search, setSearch]             = useState('');
-  const [statusFilter, setStatus]       = useState<PatientStatus | 'ALL'>('ALL');
+  const [patients, setPatients] = useState<PatientRow[]>(MOCK_PATIENTS as unknown as PatientRow[]);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
   const [lastVisitFilter, setLastVisit] = useState('ALL');
-  const [page, setPage]                 = useState(1);
-  const [now]                           = useState(() => Date.now());
+  const [page, setPage] = useState(1);
+  const [now] = useState(() => Date.now());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [useMockFallback, setUseMockFallback] = useState(false);
 
-  const conditions = ['ALL', ...Array.from(new Set(MOCK_PATIENTS.map(p => p.condition)))];
+  useEffect(() => {
+    let cancelled = false;
 
-  const filtered = MOCK_PATIENTS
-    .filter(p => statusFilter === 'ALL' || p.status === statusFilter)
-    .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
-    .filter(p => {
+    if (!hospitalId) {
+      setUseMockFallback(true);
+      setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
+      setLoading(false);
+      setError(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadPatients = async () => {
+      setLoading(true);
+      setError(null);
+      setUseMockFallback(false);
+
+      try {
+        const response = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
+        const payload = response.data;
+        const admissions = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+
+        const mappedPatients = admissions.map((item: any) => {
+          const patient = item.patient ?? {};
+          const patientName = [patient.firstName, patient.lastName].filter(Boolean).join(' ').trim() || 'Unknown patient';
+          const patientId = patient.mrn || patient.id || item.id || '—';
+          const condition = String(item.reason || 'Stable').trim() || 'Stable';
+
+          return {
+            id: item.id,
+            patientId,
+            name: patientName,
+            age: patient.age ? String(patient.age) : '—',
+            gender: patient.gender || '—',
+            lastVisit: formatLastVisit(item.updatedAt || item.createdAt),
+            condition,
+            status: deriveStatus(item.status),
+          } as PatientRow;
+        });
+
+        if (!cancelled) {
+          setPatients(mappedPatients);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (process.env.NODE_ENV !== 'production') {
+            setUseMockFallback(true);
+            setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
+          } else {
+            const message =
+              axios.isAxiosError(err)
+              ? err.response?.data?.message
+              : "Unable to load patient data.";
+            setPatients([]);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPatients();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hospitalId]);
+
+  const conditions = useMemo(() => ['ALL', ...Array.from(new Set(patients.map((p) => p.condition)))], [patients]);
+
+  const filtered = patients
+    .filter((p) => statusFilter === 'ALL' || p.status === statusFilter)
+    .filter((p) => conditionFilter === 'ALL' || p.condition === conditionFilter)
+    .filter((p) => {
       if (lastVisitFilter === 'ALL') return true;
       const visit = new Date(p.lastVisit).getTime();
       if (Number.isNaN(visit)) return true;
       const days = (now - visit) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
-    .filter(p =>
+    .filter((p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.patientId.toLowerCase().includes(search.toLowerCase())
     );
 
-  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage    = Math.min(page, totalPages);
-  const pageItems   = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  function applyFilter(fn: () => void) { fn(); setPage(1); }
+  function applyFilter(fn: () => void) {
+    fn();
+    setPage(1);
+  }
+
+  const totalPatients = patients.length;
+  const activePatients = patients.filter((p) => p.status === 'ACTIVE').length;
+  const criticalPatients = patients.filter((p) => p.status === 'CRITICAL').length;
+  const dischargedPatients = patients.filter((p) => p.status === 'INACTIVE').length;
 
   return (
     <div className="space-y-6">
@@ -58,12 +174,24 @@ export default function NursePatientsPage() {
         <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.patientsSubtitle')}</p>
       </div>
 
+      {useMockFallback && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {t('hospital.devFallbackMessage', 'Showing mock patient data because the backend is unavailable or no hospital context is available in development.')}
+        </div>
+      )}
+
+      {error && !useMockFallback && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label={t('hospital.totalPatients')}     value={50} icon={<Users className="w-6 h-6" />}     color="red"    sub={t('hospital.viewAllPatients')} />
-        <StatCard label={t('hospital.admitPatients')}     value={20} icon={<BedDouble className="w-6 h-6" />} color="purple" sub={t('hospital.admitted')} />
-        <StatCard label={t('hospital.criticalPatients')}  value={15} icon={<Activity className="w-6 h-6" />}  color="blue"   sub={t('hospital.immediateCare')} />
-        <StatCard label={t('hospital.dischargedPatients')} value={25} icon={<UserCheck className="w-6 h-6" />} color="green"  sub={t('hospital.today')} />
+        <StatCard label={t('hospital.totalPatients')} value={loading ? 0 : totalPatients} icon={<Users className="w-6 h-6" />} color="red" sub={t('hospital.viewAllPatients')} />
+        <StatCard label={t('hospital.admitPatients')} value={loading ? 0 : activePatients} icon={<BedDouble className="w-6 h-6" />} color="purple" sub={t('hospital.admitted')} />
+        <StatCard label={t('hospital.criticalPatients')} value={loading ? 0 : criticalPatients} icon={<Activity className="w-6 h-6" />} color="blue" sub={t('hospital.immediateCare')} />
+        <StatCard label={t('hospital.dischargedPatients')} value={loading ? 0 : dischargedPatients} icon={<UserCheck className="w-6 h-6" />} color="green" sub={t('hospital.today')} />
       </div>
 
       {/* Filter bar */}
