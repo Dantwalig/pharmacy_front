@@ -139,10 +139,10 @@ export default function HospitalAdminSchedulePage() {
     // the currently-selected calendar day. NOTE: this returns *available*
     // (bookable) slots, not existing bookings — a genuinely different thing
     // from the hourly grid below, which shows real appointments. See
-    // src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md
-    // (Gap SC-1) for why these are kept as two separate panels rather than
-    // merged into one, and why month view doesn't use this endpoint at all
-    // (it has no date-range mode, only a single date per call).
+    // src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap SC-1) for why these are
+    // kept as two separate panels rather than merged into one, and why month
+    // view doesn't use this endpoint at all (it has no date-range mode, only
+    // a single date per call).
     const [openSlots, setOpenSlots] = useState<string[]>([]);
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [slotsError, setSlotsError] = useState(false);

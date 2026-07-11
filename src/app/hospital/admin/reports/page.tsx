@@ -20,10 +20,10 @@ import type {
 const NAVY = '#1E4D8C';
 
 // ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
-// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap R-2)
-// There is no patient-satisfaction/feedback model anywhere in schema.prisma
-// (only Doctor.rating exists, which is a doctor rating, not a patient
-// satisfaction survey). Kept on demo data until a satisfaction endpoint ships.
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-2)
+// No patient-satisfaction/feedback model anywhere in schema.prisma. Proposed
+// endpoint spec is in the gap doc: GET /hospitals/:id/dashboard/satisfaction.
+// Kept on demo data until that ships.
 const MOCK_PATIENT_SATISFACTION: SatisfactionSlice[] = [
   { name: 'Excellent', value: 50, color: '#1E4D8C' },
   { name: 'Good',      value: 35, color: '#3B82F6' },
@@ -31,12 +31,11 @@ const MOCK_PATIENT_SATISFACTION: SatisfactionSlice[] = [
 ];
 
 // ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
-// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap R-3)
-// GET /inpatient/admissions returns a raw, unpaginated, undated list and its
-// resolveAdmitter() falls back to a HospitalStaff lookup for any non-DOCTOR
-// role — HOSPITAL_ADMIN has no HospitalStaff row, so this 403s for admins
-// today. No monthly-aggregated "admissions over time" endpoint exists. Kept
-// on demo data until both issues are fixed.
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-3)
+// GET /inpatient/admissions returns a raw, unpaginated, undated list — no
+// monthly-aggregated "admissions over time" endpoint exists. Proposed
+// endpoint spec is in the gap doc: GET /hospitals/:id/dashboard/admissions-trend.
+// Kept on demo data until that ships.
 const MOCK_ADMITTED_OVER_TIME: AdmissionsTrendPoint[] = [
   { month: 'Jan', admitted: 4000, out: 2200 },
   { month: 'Feb', admitted: 1600, out: 900 },

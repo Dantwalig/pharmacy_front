@@ -135,8 +135,8 @@ export default function HospitalAdminStaffManagementPage() {
   // TODO: add nurses once GET /hospitals/:id/staff is available. Nurses and
   // receptionists exist on the backend (HospitalStaff model) but there is no
   // endpoint to list them yet, so the Staff Directory below is doctors-only
-  // until that ships. See src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md
-  // (Gap S-1) for detail.
+  // until that ships. Proposed endpoint spec is in
+  // src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap ST-1).
   useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
     api.get<BackendDoctor[]>(`/hospitals/${hospitalId}/doctors`)
@@ -260,14 +260,11 @@ export default function HospitalAdminStaffManagementPage() {
 
       {/* ── Staff Directory ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {/* Card header */}
         <div className="px-6 py-5 border-b border-gray-100">
           <h2 className="text-base font-bold" style={{ color: NAVY }}>Staff Directory</h2>
         </div>
 
-        {/* Filters */}
         <div className="px-6 py-4 flex flex-wrap gap-3 items-center border-b border-gray-50">
-          {/* Search */}
           <div className="relative flex-1 min-w-[180px] max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -300,7 +297,6 @@ export default function HospitalAdminStaffManagementPage() {
           />
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
@@ -364,7 +360,6 @@ export default function HospitalAdminStaffManagementPage() {
           </table>
         </div>
 
-        {/* Pagination footer */}
         <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-xs text-gray-400">
             {filtered.length === 0

@@ -122,7 +122,7 @@ export interface WeeklyRevenue {
 // src/prisma/schema.prisma) — the previous version of this type listed
 // PENDING and CONFIRMED, which don't exist on the backend at all, and was
 // missing NO_SHOW, ARRIVED, and IN_TRIAGE, which do. See
-// src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md (Gap A-1).
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
 // Status flow: SCHEDULED → ARRIVED → IN_TRIAGE → READY_FOR_DOCTOR → COMPLETED | CANCELLED | NO_SHOW
 
 export type AppointmentStatus =
@@ -270,10 +270,10 @@ export interface DiagnosisBreakdown {
 }
 
 // ── Reports charts (admin/reports) ──────────────────────────────────────────
-// Source: GET /reports/department/metrics (materialized view mv_department_daily_metrics)
-// for wait times; GET /hospitals/:id/doctors (grouped by specialization) for staff
-// counts. Satisfaction and admissions-over-time have no backend source yet —
-// see src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md.
+// Source: GET /reports/department/metrics for wait times; GET /hospitals/:id/doctors
+// (grouped by specialization) for staff counts. Satisfaction and
+// admissions-over-time have no backend source yet — proposed endpoints for
+// both are specified in src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
 
 export interface DepartmentWaitTime {
   dept: string;

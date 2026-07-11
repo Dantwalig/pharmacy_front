@@ -41,11 +41,12 @@ const announcementBadge: Record<string, { bg: string; color: string }> = {
 const EMPTY_SETTINGS: HospitalSettings = { hospitalName: '', address: '', phone: '', email: '' };
 
 // ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
-// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap S-2)
-// There is no HospitalFee model/table anywhere in schema.prisma and no
-// /hospitals/:id/fees route. Demo data only — deliberately given a distinct
-// "DEMO_" name (not the old mock-file export name) so it's obvious at a
-// glance this is a local placeholder, not a wired integration.
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap S-2)
+// No HospitalFee model/table anywhere in schema.prisma and no
+// /hospitals/:id/fees route. Proposed endpoint spec is in the gap doc. Demo
+// data only, deliberately given a distinct "DEMO_" name (not the old
+// mock-file export name) so it's obvious at a glance this is a local
+// placeholder, not a wired integration.
 const DEMO_FEES: HospitalFee[] = [
   { id: 'fee-001', service: 'Consultation', price: 10000, status: 'Active' },
   { id: 'fee-002', service: 'X-RAY',        price: 70000, status: 'Active' },
@@ -53,8 +54,9 @@ const DEMO_FEES: HospitalFee[] = [
 ];
 
 // ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
-// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap S-3)
-// No HospitalAnnouncement model/table anywhere in schema.prisma. Demo data only.
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap S-3)
+// No HospitalAnnouncement model/table anywhere in schema.prisma. Proposed
+// endpoint spec is in the gap doc. Demo data only.
 const DEMO_ANNOUNCEMENTS: HospitalAnnouncement[] = [
   { id: 'ann-001', title: 'Staff Meeting',      date: 'May 3, 2025',  time: '10 am', type: 'Urgent'  },
   { id: 'ann-002', title: 'New Policy Update',  date: 'May 1, 2025',  time: '12 pm', type: 'Formal'  },
@@ -66,12 +68,11 @@ export default function HospitalAdminSettingsPage() {
 
   // ── General / Hospital profile ────────────────────────────────────────────
   // Read: GET /hospitals/:id (real, confirmed working).
-  // Write: PATCH /hospitals/:id — added on the backend alongside this page
-  // (Role.HOSPITAL_ADMIN, ownership-checked). Accepts name/address/phone;
-  // email is not persisted server-side (it lives on the linked User row, out
-  // of scope for this route — see gap doc Gap S-1). Save calls the real
-  // endpoint; on any failure it surfaces an error toast rather than silently
-  // pretending to succeed.
+  // Write: PATCH /hospitals/:id — see gap doc Gap S-1. This route does not
+  // exist on the backend as of this snapshot; a proposed spec (payload shape,
+  // ownership check to reuse) is in the gap doc. Save is wired to call it so
+  // no further frontend change is needed once the route ships — until then it
+  // will surface a 404 as an error toast rather than pretending to persist.
   const [settings, setSettings]   = useState<HospitalSettings>(EMPTY_SETTINGS);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError]     = useState(false);
@@ -132,15 +133,18 @@ export default function HospitalAdminSettingsPage() {
         email: settings.email,
       });
       toast.success('Settings saved.');
-    } catch {
-      toast.error('Failed to save settings — please try again.');
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        toast.error('Save is not available yet — the backend has no hospital-profile update endpoint (see gap doc).');
+      } else {
+        toast.error('Failed to save settings — please try again.');
+      }
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    /* Fix 1: prevent any child from blowing out the page width */
     <div className="space-y-6 w-full max-w-full overflow-x-hidden">
 
       {/* ── Hero ── */}
@@ -149,7 +153,6 @@ export default function HospitalAdminSettingsPage() {
         style={{ background: '#EBF5FF' }}
       >
         <div className="min-w-0">
-          {/* Fix 5: semibold instead of bold — matches portal design language */}
           <h1 className="text-2xl sm:text-3xl font-semibold truncate" style={{ color: NAVY }}>
             Settings
           </h1>
@@ -170,7 +173,6 @@ export default function HospitalAdminSettingsPage() {
 
       {/* ── Tabs + Save Changes ── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        {/* Fix 3: scrollable tab bar — overflow-x:auto + whitespace-nowrap */}
         <div
           className="flex items-center gap-2 min-w-0 flex-1"
           style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}
@@ -193,7 +195,6 @@ export default function HospitalAdminSettingsPage() {
           ))}
         </div>
 
-        {/* Fix 4: full-width on mobile, auto on sm+ */}
         <button
           onClick={handleSave}
           disabled={saving || profileLoading}
@@ -272,7 +273,6 @@ function HospitalPageCard({
 
   return (
     <CardShell title="Hospital Page" subtitle="Update your hospital information">
-      {/* Fix 2: stack vertically on mobile, side-by-side on sm+ */}
       <div className="flex flex-col sm:flex-row gap-5 items-start">
         <div className="relative shrink-0 w-full sm:w-auto" style={{ height: 177 }}>
           <div className="relative w-full sm:w-[177px] h-[177px]">
