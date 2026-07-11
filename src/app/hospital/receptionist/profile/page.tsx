@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { User, Mail, Phone, Calendar, Pencil } from 'lucide-react';
-import { MOCK_RECEPTIONIST_PROFILE } from '@/mock/hospital/receptionist';
-
-const NAVY     = '#1E3A5F';
-const TEAL     = '#38BDF8';
+import { useAuth } from '@/context/AuthContext';
+import { api, unwrapData } from '@/lib/api';
+import { useEffect } from 'react';
+const NAVY = '#1E3A5F';
+const TEAL = '#38BDF8';
 const GRADIENT = 'linear-gradient(90deg, #0284C7 0%, #38BDF8 100%)';
 
 const inputCls =
@@ -15,17 +16,41 @@ const inputCls =
 const labelCls = 'block text-sm font-medium text-gray-700 mb-2';
 
 export default function ReceptionistProfilePage() {
-  const p = MOCK_RECEPTIONIST_PROFILE;
+  const { user } = useAuth();
+  const hospitalId = (user as any)?.hospitalId || '';
+
+  const [p, setProfile] = useState<any>({
+    fullName: '', phone: '', email: '', username: '', department: '', address: '', dateOfJoining: '', jobTitle: '', roleLabel: '', joinedAt: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const [errorProp, setErrorProp] = useState('');
+
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    fullName:      p.fullName,
-    phone:         p.phone,
-    email:         p.email,
-    username:      p.username,
-    department:    p.department,
-    address:       p.address,
-    dateOfJoining: p.dateOfJoining,
+    fullName: '', phone: '', email: '', username: '', department: '', address: '', dateOfJoining: ''
   });
+
+  useEffect(() => {
+    if (!hospitalId) {
+      setLoading(false);
+      setErrorProp('No hospital session found. Please log in.');
+      return;
+    }
+    api.get(`/hospitals/${hospitalId}/receptionist/profile`)
+      .then(res => {
+        const data = res.data?.data || res.data;
+        setProfile(data);
+        setForm({
+          fullName: data.fullName || '', phone: data.phone || '', email: data.email || '',
+          username: data.username || '', department: data.department || '', address: data.address || '',
+          dateOfJoining: data.dateOfJoining || ''
+        });
+      })
+      .catch(() => setErrorProp('Failed to fetch profile.'))
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
+
+
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -55,6 +80,14 @@ export default function ReceptionistProfilePage() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
+        {errorProp && (
+          <div className="w-full bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+            {errorProp}
+          </div>
+        )}
+        {loading && (
+          <div className="w-full p-8 text-center text-gray-500 animate-pulse">Loading profile...</div>
+        )}
 
         {/* ── Profile summary card ── */}
         <div className="w-full lg:w-80 lg:shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-7">

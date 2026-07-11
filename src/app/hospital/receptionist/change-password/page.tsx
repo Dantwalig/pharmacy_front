@@ -4,6 +4,8 @@
 
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#1E40AF';
@@ -12,6 +14,7 @@ export default function HospitalReceptionistChangePasswordPage() {
   const { t } = useTranslation();
 
   // Form state
+  const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,12 +84,17 @@ export default function HospitalReceptionistChangePasswordPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-    
-      await new Promise((r) => setTimeout(r, 700));
+      if (!user) throw new Error('Not logged in');
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
       alert(t('hospital.alertUpdated'));
       resetForm();
-    } catch (err) { alert(t('hospital.alertUpdateFailed'));
-    } finally { setSubmitting(false);
+    } catch (err) {
+      alert(t('hospital.alertUpdateFailed'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
