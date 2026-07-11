@@ -15,6 +15,22 @@ code. Specs are written to match existing conventions in this codebase
 `@Roles()` guards, the `mv_department_daily_metrics` materialized-view pattern
 for aggregations) — not invented from scratch.
 
+> **Update (2026-07-11):** Rebasing this branch onto `dev` surfaced that
+> `doctor/appointments/page.tsx` had been independently wired to real data by
+> someone else on `dev` while this branch was in flight, using the same old
+> incorrect `PENDING`/`CONFIRMED` status values this PR's `AppointmentStatus`
+> fix removes. Reconciled by updating that page's tabs, status map, and
+> dropdown options to the real 7-value enum, using the same colour palette as
+> `admin/appointments` for consistency. While reconciling, found that page's
+> `doctorName` derivation reads `a.doctor.user.hospitalStaff.firstName` —
+> which will be `null` for essentially every doctor, since `HospitalStaff` is
+> the nurse/receptionist account table, not something a doctor's own login
+> user has. `Doctor.firstName`/`Doctor.lastName` exist directly on the
+> already-included `doctor` object and would work instead. Left a comment in
+> the code rather than fixing it outright — it's a pre-existing bug on that
+> page, not something this PR's changes touched or caused, and it's someone
+> else's page in flight.
+
 ## Legend
 
 | Icon | Meaning |

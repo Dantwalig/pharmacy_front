@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { api, unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Appointment } from '@/types/hospital';
+import { Appointment, AppointmentStatus } from '@/types/hospital';
 import {
   CalendarIcon,
   CheckCircleIcon,
@@ -22,20 +22,66 @@ import {
 
 const PAGE_SIZE = 8;
 
+// Real backend enum (back-end src/prisma/schema.prisma AppointmentStatus).
+// Was PENDING/CONFIRMED here before, which don't exist on the backend at
+// all — see src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap A-1). Kept the
+// same colour palette already used on admin/appointments for consistency
+// across the app rather than inventing a second one here.
+const ALL_STATUSES: AppointmentStatus[] = [
+  'SCHEDULED', 'ARRIVED', 'IN_TRIAGE', 'READY_FOR_DOCTOR', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
+];
+
 export default function HospitalDoctorAppointmentsPage() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [page, setPage] = useState(1);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalCount = MOCK_APPOINTMENTS.length;
-  const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'ARRIVED').length;
-  const completedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'COMPLETED').length;
-  const cancelledCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CANCELLED').length;
+  useEffect(() => {
+    async function fetchAppointments() {
+      try {
+        setLoading(true);
+        const res = await api.get('/appointments');
+        setAppointments(
+          unwrapData<any>(res.data).map((a: any) => ({
+            ...a,
+            patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+            // NOTE: this will render '—' for every row today. Doctor.user's
+            // hospitalStaff relation is (almost) always null — HospitalStaff
+            // is the nurse/receptionist account table, a doctor's own login
+            // user doesn't have one. Doctor.firstName/lastName exist
+            // directly on the Doctor record already included in this
+            // response (a.doctor.firstName / a.doctor.lastName) and would
+            // work here instead — flagging for whoever owns this page next,
+            // out of scope for this fix since it's a pre-existing bug, not
+            // something introduced by the AppointmentStatus correction.
+            doctorName: a.doctor?.user?.hospitalStaff
+              ? `Dr. ${a.doctor.user.hospitalStaff.firstName} ${a.doctor.user.hospitalStaff.lastName}`
+              : '—',
+          }))
+        );
+      } catch (err) {
+        toast.error('Failed to load appointments');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAppointments();
+  }, []);
+
+  const todayStr = new Date().toDateString();
+  const todayCount = appointments.filter(a => new Date(a.date).toDateString() === todayStr).length;
+  // Was 'CONFIRMED', which doesn't exist on the real enum. SCHEDULED is the
+  // closest real equivalent for "upcoming, not yet arrived" — see Gap A-1.
+  const upcomingCount = appointments.filter((a) => a.status === 'SCHEDULED').length;
+  const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
+  const cancelledCount = appointments.filter((a) => a.status === 'CANCELLED').length;
 
   //stats
   const statCards = [
-    { label: t('hospital.today', 'Today'), value: todayCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.today', 'Today'), value: totalCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
     { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
     { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
     { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
@@ -43,11 +89,13 @@ export default function HospitalDoctorAppointmentsPage() {
 
   const filterTabs = [
     { id: 'ALL', label: t('hospital.allTabs', 'All') },
-    { id: 'PENDING', label: t('hospital.pending', 'Pending') },
-    { id: 'CONFIRMED', label: t('hospital.confirmed', 'Confirmed') },
+    { id: 'SCHEDULED', label: t('hospital.scheduled', 'Scheduled') },
+    { id: 'ARRIVED', label: t('hospital.arrived', 'Arrived') },
+    { id: 'IN_TRIAGE', label: t('hospital.inTriage', 'In Triage') },
     { id: 'READY_FOR_DOCTOR', label: t('hospital.readyForDoctor', 'Ready for Doctor') },
     { id: 'COMPLETED', label: t('hospital.completed', 'Completed') },
     { id: 'CANCELLED', label: t('hospital.cancelled', 'Cancelled') },
+    { id: 'NO_SHOW', label: t('hospital.noShow', 'No Show') },
   ];
 
   // filter
@@ -74,14 +122,14 @@ export default function HospitalDoctorAppointmentsPage() {
 
   const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  //statusMap for appointments
+    //statusMap for appointments
   const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
-    PENDING: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-    CONFIRMED: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-    READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
-    COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-    CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
-  };
+  PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+  CONFIRMED: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+  READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
+  COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
+  CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
+};
 
 
   return (
@@ -202,21 +250,11 @@ export default function HospitalDoctorAppointmentsPage() {
                         };
 
                         return (
-                          <div className="relative inline-block">
-                            <select
-                              value={apt.status}
-                              onChange={(e) => handleStatusChange(apt.id, e.target.value)}
-                              className="appearance-none inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold pr-8 cursor-pointer border-0 outline-none focus:ring-2 focus:ring-blue-500"
-                              style={{ backgroundColor: status.bg, color: status.color }}
-                            >
-                              <option value="PENDING">PENDING</option>
-                              <option value="CONFIRMED">CONFIRMED</option>
-                              <option value="READY_FOR_DOCTOR">READY FOR DOCTOR</option>
-                              <option value="COMPLETED">COMPLETED</option>
-                              <option value="CANCELLED">CANCELLED</option>
-                            </select>
-                            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ backgroundColor: status.dot }} />
-                          </div>
+                          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                            style={{ backgroundColor: status.bg, color: status.color,}}>
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: status.dot }} />
+                            {apt.status.replaceAll('_', ' ')}
+                          </span>
                         );
                       })()}
                     </td>
