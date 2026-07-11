@@ -113,11 +113,12 @@ export default function NursePatientsPage() {
           if (process.env.NODE_ENV !== 'production') {
             setUseMockFallback(true);
             setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
+            setError(null);
           } else {
-            const message =
-              axios.isAxiosError(err)
-              ? err.response?.data?.message
-              : "Unable to load patient data.";
+            const message = axios.isAxiosError(err)
+              ? err.response?.data?.message || 'Unable to load patient data right now.'
+              : 'Unable to load patient data right now.';
+            setError(message);
             setPatients([]);
           }
         }
