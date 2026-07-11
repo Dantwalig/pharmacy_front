@@ -81,8 +81,8 @@ export default function HospitalDoctorAppointmentsPage() {
 
   //stats
   const statCards = [
-    { label: t('hospital.today', 'Today'), value: totalCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
-    { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
+    { label: t('hospital.today', 'Today'), value: todayCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.upcoming', 'Upcoming'), value: upcomingCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
     { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
     { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
   ];
@@ -122,14 +122,18 @@ export default function HospitalDoctorAppointmentsPage() {
 
   const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    //statusMap for appointments
+  //statusMap for appointments — same palette as admin/appointments'
+  // STATUS_STYLE, kept in sync deliberately so status colours mean the same
+  // thing everywhere in the hospital portal.
   const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
-  PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-  CONFIRMED: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-  READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
-  COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-  CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
-};
+    SCHEDULED: { bg: '#FFFBEB', color: '#D97706', dot: '#F59E0B' },
+    ARRIVED: { bg: '#F0FDF4', color: '#16A34A', dot: '#22C55E' },
+    IN_TRIAGE: { bg: '#FFF7ED', color: '#C2410C', dot: '#FB923C' },
+    READY_FOR_DOCTOR: { bg: '#EFF6FF', color: '#2563EB', dot: '#3B82F6' },
+    COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
+    CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
+    NO_SHOW: { bg: '#F3F4F6', color: '#6B7280', dot: '#9CA3AF' },
+  };
 
 
   return (
@@ -250,11 +254,19 @@ export default function HospitalDoctorAppointmentsPage() {
                         };
 
                         return (
-                          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                            style={{ backgroundColor: status.bg, color: status.color,}}>
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: status.dot }} />
-                            {apt.status.replaceAll('_', ' ')}
-                          </span>
+                          <div className="relative inline-block">
+                            <select
+                              value={apt.status}
+                              onChange={(e) => handleStatusChange(apt.id, e.target.value)}
+                              className="appearance-none inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold pr-8 cursor-pointer border-0 outline-none focus:ring-2 focus:ring-blue-500"
+                              style={{ backgroundColor: status.bg, color: status.color }}
+                            >
+                              {ALL_STATUSES.map((s) => (
+                                <option key={s} value={s}>{s.replaceAll('_', ' ')}</option>
+                              ))}
+                            </select>
+                            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ backgroundColor: status.dot }} />
+                          </div>
                         );
                       })()}
                     </td>
