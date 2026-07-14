@@ -15,6 +15,7 @@ import {
 import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import { MOCK_NURSE } from '@/mock/hospital/user';
 import type { NursingNote } from '@/types/hospital';
+import { useTranslation } from 'react-i18next';
 
 const NURSE_NAME = `${MOCK_NURSE.firstName} ${MOCK_NURSE.lastName}`;
 const MOCK_TODAY = '2026-06-09';
@@ -53,6 +54,8 @@ const INITIAL_NOTES: NursingNote[] = [
 ];
 
 export default function NursingNotesPage() {
+    const { t } = useTranslation();
+
     const [notes, setNotes] = useState<NursingNote[]>(INITIAL_NOTES);
     const [search, setSearch] = useState('');
     const [patientFilter, setPatientFilter] = useState('');
@@ -75,10 +78,10 @@ export default function NursingNotesPage() {
     }, [notes, search, patientFilter, dateFilter]);
 
     const stats = [
-        { label: 'Notes Created Today', value: notes.filter((n) => n.date === MOCK_TODAY).length, icon: <FileText className="w-5 h-5 text-[#38BDF8]" />, bgColor: 'bg-[#F0F9FF]', borderColor: 'border-[#E0F2FE]' },
-        { label: 'Recent Notes', value: notes.length, icon: <Clock className="w-5 h-5 text-purple-500" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100' },
-        { label: 'Patients Monitored', value: new Set(notes.map((n) => n.patientName)).size, icon: <Users className="w-5 h-5 text-green-500" />, bgColor: 'bg-green-50', borderColor: 'border-green-100' },
-        { label: 'Pending Documentation', value: 2, icon: <AlertCircle className="w-5 h-5 text-red-500" />, bgColor: 'bg-red-50', borderColor: 'border-red-100' },
+        { label: t('hospital.notesToday'), value: notes.filter((n) => n.date === MOCK_TODAY).length, icon: <FileText className="w-5 h-5 text-[#38BDF8]" />, bgColor: 'bg-[#F0F9FF]', borderColor: 'border-[#E0F2FE]' },
+        { label: t('hospital.recentNotes'), value: notes.length, icon: <Clock className="w-5 h-5 text-purple-500" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100' },
+        { label: t('hospital.patientsMonitored'), value: new Set(notes.map((n) => n.patientName)).size, icon: <Users className="w-5 h-5 text-green-500" />, bgColor: 'bg-green-50', borderColor: 'border-green-100' },
+        { label: t('hospital.pendingDocumentation'), value: 2, icon: <AlertCircle className="w-5 h-5 text-red-500" />, bgColor: 'bg-red-50', borderColor: 'border-red-100' },
     ];
 
     const resetForm = () => {
@@ -111,10 +114,8 @@ export default function NursingNotesPage() {
             {/* Header */}
             <div className="rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden" style={{ background: '#EBF5FF' }}>
                 <div className="relative z-10">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A5F]">Nursing Notes & Documentation</h1>
-                    <p className="mt-2 max-w-2xl font-medium" style={{ color: '#0284C7' }}>
-                        Document patient observations, care activities, and treatment outcomes during your shift.
-                    </p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A5F]">{t('hospital.nursesNotesTitle')}</h1>
+                    <p className="mt-2 max-w-2xl font-medium" style={{ color: '#0284C7' }}>{t('hospital.nursesNotesSubtitle')}</p>
                 </div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 opacity-5 rounded-full -mr-20 -mt-20 blur-3xl" />
             </div>
@@ -143,7 +144,7 @@ export default function NursingNotesPage() {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search notes by patient or content..."
+                            placeholder={t('hospital.searchPatients')}
                             className="w-full pl-12 pr-4 py-3 bg-white border border-[#E2E8F0] rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] shadow-sm transition-all"
                         />
                     </div>
@@ -155,7 +156,7 @@ export default function NursingNotesPage() {
                                 onChange={(e) => setPatientFilter(e.target.value)}
                                 className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E3A5F] appearance-none cursor-pointer"
                             >
-                                <option value="">All Patients</option>
+                                <option value="">{t('hospital.allPatients')}</option>
                                 {MOCK_PATIENTS.map((p) => (
                                     <option key={p.id} value={p.name}>{p.name}</option>
                                 ))}
@@ -176,7 +177,7 @@ export default function NursingNotesPage() {
                     <div className="space-y-4">
                         {filteredNotes.length === 0 && (
                             <p className="py-8 text-center text-sm font-semibold text-[#94A3B8]">
-                                No notes yet.
+                             {t('hospital.noNotesFound')}
                             </p>
                         )}
                         {filteredNotes.map((note) => (
@@ -185,7 +186,7 @@ export default function NursingNotesPage() {
                                     <h4 className="text-sm font-black text-[#1E3A5F]">{note.patientName}</h4>
                                     <span className="shrink-0 text-[10px] font-bold text-[#94A3B8]">{note.time}</span>
                                 </div>
-                                <p className="text-[10px] text-[#64748B] mb-2">By {note.nurseName} • {note.date}</p>
+                                <p className="text-[10px] text-[#64748B] mb-2">{t('hospital.by')} {note.nurseName} • {note.date}</p>
                                 <p className="text-xs text-[#475569] leading-relaxed line-clamp-3 group-hover:text-[#1E3A5F]">
                                     {note.observationNotes}
                                 </p>
@@ -197,18 +198,18 @@ export default function NursingNotesPage() {
                 {/* Right Column - Form */}
                 <div className="lg:col-span-8">
                     <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8 space-y-8">
-                        <h3 className="text-xl font-bold text-[#1E3A5F]">Create New Nursing Note</h3>
+                        <h3 className="text-xl font-bold text-[#1E3A5F]">{t('hospital.createNursesNote')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">Patient Name *</label>
+                                <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.patientName')}</label>
                                 <div className="relative">
                                     <select
                                         value={selectedPatient}
                                         onChange={(e) => setSelectedPatient(e.target.value)}
                                         className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer"
                                     >
-                                        <option value="">Select a patient...</option>
+                                        <option value="">{t('hospital.selectPatient')}</option>
                                         {MOCK_PATIENTS.map((p) => (
                                             <option key={p.id} value={p.name}>{p.name}</option>
                                         ))}
@@ -217,7 +218,7 @@ export default function NursingNotesPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">Date & Time *</label>
+                                <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.dateTime')}</label>
                                 <div className="relative">
                                     <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] w-5 h-5 pointer-events-none" />
                                     <input
@@ -231,33 +232,33 @@ export default function NursingNotesPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">Observation Notes *</label>
+                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.observationNotes')}</label>
                             <textarea
                                 value={observationNotes}
                                 onChange={(e) => setObservationNotes(e.target.value)}
-                                placeholder="Enter objective assessments, patient symptoms, vitals, behavior notes..."
+                                placeholder={t('hospital.observationNotesPlaceholder')}
                                 rows={4}
                                 className="w-full p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] resize-none"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">Care Activities & Treatments</label>
+                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.careActivities')}</label>
                             <textarea
                                 value={careActivities}
                                 onChange={(e) => setCareActivities(e.target.value)}
-                                placeholder="Enter care interventions, treatments performed, dressings / site checks..."
+                                placeholder={t('hospital.careActivitiesPlaceholder')}
                                 rows={3}
                                 className="w-full p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] resize-none"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">Additional Comments / Plans</label>
+                            <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.additionalComments')}</label>
                             <textarea
                                 value={additionalComments}
                                 onChange={(e) => setAdditionalComments(e.target.value)}
-                                placeholder="Next steps, flags for upcoming shift, medication response..."
+                                placeholder={t('hospital.additionalCommentsPlaceholder')}
                                 rows={2}
                                 className="w-full p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] resize-none"
                             />
@@ -269,7 +270,7 @@ export default function NursingNotesPage() {
                                 className="px-8 py-3 bg-white border border-[#E2E8F0] text-[#64748B] text-sm font-bold rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2"
                             >
                                 <RotateCcw className="w-4 h-4" />
-                                Reset Form
+                                {t('hospital.resetForm')}
                             </button>
                             <button
                                 onClick={submitDocumentation}
@@ -277,7 +278,7 @@ export default function NursingNotesPage() {
                                 className="px-8 py-3 bg-[#38BDF8] text-white text-sm font-bold rounded-xl hover:bg-[#0EA5E9] transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Save className="w-4 h-4" />
-                                Submit Documentation
+                                {t('hospital.submitDocumentation')}
                             </button>
                         </div>
                     </div>
