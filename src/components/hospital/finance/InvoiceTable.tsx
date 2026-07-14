@@ -138,7 +138,7 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
                     {fmtRWF(inv.totalAmount)}
                   </td>
                   <td className="px-5 py-3.5 text-slate-600 whitespace-nowrap">
-                    {inv.paymentMethod === 'mobile_money' ? t('hospital.mobileMoney') : inv.paymentMethod === 'cash' ? t('hospital.cash') : inv.paymentMethod === 'card' ? t('hospital.card') : inv.paymentMethod === 'insurance' ? t('hospital.insurance') : inv.paymentMethod}
+                    {t('hospital.mobileMoney')}
                   </td>
                   <td className="px-5 py-3.5">
                     <StatusBadge
