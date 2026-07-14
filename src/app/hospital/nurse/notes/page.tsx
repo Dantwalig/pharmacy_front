@@ -144,7 +144,7 @@ export default function NursingNotesPage() {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder={t('hospital.searchPatientPlaceholder')}
+                            placeholder={t('hospital.searchPatients')}
                             className="w-full pl-12 pr-4 py-3 bg-white border border-[#E2E8F0] rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] shadow-sm transition-all"
                         />
                     </div>
@@ -186,7 +186,7 @@ export default function NursingNotesPage() {
                                     <h4 className="text-sm font-black text-[#1E3A5F]">{note.patientName}</h4>
                                     <span className="shrink-0 text-[10px] font-bold text-[#94A3B8]">{note.time}</span>
                                 </div>
-                                <p className="text-[10px] text-[#64748B] mb-2">By {note.nurseName} • {note.date}</p>
+                                <p className="text-[10px] text-[#64748B] mb-2">{t('hospital.by')} {note.nurseName} • {note.date}</p>
                                 <p className="text-xs text-[#475569] leading-relaxed line-clamp-3 group-hover:text-[#1E3A5F]">
                                     {note.observationNotes}
                                 </p>

@@ -76,7 +76,7 @@ export default function HospitalAdminDashboardPage() {
     {
       label: t('hospital.appointments'),
       value: loading ? '—' : (apiStats?.totalAppointments.thisMonth ?? '—'),
-      statusText: apiStats ? `${apiStats.totalAppointments.allTime} all time` : '—',
+      statusText: apiStats ? `${apiStats.totalAppointments.allTime} ${t('hospital.allTime')}` : '—',
       statusColor: 'text-emerald-600',
       up: true,
       accent: 'border-brand-navy',
@@ -88,7 +88,7 @@ export default function HospitalAdminDashboardPage() {
     {
       label: t('hospital.activeDoctors'),
       value: loading ? '—' : (apiStats?.activeDoctors ?? '—'),
-      statusText: apiStats ? `${apiStats.totalDoctors} total doctors` : '—',
+      statusText: apiStats ? `${apiStats.totalDoctors} ${t('hospital.totalDoctors')}` : '—',
       statusColor: 'text-slate-500',
       up: false,
       accent: 'border-amber-500',
@@ -216,7 +216,7 @@ export default function HospitalAdminDashboardPage() {
               <div className="h-full rounded-xl bg-gray-100 animate-pulse" />
             ) : chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                {chartMode === 'spend' ? 'No revenue data available' : 'No appointment data available'}
+                {chartMode === 'spend' ? t('hospital.noRevenueData') : t('hospital.noAppointmentData')}
               </div>
             ) : (
               <ResponsiveContainer width="98%" height="100%">
@@ -227,8 +227,8 @@ export default function HospitalAdminDashboardPage() {
                   <Tooltip
                     formatter={(v) =>
                       chartMode === 'spend'
-                        ? [`${(v as number).toLocaleString()} RWF`, 'Revenue']
-                        : [`${(v as number).toLocaleString()}`, 'Appointments']
+                        ? [`${(v as number).toLocaleString()} RWF`, t('hospital.revenue')]
+                        : [`${(v as number).toLocaleString()}`, t('hospital.appointments')]
                     }
                   />
                   <Line type="monotone" dataKey="value" dot={false} />
@@ -241,7 +241,7 @@ export default function HospitalAdminDashboardPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('hospital.recentActivity')}</h2>
           <div className="flex items-center justify-center h-32 text-sm text-gray-400">
-            No recent activity
+            {t('hospital.noRecentActivity')}
           </div>
         </div>
       </div>

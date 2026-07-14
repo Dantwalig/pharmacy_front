@@ -193,7 +193,7 @@ export default function MedicationAdministrationPage() {
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusStyle(med.status)}`}>
-                                            {med.status}
+                                            {med.status === 'ADMINISTERED' ? t('hospital.administered') : med.status === 'DUE' ? t('hospital.due') : med.status === 'OVERDUE' ? t('hospital.overdue') : med.status === 'MISSED' ? t('hospital.missed') : med.status === 'UPCOMING' ? t('hospital.upcoming') : med.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">

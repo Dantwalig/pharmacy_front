@@ -29,10 +29,10 @@ const VITAL_FIELDS = [
     temperature: '35', bloodPressure: '120/80', heartRate: '72',
     respiratoryRate: '16', oxygen: '98', weight: '60.0',
   });
-  const [condition, setCondition] = useState('Stable');
+  const [condition, setCondition] = useState('stable');
   const [painLevel, setPainLevel] = useState(4);
-  const [mobility, setMobility] = useState('Independent');
-  const [observation, setObservation] = useState('Patient is alert and oriented');
+  const [mobility, setMobility] = useState('independent');
+  const [observation, setObservation] = useState('');
 
   return (
     <div className="space-y-6">
@@ -77,9 +77,9 @@ const VITAL_FIELDS = [
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm text-gray-600">{t('hospital.generalCondition')}</label>
               <select value={condition} onChange={e => setCondition(e.target.value)} className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <option>{t('hospital.stable')}</option>
-                <option>{t('hospital.critical')}</option>
-                <option>{t('hospital.improving')}</option>
+                <option value="stable">{t('hospital.stable')}</option>
+                <option value="critical">{t('hospital.critical')}</option>
+                <option value="improving">{t('hospital.improving')}</option>
               </select>
             </div>
             <div>
@@ -89,9 +89,9 @@ const VITAL_FIELDS = [
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm text-gray-600">{t('hospital.mobilityStatus')}</label>
               <select value={mobility} onChange={e => setMobility(e.target.value)} className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <option>{t('hospital.independent')}</option>
-                <option>{t('hospital.assisted')}</option>
-                <option>{t('hospital.bedridden')}</option>
+                <option value="independent">{t('hospital.independent')}</option>
+                <option value="assisted">{t('hospital.assisted')}</option>
+                <option value="bedridden">{t('hospital.bedridden')}</option>
               </select>
             </div>
             <div>

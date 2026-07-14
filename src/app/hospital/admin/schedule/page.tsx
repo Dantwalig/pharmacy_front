@@ -162,7 +162,7 @@ export default function HospitalAdminSchedulePage() {
                     <MiniCalendar selected={currentDate} onSelect={setCurrentDate} />
                     <div className="relative">
                         <UsersIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search for people" className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        <input type="text" placeholder={t('hospital.searchForPeopleSchedule')} className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
                     </div>
                     <button className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900">
                         <span>{t('hospital.bookingPages')}</span>
@@ -229,8 +229,8 @@ export default function HospitalAdminSchedulePage() {
                     ) : (
                         <div>
                             <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
-                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-                                    <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{d}</div>
+                                {(['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'] as const).map(key => (
+                                    <div key={key} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{t(`hospital.${key}`)}</div>
                                 ))}
                             </div>
                             <div className="grid grid-cols-7">

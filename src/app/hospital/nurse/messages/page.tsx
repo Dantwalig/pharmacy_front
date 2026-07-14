@@ -97,7 +97,7 @@ export default function NurseMessagesPage() {
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search conversations..."
+                                placeholder={t('hospital.searchConversations')}
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             />
                         </div>
@@ -219,7 +219,7 @@ export default function NurseMessagesPage() {
                                     <input
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
-                                        placeholder="Type your message here..."
+                                        placeholder={t('hospital.typeMessage')}
                                         className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-4 placeholder:text-gray-400 text-gray-700 font-medium"
                                     />
                                     <button

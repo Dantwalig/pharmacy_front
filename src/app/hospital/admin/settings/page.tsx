@@ -222,7 +222,7 @@ function FeeStructureCard({ full }: { full?: boolean }) {
                 <td className="py-2.5 text-gray-600">{fee.price.toLocaleString()}</td>
                 <td className="py-2.5">
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
-                    {fee.status}
+                    {fee.status === 'Active' ? t('hospital.feeStatusActive') : fee.status}
                   </span>
                 </td>
                 <td className="py-2.5 text-right">
@@ -264,7 +264,7 @@ function AnnouncementsCard({ full }: { full?: boolean }) {
                   className="text-xs font-bold px-2 py-0.5 rounded-full w-fit"
                   style={{ background: badge.bg, color: badge.color }}
                 >
-                  {ann.type}
+                  {ann.type === 'Urgent' ? t('hospital.urgentType') : ann.type === 'Formal' ? t('hospital.formalType') : ann.type === 'General' ? t('hospital.generalType') : ann.type}
                 </span>
                 <p className="text-sm font-semibold text-gray-700 truncate">{ann.title}</p>
                 <p className="text-xs text-gray-400">{ann.date} · {ann.time}</p>

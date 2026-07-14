@@ -112,9 +112,9 @@ export default function HospitalAdminDepartmentsPage() {
           color: DEPT_COLORS[i % DEPT_COLORS.length],
           icon: DEPT_ICONS[i % DEPT_ICONS.length],
           rows: [
-            { icon: Users,     label: 'Doctors',   value: docs.length.toString() },
-            { icon: Activity,  label: 'Available', value: docs.filter((d: any) => d.isAvailable).length.toString() },
-            { icon: Building2, label: 'Status',    value: docs.some((d: any) => d.isAvailable) ? 'Active' : 'Inactive' },
+            { icon: Users,     label: t('hospital.doctors'),   value: docs.length.toString() },
+            { icon: Activity,  label: t('hospital.available'), value: docs.filter((d: any) => d.isAvailable).length.toString() },
+            { icon: Building2, label: t('hospital.status'),    value: docs.some((d: any) => d.isAvailable) ? t('hospital.statusActive') : t('hospital.statusInactive') },
           ],
         }));
         if (derived.length) setServiceGroups(derived);
@@ -160,15 +160,15 @@ export default function HospitalAdminDepartmentsPage() {
 
       {error && (
         <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-sm text-red-700">
-          Could not load department data — check your connection and refresh.
+          {t('hospital.couldNotLoadDepartments')}
         </div>
       )}
 
       {/* Service group cards */}
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-sm text-gray-400">Loading departments…</div>
+        <div className="flex items-center justify-center py-12 text-sm text-gray-400">{t('hospital.loadingDepartments')}</div>
       ) : serviceGroups.length === 0 ? (
-        <div className="flex items-center justify-center py-12 text-sm text-gray-400">No departments found.</div>
+        <div className="flex items-center justify-center py-12 text-sm text-gray-400">{t('hospital.noDepartmentsFound')}</div>
       ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {serviceGroups.map(group => {
@@ -251,7 +251,7 @@ export default function HospitalAdminDepartmentsPage() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-10 text-center text-gray-400 font-medium">No employees found.</td></tr>
+                  <tr><td colSpan={4} className="px-6 py-10 text-center text-gray-400 font-medium">{t('hospital.noEmployeesFound')}</td></tr>
                 ) : filtered.map((emp, idx) => (
                   <tr key={`${emp.name}-${idx}`} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{emp.name}</td>

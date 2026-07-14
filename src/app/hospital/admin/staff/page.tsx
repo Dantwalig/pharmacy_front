@@ -315,7 +315,7 @@ export default function HospitalAdminStaffManagementPage() {
         <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-xs text-gray-400">
             {filtered.length === 0
-              ? 'No staff found'
+              ? t('hospital.noStaffFound')
               : `${t('hospital.showing')} ${startRow}–${endRow} of ${filtered.length} ${t('hospital.staff')}`}
           </p>
 

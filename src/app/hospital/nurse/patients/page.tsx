@@ -132,11 +132,11 @@ export default function NursePatientsPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.age}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{p.gender}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{p.gender === 'Male' ? t('hospital.male') : p.gender === 'Female' ? t('hospital.female') : p.gender}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.lastVisit}</td>
                   <td className="px-6 py-4 text-sm text-gray-600 uppercase">{p.condition}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>{p.status}</span>
+                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>{p.status === 'ACTIVE' ? t('hospital.active') : p.status === 'CRITICAL' ? t('hospital.critical') : p.status === 'INACTIVE' ? t('hospital.inactive') : p.status}</span>
                   </td>
                   <td className="px-6 py-4">
                     <button className="text-gray-400 hover:text-gray-600 transition-colors"><MoreVertical className="w-5 h-5" /></button>

@@ -19,12 +19,12 @@ function fmtRWF(n: number) {
   return `RWF ${n.toLocaleString()}`;
 }
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+function fmtDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale, { month: '2-digit', day: '2-digit', year: 'numeric' });
 }
 
 export default function RefundTable({ refunds, onViewAll }: RefundTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const statusLabels = {
   APPROVED: t('hospital.approved'),
@@ -65,7 +65,7 @@ export default function RefundTable({ refunds, onViewAll }: RefundTableProps) {
                     status={r.status} label={statusLabels[r.status]} 
                   />
                 </td>
-                <td className="py-2.5 text-slate-400 whitespace-nowrap">{fmtDate(r.date)}</td>
+                <td className="py-2.5 text-slate-400 whitespace-nowrap">{fmtDate(r.date, i18n.language)}</td>
               </tr>
             ))}
           </tbody>
