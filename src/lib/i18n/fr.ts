@@ -591,6 +591,38 @@ export const fr = {
       weeklyReport: 'Rapport hebdomadaire prêt',
     },
     pharmacyMap: 'Carte des pharmacies',
+    audit: {
+      title: 'Journaux d\'audit',
+      pageTitle: 'Sécurité & Audit',
+      pageSubtitle: 'Surveillez l\'activité du système, les journaux d\'accès et les événements de sécurité critiques en temps réel.',
+      tabs: {
+        all: 'Tous les journaux',
+        auth: 'Événements d\'authentification',
+        system: 'Journaux système',
+        pharmacy: 'Actions pharmacie',
+      },
+      table: {
+        timestamp: 'Horodatage',
+        actor: 'Acteur',
+        action: 'Action',
+        target: 'Cible',
+        outcome: 'Résultat',
+        loading: 'Chargement des journaux...',
+        empty: 'Aucun journal trouvé pour cette catégorie',
+        errorBanner: 'Échec du chargement des journaux d\'audit. Veuillez réessayer.',
+      },
+      filter: {
+        allOutcomes: 'Tous les résultats',
+        successOnly: 'Succès uniquement',
+        failuresOnly: 'Échecs uniquement',
+      },
+      outcome: {
+        success: 'Succès',
+        failure: 'Échec',
+      },
+      system: 'Système',
+      na: 'N/A',
+    },
   },
   branch: {
     portal: 'Portail de l\'agence',
