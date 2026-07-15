@@ -1,7 +1,7 @@
 // frontend/src/app/page.tsx 
-
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ export default function Home() {
   useEffect(() => {
     if (!loading && user) {
       switch (user.role) {
-        case 'PATIENT':     router.push('/patient/dashboard');    break;
+        case 'PATIENT': router.push('/patient/dashboard'); break;
         case 'PHARMACY':
           if (user.pharmacyStatus === 'APPROVED') {
             router.push('/pharmacy/dashboard');
@@ -32,11 +32,11 @@ export default function Home() {
           }
           break;
         case 'SUPER_ADMIN': router.push('/super-admin/dashboard'); break;
-        case 'BRANCH_MANAGER': router.push('/branch/dashboard');  break;
+        case 'BRANCH_MANAGER': router.push('/branch/dashboard'); break;
         case 'PHARMACIST':
         case 'CASHIER':
-        case 'NURSE':       router.push('/staff/dashboard');      break;
-        default:            
+        case 'NURSE': router.push('/staff/dashboard'); break;
+        default:
           // If the cookie is corrupted or role is unauthorized, clear it!
           removeAuthTokens();
           clearUserCache();
@@ -121,7 +121,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg text-gray-500 max-w-2xl mb-10 leading-relaxed">
-            {patientEnabled 
+            {patientEnabled
               ? "Evuze helps patients find nearby pharmacies with real-time medication availability, and helps pharmacies reach more customers efficiently."
               : "Streamline your pharmacy operations, manage inventory across multiple branches, and prepare for future patient connectivity with Rwanda's leading platform."}
           </p>
@@ -138,6 +138,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base border-2 transition-all hover:bg-gray-50 text-brand-navy border-[#d1dff5]">
               Login
             </Link>
+
           </div>
         </section>
 
@@ -183,7 +184,7 @@ export default function Home() {
             Ready to get started?
           </h2>
           <p className="text-gray-500 mb-8 max-w-md mx-auto">
-            {patientEnabled 
+            {patientEnabled
               ? "Join thousands of patients and pharmacies already using Evuze across Rwanda."
               : "Join forward-thinking pharmacies across Rwanda managing their operations with Evuze."}
           </p>

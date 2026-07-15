@@ -13,8 +13,22 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { api, unwrapData } from '@/lib/api';
-import { MOCK_DOCTOR } from '@/mock/hospital/user';
-import type { PatientStatus, Patient } from '@/types/hospital';
+import type { PatientStatus } from '@/types/hospital';
+
+// Local type — derived from GET /appointments. Age/gender not returned by
+// the appointments include; see DOCTOR_REMAINING_PAGES_API_GAPS.md.
+interface DerivedPatient {
+  id: string;
+  patientId: string;
+  name: string;
+  age: number;
+  gender: string;
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+  isNew: boolean;
+  followUpDue: boolean;
+}
 
 const PAGE_SIZE = 3;
 
@@ -33,7 +47,7 @@ export default function HospitalDoctorPatientsPage() {
   const [page, setPage]                 = useState(1);
   const [now]                           = useState(() => Date.now());
 
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<DerivedPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,14 +55,37 @@ export default function HospitalDoctorPatientsPage() {
     async function loadPatients() {
       try {
         setLoading(true);
-        const res = await api.get(`/hospitals/${MOCK_DOCTOR.hospitalId}/patients?doctorId=${MOCK_DOCTOR.id}`);
-        // We ensure fallback values for isNew and followUpDue client-side if they are missing
-        const parsed = unwrapData<Patient>(res.data).map(p => ({
-          ...p,
-          isNew: p.isNew ?? false,
-          followUpDue: p.followUpDue ?? false,
-        }));
-        setPatients(parsed);
+        // GET /appointments is auto-scoped to the authenticated doctor via JWT.
+        // We derive unique patients from the appointment list since
+        // GET /hospitals/:id/patients requires a hospitalId not available
+        // in the frontend without an additional round-trip.
+        // Age, gender, MRN are not included — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
+        const res = await api.get('/appointments');
+        const raw = unwrapData<{
+          patientId: string; date: string; reason?: string;
+          patient: { firstName: string; lastName: string };
+        }>(res.data);
+
+        const map = new Map<string, DerivedPatient>();
+        for (const a of raw) {
+          const existing = map.get(a.patientId);
+          const aDate = new Date(a.date);
+          if (!existing || aDate > new Date(existing.lastVisit)) {
+            map.set(a.patientId, {
+              id:          a.patientId,
+              patientId:   a.patientId.slice(-8).toUpperCase(),
+              name:        `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+              age:         0,
+              gender:      '—',
+              lastVisit:   aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }),
+              condition:   a.reason ?? '—',
+              status:      'ACTIVE',
+              isNew:       false,
+              followUpDue: false,
+            });
+          }
+        }
+        setPatients(Array.from(map.values()));
         setError(null);
       } catch (err) {
         console.error('Failed to fetch patients:', err);
@@ -79,7 +116,8 @@ export default function HospitalDoctorPatientsPage() {
     })
     .filter(p =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.patientId.toLowerCase().includes(search.toLowerCase())
+      p.patientId.toLowerCase().includes(search.toLowerCase()) ||
+      p.condition.toLowerCase().includes(search.toLowerCase())
     );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -201,7 +239,7 @@ export default function HospitalDoctorPatientsPage() {
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{p.age}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{p.age > 0 ? p.age : '—'}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.gender}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.lastVisit}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 uppercase">{p.condition}</td>

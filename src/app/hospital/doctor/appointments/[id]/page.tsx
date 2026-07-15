@@ -1,77 +1,83 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { api, unwrapData } from '@/lib/api';
-import { Appointment } from '@/types/hospital';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { api } from '@/lib/api';
+import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
-interface PatientChart {
-  vitals?: Record<string, string>;
-  allergies?: string[];
-  history?: string;
-  notes?: string;
-  [key: string]: any;
+interface BackendAppointment {
+  id: string;
+  date: string;
+  status: string;
+  type?: string;
+  reason?: string;
+  diagnosisSummary?: string;
+  doctorRecommendations?: string;
+  patientId: string;
+  hospitalId: string;
+  patient: { firstName: string; lastName: string; phone?: string };
+  hospital: { id: string; name: string; address?: string };
 }
 
-export default function AppointmentDetailsStubPage() {
-  const { t } = useTranslation();
+const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
+  PENDING:          { bg: '#EBF5FF', color: '#2563EB' },
+  SCHEDULED:        { bg: '#FFFBEB', color: '#D97706' },
+  CONFIRMED:        { bg: '#EBF5FF', color: '#2563EB' },
+  ARRIVED:          { bg: '#F0FDF4', color: '#16A34A' },
+  IN_TRIAGE:        { bg: '#FFF7ED', color: '#C2410C' },
+  READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C' },
+  COMPLETED:        { bg: '#ECFDF5', color: '#059669' },
+  CANCELLED:        { bg: '#FEF2F2', color: '#DC2626' },
+  NO_SHOW:          { bg: '#F3F4F6', color: '#6B7280' },
+};
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between py-3 border-b border-gray-50 last:border-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className="text-sm font-semibold text-gray-900 text-right max-w-[60%]">{value}</span>
+    </div>
+  );
+}
+
+export default function AppointmentDetailPage() {
+  const { t }  = useTranslation();
   const params = useParams<{ id: string }>();
 
-  const [appointment, setAppointment] = useState<Appointment | null>(null);
-  const [chart, setChart] = useState<PatientChart | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [appointment, setAppointment] = useState<BackendAppointment | null>(null);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const [aptRes, chartRes] = await Promise.all([
-          api.get(`/appointments/${params.id}`),
-          api.get(`/appointments/${params.id}/patient-chart`).catch(() => ({ data: null }))
-        ]);
-
-        if (aptRes.data) {
-          setAppointment(aptRes.data.data ?? aptRes.data);
-          setChart(chartRes.data?.data ?? chartRes.data ?? null);
-        } else {
-          setNotFound(true);
-        }
-      } catch (err) {
-        setNotFound(true);
-      } finally {
-        setLoading(false);
-      }
+  const fetchAppointment = useCallback(async () => {
+    if (!params.id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get<BackendAppointment>(`/appointments/${params.id}`);
+      setAppointment(res.data);
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? err?.message ?? 'Appointment not found.');
+    } finally {
+      setLoading(false);
     }
-    if (params.id) loadData();
   }, [params.id]);
 
-  if (loading) {
-    return (
-      <div className="max-w-xl mx-auto space-y-6 p-4 lg:p-6 animate-pulse">
-        <div className="h-6 w-32 bg-gray-200 rounded"></div>
-        <div className="h-48 w-full bg-gray-200 rounded-2xl"></div>
-        <div className="h-48 w-full bg-gray-200 rounded-2xl"></div>
-      </div>
-    );
-  }
+  useEffect(() => { fetchAppointment(); }, [fetchAppointment]);
 
-  if (notFound || !appointment) {
-    return (
-      <div className="max-w-xl mx-auto p-4 lg:p-6 text-center space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">404 - Appointment Not Found</h2>
-        <p className="text-gray-500">The appointment you are looking for does not exist or has been removed.</p>
-        <Link href="/hospital/doctor/appointments" className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800">
-          <ArrowLeftIcon className="w-4 h-4" /> Go back
-        </Link>
-      </div>
-    );
-  }
+  const patientFullName = appointment
+    ? `${appointment.patient?.firstName ?? ''} ${appointment.patient?.lastName ?? ''}`.trim()
+    : '—';
 
-  const patientFullName = appointment.patientName ?? t('hospital.unknownPatient', 'Unknown Patient');
+  const formatted = appointment
+    ? new Date(appointment.date).toLocaleString([], {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : '';
+
+  const statusStyle = appointment ? (STATUS_COLOR[appointment.status] ?? { bg: '#F3F4F6', color: '#6B7280' }) : null;
 
   return (
     <div className="max-w-xl mx-auto space-y-6 p-4 lg:p-6">
@@ -80,67 +86,75 @@ export default function AppointmentDetailsStubPage() {
         {t('hospital.backToAppointments', 'Back to Appointments')}
       </Link>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
-        <div>
-          <span className="text-[10px] font-bold tracking-widest text-blue-600 uppercase bg-blue-50 px-2 py-1 rounded-md">
-            {t('hospital.detailCardHeader', 'Appointment Profile Reference')}
-          </span>
-          <h1 className="text-2xl font-extrabold text-gray-900 mt-2">{t('hospital.appointmentDetailsTitle', 'Appointment Details')}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">{t('hospital.idRef', 'ID Ref')}: {params.id}</p>
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4 animate-pulse">
+          <div className="h-4 w-48 bg-gray-200 rounded" />
+          <div className="h-7 w-64 bg-gray-200 rounded" />
+          <div className="h-3 w-32 bg-gray-200 rounded" />
+          <div className="border-t border-gray-100 pt-4 space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex justify-between">
+                <div className="h-3 w-24 bg-gray-200 rounded" />
+                <div className="h-3 w-32 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
-          <div className="flex justify-between py-1 border-b border-gray-50">
-            <span className="text-gray-500">{t('hospital.lblPatientName', 'Patient Name')}:</span>
-            <span className="font-semibold text-gray-900">{patientFullName}</span>
-          </div>
-          <div className="flex justify-between py-1 border-b border-gray-50">
-            <span className="text-gray-500">{t('hospital.lblCondition', 'Condition / Specialty')}:</span>
-            <span className="text-gray-800">{appointment?.reason || appointment?.specialization || t('hospital.notAvailableShort', 'N/A')}</span>
-          </div>
-          <div className="flex justify-between py-1 border-b border-gray-50">
-            <span className="text-gray-500">{t('hospital.lblType', 'Interaction Type')}:</span>
-            <span className="text-gray-800 capitalize">{appointment?.type?.toLowerCase() || t('hospital.inPerson', 'In-Person')}</span>
-          </div>
-          <div className="flex justify-between py-1 border-b border-gray-50">
-            <span className="text-gray-500">{t('hospital.lblStatus', 'Current Status Mapping')}:</span>
-            <span className="font-medium text-blue-600">{appointment.status}</span>
-          </div>
-          {appointment.notes && (
-            <div className="flex flex-col py-1 border-b border-gray-50">
-              <span className="text-gray-500 mb-1">{t('hospital.lblNotes', 'Notes')}:</span>
-              <span className="text-gray-800 whitespace-pre-wrap text-xs">{appointment.notes}</span>
-            </div>
-          )}
+      {/* Error state */}
+      {error && !loading && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-red-700">{error}</p>
+          <button onClick={fetchAppointment} className="flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-800">
+            <ArrowPathIcon className="w-4 h-4" /> {t('common.retry', 'Retry')}
+          </button>
         </div>
-      </div>
+      )}
 
-      {chart && (
+      {/* Appointment detail */}
+      {!loading && !error && appointment && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">Pre-Consultation Patient Chart</h2>
-          <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
-            {chart.vitals && (
-              <div className="flex flex-col py-1 text-xs">
-                <span className="text-gray-500 mb-1 font-semibold">Vitals:</span>
-                <span className="text-gray-800">{JSON.stringify(chart.vitals, null, 2)}</span>
-              </div>
-            )}
-            {chart.allergies && (
-              <div className="flex flex-col py-1 text-xs">
-                <span className="text-gray-500 mb-1 font-semibold">Allergies:</span>
-                <span className="text-gray-800">{chart.allergies.join(', ')}</span>
-              </div>
-            )}
-            {chart.history && (
-              <div className="flex flex-col py-1 text-xs">
-                <span className="text-gray-500 mb-1 font-semibold">History:</span>
-                <span className="text-gray-800 whitespace-pre-wrap">{chart.history}</span>
-              </div>
-            )}
-            {(!chart.vitals && !chart.allergies && !chart.history) && (
-              <p className="text-gray-500 italic">No specific chart records found for this appointment.</p>
-            )}
+          <div>
+            <span className="text-[10px] font-bold tracking-widest text-blue-600 uppercase bg-blue-50 px-2 py-1 rounded-md">
+              {t('hospital.detailCardHeader', 'Appointment Profile')}
+            </span>
+            <h1 className="text-2xl font-extrabold text-gray-900 mt-2">{t('hospital.appointmentDetailsTitle', 'Appointment Details')}</h1>
+            <p className="text-xs text-gray-400 mt-0.5">{t('hospital.idRef', 'ID')}: {params.id}</p>
           </div>
+
+          <div className="border-t border-gray-100 pt-4">
+            <DetailRow label={t('hospital.lblPatientName', 'Patient')}         value={patientFullName} />
+            <DetailRow label={t('hospital.thTime', 'Date & Time')}             value={formatted} />
+            <DetailRow label={t('hospital.thType', 'Type')}                    value={appointment.type ?? t('hospital.inPerson', 'In-Person')} />
+            <DetailRow label={t('hospital.thNotes', 'Reason')}                 value={appointment.reason ?? '—'} />
+            {appointment.diagnosisSummary && (
+              <DetailRow label={t('hospital.diagnosisSummary', 'Diagnosis')}   value={appointment.diagnosisSummary} />
+            )}
+            {appointment.doctorRecommendations && (
+              <DetailRow label={t('hospital.doctorRecommendations', 'Recommendations')} value={appointment.doctorRecommendations} />
+            )}
+            {appointment.patient?.phone && (
+              <DetailRow label={t('common.phone', 'Phone')}                    value={appointment.patient.phone} />
+            )}
+            <DetailRow label={t('hospital.hospitalLabel', 'Hospital')}         value={appointment.hospital?.name ?? '—'} />
+            <div className="flex justify-between pt-3">
+              <span className="text-sm text-gray-500">{t('hospital.lblStatus', 'Status')}</span>
+              {statusStyle && (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ background: statusStyle.bg, color: statusStyle.color }}>
+                  {appointment.status.replaceAll('_', ' ')}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Not found */}
+      {!loading && !error && !appointment && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-12 shadow-sm text-center text-gray-400">
+          {t('hospital.appointmentNotFound', 'Appointment not found.')}
         </div>
       )}
     </div>
