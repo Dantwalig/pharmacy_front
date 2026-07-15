@@ -23,7 +23,10 @@ interface BackendAppointment {
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   PENDING:          { bg: '#EBF5FF', color: '#2563EB' },
+  SCHEDULED:        { bg: '#FFFBEB', color: '#D97706' },
   CONFIRMED:        { bg: '#EBF5FF', color: '#2563EB' },
+  ARRIVED:          { bg: '#F0FDF4', color: '#16A34A' },
+  IN_TRIAGE:        { bg: '#FFF7ED', color: '#C2410C' },
   READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C' },
   COMPLETED:        { bg: '#ECFDF5', color: '#059669' },
   CANCELLED:        { bg: '#FEF2F2', color: '#DC2626' },
@@ -122,20 +125,20 @@ export default function AppointmentDetailPage() {
           </div>
 
           <div className="border-t border-gray-100 pt-4">
-            <DetailRow label={t('hospital.lblPatientName', 'Patient')} value={patientFullName} />
-            <DetailRow label={t('hospital.thTime', 'Date & Time')} value={formatted} />
-            <DetailRow label={t('hospital.thType', 'Type')} value={appointment.type ?? t('hospital.inPerson', 'In-Person')} />
-            <DetailRow label={t('hospital.thNotes', 'Reason')} value={appointment.reason ?? '—'} />
+            <DetailRow label={t('hospital.lblPatientName', 'Patient')}         value={patientFullName} />
+            <DetailRow label={t('hospital.thTime', 'Date & Time')}             value={formatted} />
+            <DetailRow label={t('hospital.thType', 'Type')}                    value={appointment.type ?? t('hospital.inPerson', 'In-Person')} />
+            <DetailRow label={t('hospital.thNotes', 'Reason')}                 value={appointment.reason ?? '—'} />
             {appointment.diagnosisSummary && (
-              <DetailRow label={t('hospital.diagnosisSummary', 'Diagnosis')} value={appointment.diagnosisSummary} />
+              <DetailRow label={t('hospital.diagnosisSummary', 'Diagnosis')}   value={appointment.diagnosisSummary} />
             )}
             {appointment.doctorRecommendations && (
               <DetailRow label={t('hospital.doctorRecommendations', 'Recommendations')} value={appointment.doctorRecommendations} />
             )}
             {appointment.patient?.phone && (
-              <DetailRow label={t('common.phone', 'Phone')} value={appointment.patient.phone} />
+              <DetailRow label={t('common.phone', 'Phone')}                    value={appointment.patient.phone} />
             )}
-            <DetailRow label={t('hospital.hospitalLabel', 'Hospital')} value={appointment.hospital?.name ?? '—'} />
+            <DetailRow label={t('hospital.hospitalLabel', 'Hospital')}         value={appointment.hospital?.name ?? '—'} />
             <div className="flex justify-between pt-3">
               <span className="text-sm text-gray-500">{t('hospital.lblStatus', 'Status')}</span>
               {statusStyle && (

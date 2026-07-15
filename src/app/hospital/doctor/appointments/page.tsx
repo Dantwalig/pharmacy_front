@@ -36,7 +36,10 @@ const PAGE_SIZE = 8;
 
 const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
   PENDING:          { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+  SCHEDULED:        { bg: '#FFFBEB', color: '#D97706', dot: '#F59E0B' },
   CONFIRMED:        { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+  ARRIVED:          { bg: '#F0FDF4', color: '#16A34A', dot: '#22C55E' },
+  IN_TRIAGE:        { bg: '#FFF7ED', color: '#C2410C', dot: '#FB923C' },
   READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
   COMPLETED:        { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
   CANCELLED:        { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
@@ -81,21 +84,21 @@ export default function HospitalDoctorAppointmentsPage() {
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
   const todayCount     = appointments.filter(a => isToday(a.date)).length;
-  const confirmedCount = appointments.filter(a => a.status === 'CONFIRMED').length;
+  const confirmedCount = appointments.filter(a => a.status === 'SCHEDULED' || a.status === 'CONFIRMED').length;
   const completedCount = appointments.filter(a => a.status === 'COMPLETED').length;
   const cancelledCount = appointments.filter(a => a.status === 'CANCELLED').length;
 
   const statCards = [
-    { label: t('hospital.today', 'Today'),      value: todayCount,     icon: CalendarIcon,    iconColor: '#7C3AED', bgColor: '#F3E8FF' },
-    { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon,       iconColor: '#0284C7', bgColor: '#E0F2FE' },
-    { label: t('hospital.completed','Completed'),value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
-    { label: t('hospital.cancelled','Cancelled'),value: cancelledCount, icon: XCircleIcon,     iconColor: '#EA580C', bgColor: '#FEE2E2' },
+    { label: t('hospital.today', 'Today'),       value: todayCount,     icon: CalendarIcon,    iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.upcoming', 'Upcoming'),  value: confirmedCount, icon: ClockIcon,       iconColor: '#0284C7', bgColor: '#E0F2FE' },
+    { label: t('hospital.completed', 'Completed'),value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
+    { label: t('hospital.cancelled', 'Cancelled'),value: cancelledCount, icon: XCircleIcon,     iconColor: '#EA580C', bgColor: '#FEE2E2' },
   ];
 
   const filterTabs = [
     { id: 'ALL',             label: t('hospital.allTabs', 'All') },
-    { id: 'PENDING',         label: t('hospital.pending', 'Pending') },
-    { id: 'CONFIRMED',       label: t('hospital.confirmed', 'Confirmed') },
+    { id: 'SCHEDULED',       label: t('hospital.scheduled', 'Scheduled') },
+    { id: 'ARRIVED',         label: t('hospital.arrived', 'Arrived') },
     { id: 'READY_FOR_DOCTOR',label: t('hospital.readyForDoctor', 'Ready for Doctor') },
     { id: 'COMPLETED',       label: t('hospital.completed', 'Completed') },
     { id: 'CANCELLED',       label: t('hospital.cancelled', 'Cancelled') },
@@ -117,13 +120,13 @@ export default function HospitalDoctorAppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero Header */}
+      {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
         <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.doctorAppointmentsTitle', 'Appointments')}</h1>
         <p className="mt-1 text-sm" style={{ color: '#0284C7' }}>{t('hospital.doctorAppointmentsSubtitle', 'Manage and track patient appointments')}</p>
       </div>
 
-      {/* Error Banner */}
+      {/* Error banner */}
       {error && (
         <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
           <p className="text-sm text-red-700">{error}</p>
@@ -133,8 +136,8 @@ export default function HospitalDoctorAppointmentsPage() {
         </div>
       )}
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {statCards.map(stat => {
           const Icon = stat.icon;
           return (
@@ -202,7 +205,7 @@ export default function HospitalDoctorAppointmentsPage() {
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">{t('hospital.thPatient', 'Patient')}</th>
                 <th className="px-6 py-4">{t('hospital.thTime', 'Time')}</th>
-                <th className="px-6 py-4">{t('hospital.thType', 'Appointment type')}</th>
+                <th className="px-6 py-4">{t('hospital.thType', 'Type')}</th>
                 <th className="px-6 py-4">{t('hospital.thNotes', 'Reason')}</th>
                 <th className="px-6 py-4">{t('hospital.thStatus', 'Status')}</th>
                 <th className="px-6 py-4 text-right" />

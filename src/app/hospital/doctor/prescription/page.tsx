@@ -10,7 +10,9 @@ import toast from 'react-hot-toast';
 const NAVY = '#1E3A5F';
 const TEAL = '#2D9B8A';
 
-// Unique patient derived from the doctor's appointments
+// Unique patient derived from the doctor's appointments.
+// GET /hospitals/:id/patients?doctorId= doesn't exist — only POST search/register.
+// We derive unique patients from GET /appointments (doctor-scoped via JWT).
 interface PatientSummary {
   patientId: string;
   hospitalId: string;
@@ -65,16 +67,15 @@ function newMed(): MedicationItem {
 export default function HospitalDoctorPrescriptionPage() {
   const { t } = useTranslation();
 
-  const [patients,       setPatients]       = useState<PatientSummary[]>([]);
-  const [loadingPts,     setLoadingPts]     = useState(true);
-  const [errorPts,       setErrorPts]       = useState<string | null>(null);
-  const [search,         setSearch]         = useState('');
-  const [selectedId,     setSelectedId]     = useState<string | null>(null);
+  const [patients,    setPatients]    = useState<PatientSummary[]>([]);
+  const [loadingPts,  setLoadingPts]  = useState(true);
+  const [errorPts,    setErrorPts]    = useState<string | null>(null);
+  const [search,      setSearch]      = useState('');
+  const [selectedId,  setSelectedId]  = useState<string | null>(null);
 
-  // Prescription form
-  const [diagnosis,      setDiagnosis]      = useState('');
-  const [medications,    setMedications]    = useState<MedicationItem[]>([newMed()]);
-  const [submitting,     setSubmitting]     = useState(false);
+  const [diagnosis,   setDiagnosis]   = useState('');
+  const [medications, setMedications] = useState<MedicationItem[]>([newMed()]);
+  const [submitting,  setSubmitting]  = useState(false);
 
   const fetchPatients = useCallback(async () => {
     setLoadingPts(true);
@@ -101,7 +102,7 @@ export default function HospitalDoctorPrescriptionPage() {
 
   const selected = patients.find(p => p.patientId === selectedId) ?? null;
 
-  function addMed()  { setMedications(prev => [...prev, newMed()]); }
+  function addMed() { setMedications(prev => [...prev, newMed()]); }
   function removeMed(key: number) { setMedications(prev => prev.filter(m => m.key !== key)); }
   function updateMed(key: number, field: keyof MedicationItem, value: string | number) {
     setMedications(prev => prev.map(m => m.key === key ? { ...m, [field]: value } : m));
@@ -170,7 +171,7 @@ export default function HospitalDoctorPrescriptionPage() {
               </button>
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-4">No patients found.</p>
+            <p className="text-xs text-gray-400 text-center py-4">{t('hospital.noPatientsFound', 'No patients found.')}</p>
           ) : (
             filtered.map(p => {
               const isActive = p.patientId === selectedId;
@@ -223,7 +224,7 @@ export default function HospitalDoctorPrescriptionPage() {
               </div>
             </div>
 
-            {/* Gap notice */}
+            {/* Gap notice — prescription history requires MRN not in appointments response */}
             <div className="mx-6 mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
               <InformationCircleIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-800">
@@ -241,7 +242,6 @@ export default function HospitalDoctorPrescriptionPage() {
                   <span style={{ color: '#3B82F6' }}>{selected.firstName} {selected.lastName}</span>
                 </h3>
 
-                {/* Diagnosis */}
                 <div>
                   <label className="text-xs font-semibold text-gray-500 mb-1 block">{t('hospital.diagnosis', 'Diagnosis')} *</label>
                   <input
@@ -254,7 +254,6 @@ export default function HospitalDoctorPrescriptionPage() {
                   />
                 </div>
 
-                {/* Medications */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-semibold text-gray-500">{t('hospital.medications', 'Medications')} *</label>

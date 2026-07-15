@@ -105,7 +105,7 @@ export default function DoctorMessagesPage() {
       </div>
 
       <div className="flex-1 flex gap-6 overflow-hidden min-h-0">
-        {/* Left panel */}
+        {/* Left panel — thread list */}
         <div className="w-80 lg:w-96 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
           <div className="p-5 border-b border-gray-100 bg-gray-50/50">
             <div className="relative">
@@ -166,11 +166,10 @@ export default function DoctorMessagesPage() {
           </div>
         </div>
 
-        {/* Right panel */}
+        {/* Right panel — thread detail */}
         <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
           {active ? (
             <>
-              {/* Header */}
               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm">
                   {active.senderName.slice(0, 2).toUpperCase()}
@@ -181,7 +180,6 @@ export default function DoctorMessagesPage() {
                 </div>
               </div>
 
-              {/* Message body */}
               <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30">
                 <div className="flex justify-start">
                   <div className="max-w-[70%] flex flex-col items-start">
@@ -199,7 +197,7 @@ export default function DoctorMessagesPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Disabled input */}
+              {/* Disabled send — no messaging backend */}
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-3 bg-gray-100 p-2 rounded-2xl border border-gray-200 cursor-not-allowed opacity-60">
                   <input

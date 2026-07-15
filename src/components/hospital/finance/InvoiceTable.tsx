@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { MagnifyingGlassIcon, ArrowDownTrayIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import StatusBadge from '@/components/shared/StatusBadge';
 import type { Invoice, InvoiceStatus } from '@/types/hospital';
+import { useTranslation } from 'react-i18next';
 
 interface InvoiceTableProps {
   invoices: Invoice[];
@@ -11,22 +12,33 @@ interface InvoiceTableProps {
 }
 
 const ALL_STATUSES: InvoiceStatus[] = ['PAID', 'UNPAID', 'INSURANCE_PENDING'];
-const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  PAID: 'Paid',
-  UNPAID: 'Unpaid',
-  INSURANCE_PENDING: 'Insurance Pending',
-};
+
 const METHOD_OPTIONS = ['All Methods', 'Mobile Money', 'Cash', 'Card', 'Insurance'];
 
 function fmtRWF(n: number) {
   return `RWF ${n.toLocaleString()}`;
 }
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+function fmtDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) {
+  const { t, i18n } = useTranslation();
+
+  const METHOD_LABELS: Record<string, string> = {
+    'All Methods': t('hospital.allMethods'),
+    'Mobile Money': t('hospital.mobileMoney'),
+    'Cash': t('hospital.cash'),
+    'Card': t('hospital.card'),
+    'Insurance': t('hospital.insurance')
+  };
+
+  const STATUS_LABELS: Record<InvoiceStatus, string> = {
+  PAID: 'hospital.paid',
+  UNPAID: 'hospital.unpaid',
+  INSURANCE_PENDING: 'hospital.insurancePending',
+ };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | InvoiceStatus>('ALL');
   const [methodFilter, setMethodFilter] = useState('All Methods');
@@ -44,14 +56,14 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
       {/* Table header */}
       <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
-        <h2 className="text-base font-semibold text-slate-900 shrink-0">Invoice Management</h2>
+        <h2 className="text-base font-semibold text-slate-900 shrink-0">{t('hospital.invoiceManagement')}</h2>
         <div className="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
           {/* Search */}
           <div className="relative">
             <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search invoices..."
+              placeholder={t('hospital.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-brand-navy w-44"
@@ -64,9 +76,9 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
             onChange={(e) => setStatusFilter(e.target.value as any)}
             className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-brand-navy bg-white"
           >
-            <option value="ALL">All Status</option>
+            <option value="ALL">{t('hospital.all')}</option>
             {ALL_STATUSES.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              <option key={s} value={s}>{t(STATUS_LABELS[s])}</option>
             ))}
           </select>
 
@@ -77,17 +89,19 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
             className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-brand-navy bg-white"
           >
             {METHOD_OPTIONS.map((m) => (
-              <option key={m}>{m}</option>
+              <option key={m} value={m}>
+                {METHOD_LABELS[m]}   {/* <-- translated label */}
+              </option>
             ))}
           </select>
-
+          
           {/* Export */}
           <button
             onClick={onExport}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
-            Export
+           {t('hospital.export')}
           </button>
         </div>
       </div>
@@ -97,7 +111,7 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/60">
-              {['Invoice ID', 'Patient', 'Amount', 'Method', 'Status', 'Due Date', ''].map((h) => (
+              {[t('hospital.invoiceId'), t('hospital.patient'), t('hospital.amount'), t('hospital.method'), t('hospital.status'), t('hospital.dueDate'), ''].map((h) => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">
                   {h}
                 </th>
@@ -108,7 +122,7 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-5 py-10 text-center text-slate-400 text-sm">
-                  No invoices match your filters.
+                  {t('hospital.noInvoicesMatch')}
                 </td>
               </tr>
             ) : (
@@ -124,16 +138,16 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
                     {fmtRWF(inv.totalAmount)}
                   </td>
                   <td className="px-5 py-3.5 text-slate-600 whitespace-nowrap">
-                    Mobile Money
+                    {t('hospital.mobileMoney')}
                   </td>
                   <td className="px-5 py-3.5">
                     <StatusBadge
                       status={inv.status}
-                      label={STATUS_LABELS[inv.status]}
+                      label={t(STATUS_LABELS[inv.status])}
                     />
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">
-                    {fmtDate(inv.dueDate)}
+                    {fmtDate(inv.dueDate, i18n.language)}
                   </td>
                   <td className="px-5 py-3.5">
                     <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
@@ -150,7 +164,7 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
       {/* Footer count */}
       <div className="px-5 py-3 border-t border-gray-100">
         <p className="text-xs text-slate-400">
-          Showing {filtered.length} of {invoices.length} invoices
+          {t('hospital.showing')} {filtered.length} {t('hospital.of')} {invoices.length} {t('hospital.invoices')}
         </p>
       </div>
     </div>
