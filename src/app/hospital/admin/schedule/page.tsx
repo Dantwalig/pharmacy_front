@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     startOfWeek,
     endOfWeek,
@@ -21,7 +22,6 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     ChevronUpIcon,
-    PlusIcon,
     CalendarIcon,
     Cog6ToothIcon,
     VideoCameraIcon,
@@ -31,7 +31,6 @@ import {
 import api from '@/lib/api';
 import { useHospitalId } from '@/lib/hospital';
 
-// GET /hospitals/:id/doctors row
 interface BackendDoctor {
     id: string;
     firstName: string | null;
@@ -39,7 +38,6 @@ interface BackendDoctor {
     specialization: string;
 }
 
-// GET /appointments (HOSPITAL_ADMIN-scoped) row
 interface BackendAppointment {
     id: string;
     date: string;
@@ -50,9 +48,6 @@ interface BackendAppointment {
     doctor: { id: string; firstName: string | null; lastName: string | null } | null;
 }
 
-// Deterministic colour per doctor id, same idea as the old mock's
-// DOCTOR_COLORS lookup, but generated instead of hand-listed so it works for
-// any real doctor id.
 const PALETTE = ['#2D9B8A', '#1E4D8C', '#7C3AED', '#B45309', '#0891B2', '#059669', '#DB2777'];
 function colorForDoctor(doctorId: string) {
     let hash = 0;
@@ -122,6 +117,7 @@ function MiniCalendar({ selected, onSelect }: { selected: Date; onSelect: (d: Da
 }
 
 export default function HospitalAdminSchedulePage() {
+    const { t } = useTranslation();
     const hospitalId = useHospitalId();
 
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -135,14 +131,8 @@ export default function HospitalAdminSchedulePage() {
     const [appointments, setAppointments] = useState<BackendAppointment[]>([]);
     const [apptsLoading, setApptsLoading] = useState(true);
 
-    // GET /doctors/:doctorId/slots?date=YYYY-MM-DD for the selected doctor and
-    // the currently-selected calendar day. NOTE: this returns *available*
-    // (bookable) slots, not existing bookings — a genuinely different thing
-    // from the hourly grid below, which shows real appointments. See
-    // src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md
-    // (Gap SC-1) for why these are kept as two separate panels rather than
-    // merged into one, and why month view doesn't use this endpoint at all
-    // (it has no date-range mode, only a single date per call).
+    // GET /doctors/:doctorId/slots returns *available* slots, not existing bookings.
+    // Kept as a separate sidebar panel — see gap doc (Gap SC-1).
     const [openSlots, setOpenSlots] = useState<string[]>([]);
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [slotsError, setSlotsError] = useState(false);
@@ -194,8 +184,8 @@ export default function HospitalAdminSchedulePage() {
 
     const typeMeta = (type?: string) =>
         type === 'ONLINE'
-            ? { label: 'Video Call', Icon: VideoCameraIcon }
-            : { label: 'In-Person', Icon: UserIcon };
+            ? { label: t('hospital.videoCall'), Icon: VideoCameraIcon }
+            : { label: t('hospital.inPerson'), Icon: UserIcon };
 
     const goPrev = () => viewMode === 'WEEK' ? setCurrentDate(subWeeks(currentDate, 1)) : setCurrentDate(subMonths(currentDate, 1));
     const goNext = () => viewMode === 'WEEK' ? setCurrentDate(addWeeks(currentDate, 1)) : setCurrentDate(addMonths(currentDate, 1));
@@ -204,19 +194,19 @@ export default function HospitalAdminSchedulePage() {
         <div className="space-y-6">
             {/* Hero */}
             <div className="rounded-2xl px-8 py-7" style={{ background: '#EBF5FF' }}>
-                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight" style={{ color: '#1E3A5F' }}>Schedule</h1>
-                <p className="mt-1 text-xs font-semibold" style={{ color: '#0284C7' }}>Select Date and Time</p>
+                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight" style={{ color: '#1E3A5F' }}>{t('hospital.schedule')}</h1>
+                <p className="mt-1 text-xs font-semibold" style={{ color: '#0284C7' }}>{t('hospital.scheduleSubtitle')}</p>
                 <button onClick={() => setCurrentDate(new Date())} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
                     <CalendarIcon className="w-4 h-4" />
-                    This Week
+                    {t('hospital.thisWeek')}
                 </button>
             </div>
 
             {/* Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-1 bg-white border border-gray-200 p-1 rounded-xl">
-                    <button onClick={() => setViewMode('WEEK')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Week</button>
-                    <button onClick={() => setViewMode('MONTH')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Month</button>
+                    <button onClick={() => setViewMode('WEEK')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>{t('hospital.week')}</button>
+                    <button onClick={() => setViewMode('MONTH')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>{t('hospital.month')}</button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -241,18 +231,17 @@ export default function HospitalAdminSchedulePage() {
                         <UsersIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search doctors"
+                            placeholder={t('hospital.searchForPeople')}
                             value={doctorSearch}
                             onChange={e => setDoctorSearch(e.target.value)}
                             className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
-                    {/* GET /hospitals/:id/doctors — click a doctor to filter the
-                        grid to their appointments and load their open slots below. */}
+                    {/* GET /hospitals/:id/doctors — click to filter grid + load open slots */}
                     <div>
                         <div className="flex items-center justify-between text-sm font-semibold text-gray-700 mb-2">
-                            <span>Doctors</span>
+                            <span>{t('hospital.doctors')}</span>
                             <ChevronUpIcon className="w-4 h-4 text-gray-400" />
                         </div>
                         <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -260,7 +249,7 @@ export default function HospitalAdminSchedulePage() {
                                 onClick={() => setSelectedDoctorId(null)}
                                 className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors ${!selectedDoctorId ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
                             >
-                                All doctors
+                                {t('hospital.allDoctors')}
                             </button>
                             {doctorsLoading ? (
                                 Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />)
@@ -277,8 +266,7 @@ export default function HospitalAdminSchedulePage() {
                         </div>
                     </div>
 
-                    {/* Open slots panel — GET /doctors/:doctorId/slots for the
-                        selected doctor + selected day (availability, not bookings) */}
+                    {/* Open slots panel — GET /doctors/:doctorId/slots (availability, not bookings) */}
                     {selectedDoctorId && (
                         <div>
                             <div className="text-sm font-semibold text-gray-700 mb-2">
@@ -354,8 +342,8 @@ export default function HospitalAdminSchedulePage() {
                     ) : (
                         <div>
                             <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
-                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-                                    <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{d}</div>
+                                {(['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'] as const).map(key => (
+                                    <div key={key} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{t(`hospital.${key}`)}</div>
                                 ))}
                             </div>
                             <div className="grid grid-cols-7">
@@ -371,7 +359,7 @@ export default function HospitalAdminSchedulePage() {
                                             {entries.length > 0 && (
                                                 <div className="mt-1 inline-flex items-center gap-1 bg-blue-600 text-white rounded-md px-2 py-0.5">
                                                     <span className="text-[10px] font-bold">{entries.length}</span>
-                                                    <span className="text-[10px]">visits</span>
+                                                    <span className="text-[10px]">{t('hospital.visits')}</span>
                                                 </div>
                                             )}
                                         </div>

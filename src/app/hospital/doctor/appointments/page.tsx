@@ -2,10 +2,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { MOCK_APPOINTMENTS } from '@/mock/hospital/appointments';
+import { api, unwrapData } from '@/lib/api';
+import toast from 'react-hot-toast';
 import { Appointment } from '@/types/hospital';
 import {
   CalendarIcon,
@@ -26,15 +27,41 @@ export default function HospitalDoctorAppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [page, setPage] = useState(1);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalCount = MOCK_APPOINTMENTS.length;
-  const confirmedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'ARRIVED').length;
-  const completedCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'COMPLETED').length;
-  const cancelledCount = MOCK_APPOINTMENTS.filter((a) => a.status === 'CANCELLED').length;
+  useEffect(() => {
+    async function fetchAppointments() {
+      try {
+        setLoading(true);
+        const res = await api.get('/appointments');
+        setAppointments(
+          unwrapData<any>(res.data).map((a: any) => ({
+            ...a,
+            patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+            doctorName: a.doctor?.user?.hospitalStaff
+              ? `Dr. ${a.doctor.user.hospitalStaff.firstName} ${a.doctor.user.hospitalStaff.lastName}`
+              : '—',
+          }))
+        );
+      } catch (err) {
+        toast.error('Failed to load appointments');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAppointments();
+  }, []);
+
+  const todayStr = new Date().toDateString();
+  const todayCount = appointments.filter(a => new Date(a.date).toDateString() === todayStr).length;
+  const confirmedCount = appointments.filter((a) => a.status === 'CONFIRMED').length;
+  const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
+  const cancelledCount = appointments.filter((a) => a.status === 'CANCELLED').length;
 
   //stats
   const statCards = [
-    { label: t('hospital.today', 'Today'), value: totalCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.today', 'Today'), value: todayCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
     { label: t('hospital.upcoming', 'Upcoming'), value: confirmedCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
     { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
     { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
@@ -50,27 +77,37 @@ export default function HospitalDoctorAppointmentsPage() {
   ];
 
   // filter
-  const filteredAppointments = MOCK_APPOINTMENTS.filter((apt: Appointment) => {
-  const matchesTab = activeTab === 'ALL' || apt.status === activeTab;
-  const patientName = `${apt.patientName ?? ''}`.toLowerCase();
-  const matchesSearch = patientName.includes(searchTerm.toLowerCase()) || (apt.reason && apt.reason.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredAppointments = appointments.filter((apt: Appointment) => {
+    const matchesTab = activeTab === 'ALL' || apt.status === activeTab;
+    const patientName = `${apt.patientName ?? ''}`.toLowerCase();
+    const matchesSearch = patientName.includes(searchTerm.toLowerCase()) || (apt.reason && apt.reason.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesTab && matchesSearch;
   });
 
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      await api.patch(`/appointments/${id}/status`, { status: newStatus });
+      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus as Appointment['status'] } : a));
+      toast.success(t('hospital.statusUpdated', 'Status updated successfully'));
+    } catch (err) {
+      toast.error(t('hospital.statusUpdateFailed', 'Status update failed'));
+    }
+  };
+
   const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / PAGE_SIZE));
-  const safePage   = Math.min(page, totalPages);
-  const pageItems  = filteredAppointments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filteredAppointments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    //statusMap for appointments
+  //statusMap for appointments
   const statusMap: Record<string, { bg: string; color: string; dot: string }> = {
-  PENDING:   { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-  CONFIRMED: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
-  READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
-  COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
-  CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
-};
+    PENDING: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+    CONFIRMED: { bg: '#EBF5FF', color: '#2563EB', dot: '#3B82F6' },
+    READY_FOR_DOCTOR: { bg: '#FFF7ED', color: '#EA580C', dot: '#F97316' },
+    COMPLETED: { bg: '#ECFDF5', color: '#059669', dot: '#10B981' },
+    CANCELLED: { bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
+  };
 
 
   return (
@@ -118,16 +155,15 @@ export default function HospitalDoctorAppointmentsPage() {
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider hidden lg:inline">{t('hospital.statusFilter', 'Status')}:</span>
           <div className="flex flex-wrap gap-1">
             {filterTabs.map((tab) => {
-              const count = tab.id === 'ALL' ? totalCount : MOCK_APPOINTMENTS.filter(a => a.status === tab.id).length;
+              const count = tab.id === 'ALL' ? appointments.length : appointments.filter(a => a.status === tab.id).length;
               return (
                 <button
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    activeTab === tab.id
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${activeTab === tab.id
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'bg-gray-50 border border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-700'}`}>{count}</span>
@@ -157,7 +193,13 @@ export default function HospitalDoctorAppointmentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {pageItems.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-gray-400 font-medium animate-pulse">
+                    Loading appointments...
+                  </td>
+                </tr>
+              ) : pageItems.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-gray-400 font-medium">
                     {t('hospital.noAppointmentsFound', 'No appointments found matching the selected criteria.')}
@@ -180,17 +222,27 @@ export default function HospitalDoctorAppointmentsPage() {
                     <td className="px-6 py-4">
                       {(() => {
                         const status = statusMap[apt.status] ?? {
-                            bg: '#F3F4F6',
-                            color: '#6B7280',
-                            dot: '#9CA3AF',
-                          };
+                          bg: '#F3F4F6',
+                          color: '#6B7280',
+                          dot: '#9CA3AF',
+                        };
 
                         return (
-                          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                            style={{ backgroundColor: status.bg, color: status.color,}}>
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: status.dot }} />
-                            {apt.status.replaceAll('_', ' ')}
-                          </span>
+                          <div className="relative inline-block">
+                            <select
+                              value={apt.status}
+                              onChange={(e) => handleStatusChange(apt.id, e.target.value)}
+                              className="appearance-none inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold pr-8 cursor-pointer border-0 outline-none focus:ring-2 focus:ring-blue-500"
+                              style={{ backgroundColor: status.bg, color: status.color }}
+                            >
+                              <option value="PENDING">PENDING</option>
+                              <option value="CONFIRMED">CONFIRMED</option>
+                              <option value="READY_FOR_DOCTOR">READY FOR DOCTOR</option>
+                              <option value="COMPLETED">COMPLETED</option>
+                              <option value="CANCELLED">CANCELLED</option>
+                            </select>
+                            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ backgroundColor: status.dot }} />
+                          </div>
                         );
                       })()}
                     </td>
@@ -246,9 +298,8 @@ function AptPageButton({ label, active, onClick }: { label: number; active: bool
   return (
     <button
       onClick={onClick}
-      className={`w-7 h-7 text-xs rounded flex items-center justify-center transition-colors ${
-        active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-      }`}
+      className={`w-7 h-7 text-xs rounded flex items-center justify-center transition-colors ${active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+        }`}
     >
       {label}
     </button>

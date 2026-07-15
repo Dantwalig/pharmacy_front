@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Hexagon, AlertTriangle, ClipboardList, Search } from 'lucide-react';
-import { useHospitalId } from '@/lib/hospital';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 type Category = 'Drug' | 'Supply' | 'Equipment';
 type Stock = 'IN_STOCK' | 'LOW_STOCK';
@@ -23,22 +21,27 @@ interface InventoryItem {
   alertLabel?: string;
 }
 
-function computeAlert(expiryDate: string | null): { alert: Alert; alertLabel?: string } {
-  if (!expiryDate) return { alert: null };
-  const now = Date.now();
-  const exp = new Date(expiryDate).getTime();
-  if (exp < now) return { alert: 'EXPIRED' };
-  const daysLeft = Math.ceil((exp - now) / 86_400_000);
-  if (daysLeft <= 60) return { alert: 'EXPIRING', alertLabel: `Expiring (${daysLeft}d)` };
-  return { alert: 'SAFE' };
-}
-
-
-const MODE_CARDS = [
-  { id: 'stock',       title: 'Hospital Stock',  desc: 'Track current drug supplies, equipment, and medical inventory levels.', icon: Hexagon,       color: '#2563EB' },
-  { id: 'alerts',      title: 'Alerts Queue',    desc: 'Instantly find expired, expiring, or critical low-stock items.',         icon: AlertTriangle, color: '#DC2626' },
-  { id: 'procurement', title: 'Procurement Log', desc: 'Submit and review procurement requests, tracking approval & delivery stages.', icon: ClipboardList, color: '#059669' },
+const ITEMS: InventoryItem[] = [
+  { id: 'amox-500', name: 'Amoxicillin 500mg', category: 'Drug', quantity: 45, reorder: 100, expiry: '2026-09-12', stock: 'LOW_STOCK', alert: 'SAFE' },
+  { id: 'ibu-400', name: 'Ibuprofen 400mg', category: 'Drug', quantity: 210, reorder: 50, expiry: '2027-02-15', stock: 'IN_STOCK', alert: 'SAFE' },
+  { id: 'lisinopril-10', name: 'Lisinopril 10mg', category: 'Drug', quantity: 12, reorder: 20, expiry: '2026-06-25', stock: 'LOW_STOCK', alert: 'EXPIRING', alertLabel: 'Expiring (35d)' },
+  { id: 'gloves-sterile', name: 'Surgical Sterile Gloves', category: 'Supply', quantity: 850, reorder: 200, expiry: '2029-10-30', stock: 'IN_STOCK', alert: 'SAFE' },
+  { id: 'masks-n95', name: 'N95 Respirator Masks', category: 'Supply', quantity: 80, reorder: 150, expiry: '2026-04-10', stock: 'LOW_STOCK', alert: 'EXPIRED' },
+  { id: 'ecg-monitor', name: 'ECG Patient Monitor', category: 'Equipment', quantity: 6, reorder: 2, expiry: null, stock: 'IN_STOCK', alert: null },
+  { id: 'defib-auto', name: 'Automated Defibrillator', category: 'Equipment', quantity: 1, reorder: 2, expiry: null, stock: 'LOW_STOCK', alert: null },
 ];
+
+
+
+export default function HospitalAdminInventoryPage() {
+
+  const { t } = useTranslation();
+
+  const MODE_CARDS = [
+  { id: 'stock',       title: t('hospital.hospitalStock'),  desc: t('hospital.hospitalStockDesc'), icon: Hexagon,       color: '#2563EB' },
+  { id: 'alerts',      title: t('hospital.alertsQueue'),    desc: t('hospital.alertsQueueDesc'),         icon: AlertTriangle, color: '#DC2626' },
+  { id: 'procurement', title: t('hospital.procurementLog'), desc: t('hospital.procurementLogDesc'), icon: ClipboardList, color: '#059669' },
+ ];
 
 const TABS: { key: string; label: string }[] = [
   { key: 'ALL',       label: 'All Items' },
@@ -59,57 +62,22 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
   EXPIRED:  { bg: '#FEF2F2', color: '#DC2626', label: 'Expired' },
 };
 
-export default function HospitalAdminInventoryPage() {
-  const hospitalId = useHospitalId();
   const [activeMode, setActiveMode] = useState('stock');
-  const [tab, setTab]               = useState('ALL');
-  const [search, setSearch]         = useState('');
-  const [items, setItems]           = useState<InventoryItem[]>([]);
-  const [loadingItems, setLoadingItems] = useState(true);
-  const [editingId, setEditingId]   = useState<string | null>(null);
-  const [editQty, setEditQty]       = useState<number>(0);
-  const [saving, setSaving]         = useState(false);
+  const [tab, setTab] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [items, setItems] = useState<InventoryItem[]>(ITEMS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQty, setEditQty] = useState<number>(0);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!hospitalId) { setLoadingItems(false); return; }
-    api.get(`/hospitals/${hospitalId}/drug-stock`)
-      .then(res => {
-        const raw: any[] = Array.isArray(res.data) ? res.data : [];
-        const mapped: InventoryItem[] = raw.map(item => {
-          const { alert, alertLabel } = computeAlert(item.expiryDate);
-          return {
-            id:       item.id,
-            drugId:   item.drugId,
-            name:     item.drug?.brandName ?? 'Unknown',
-            category: 'Drug' as Category,
-            quantity: item.quantity,
-            reorder:  item.reorderLevel,
-            expiry:   item.expiryDate ? item.expiryDate.substring(0, 10) : null,
-            stock:    item.lowStockAlert ? 'LOW_STOCK' : 'IN_STOCK',
-            alert,
-            alertLabel,
-          };
-        });
-        setItems(mapped);
-      })
-      .catch(() => {})
-      .finally(() => setLoadingItems(false));
-  }, [hospitalId]);
-
-  const handleSaveQty = async (item: InventoryItem) => {
-    if (!hospitalId || !item.drugId) return;
+  const handleSaveQty = (item: InventoryItem) => {
     setSaving(true);
-    try {
-      await api.patch(`/hospitals/${hospitalId}/drug-stock/${item.drugId}`, { qtyOnHand: editQty });
-      setItems(prev => prev.map(i =>
-        i.drugId === item.drugId
-          ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
-          : i
-      ));
-      setEditingId(null);
-    } catch {
-      toast.error('Failed to update stock — please try again.');
-    }
+    setItems(prev => prev.map(i =>
+      i.id === item.id
+        ? { ...i, quantity: editQty, stock: editQty <= i.reorder ? 'LOW_STOCK' : 'IN_STOCK' }
+        : i
+    ));
+    setEditingId(null);
     setSaving(false);
   };
 
@@ -127,8 +95,8 @@ export default function HospitalAdminInventoryPage() {
     <div className="space-y-6">
       {/* Hero */}
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>Inventory Control &amp; Supply Chain</h1>
-        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Track and manage hospital stock levels, alerts, and procurement requests</p>
+        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.inventoryControl')}</h1>
+        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.inventoryControlDesc')}</p>
       </div>
 
       {/* Mode cards */}
@@ -153,7 +121,7 @@ export default function HospitalAdminInventoryPage() {
 
       {activeMode === 'procurement' && (
         <div className="flex items-center justify-center py-16 text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          Procurement log is not yet available — no backend endpoint exists for this feature.
+          {t('hospital.procurementNotAvailable')}
         </div>
       )}
 
@@ -169,7 +137,7 @@ export default function HospitalAdminInventoryPage() {
                 tab === tb.key ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
-              {tb.label}
+              {tb.key === 'ALL' ? t('hospital.allItemsTab') : tb.key === 'Drug' ? t('hospital.drugsMedsTab') : tb.key === 'Supply' ? t('hospital.suppliesTab') : t('hospital.equipmentTab')}
             </button>
           ))}
         </div>
@@ -179,7 +147,7 @@ export default function HospitalAdminInventoryPage() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search stock inventory..."
+            placeholder={t('hospital.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -192,45 +160,43 @@ export default function HospitalAdminInventoryPage() {
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
               <tr className="border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="px-6 py-4">Item Name</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Available Quantity</th>
-                <th className="px-6 py-4">Min. Reorder Limit</th>
-                <th className="px-6 py-4">Expiry Date</th>
-                <th className="px-6 py-4">Status / Alerts</th>
-                <th className="px-6 py-4 text-right">Quick Actions</th>
+                <th className="px-6 py-4">{t('hospital.itemName')}</th>
+                <th className="px-6 py-4">{t('hospital.category')}</th>
+                <th className="px-6 py-4">{t('hospital.availableQuantity')}</th>
+                <th className="px-6 py-4">{t('hospital.minReorderLimit')}</th>
+                <th className="px-6 py-4">{t('hospital.expiryDate')}</th>
+                <th className="px-6 py-4">{t('hospital.statusAlerts')}</th>
+                <th className="px-6 py-4 text-right">{t('hospital.quickActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
-              {loadingItems ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">Loading inventory…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">No items found.</td></tr>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">{t('hospital.noItemsFound')}</td></tr>
               ) : filtered.map(item => {
                 const stock = STOCK_STYLE[item.stock];
                 const alert = item.alert ? ALERT_STYLE[item.alert] : null;
                 return (
-                  <tr key={item.drugId} className="hover:bg-gray-50/70 transition-colors">
+                  <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{item.category}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} units</td>
-                    <td className="px-6 py-4 text-gray-500">{item.reorder} units</td>
+                    <td className="px-6 py-4 text-gray-500">{item.category === 'Drug' ? t('hospital.drugCategory') : item.category === 'Supply' ? t('hospital.supplyCategory') : item.category === 'Equipment' ? t('hospital.equipmentCategory') : item.category}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
+                    <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.expiry ?? '—'}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: stock.bg, color: stock.color }}>
                           <span className="h-1.5 w-1.5 rounded-full" style={{ background: stock.dot }} />
-                          {stock.label}
+                          {item.stock === 'IN_STOCK' ? t('hospital.inStockLabel') : t('hospital.lowStockLabel')}
                         </span>
                         {alert && (
                           <span className="inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: alert.bg, color: alert.color }}>
-                            {item.alertLabel ?? alert.label}
+                            {item.alertLabel ?? (item.alert === 'SAFE' ? t('hospital.safeLabel') : item.alert === 'EXPIRING' ? t('hospital.expiringLabel') : t('hospital.expiredLabel'))}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {editingId === item.drugId ? (
+                      {editingId === item.id ? (
                         <div className="flex items-center gap-1.5 justify-end">
                           <input
                             type="number"
@@ -244,7 +210,7 @@ export default function HospitalAdminInventoryPage() {
                             disabled={saving}
                             className="px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                           >
-                            {saving ? '…' : 'Save'}
+                            {saving ? '…' : t('hospital.saveLabel')}
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
@@ -255,10 +221,10 @@ export default function HospitalAdminInventoryPage() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setEditingId(item.drugId ?? null); setEditQty(item.quantity); }}
+                          onClick={() => { setEditingId(item.id ?? null); setEditQty(item.quantity); }}
                           className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
                         >
-                          Request Stock
+                          {t('hospital.requestStockLabel')}
                         </button>
                       )}
                     </td>
@@ -272,3 +238,4 @@ export default function HospitalAdminInventoryPage() {
     </div>
   );
 }
+
