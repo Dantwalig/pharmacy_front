@@ -21,12 +21,18 @@ import type {
 const NAVY = '#1E4D8C';
 
 // ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
-// src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md (Gap R-3)
+// ?? TODO: no backend endpoint yet ? see gap doc ?????????????????????????????????????
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-2)
+// No patient-satisfaction/feedback model anywhere in schema.prisma.
+// Satisfaction slice data defined inside the component so t() is available.
+
+// ?? TODO: no backend endpoint yet ? see gap doc ?????????????????????????????????????
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-3)
 // GET /inpatient/admissions returns a raw, unpaginated, undated list and its
 // resolveAdmitter() falls back to a HospitalStaff lookup for any non-DOCTOR
-// role — HOSPITAL_ADMIN has no HospitalStaff row, so this 403s for admins
-// today. No monthly-aggregated "admissions over time" endpoint exists. Kept
-// on demo data until both issues are fixed.
+// role ? HOSPITAL_ADMIN has no HospitalStaff row, so this 403s for admins
+// today. No monthly-aggregated ?admissions over time? endpoint exists. Proposed
+// endpoint spec is in the gap doc. Kept on demo data until both issues are fixed.
 const MOCK_ADMITTED_OVER_TIME: AdmissionsTrendPoint[] = [
   { month: 'Jan', admitted: 4000, out: 2200 },
   { month: 'Feb', admitted: 1600, out: 900 },
@@ -83,8 +89,8 @@ export default function HospitalAdminReportsPage() {
   const [staffLoading, setStaffLoading]     = useState(true);
   const [staffError, setStaffError]         = useState(false);
 
-  // ── TODO: no backend endpoint yet — see gap doc (Gap R-2) ───────────────────
-  // There is no patient-satisfaction/feedback model anywhere in schema.prisma.
+  // ?? TODO: no backend endpoint yet ? see gap doc (Gap R-2) ???????????????????????
+  // No patient-satisfaction/feedback model anywhere in schema.prisma.
   // Defined inside component so t() is available for translated slice names.
   const satisfaction: SatisfactionSlice[] = [
     { name: t('hospital.excellent'), value: 50, color: '#1E4D8C' },
@@ -99,6 +105,9 @@ export default function HospitalAdminReportsPage() {
     if (!hospitalId) { setWaitLoading(false); setStaffLoading(false); return; }
 
     // Average wait times by department — GET /reports/department/metrics
+    // (mv_department_daily_metrics), one row per department per metric_date,
+    // ordered metric_date DESC then department ASC. Take the most recent
+    // metric_date row per department.
     api.get('/reports/department/metrics')
       .then(res => {
         const rows: any[] = Array.isArray(res.data) ? res.data : [];
@@ -114,7 +123,10 @@ export default function HospitalAdminReportsPage() {
       .catch(() => setWaitError(true))
       .finally(() => setWaitLoading(false));
 
-    // Staff per department — derived from GET /hospitals/:id/doctors grouped by specialization
+    // Staff per department — no dedicated endpoint. Derived from
+    // GET /hospitals/:id/doctors grouped by specialization, same approach
+    // already used on admin/departments (doctor counts as a staffing proxy;
+    // nurses/receptionists aren't attributable to a department on the backend).
     api.get(`/hospitals/${hospitalId}/doctors`)
       .then(res => {
         const doctors: any[] = Array.isArray(res.data) ? res.data : [];

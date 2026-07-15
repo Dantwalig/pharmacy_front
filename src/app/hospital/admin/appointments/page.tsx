@@ -7,7 +7,11 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import type { AppointmentStatus } from '@/types/hospital';
 
-// GET /appointments (HOSPITAL_ADMIN-scoped) — nested patient/doctor objects
+// GET /appointments (HOSPITAL_ADMIN-scoped, see appointmentInclude in
+// back-end appointments.service.ts) — shape is richer than the old mock
+// Appointment type (nested patient/doctor/hospital objects, not flat
+// patientName/doctorName strings), so this is its own local type rather
+// than reusing src/types/hospital.ts Appointment.
 interface BackendAppointment {
   id: string;
   date: string;
@@ -18,8 +22,10 @@ interface BackendAppointment {
   doctor: { firstName: string | null; lastName: string | null; specialization: string } | null;
 }
 
-// Real backend enum — no PENDING/CONFIRMED, see src/types/hospital.ts and
-// src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md (Gap A-1)
+// Real backend enum (back-end src/prisma/schema.prisma AppointmentStatus) —
+// no PENDING/CONFIRMED, see the note in src/types/hospital.ts and the gap
+// doc (Gap A-1) for why the old mock-driven UI's Approve/Reject buttons
+// don't map cleanly onto these values.
 const ALL_STATUSES: AppointmentStatus[] = [
   'SCHEDULED', 'ARRIVED', 'IN_TRIAGE', 'READY_FOR_DOCTOR', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
 ];
@@ -77,6 +83,8 @@ export default function HospitalAdminAppointmentsPage() {
     [appointments]
   );
 
+  // Status filter dropdown is client-side, per the ticket — GET /appointments
+  // has no status query param, so we just filter the already-fetched list.
   const filtered = appointments.filter((a) => {
     const patientName = `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim();
     const q = search.trim().toLowerCase();

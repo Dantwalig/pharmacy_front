@@ -43,6 +43,7 @@ function displayName(s: HospitalStaffMember) {
   return `${prefix}${s.firstName} ${s.lastName}`;
 }
 
+// GET /hospitals/:id/doctors response row — see mapping notes below.
 interface BackendDoctor {
   id: string;
   firstName: string | null;
@@ -53,6 +54,7 @@ interface BackendDoctor {
   user?: { email: string };
 }
 
+// ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({
   icon: Icon, label, value, sub, iconBg, iconColor,
 }: {
@@ -123,8 +125,12 @@ export default function HospitalAdminStaffManagementPage() {
   const [statusFilter, setStatus] = useState('');
   const [page, setPage]           = useState(1);
 
-  // GET /hospitals/:id/doctors — doctors only for now.
-  // TODO: add nurses once GET /hospitals/:id/staff is available (Gap S-1).
+  // GET /hospitals/:id/doctors — the backend only returns doctors here.
+  // TODO: add nurses once GET /hospitals/:id/staff is available. Nurses and
+  // receptionists exist on the backend (HospitalStaff model) but there is no
+  // endpoint to list them yet, so the Staff Directory below is doctors-only
+  // until that ships. Proposed endpoint spec is in
+  // src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap ST-1).
   useEffect(() => {
     if (!hospitalId) { setLoading(false); return; }
     api.get<BackendDoctor[]>(`/hospitals/${hospitalId}/doctors`)

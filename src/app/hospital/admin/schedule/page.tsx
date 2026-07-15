@@ -31,6 +31,7 @@ import {
 import api from '@/lib/api';
 import { useHospitalId } from '@/lib/hospital';
 
+// GET /hospitals/:id/doctors row
 interface BackendDoctor {
     id: string;
     firstName: string | null;
@@ -38,6 +39,7 @@ interface BackendDoctor {
     specialization: string;
 }
 
+// GET /appointments (HOSPITAL_ADMIN-scoped) row
 interface BackendAppointment {
     id: string;
     date: string;
@@ -48,6 +50,9 @@ interface BackendAppointment {
     doctor: { id: string; firstName: string | null; lastName: string | null } | null;
 }
 
+// Deterministic colour per doctor id, same idea as the old mock's
+// DOCTOR_COLORS lookup, but generated instead of hand-listed so it works for
+// any real doctor id.
 const PALETTE = ['#2D9B8A', '#1E4D8C', '#7C3AED', '#B45309', '#0891B2', '#059669', '#DB2777'];
 function colorForDoctor(doctorId: string) {
     let hash = 0;
@@ -131,8 +136,14 @@ export default function HospitalAdminSchedulePage() {
     const [appointments, setAppointments] = useState<BackendAppointment[]>([]);
     const [apptsLoading, setApptsLoading] = useState(true);
 
-    // GET /doctors/:doctorId/slots returns *available* slots, not existing bookings.
-    // Kept as a separate sidebar panel — see gap doc (Gap SC-1).
+    // GET /doctors/:doctorId/slots?date=YYYY-MM-DD for the selected doctor and
+    // the currently-selected calendar day. NOTE: this returns *available*
+    // (bookable) slots, not existing bookings — a genuinely different thing
+    // from the hourly grid below, which shows real appointments. See
+    // src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap SC-1) for why these are
+    // kept as two separate panels rather than merged into one, and why month
+    // view doesn't use this endpoint at all (it has no date-range mode, only
+    // a single date per call).
     const [openSlots, setOpenSlots] = useState<string[]>([]);
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [slotsError, setSlotsError] = useState(false);
@@ -249,7 +260,7 @@ export default function HospitalAdminSchedulePage() {
                                 onClick={() => setSelectedDoctorId(null)}
                                 className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors ${!selectedDoctorId ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
                             >
-                                {t('hospital.allDoctors')}
+                                All doctors
                             </button>
                             {doctorsLoading ? (
                                 Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />)

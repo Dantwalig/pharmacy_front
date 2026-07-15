@@ -83,25 +83,28 @@ export default function HospitalDoctorAppointmentsPage() {
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
-  const todayCount     = appointments.filter(a => isToday(a.date)).length;
-  const confirmedCount = appointments.filter(a => a.status === 'SCHEDULED' || a.status === 'CONFIRMED').length;
+  const todayCount = appointments.filter(a => isToday(a.date)).length;
+  // CONFIRMED doesn't exist on the real enum. SCHEDULED is the closest ? see Gap A-1.
+  const upcomingCount   = appointments.filter(a => a.status === 'SCHEDULED').length;
   const completedCount = appointments.filter(a => a.status === 'COMPLETED').length;
   const cancelledCount = appointments.filter(a => a.status === 'CANCELLED').length;
 
   const statCards = [
-    { label: t('hospital.today', 'Today'),       value: todayCount,     icon: CalendarIcon,    iconColor: '#7C3AED', bgColor: '#F3E8FF' },
-    { label: t('hospital.upcoming', 'Upcoming'),  value: confirmedCount, icon: ClockIcon,       iconColor: '#0284C7', bgColor: '#E0F2FE' },
-    { label: t('hospital.completed', 'Completed'),value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
-    { label: t('hospital.cancelled', 'Cancelled'),value: cancelledCount, icon: XCircleIcon,     iconColor: '#EA580C', bgColor: '#FEE2E2' },
+    { label: t('hospital.today', 'Today'), value: todayCount, icon: CalendarIcon, iconColor: '#7C3AED', bgColor: '#F3E8FF' },
+    { label: t('hospital.upcoming', 'Upcoming'), value: upcomingCount, icon: ClockIcon, iconColor: '#0284C7', bgColor: '#E0F2FE' },
+    { label: t('hospital.completed', 'Completed'), value: completedCount, icon: CheckCircleIcon, iconColor: '#16A34A', bgColor: '#DCFCE7' },
+    { label: t('hospital.cancelled', 'Cancelled'), value: cancelledCount, icon: XCircleIcon, iconColor: '#EA580C', bgColor: '#FEE2E2' },
   ];
 
   const filterTabs = [
-    { id: 'ALL',             label: t('hospital.allTabs', 'All') },
-    { id: 'SCHEDULED',       label: t('hospital.scheduled', 'Scheduled') },
-    { id: 'ARRIVED',         label: t('hospital.arrived', 'Arrived') },
-    { id: 'READY_FOR_DOCTOR',label: t('hospital.readyForDoctor', 'Ready for Doctor') },
-    { id: 'COMPLETED',       label: t('hospital.completed', 'Completed') },
-    { id: 'CANCELLED',       label: t('hospital.cancelled', 'Cancelled') },
+    { id: 'ALL', label: t('hospital.allTabs', 'All') },
+    { id: 'SCHEDULED', label: t('hospital.scheduled', 'Scheduled') },
+    { id: 'ARRIVED', label: t('hospital.arrived', 'Arrived') },
+    { id: 'IN_TRIAGE', label: t('hospital.inTriage', 'In Triage') },
+    { id: 'READY_FOR_DOCTOR', label: t('hospital.readyForDoctor', 'Ready for Doctor') },
+    { id: 'COMPLETED', label: t('hospital.completed', 'Completed') },
+    { id: 'CANCELLED', label: t('hospital.cancelled', 'Cancelled') },
+    { id: 'NO_SHOW', label: t('hospital.noShow', 'No Show') },
   ];
 
   const filtered = appointments.filter(apt => {
