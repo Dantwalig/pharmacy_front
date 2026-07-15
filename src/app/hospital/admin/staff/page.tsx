@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { MOCK_HOSPITAL_STAFF } from '@/mock/hospital/staff';
 import type { HospitalStaffMember } from '@/types/hospital';
+import {useTranslation} from 'react-i18next';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#2D9B8A';
@@ -31,18 +32,6 @@ const DEPT_BADGE: Record<string, { bg: string; color: string }> = {
   'Dermatology':     { bg: '#FFFBEB', color: '#B45309' },
   'Maternity':       { bg: '#FFF0F6', color: '#C026D3' },
   'ICU':             { bg: '#F8FAFC', color: '#475569' },
-};
-
-const STATUS_BADGE: Record<HospitalStaffMember['status'], { bg: string; color: string; label: string }> = {
-  ACTIVE:   { bg: '#F0FDF4', color: '#15803D', label: 'Active'   },
-  INACTIVE: { bg: '#FFF7ED', color: '#C2410C', label: 'Inactive' },
-  ON_LEAVE: { bg: '#FEFCE8', color: '#A16207', label: 'On Leave' },
-};
-
-const ROLE_LABEL: Record<HospitalStaffMember['role'], string> = {
-  DOCTOR:       'Doctor',
-  NURSE:        'Nurse',
-  RECEPTIONIST: 'Receptionist',
 };
 
 function deptBadge(dept?: string) {
@@ -107,6 +96,20 @@ function FilterSelect({
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function HospitalAdminStaffManagementPage() {
+  const { t } = useTranslation();
+
+  const STATUS_BADGE: Record<HospitalStaffMember['status'], { bg: string; color: string; label: string }> = {
+  ACTIVE:   { bg: '#F0FDF4', color: '#15803D', label: t('hospital.active' )  },
+  INACTIVE: { bg: '#FFF7ED', color: '#C2410C', label: t('hospital.inactive' ) },
+  ON_LEAVE: { bg: '#FEFCE8', color: '#A16207', label: t('hospital.onLeave' ) },
+ };
+ const ROLE_LABEL: Record<HospitalStaffMember['role'], string> = {
+  DOCTOR:       t('hospital.doctor'),
+  NURSE:        t('hospital.nurse'),
+  RECEPTIONIST: t('hospital.receptionist'),
+ };
+
+
   const [search, setSearch]     = useState('');
   const [deptFilter, setDept]   = useState('');
   const [roleFilter, setRole]   = useState('');
@@ -123,8 +126,8 @@ export default function HospitalAdminStaffManagementPage() {
 
   // ── Filter options ────────────────────────────────────────────────────────
   const allDepts   = useMemo(() => [...new Set(MOCK_HOSPITAL_STAFF.map(s => s.department ?? '').filter(Boolean))].sort(), []);
-  const allRoles   = ['Doctor', 'Nurse', 'Receptionist'];
-  const allStatuses = ['Active', 'Inactive', 'On Leave'];
+  const allRoles   = [t('hospital.doctor'), t('hospital.nurse'), t('hospital.receptionist')];
+  const allStatuses = [t('hospital.active'), t('hospital.inactive'), t('hospital.onLeave')];
 
   // ── Filtered + paginated ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -163,8 +166,8 @@ export default function HospitalAdminStaffManagementPage() {
       {/* ── Header ── */}
       <div className="rounded-2xl px-6 py-7 flex items-center justify-between" style={{ background: '#EBF5FF' }}>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>Staff Management</h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>Manage Hospital Staff, roles and departments.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>{t('hospital.staffManagement')}</h1>
+          <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.staffSubtitle')}</p>
         </div>
         <div className="opacity-10 shrink-0 ml-4 hidden sm:block" style={{ color: NAVY }}>
           <Users size={60} />
@@ -175,15 +178,15 @@ export default function HospitalAdminStaffManagementPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={Users}
-          label="Total Staff"
+          label={t('hospital.totalStaff')}
           value={totalStaff}
-          sub="All employees"
+          sub={t('hospital.allEmployees')}
           iconBg="#EFF6FF"
           iconColor="#2563EB"
         />
         <StatCard
           icon={UserCheck}
-          label="Active Staff"
+          label={t('hospital.activeStaff')}
           value={activeStaff}
           sub={`${activePct}%`}
           iconBg="#F0FDF4"
@@ -191,7 +194,7 @@ export default function HospitalAdminStaffManagementPage() {
         />
         <StatCard
           icon={UserX}
-          label="Inactive Staff"
+          label={t('hospital.inactiveStaff')}
           value={inactiveStaff}
           sub={`${inactivePct}%`}
           iconBg="#FFF7ED"
@@ -199,9 +202,9 @@ export default function HospitalAdminStaffManagementPage() {
         />
         <StatCard
           icon={Building2}
-          label="Departments"
+          label={t('hospital.departments')}
           value={deptCount}
-          sub="Total Departments"
+          sub={t('hospital.totalDepartments')}
           iconBg="#FEFCE8"
           iconColor="#CA8A04"
         />
@@ -211,7 +214,7 @@ export default function HospitalAdminStaffManagementPage() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Card header */}
         <div className="px-6 py-5 border-b border-gray-100">
-          <h2 className="text-base font-bold" style={{ color: NAVY }}>Staff Directory</h2>
+          <h2 className="text-base font-bold" style={{ color: NAVY }}>{t('hospital.staffDirectory')}</h2>
         </div>
 
         {/* Filters */}
@@ -221,7 +224,8 @@ export default function HospitalAdminStaffManagementPage() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder={t('hospital.searchPlaceholder')}
+
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2"
@@ -233,19 +237,19 @@ export default function HospitalAdminStaffManagementPage() {
             value={deptFilter}
             onChange={handleFilterChange(setDept)}
             options={allDepts}
-            placeholder="All Departments"
+            placeholder={t('hospital.allDepartments')}
           />
           <FilterSelect
             value={roleFilter}
             onChange={handleFilterChange(setRole)}
             options={allRoles}
-            placeholder="All Roles"
+            placeholder={t('hospital.allRoles')}
           />
           <FilterSelect
             value={statusFilter}
             onChange={handleFilterChange(setStatus)}
             options={allStatuses}
-            placeholder="All Status"
+            placeholder={t('hospital.allStatuses')}
           />
         </div>
 
@@ -254,11 +258,11 @@ export default function HospitalAdminStaffManagementPage() {
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-3 font-semibold">Staff ID</th>
-                <th className="text-left px-4 py-3 font-semibold">Name</th>
-                <th className="text-left px-4 py-3 font-semibold">Role</th>
-                <th className="text-left px-4 py-3 font-semibold">Department</th>
-                <th className="text-left px-4 py-3 font-semibold">Status</th>
+                <th className="text-left px-6 py-3 font-semibold">{t('hospital.staffId')}</th>
+                <th className="text-left px-4 py-3 font-semibold">{t('hospital.name')}</th>
+                <th className="text-left px-4 py-3 font-semibold">{t('hospital.role')}</th>
+                <th className="text-left px-4 py-3 font-semibold">{t('hospital.department')}</th>
+                <th className="text-left px-4 py-3 font-semibold">{t('hospital.status')}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -266,7 +270,7 @@ export default function HospitalAdminStaffManagementPage() {
               {pageSlice.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-400">
-                    No staff members found.
+                    {t('hospital.noStaffMembersFound')}
                   </td>
                 </tr>
               ) : pageSlice.map(s => {
@@ -311,8 +315,8 @@ export default function HospitalAdminStaffManagementPage() {
         <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-xs text-gray-400">
             {filtered.length === 0
-              ? 'No staff found'
-              : `Showing ${startRow}–${endRow} of ${filtered.length} staff`}
+              ? t('hospital.noStaffFound')
+              : `${t('hospital.showing')} ${startRow}–${endRow} of ${filtered.length} ${t('hospital.staff')}`}
           </p>
 
           <div className="flex items-center gap-1">

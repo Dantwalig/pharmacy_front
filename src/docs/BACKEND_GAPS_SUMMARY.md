@@ -2,7 +2,7 @@
 
 > **Audience:** Backend lead and backend engineers  
 > **Purpose:** Single source of truth for every frontend → backend contract gap across all four portals. Use this before scoping backend sprints.  
-> **Last updated:** 2026-06-05  
+> **Last updated:** 2026-07-09  
 > **Full super-admin contract:** [`SUPER_ADMIN_BACKEND_CONTRACT.md`](./SUPER_ADMIN_BACKEND_CONTRACT.md)
 
 ---
@@ -97,6 +97,29 @@
 
 ---
 
+## Portal E — Doctor Portal
+
+**Branch:** `feat/doctor-appointments-prescription-swagger`  
+**Portals covered:** `/hospital/doctor/*`
+
+### Gaps
+
+| # | Endpoint | Method | Request Body | Expected Response | Current FE behaviour | FE once live |
+|---|----------|--------|--------------|-------------------|---------------------|--------------|
+| E-1 | `/messages/threads` · `/messages/threads/:id` · `/messages/threads/:id/send` | GET / GET / POST | — / — / `{ text }` | Thread list / Message list / `201` | Messages page starts with empty `conversations[]`; send input disabled; notifications shown as fallback | Full threaded chat between doctor, nurses, and staff |
+| E-2 | `/prescriptions/for-patient/:patientId` | GET | — | `PatientRx[]` | RX history call sent with UUID; catches `NotFoundException`; amber gap notice shown in prescription panel | Prescription history loads for selected patient |
+| E-3 | `/doctors/me` (PATCH, `Role.DOCTOR`) | PATCH | `{ phone?, email?, specialization? }` | Updated `Doctor` record | Settings Profile tab is read-only; `PATCH /doctors/:id` is `HOSPITAL_ADMIN`-only | Doctor can save profile changes from Settings |
+| E-4 | `/doctors/dashboard` missing fields | GET | — | Add `licenseNumber`, `workingHours` to existing response | Department tab shows `—` for license number and working hours | License and hours fields populate in Settings Department tab |
+| E-5 | `/hospitals/:hospitalId/drug-stock` (for `Role.DOCTOR`) | GET | — | `DrugStock[]` | Call attempted; if 403/404 `drugStock` stays `[]`; medicine name falls back to free-text input | Drug autocomplete shows real-time stock status badges |
+| E-6 | `/hospitals/:id/patients?doctorId=` | GET | — | `Patient[]` scoped to doctor | Route does not exist (`POST :id/patients/search` exists but not the GET form); patient list now derived from `GET /appointments` — missing `age`, `gender`, `dateOfBirth` | Full patient roster with demographics |
+| E-7 | Appointments include — patient vitals | — | — | Add `patient.gender`, `patient.dateOfBirth`, `triageVitals` to `appointmentInclude` in `appointments.service.ts` | Consultations and patient list show `—` for gender, age, BP | Vitals column populates in consultation queue |
+
+### Confirmed working
+
+`GET /appointments` (doctor-scoped via JWT), `GET /appointments/:id`, `GET /appointments/:id/patient-chart` (with `.catch()` fallback), `PATCH /appointments/:id/status`, `POST /prescriptions/hospital-issue`, `PUT /auth/change-password`, `GET /doctors/dashboard`, `GET /notifications` (used as messages fallback)
+
+---
+
 ## Cross-cutting issues resolved in this PR
 
 These were code-level issues, not missing endpoints, now fixed in `fix/nelly_super_admin_api_hardening`:
@@ -126,5 +149,9 @@ These were code-level issues, not missing endpoints, now fixed in `fix/nelly_sup
 
 1. **A-1 through A-5** — Super Admin verification workflow is the most visible gap. Super admins cannot approve/reject branches or verify pharmacy locations.
 2. **B-1 through B-3** — Branch stock transfers are fully built on the frontend but non-functional.
-3. **C-1 through C-5** — Confirm response shapes for pharmacy dashboard charts (some may be implemented with inconsistent wrapping).
-4. **D-1 through D-3** — Patient portal gaps are lower priority; most patient flows already work.
+3. **E-2** — `GET /prescriptions/for-patient/:patientId` (UUID-based). Every prescription page session shows the RX history gap notice until this lands.
+4. **E-3 + E-4** — Doctor self-service profile edit and the missing `licenseNumber`/`workingHours` fields are the highest-friction UX gaps for the doctor role.
+5. **E-1** — Messaging module. The send input is visibly disabled; this is noticeable but non-blocking for clinical workflows.
+6. **E-5 through E-7** — Drug stock access, patient demographics, and vitals in appointments. Lower priority; forms degrade to free-text.
+7. **C-1 through C-5** — Confirm response shapes for pharmacy dashboard charts (some may be implemented with inconsistent wrapping).
+8. **D-1 through D-3** — Patient portal gaps are lower priority; most patient flows already work.

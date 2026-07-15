@@ -76,10 +76,10 @@ export default function NurseMessagesPage() {
             >
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: NAVY }}>
-                        {t('hospital.messages') || 'Messages'}
+                        {t('hospital.messages')}
                     </h1>
                     <p className="mt-2 text-sm sm:text-base" style={{ color: '#0284C7' }}>
-                        Check your conversations with other nurses and doctors
+                        {t('hospital.messagesSubtitle')}
                     </p>
                 </div>
                 <div className="opacity-20 shrink-0" style={{ color: NAVY }}>
@@ -97,7 +97,7 @@ export default function NurseMessagesPage() {
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search conversations..."
+                                placeholder={t('hospital.searchConversations')}
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             />
                         </div>
@@ -106,7 +106,7 @@ export default function NurseMessagesPage() {
                     <div className="flex-1 overflow-y-auto">
                         {filteredConversations.length === 0 ? (
                             <div className="p-8 text-center text-sm text-gray-400">
-                                No conversations found.
+                                {t('hospital.noConversations')}
                             </div>
                         ) : (
                             <ul className="divide-y divide-gray-50">
@@ -150,9 +150,9 @@ export default function NurseMessagesPage() {
                             <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-5">
                                 <ChatBubbleOvalLeftEllipsisIcon className="w-10 h-10 text-blue-300" />
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900">Your Messages</h2>
+                            <h2 className="text-lg font-bold text-gray-900">{t('hospital.yourMessages')}</h2>
                             <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                                Select and search specific messages from fellow nurses and doctors.
+                                {t('hospital.searchMessages')}
                             </p>
                         </div>
                     ) : (
@@ -170,7 +170,7 @@ export default function NurseMessagesPage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                    <span className="text-xs font-medium text-gray-400">Online</span>
+                                    <span className="text-xs font-medium text-gray-400">{t('hospital.online')}</span>
                                 </div>
                             </div>
 
@@ -179,8 +179,8 @@ export default function NurseMessagesPage() {
                                 {activeConversation.messages.length === 0 ? (
                                     <div className="h-full flex flex-col items-center justify-center text-center gap-2">
                                         <ChatBubbleLeftRightIcon className="w-12 h-12 text-gray-200" />
-                                        <p className="text-sm font-semibold text-gray-500">No messages yet</p>
-                                        <p className="text-xs text-gray-400">Start the conversation by sending a message below.</p>
+                                        <p className="text-sm font-semibold text-gray-500">{t('hospital.noConversations')}</p>
+                                        <p className="text-xs text-gray-400">{t('hospital.sendMessages')}</p>
                                     </div>
                                 ) : (
                                     <>
@@ -219,7 +219,7 @@ export default function NurseMessagesPage() {
                                     <input
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
-                                        placeholder="Type your message here..."
+                                        placeholder={t('hospital.typeMessage')}
                                         className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-4 placeholder:text-gray-400 text-gray-700 font-medium"
                                     />
                                     <button

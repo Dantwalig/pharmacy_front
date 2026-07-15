@@ -15,6 +15,7 @@ import {
   XMarkIcon,
   MapPinIcon,
   ArrowRightOnRectangleIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
 interface SuperAdminSidebarProps {
@@ -30,13 +31,14 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
   const { logout } = useAuth();
 
   const navigation = [
-    { name: t('superAdmin.dashboard'),  href: '/super-admin/dashboard',       icon: Squares2X2Icon },
-    { name: t('superAdmin.pharmacies'), href: '/super-admin/pharmacies',      icon: BuildingStorefrontIcon },
-    { name: t('superAdmin.patients'),   href: '/super-admin/patients',        icon: UserGroupIcon },
-    { name: t('superAdmin.analytics'),  href: '/super-admin/analytics',       icon: ChartBarIcon },
-    { name: t('superAdmin.pharmacyMap'),href: '/super-admin/map',             icon: MapPinIcon },
-    { name: t('common.notifications'),  href: '/super-admin/notifications',   icon: BellIcon },
-    { name: t('common.profile'),        href: '/super-admin/profile',         icon: UserCircleIcon },
+    { name: t('superAdmin.dashboard'), href: '/super-admin/dashboard', icon: Squares2X2Icon },
+    { name: t('superAdmin.pharmacies'), href: '/super-admin/pharmacies', icon: BuildingStorefrontIcon },
+    { name: t('superAdmin.patients'), href: '/super-admin/patients', icon: UserGroupIcon },
+    { name: t('superAdmin.analytics'), href: '/super-admin/analytics', icon: ChartBarIcon },
+    { name: t('superAdmin.pharmacyMap'), href: '/super-admin/map', icon: MapPinIcon },
+    { name: t('superAdmin.audit.title'), href: '/super-admin/audit', icon: ShieldCheckIcon },
+    { name: t('common.notifications'), href: '/super-admin/notifications', icon: BellIcon },
+    { name: t('common.profile'), href: '/super-admin/profile', icon: UserCircleIcon },
   ];
 
   const handleLogout = () => {
