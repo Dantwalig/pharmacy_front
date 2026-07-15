@@ -262,6 +262,34 @@ export interface DiagnosisBreakdown {
   value: number;
 }
 
+// ── Reports charts (admin/reports) ──────────────────────────────────────────
+// Source: GET /reports/department/metrics (materialized view mv_department_daily_metrics)
+// for wait times; GET /hospitals/:id/doctors (grouped by specialization) for staff
+// counts. Satisfaction and admissions-over-time have no backend source yet —
+// see src/docs/HOSPITAL_ADMIN_REPORTS_SETTINGS_INTEGRATION.md.
+
+export interface DepartmentWaitTime {
+  dept: string;
+  value: number; // avgWaitMinutesApprox, most recent metric_date per department
+}
+
+export interface SatisfactionSlice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface DepartmentStaffCount {
+  dept: string;
+  value: number; // doctor count in this specialization
+}
+
+export interface AdmissionsTrendPoint {
+  month: string;
+  admitted: number;
+  out: number;
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export interface HospitalSettings {

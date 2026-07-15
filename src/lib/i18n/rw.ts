@@ -2190,7 +2190,7 @@ export const rw = {
     // Patients & Satisfaction (Kinyarwanda)
     admittedPatients: 'Abarwayi Bashyizwe mu Bitaro',
     outPatients: 'Abarwayi Batavurirwa Mu Bitaro',
-    execellent: 'Byiza cyane',
+    excellent: 'Byiza cyane',
     good: 'Byiza',
     poor: 'Bibi',
     thisWeek: 'Icyumweru Iki',

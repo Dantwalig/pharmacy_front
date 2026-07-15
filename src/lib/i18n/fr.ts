@@ -2189,7 +2189,7 @@ export const fr = {
     patientSatisfaction: 'Évaluations de Satisfaction des Patients',
     admittedPatients: 'Patients Admis',
     outPatients: 'Patients Externes',
-    execellent: 'Excellent',
+    excellent: 'Excellent',
     good: 'Bon',
     poor: 'Mauvais',
     // Consultation Types (French)

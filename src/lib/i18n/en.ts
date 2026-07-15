@@ -2207,7 +2207,7 @@ export const en = {
     patientSatisfaction: 'Patient Satisfaction Ratings',
     admittedPatients: 'Admitted Patients',
     outPatients: 'Outpatients',
-    execellent: 'Excellent',
+    excellent: 'Excellent',
     good: 'Good',
     poor: 'Poor',
 
