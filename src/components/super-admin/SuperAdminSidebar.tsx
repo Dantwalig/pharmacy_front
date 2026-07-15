@@ -36,7 +36,7 @@ export default function SuperAdminSidebar({ open = false, onClose }: SuperAdminS
     { name: t('superAdmin.patients'), href: '/super-admin/patients', icon: UserGroupIcon },
     { name: t('superAdmin.analytics'), href: '/super-admin/analytics', icon: ChartBarIcon },
     { name: t('superAdmin.pharmacyMap'), href: '/super-admin/map', icon: MapPinIcon },
-    { name: 'Audit Logs', href: '/super-admin/audit', icon: ShieldCheckIcon },
+    { name: t('superAdmin.audit.title'), href: '/super-admin/audit', icon: ShieldCheckIcon },
     { name: t('common.notifications'), href: '/super-admin/notifications', icon: BellIcon },
     { name: t('common.profile'), href: '/super-admin/profile', icon: UserCircleIcon },
   ];

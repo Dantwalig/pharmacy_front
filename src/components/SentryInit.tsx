@@ -15,26 +15,24 @@ export default function SentryInit() {
     useEffect(() => {
         if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return;
 
+        // sentry.client.config.ts is auto-injected by withSentryConfig in production;
+        // only init here if that file did not already run (Turbopack dev mode).
+        if (Sentry.isInitialized()) return;
+
         Sentry.init({
             dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
             tracesSampleRate: 1.0,
-            debug: true, // We will leave this on for testing
-            replaysSessionSampleRate: 1.0, // Force 100% replay recording for testing
+            debug: false,
+            replaysSessionSampleRate: 0.1,
             replaysOnErrorSampleRate: 1.0,
             integrations: [
                 Sentry.replayIntegration({
                     maskAllText: true,
                     blockAllMedia: true,
                 }),
-                Sentry.feedbackIntegration({
-                    colorScheme: "system",
-                    autoInject: true, // Force the floating bug widget to appear
-                }),
-                Sentry.captureConsoleIntegration({ levels: ["log", "warn", "error"] })
+                Sentry.captureConsoleIntegration({ levels: ["warn", "error"] }),
             ],
         });
-        
-        console.log("🚀 Sentry Client Component successfully initialized!");
     }, []);
 
     return null; // This component renders nothing to the DOM

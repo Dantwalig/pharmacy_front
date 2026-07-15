@@ -588,6 +588,38 @@ export const rw = {
       weeklyReport: 'Raporo yicyumweru yiteguye',
     },
     pharmacyMap: 'Ikarita y\'Amafarimasi',
+    audit: {
+      title: 'Inyandiko z\'Igenzura',
+      pageTitle: 'Umutekano n\'Igenzura',
+      pageSubtitle: 'Gukurikirana ibikorwa bya sisitemu, inyandiko z\'injira, n\'ibyabaye bikomeye by\'umutekano mu gihe nyacyo.',
+      tabs: {
+        all: 'Inyandiko Zose',
+        auth: 'Ibikorwa by\'Injira',
+        system: 'Inyandiko za Sisitemu',
+        pharmacy: 'Ibikorwa by\'Amafarimasi',
+      },
+      table: {
+        timestamp: 'Igihe',
+        actor: 'Uwakoreye',
+        action: 'Igikorwa',
+        target: 'Intego',
+        outcome: 'Igisubizo',
+        loading: 'Gutunganya inyandiko...',
+        empty: 'Nta nyandiko zabonetse muri iyi kategori',
+        errorBanner: 'Gutunganya inyandiko z\'igenzura byarananiranye. Gerageza nanone.',
+      },
+      filter: {
+        allOutcomes: 'Ibisubizo Byose',
+        successOnly: 'Byashoboye Gusa',
+        failuresOnly: 'Byananiye Gusa',
+      },
+      outcome: {
+        success: 'Byashoboye',
+        failure: 'Byananiye',
+      },
+      system: 'Sisitemu',
+      na: 'Nta makuru',
+    },
   },
   branch: {
     portal: 'Urubuga rw\'Ishami',

@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/nextjs'
 Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     tracesSampleRate: 1.0,
-    debug: true, // Let's turn this ON to see if Sentry is even booting
+    debug: false,
     replaysSessionSampleRate: 0.1, // Records 10% of all sessions
     replaysOnErrorSampleRate: 1.0, // Records 100% of sessions that hit an error
     integrations: [
@@ -17,6 +17,6 @@ Sentry.init({
             colorScheme: "system",
             autoInject: true,
         }),
-        Sentry.captureConsoleIntegration({ levels: ["log", "warn", "error"] })
+        Sentry.captureConsoleIntegration({ levels: ["warn", "error"] })
     ],
 })

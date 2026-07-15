@@ -592,7 +592,38 @@ export const en = {
       weeklyReport: 'Weekly report ready',
     },
     pharmacyMap: 'Pharmacy Map',
-
+    audit: {
+      title: 'Audit Logs',
+      pageTitle: 'Security & Audit',
+      pageSubtitle: 'Monitor system activity, access logs, and critical security events in real-time.',
+      tabs: {
+        all: 'All Logs',
+        auth: 'Auth Events',
+        system: 'System Logs',
+        pharmacy: 'Pharmacy Actions',
+      },
+      table: {
+        timestamp: 'Timestamp',
+        actor: 'Actor',
+        action: 'Action',
+        target: 'Target',
+        outcome: 'Outcome',
+        loading: 'Loading logs...',
+        empty: 'No logs found for this category',
+        errorBanner: 'Failed to load audit logs. Please try again.',
+      },
+      filter: {
+        allOutcomes: 'All Outcomes',
+        successOnly: 'Success Only',
+        failuresOnly: 'Failures Only',
+      },
+      outcome: {
+        success: 'Success',
+        failure: 'Failure',
+      },
+      system: 'System',
+      na: 'N/A',
+    },
   },
   branch: {
     portal: 'Branch Portal',

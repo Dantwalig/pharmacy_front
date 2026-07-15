@@ -1,26 +1,28 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import AuditTable from '@/components/super-admin/AuditTable';
 
 type TabCategory = 'ALL' | 'AUTH' | 'SYSTEM' | 'PHARMACY';
 
 export default function AuditPage() {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<TabCategory>('ALL');
 
     const tabs: { id: TabCategory; label: string }[] = [
-        { id: 'ALL', label: 'All Logs' },
-        { id: 'AUTH', label: 'Auth Events' },
-        { id: 'SYSTEM', label: 'System Logs' },
-        { id: 'PHARMACY', label: 'Pharmacy Actions' },
+        { id: 'ALL', label: t('superAdmin.audit.tabs.all') },
+        { id: 'AUTH', label: t('superAdmin.audit.tabs.auth') },
+        { id: 'SYSTEM', label: t('superAdmin.audit.tabs.system') },
+        { id: 'PHARMACY', label: t('superAdmin.audit.tabs.pharmacy') },
     ];
 
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Security & Audit</h1>
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{t('superAdmin.audit.pageTitle')}</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    Monitor system activity, access logs, and critical security events in real-time.
+                    {t('superAdmin.audit.pageSubtitle')}
                 </p>
             </div>
 
