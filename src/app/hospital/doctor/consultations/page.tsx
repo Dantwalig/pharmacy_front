@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, unwrapData } from '@/lib/api';
-import { MOCK_DOCTOR } from '@/mock/hospital/user';
 import type { ConsultationStatus, Consultation } from '@/types/hospital';
 
 const STATUS_BADGE: Record<ConsultationStatus, string> = {
@@ -31,9 +30,26 @@ export default function HospitalDoctorConsultationsPage() {
     async function loadConsultations() {
       try {
         setLoading(true);
-        const res = await api.get(`/consultations?doctorId=${MOCK_DOCTOR.id}`);
-        const parsed = unwrapData<Consultation>(res.data);
-        setConsultations(parsed);
+        // GET /appointments is auto-scoped to the authenticated doctor via JWT.
+        // We adapt the response to the Consultation shape; gender/age/bp are
+        // not included in the appointments include — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
+        const res = await api.get('/appointments');
+        const raw = unwrapData<{
+          id: string; date: string; status: string; type?: string;
+          reason?: string; diagnosisSummary?: string;
+          patient: { firstName: string; lastName: string };
+        }>(res.data);
+
+        const mapped: Consultation[] = raw.map(a => ({
+          id:        a.id,
+          patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+          date:      new Date(a.date).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }),
+          type:      a.type ?? 'CONSULTATION',
+          diagnosis: a.diagnosisSummary,
+          status:    a.status === 'COMPLETED' ? 'COMPLETED' : a.status === 'PENDING' || a.status === 'CONFIRMED' ? 'PENDING' : 'ACTIVE',
+        }));
+
+        setConsultations(mapped);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch consultations:', err);
