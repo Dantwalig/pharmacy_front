@@ -2309,7 +2309,6 @@ export const en = {
     equipmentCategory: 'Equipment',
     noStaffFound: 'No staff found',
     receptionist: 'Receptionist',
-    staff: 'staff',
     feeStatusActive: 'Active',
     urgentType: 'Urgent',
     formalType: 'Formal',
