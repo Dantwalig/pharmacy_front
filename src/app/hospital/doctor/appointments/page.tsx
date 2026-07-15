@@ -55,7 +55,7 @@ export default function HospitalDoctorAppointmentsPage() {
 
   const todayStr = new Date().toDateString();
   const todayCount = appointments.filter(a => new Date(a.date).toDateString() === todayStr).length;
-  const confirmedCount = appointments.filter((a) => a.status === 'CONFIRMED').length;
+  const confirmedCount = appointments.filter((a) => a.status === 'SCHEDULED').length;
   const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
   const cancelledCount = appointments.filter((a) => a.status === 'CANCELLED').length;
 

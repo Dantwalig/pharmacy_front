@@ -2286,6 +2286,7 @@ export const rw = {
     supplyCategory: 'Ikoresho',
     equipmentCategory: 'Igikoresho gikomeye',
     noStaffFound: 'Nta bakozi babonetse',
+    receptionist: 'Usohesha',
     feeStatusActive: 'Bikorwa',
     urgentType: 'Byihuse',
     formalType: 'Bya forumu',

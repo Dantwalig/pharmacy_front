@@ -2308,6 +2308,7 @@ export const en = {
     supplyCategory: 'Supply',
     equipmentCategory: 'Equipment',
     noStaffFound: 'No staff found',
+    receptionist: 'Receptionist',
     feeStatusActive: 'Active',
     urgentType: 'Urgent',
     formalType: 'Formal',

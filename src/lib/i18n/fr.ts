@@ -2285,6 +2285,7 @@ export const fr = {
     supplyCategory: 'Fourniture',
     equipmentCategory: 'Équipement',
     noStaffFound: 'Aucun personnel trouvé',
+    receptionist: 'Réceptionniste',
     feeStatusActive: 'Actif',
     urgentType: 'Urgent',
     formalType: 'Formel',

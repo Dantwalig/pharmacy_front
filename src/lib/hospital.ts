@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { MOCK_DOCTOR, MOCK_ADMIN, MOCK_NURSE } from '@/mock/hospital/user';
+import api from '@/lib/api';
+import type { DashboardStats, WeeklyRevenue } from '@/types/hospital';
 
 /**
  * Resolves the hospitalId to use for hospital admin API calls.
@@ -140,4 +143,51 @@ export function useHospitalNurseUser(): HospitalTopbarUser {
   }
 
   return { userName: '', roleLabel: 'Nurse', hospitalName: '', isMock: false };
+}
+
+// ── Shared hospital dashboard stats + weekly revenue ────────────────────────
+//
+// GET /hospitals/:id/dashboard/stats and GET /hospitals/:id/dashboard/weekly-revenue
+// are used by both admin/dashboard and doctor/dashboard. Both routes now allow
+// Role.HOSPITAL_ADMIN and Role.DOCTOR (see src/docs/HOSPITAL_ADMIN_DASHBOARD_STAFF_APPOINTMENTS_INTEGRATION.md,
+// Gap D-1), scoped via validateHospitalReadAccess on the backend, which checks
+// hospital ownership OR doctor membership. One fetch helper here means admin
+// and doctor dashboards can't silently drift into different response shapes.
+export interface HospitalDashboardData {
+  stats: DashboardStats | null;
+  weeklyRevenue: WeeklyRevenue[];
+  loading: boolean;
+  error: boolean;
+}
+
+export function useHospitalDashboardStats(hospitalId: string | undefined): HospitalDashboardData {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [weeklyRevenue, setWeeklyRevenue] = useState<WeeklyRevenue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!hospitalId) { setLoading(false); return; }
+    let cancelled = false;
+
+    Promise.allSettled([
+      api.get<DashboardStats>(`/hospitals/${hospitalId}/dashboard/stats`),
+      api.get<WeeklyRevenue[]>(`/hospitals/${hospitalId}/dashboard/weekly-revenue`),
+    ]).then(([statsRes, revenueRes]) => {
+      if (cancelled) return;
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value.data);
+      } else {
+        setError(true);
+      }
+      if (revenueRes.status === 'fulfilled') {
+        setWeeklyRevenue(Array.isArray(revenueRes.value.data) ? revenueRes.value.data : []);
+      }
+      setLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [hospitalId]);
+
+  return { stats, weeklyRevenue, loading, error };
 }
