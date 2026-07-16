@@ -7,10 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "dev:doppler": "winpty doppler run -- npm run dev",
+    "build:doppler": "winpty doppler run -- npm run build",
     "lint": "eslint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@sentry/nextjs": "^10.62.0",
     "@types/leaflet": "^1.9.21",
     "axios": "^1.13.2",
     "date-fns": "^4.4.0",

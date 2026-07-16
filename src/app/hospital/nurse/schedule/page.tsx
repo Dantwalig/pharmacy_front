@@ -76,8 +76,8 @@ export default function NurseSchedulePage() {
                 <Icon className="h-6 w-6" style={{ color: stat.color }} />
               </div>
               <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 break-words">{stat.title}</p>
-                <p className="text-xs font-medium text-slate-500 break-words">{stat.subtitle}</p>
+                <p className="text-lg font-bold text-slate-900 break-words">{t(stat.title)}</p>
+                <p className="text-xs font-medium text-slate-500 break-words">{t(stat.subtitle)}</p>
               </div>
             </div>
           );
