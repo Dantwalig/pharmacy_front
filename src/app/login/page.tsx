@@ -51,7 +51,7 @@ export default function LoginPage() {
         <div>
           {/* Logo */}
           <div className="mb-16">
-            <h1 className="text-4xl font-bold mb-2">Evuze</h1>
+            <h1 className="text-4xl font-bold mb-2">E-Vuze</h1>
             <p className="text-blue-100 text-lg">{t('auth.healthcarePlatform')}</p>
           </div>
 
