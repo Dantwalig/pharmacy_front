@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Search,
@@ -15,21 +15,179 @@ import {
 } from 'lucide-react';
 import { MOCK_MEDICATIONS, MOCK_MEDICATION_STATS } from '@/mock/hospital/medications';
 import { MedicationAdministration, MedicationStatus } from '@/types/hospital';
+import api from '@/lib/api';
+import { useHospitalId } from '@/lib/hospital';
+
+interface MarRecordPayload {
+    id: string;
+    medicationName?: string;
+    dose?: string;
+    route?: string;
+    scheduledAt?: string;
+    administeredAt?: string;
+    notes?: string;
+    nurse?: { firstName?: string; lastName?: string };
+    admission?: { patient?: { firstName?: string; lastName?: string } };
+}
+
+interface MedicationStatsSummary {
+    missedDoses: number;
+    dueToday: number;
+    upcomingMedications: number;
+    administeredToday: number;
+}
+
+const EMPTY_STATS: MedicationStatsSummary = {
+    missedDoses: 0,
+    dueToday: 0,
+    upcomingMedications: 0,
+    administeredToday: 0,
+};
+
+function formatTime(value?: string) {
+    if (!value) return '—';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '—';
+    return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function deriveMedicationStatus(item: MarRecordPayload): MedicationStatus {
+    if (item.administeredAt) return 'ADMINISTERED';
+
+    const scheduled = item.scheduledAt ? new Date(item.scheduledAt) : null;
+    if (!scheduled || Number.isNaN(scheduled.getTime())) return 'UPCOMING';
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    if (scheduled >= startOfToday && scheduled < endOfToday) return 'DUE';
+    if (scheduled < now) return 'OVERDUE';
+    return 'UPCOMING';
+}
+
+function buildStats(rows: MedicationAdministration[]): MedicationStatsSummary {
+    const counts = rows.reduce((acc, row) => {
+        if (row.status === 'ADMINISTERED') acc.administeredToday += 1;
+        if (row.status === 'DUE') acc.dueToday += 1;
+        if (row.status === 'OVERDUE' || row.status === 'MISSED') acc.missedDoses += 1;
+        if (row.status === 'UPCOMING') acc.upcomingMedications += 1;
+        return acc;
+    }, { ...EMPTY_STATS });
+
+    return counts;
+}
 
 export default function MedicationAdministrationPage() {
     const { t } = useTranslation();
+    const hospitalId = useHospitalId();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [medicationSearch, setMedicationSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>(t('hospital.allStatus'));
-    const [selectedDate, setSelectedDate] = useState('06/09/2026');
+    const [selectedDate, setSelectedDate] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [useMockFallback, setUseMockFallback] = useState(false);
+    const [medications, setMedications] = useState<MedicationAdministration[]>([]);
+    const [stats, setStats] = useState<MedicationStatsSummary>(EMPTY_STATS);
 
-    const filteredMedications = MOCK_MEDICATIONS.filter((med) => {
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!hospitalId) {
+            setUseMockFallback(true);
+            setMedications(MOCK_MEDICATIONS);
+            setStats(MOCK_MEDICATION_STATS);
+            setError(null);
+            setLoading(false);
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        const loadMar = async () => {
+            setLoading(true);
+            setError(null);
+            setUseMockFallback(false);
+
+            try {
+                const admissionsResponse = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
+                const admissionPayload = admissionsResponse.data;
+                const admissionList = Array.isArray(admissionPayload)
+                    ? admissionPayload
+                    : Array.isArray(admissionPayload?.data)
+                        ? admissionPayload.data
+                        : [];
+
+                const results = await Promise.allSettled(
+                    admissionList.map((admission: any) => api.get(`/inpatient/admissions/${admission.id}/mar`))
+                );
+
+                const rows = results.flatMap((result) => {
+                    if (result.status !== 'fulfilled') return [];
+                    const payload = result.value.data;
+                    const marList = Array.isArray(payload)
+                        ? payload
+                        : Array.isArray(payload?.data)
+                            ? payload.data
+                            : [];
+
+                    return marList.map((item: MarRecordPayload) => {
+                        const patientName = [item.admission?.patient?.firstName ?? '', item.admission?.patient?.lastName ?? '']
+                            .filter(Boolean)
+                            .join(' ') || 'Unknown patient';
+
+                        return {
+                            id: item.id,
+                            patientName,
+                            medicationName: item.medicationName || 'Medication',
+                            dosage: item.dose || '—',
+                            route: item.route || '—',
+                            scheduledTime: formatTime(item.scheduledAt || item.administeredAt),
+                            status: deriveMedicationStatus(item),
+                            assignedNurse: [item.nurse?.firstName ?? '', item.nurse?.lastName ?? '']
+                                .filter(Boolean)
+                                .join(' ') || 'Nurse',
+                        } as MedicationAdministration;
+                    });
+                });
+
+                if (!cancelled) {
+                    setMedications(rows);
+                    setStats(buildStats(rows));
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        setUseMockFallback(true);
+                        setMedications(MOCK_MEDICATIONS);
+                        setStats(MOCK_MEDICATION_STATS);
+                    } else {
+                        setError('Unable to load medication records right now.');
+                        setMedications([]);
+                        setStats(EMPTY_STATS);
+                    }
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        loadMar();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [hospitalId]);
+
+    const filteredMedications = useMemo(() => medications.filter((med) => {
         const matchesPatient = med.patientName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesMed = med.medicationName.toLowerCase().includes(medicationSearch.toLowerCase());
         const matchesStatus = statusFilter === t('hospital.allStatus') || med.status === statusFilter;
-        return matchesPatient && matchesMed && matchesStatus;
-    });
+        const matchesDate = !selectedDate || med.scheduledTime.includes(selectedDate);
+        return matchesPatient && matchesMed && matchesStatus && matchesDate;
+    }), [medications, medicationSearch, searchTerm, selectedDate, statusFilter, t]);
 
     const getStatusStyle = (status: MedicationStatus) => {
         switch (status) {
@@ -60,32 +218,44 @@ export default function MedicationAdministrationPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#38BDF8] opacity-5 rounded-full -mr-20 -mt-20 blur-3xl" />
             </div>
 
+            {useMockFallback && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    {t('hospital.devFallbackMessage', 'Showing mock medication data because the backend is unavailable or no hospital context is available in development.')}
+                </div>
+            )}
+
+            {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                </div>
+            )}
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     label={t('hospital.missedDoses')}
-                    value={MOCK_MEDICATION_STATS.missedDoses}
+                    value={loading ? 0 : stats.missedDoses}
                     icon={<XCircle className="w-6 h-6 text-[#DC2626]" />}
                     bgColor="bg-[#FEF2F2]"
                     borderColor="border-[#FEE2E2]"
                 />
                 <StatCard
                     label={t('hospital.dueToday')}
-                    value={MOCK_MEDICATION_STATS.dueToday}
+                    value={loading ? 0 : stats.dueToday}
                     icon={<Clock className="w-6 h-6 text-[#38BDF8]" />}
                     bgColor="bg-[#F0F9FF]"
                     borderColor="border-[#E0F2FE]"
                 />
                 <StatCard
                     label={t('hospital.upcomingMedications')}
-                    value={MOCK_MEDICATION_STATS.upcomingMedications}
+                    value={loading ? 0 : stats.upcomingMedications}
                     icon={<AlertCircle className="w-6 h-6 text-[#D97706]" />}
                     bgColor="bg-[#FFFBEB]"
                     borderColor="border-[#FEF3C7]"
                 />
                 <StatCard
                     label={t('hospital.administeredToday')}
-                    value={MOCK_MEDICATION_STATS.administeredToday}
+                    value={loading ? 0 : stats.administeredToday}
                     icon={<CheckCircle2 className="w-6 h-6 text-[#16A34A]" />}
                     bgColor="bg-[#F0FDF4]"
                     borderColor="border-[#DCFCE7]"
@@ -109,7 +279,6 @@ export default function MedicationAdministrationPage() {
                     <input
                         type="text"
                         placeholder={t('hospital.searchMedications')}
-
                         value={medicationSearch}
                         onChange={(e) => setMedicationSearch(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] transition-all"
@@ -133,7 +302,7 @@ export default function MedicationAdministrationPage() {
                 <div className="relative min-w-[160px]">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-4 h-4" />
                     <input
-                        type="text"
+                        type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
@@ -144,6 +313,7 @@ export default function MedicationAdministrationPage() {
                         setSearchTerm('');
                         setMedicationSearch('');
                         setStatusFilter(t('hospital.allStatus'));
+                        setSelectedDate('');
                     }}
                     className="px-6 py-2.5 border border-[#E2E8F0] text-[#64748B] text-sm font-bold rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2"
                 >
@@ -169,7 +339,25 @@ export default function MedicationAdministrationPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E2E8F0]">
-                            {filteredMedications.map((med) => (
+                            {loading ? (
+                                Array.from({ length: 4 }).map((_, idx) => (
+                                    <tr key={idx}>
+                                        <td colSpan={8} className="px-6 py-8">
+                                            <div className="h-8 animate-pulse rounded-lg bg-gray-100" />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : filteredMedications.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} className="px-6 py-16 text-center">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Search className="w-8 h-8 text-gray-300" />
+                                        </div>
+                                        <h3 className="text-[#1E3A5F] font-bold">{t('hospital.noMedications')}</h3>
+                                        <p className="text-[#64748B] text-sm mt-1">{t('hospital.tryAdjustingFilters')}</p>
+                                    </td>
+                                </tr>
+                            ) : filteredMedications.map((med) => (
                                 <tr key={med.id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-6 py-5">
                                         <span className="text-sm font-bold text-[#1E3A5F]">{med.patientName}</span>
@@ -227,15 +415,6 @@ export default function MedicationAdministrationPage() {
                         </tbody>
                     </table>
                 </div>
-                {filteredMedications.length === 0 && (
-                    <div className="p-20 text-center">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Search className="w-8 h-8 text-gray-300" />
-                        </div>
-                        <h3 className="text-[#1E3A5F] font-bold">{t('hospital.noMedications')}</h3>
-                        <p className="text-[#64748B] text-sm mt-1">{t('hospital.tryAdjustingFilters')}</p>
-                    </div>
-                )}
             </div>
         </div>
     );
