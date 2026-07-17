@@ -1,31 +1,41 @@
+
 import type { NurseDashboardStats, NursePatientOverview, NurseScheduleItem, NurseShiftStat, NurseShift } from '@/types/hospital';
 
+type NurseDashboardCard = {
+  key: 'patients' | 'tasks' | 'messages';
+  titleKey: string;
+  subtitleKey: string;
+  actionKey: string;
+  href: string;
+};
+
 export const nurseDashboardStats: NurseDashboardStats = {
+
   totalPatients: 6,
   pendingTasks: 8,
   unreadMessages: 2,
 };
 
-export const nurseDashboardCardsData = [
+export const nurseDashboardCardsData: NurseDashboardCard[] = [
   {
     key: 'patients',
-    title: 'My Patients',
-    subtitle: 'Total Patients',
-    action: 'View Patients',
+    titleKey: 'hospital.myPatients',
+    subtitleKey: 'hospital.totalPatients',
+    actionKey: 'hospital.viewPatients',
     href: '/hospital/nurse/patients',
   },
   {
     key: 'tasks',
-    title: 'Tasks',
-    subtitle: 'Pending Tasks',
-    action: 'View Nursing Notes',
+    titleKey: 'hospital.tasks',
+    subtitleKey: 'hospital.pendingTasks',
+    actionKey: 'hospital.viewNursesNotes',
     href: '/hospital/nurse/notes',
   },
   {
     key: 'messages',
-    title: 'Messages',
-    subtitle: 'Unread Messages',
-    action: 'View Messages',
+    titleKey: 'hospital.messages',
+    subtitleKey: 'hospital.unreadMessages',
+    actionKey: 'hospital.viewMessages',
     href: '/hospital/nurse/messages',
   },
 ];
@@ -107,10 +117,10 @@ export const nurseSchedule: NurseScheduleItem[] = [
 // Nurse Schedule & Shifts page
 
 export const nurseShiftStats: NurseShiftStat[] = [
-  { key: 'dayShift', title: 'Day Shift', subtitle: '07:00 AM - 03:00 PM', color: '#0EA5E9' },
-  { key: 'generalMed', title: 'General Med', subtitle: 'Next: ICU (June 10)', color: '#8B5CF6' },
-  { key: 'duties', title: '5 Duties', subtitle: 'Tasks Today', color: '#10B981' },
-  { key: 'shifts', title: '4 Shifts', subtitle: 'Weekly Assignments', color: '#F59E0B' },
+  { key: 'dayShift', title: 'hospital.dayShift', subtitle: '07:00 AM - 03:00 PM', color: '#0EA5E9' },
+  { key: 'generalMed', title: 'hospital.generalMed', subtitle: 'Next: ICU (June 10)', color: '#8B5CF6' },
+  { key: 'duties', title: 'hospital.duties', subtitle: 'hospital.tasksToday', color: '#10B981' },
+  { key: 'shifts', title: 'hospital.shifts', subtitle: 'hospital.weeklyAssignments', color: '#F59E0B' },
 ];
 
 export const nurseShiftSchedule: NurseShift[] = [

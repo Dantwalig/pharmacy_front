@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     startOfWeek,
     endOfWeek,
@@ -21,7 +22,6 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     ChevronUpIcon,
-    PlusIcon,
     CalendarIcon,
     Cog6ToothIcon,
     VideoCameraIcon,
@@ -122,6 +122,7 @@ function MiniCalendar({ selected, onSelect }: { selected: Date; onSelect: (d: Da
 }
 
 export default function HospitalAdminSchedulePage() {
+    const { t } = useTranslation();
     const hospitalId = useHospitalId();
 
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -194,8 +195,8 @@ export default function HospitalAdminSchedulePage() {
 
     const typeMeta = (type?: string) =>
         type === 'ONLINE'
-            ? { label: 'Video Call', Icon: VideoCameraIcon }
-            : { label: 'In-Person', Icon: UserIcon };
+            ? { label: t('hospital.videoCall'), Icon: VideoCameraIcon }
+            : { label: t('hospital.inPerson'), Icon: UserIcon };
 
     const goPrev = () => viewMode === 'WEEK' ? setCurrentDate(subWeeks(currentDate, 1)) : setCurrentDate(subMonths(currentDate, 1));
     const goNext = () => viewMode === 'WEEK' ? setCurrentDate(addWeeks(currentDate, 1)) : setCurrentDate(addMonths(currentDate, 1));
@@ -204,19 +205,19 @@ export default function HospitalAdminSchedulePage() {
         <div className="space-y-6">
             {/* Hero */}
             <div className="rounded-2xl px-8 py-7" style={{ background: '#EBF5FF' }}>
-                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight" style={{ color: '#1E3A5F' }}>Schedule</h1>
-                <p className="mt-1 text-xs font-semibold" style={{ color: '#0284C7' }}>Select Date and Time</p>
+                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight" style={{ color: '#1E3A5F' }}>{t('hospital.schedule')}</h1>
+                <p className="mt-1 text-xs font-semibold" style={{ color: '#0284C7' }}>{t('hospital.scheduleSubtitle')}</p>
                 <button onClick={() => setCurrentDate(new Date())} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
                     <CalendarIcon className="w-4 h-4" />
-                    This Week
+                    {t('hospital.thisWeek')}
                 </button>
             </div>
 
             {/* Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-1 bg-white border border-gray-200 p-1 rounded-xl">
-                    <button onClick={() => setViewMode('WEEK')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Week</button>
-                    <button onClick={() => setViewMode('MONTH')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Month</button>
+                    <button onClick={() => setViewMode('WEEK')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'WEEK' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>{t('hospital.week')}</button>
+                    <button onClick={() => setViewMode('MONTH')} className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>{t('hospital.month')}</button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -241,18 +242,17 @@ export default function HospitalAdminSchedulePage() {
                         <UsersIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search doctors"
+                            placeholder={t('hospital.searchForPeople')}
                             value={doctorSearch}
                             onChange={e => setDoctorSearch(e.target.value)}
                             className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
-                    {/* GET /hospitals/:id/doctors — click a doctor to filter the
-                        grid to their appointments and load their open slots below. */}
+                    {/* GET /hospitals/:id/doctors — click to filter grid + load open slots */}
                     <div>
                         <div className="flex items-center justify-between text-sm font-semibold text-gray-700 mb-2">
-                            <span>Doctors</span>
+                            <span>{t('hospital.doctors')}</span>
                             <ChevronUpIcon className="w-4 h-4 text-gray-400" />
                         </div>
                         <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -277,8 +277,7 @@ export default function HospitalAdminSchedulePage() {
                         </div>
                     </div>
 
-                    {/* Open slots panel — GET /doctors/:doctorId/slots for the
-                        selected doctor + selected day (availability, not bookings) */}
+                    {/* Open slots panel — GET /doctors/:doctorId/slots (availability, not bookings) */}
                     {selectedDoctorId && (
                         <div>
                             <div className="text-sm font-semibold text-gray-700 mb-2">
@@ -354,8 +353,8 @@ export default function HospitalAdminSchedulePage() {
                     ) : (
                         <div>
                             <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
-                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-                                    <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{d}</div>
+                                {(['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'] as const).map(key => (
+                                    <div key={key} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{t(`hospital.${key}`)}</div>
                                 ))}
                             </div>
                             <div className="grid grid-cols-7">
@@ -371,7 +370,7 @@ export default function HospitalAdminSchedulePage() {
                                             {entries.length > 0 && (
                                                 <div className="mt-1 inline-flex items-center gap-1 bg-blue-600 text-white rounded-md px-2 py-0.5">
                                                     <span className="text-[10px] font-bold">{entries.length}</span>
-                                                    <span className="text-[10px]">visits</span>
+                                                    <span className="text-[10px]">{t('hospital.visits')}</span>
                                                 </div>
                                             )}
                                         </div>
