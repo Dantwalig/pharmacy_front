@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-brand-navy via-[#2563a8] to-brand-navy-dark p-10 flex-col justify-between text-white">
       <div>
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+          <h1 className="text-3xl font-bold mb-1">E-Vuze</h1>
           <p className="text-blue-200 text-sm">{t('auth.healthcarePlatform')}</p>
         </div>
         <div className="mb-8">
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           ))}
           </div>
       </div>
-      <p className="text-blue-300 text-xs">© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+      <p className="text-blue-300 text-xs">© 2026 E-Vuze Healthcare Platform. All rights reserved.</p>
     </div>
 
     {/* RIGHT PANEL */}

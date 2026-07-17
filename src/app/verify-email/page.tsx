@@ -79,13 +79,13 @@ function VerifyEmailForm() {
       >
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+            <h1 className="text-3xl font-bold mb-1">E-Vuze</h1>
             <p className="text-sm" style={{ color: 'rgba(191,219,254,0.9)' }}>{t('auth.healthcarePlatform')}</p>
           </div>
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-3">{t('verify.title')}</h2>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(219,234,254,0.85)' }}>
-              Almost there! Verify your email to activate your account and start using Evuze.
+              Almost there! Verify your email to activate your account and start using E-Vuze.
             </p>
           </div>
           <div className="space-y-4">
@@ -105,7 +105,7 @@ function VerifyEmailForm() {
             ))}
           </div>
         </div>
-        <p className="text-xs" style={{ color: 'rgba(147,197,253,0.7)' }}>© 2026 Evuze Healthcare Platform. All rights reserved.</p>
+        <p className="text-xs" style={{ color: 'rgba(147,197,253,0.7)' }}>© 2026 E-Vuze Healthcare Platform. All rights reserved.</p>
       </div>
 
       {/* RIGHT PANEL */}
