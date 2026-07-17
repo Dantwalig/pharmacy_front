@@ -3,7 +3,10 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { api, unwrapData } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#1E40AF';
@@ -21,17 +24,36 @@ type LeaveRequest = {
 
 export default function HospitalReceptionistLeaveRequestPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const hospitalId = (user as any)?.hospitalId || '';
+
+  const [loading, setLoading] = useState(true);
+  const [errorProp, setErrorProp] = useState('');
 
   // Mock balances
-  const [annualBalance] = useState(14);
-  const [sickBalance] = useState(8);
+  const [annualBalance, setAnnualBalance] = useState(14);
+  const [sickBalance, setSickBalance] = useState(8);
 
   // Mock request history
-  const [history, setHistory] = useState<LeaveRequest[]>([
-    { id: 'LR-001', requestDate: '2026-06-10', leaveType: 'Annual Leave', startDate: '2026-06-25', endDate: '2026-06-28', durationDays: 4, status: 'APPROVED', fileName: null },
-    { id: 'LR-002', requestDate: '2026-06-12', leaveType: 'Sick Leave', startDate: '2026-06-13', endDate: '2026-06-14', durationDays: 2, status: 'APPROVED', fileName: 'fit_note.pdf' },
-    { id: 'LR-003', requestDate: '2026-06-15', leaveType: 'Unpaid Leave', startDate: '2026-07-10', endDate: '2026-07-12', durationDays: 3, status: 'PENDING', fileName: null },
-  ]);
+  const [history, setHistory] = useState<LeaveRequest[]>([]);
+
+  useEffect(() => {
+    if (!hospitalId) {
+      setLoading(false);
+      setErrorProp('No hospital session found. Please log in.');
+      return;
+    }
+    api.get(`/hospitals/${hospitalId}/receptionist/leaves`)
+      .then(res => {
+        const data = unwrapData(res.data) || [];
+        setHistory(data as any);
+        // Also possibly set balances if returned
+        if (res.data?.annualBalance) setAnnualBalance(res.data.annualBalance);
+        if (res.data?.sickBalance) setSickBalance(res.data.sickBalance);
+      })
+      .catch(() => setErrorProp('Failed to load leave requests.'))
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
 
   // Form state
   const [leaveType, setLeaveType] = useState('');
@@ -75,18 +97,18 @@ export default function HospitalReceptionistLeaveRequestPage() {
   };
 
   const submitLeaveRequest = () => {
-  
+
     if (!leaveType) {
-      alert(t('hospital.alertSelectLeaveType'));
+      toast.error(t('hospital.alertSelectLeaveType'));
       return;
     }
     if (!startDate || !endDate) {
-      alert(t('hospital.alertSelectDates'));
+      toast.error(t('hospital.alertSelectDates'));
       return;
     }
     const duration = calcDurationDays(startDate, endDate);
     if (duration <= 0) {
-      alert(t('hospital.alertEndDate'));
+      toast.error(t('hospital.alertEndDate'));
       return;
     }
 
@@ -121,8 +143,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
   };
 
   const viewRequest = (req: LeaveRequest) => {
-
-    alert(`${req.id}\n${req.leaveType}\n${formatDate(req.startDate)} to ${formatDate(req.endDate)} (${req.durationDays} ${t('hospital.daysWord')})\n${t('hospital.statusColon')}: ${statusLabel(req.status)}`);
+    toast(`${req.id} · ${req.leaveType} · ${formatDate(req.startDate)}–${formatDate(req.endDate)} · ${statusLabel(req.status)}`, { duration: 5000 });
   };
 
   const cancelRequest = (e: React.MouseEvent, id: string) => {
@@ -143,8 +164,17 @@ export default function HospitalReceptionistLeaveRequestPage() {
         </p>
       </div>
 
+      {errorProp && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+          {errorProp}
+        </div>
+      )}
+      {loading && (
+        <div className="p-8 text-center text-gray-500 animate-pulse">Loading leave requests...</div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
- 
+
         <div className="lg:col-span-4 space-y-6">
 
           <div className="grid grid-cols-2 gap-4">

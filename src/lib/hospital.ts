@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { MOCK_DOCTOR, MOCK_ADMIN, MOCK_NURSE } from '@/mock/hospital/user';
+import { MOCK_DOCTOR, MOCK_ADMIN, MOCK_NURSE, MOCK_RECEPTIONIST } from '@/mock/hospital/user';
 import api from '@/lib/api';
 import type { DashboardStats, WeeklyRevenue } from '@/types/hospital';
 
@@ -143,6 +143,35 @@ export function useHospitalNurseUser(): HospitalTopbarUser {
   }
 
   return { userName: '', roleLabel: 'Nurse', hospitalName: '', isMock: false };
+}
+
+/**
+ * Resolves the current hospital receptionist's topbar display info.
+ *
+ * Falls back to MOCK_RECEPTIONIST only when not authenticated and not in production.
+ */
+export function useHospitalReceptionistUser(): HospitalTopbarUser {
+  const { user } = useAuth();
+
+  if (user?.role === 'RECEPTIONIST' && user.hospitalId) {
+    return {
+      userName: nameFromEmail(user.email),
+      roleLabel: 'Receptionist',
+      hospitalName: user.hospitalName || '',
+      isMock: false,
+    };
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return {
+      userName: `${MOCK_RECEPTIONIST.firstName} ${MOCK_RECEPTIONIST.lastName}`,
+      roleLabel: 'Receptionist',
+      hospitalName: MOCK_RECEPTIONIST.hospitalName,
+      isMock: true,
+    };
+  }
+
+  return { userName: '', roleLabel: 'Receptionist', hospitalName: '', isMock: false };
 }
 
 // ── Shared hospital dashboard stats + weekly revenue ────────────────────────

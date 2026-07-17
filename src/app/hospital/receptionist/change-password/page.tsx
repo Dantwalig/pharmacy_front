@@ -4,6 +4,9 @@
 
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#1E40AF';
@@ -12,6 +15,7 @@ export default function HospitalReceptionistChangePasswordPage() {
   const { t } = useTranslation();
 
   // Form state
+  const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,12 +85,17 @@ export default function HospitalReceptionistChangePasswordPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-    
-      await new Promise((r) => setTimeout(r, 700));
-      alert(t('hospital.alertUpdated'));
+      if (!user) throw new Error('Not logged in');
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      toast.success(t('hospital.alertUpdated'));
       resetForm();
-    } catch (err) { alert(t('hospital.alertUpdateFailed'));
-    } finally { setSubmitting(false);
+    } catch (err) {
+      toast.error(t('hospital.alertUpdateFailed'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -108,12 +117,12 @@ export default function HospitalReceptionistChangePasswordPage() {
 
           {/* Current Password */}
           <label className="block text-xs font-medium text-gray-600">{t('hospital.currentPasswordRequired')}</label>
-          <textarea
+          <input
+            type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder={t('hospital.currentPasswordPlaceholder')}
-            rows={3}
-            className={`mt-2 w-full rounded-lg border ${errors.currentPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white resize-none`}
+            className={`mt-2 w-full rounded-lg border ${errors.currentPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white`}
             aria-invalid={!!errors.currentPassword}
           />
           {errors.currentPassword && <p className="text-xs text-red-600 mt-1">{errors.currentPassword}</p>}

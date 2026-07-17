@@ -6,15 +6,10 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import { Users, ChevronRight } from 'lucide-react';
-import { MOCK_RECEPTIONIST } from '@/mock/hospital/user';
-import {
-  MOCK_NEW_PATIENTS_WEEK,
-  MOCK_CHECKINS_WEEK,
-  MOCK_QUEUE,
-  MOCK_TODAY_APPOINTMENTS,
-  type QueueStatus,
-  type TodayAppointmentStatus,
-} from '@/mock/hospital/receptionist';
+import { useAuth } from '@/context/AuthContext';
+import { api, unwrapData } from '@/lib/api';
+type QueueStatus = 'WAITING' | 'IN_CONSULTATION' | 'COMPLETED';
+type TodayAppointmentStatus = 'COMPLETED' | 'UPCOMING' | 'CHECKED_IN';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
@@ -22,26 +17,59 @@ const TEAL = '#38BDF8';
 const BAR_COLORS = ['#1D4ED8', '#60A5FA', '#38BDF8', '#2563EB', '#3B82F6', '#1E40AF', '#0EA5E9'];
 
 const queueStatusStyles: Record<QueueStatus, { bg: string; color: string; labelKey: string }> = {
-  WAITING:         { bg: '#EBF5FF', color: '#2563EB', labelKey: 'hospital.statusWaiting' },
+  WAITING: { bg: '#EBF5FF', color: '#2563EB', labelKey: 'hospital.statusWaiting' },
   IN_CONSULTATION: { bg: '#ECFDF5', color: '#059669', labelKey: 'hospital.statusInConsultation' },
-  COMPLETED:       { bg: '#F1F5F9', color: '#475569', labelKey: 'hospital.completed' },
+  COMPLETED: { bg: '#F1F5F9', color: '#475569', labelKey: 'hospital.completed' },
 };
 
 const apptStatusStyles: Record<TodayAppointmentStatus, { bg: string; color: string; labelKey: string }> = {
-  COMPLETED:  { bg: '#ECFDF5', color: '#059669', labelKey: 'hospital.completed' },
-  UPCOMING:   { bg: '#EFF6FF', color: '#2563EB', labelKey: 'hospital.upcoming' },
+  COMPLETED: { bg: '#ECFDF5', color: '#059669', labelKey: 'hospital.completed' },
+  UPCOMING: { bg: '#EFF6FF', color: '#2563EB', labelKey: 'hospital.upcoming' },
   CHECKED_IN: { bg: '#EEF2FF', color: '#4F46E5', labelKey: 'hospital.checkedIn' },
 };
 
 export default function ReceptionistDashboardPage() {
   const { t } = useTranslation();
-  const firstName = MOCK_RECEPTIONIST.firstName;
+  const { user } = useAuth();
+  const hospitalId = (user as any)?.hospitalId || '';
+  const firstName = (user as any)?.firstName || 'Receptionist';
 
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [data, setData] = useState<any>({
+    newPatientsWeek: [],
+    checkinsWeek: [],
+    queue: [],
+    todayAppointments: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [errorProp, setErrorProp] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+    if (!hospitalId) {
+      setLoading(false);
+      setErrorProp('No hospital session found. Please log in.');
+      return;
+    }
+    api.get(`/hospitals/${hospitalId}/receptionist/dashboard`)
+      .then(res => {
+        setData((res.data?.data) || res.data || { newPatientsWeek: [], checkinsWeek: [], queue: [], todayAppointments: [] });
+      })
+      .catch(err => {
+        setErrorProp('Failed to load dashboard data or endpoint not available.');
+      })
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
+
+  if (loading) return <div className="p-8 text-center text-gray-500 animate-pulse">Loading dashboard...</div>;
 
   return (
     <div className="space-y-6">
+      {errorProp && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm mb-4 border border-red-100">
+          {errorProp}
+        </div>
+      )}
 
       {/* ── Hero header ── */}
       <div className="rounded-2xl px-6 sm:px-10 py-8" style={{ background: '#EBF5FF' }}>
@@ -63,7 +91,7 @@ export default function ReceptionistDashboardPage() {
           <div className="h-56">
             {mounted && (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={MOCK_NEW_PATIENTS_WEEK} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <LineChart data={data.newPatientsWeek} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="#F1F5F9" />
                   <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} domain={[0, 400]} />
@@ -84,13 +112,13 @@ export default function ReceptionistDashboardPage() {
           <div className="h-56">
             {mounted && (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={MOCK_CHECKINS_WEEK} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <BarChart data={data.checkinsWeek} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="#F1F5F9" />
                   <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} domain={[0, 200]} />
                   <Tooltip cursor={{ fill: '#F8FAFC' }} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={22}>
-                    {MOCK_CHECKINS_WEEK.map((_, i) => (
+                    {(data.checkinsWeek || []).map((_: any, i: number) => (
                       <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
                     ))}
                   </Bar>
@@ -123,8 +151,11 @@ export default function ReceptionistDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {MOCK_QUEUE.map((row, idx) => {
-                const s = queueStatusStyles[row.status];
+              {data.queue?.length === 0 && (
+                <tr><td colSpan={5} className="py-4 text-center text-gray-400">No queue data</td></tr>
+              )}
+              {data.queue?.map((row: any, idx: number) => {
+                const s = queueStatusStyles[row.status as QueueStatus] || queueStatusStyles.WAITING;
                 return (
                   <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="py-4 px-4 text-gray-500">{idx + 1}</td>
@@ -171,8 +202,11 @@ export default function ReceptionistDashboardPage() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {MOCK_TODAY_APPOINTMENTS.map((appt) => {
-            const s = apptStatusStyles[appt.status];
+          {data.todayAppointments?.length === 0 && (
+            <div className="py-4 text-center text-sm text-gray-400">No appointments today</div>
+          )}
+          {data.todayAppointments?.map((appt: any) => {
+            const s = apptStatusStyles[appt.status as TodayAppointmentStatus] || apptStatusStyles.UPCOMING;
             return (
               <button
                 key={appt.id}
