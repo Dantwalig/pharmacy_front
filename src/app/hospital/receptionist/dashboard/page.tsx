@@ -8,7 +8,8 @@ import {
 import { Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { api, unwrapData } from '@/lib/api';
-import type { QueueStatus, TodayAppointmentStatus } from '@/mock/hospital/receptionist';
+type QueueStatus = 'WAITING' | 'IN_CONSULTATION' | 'COMPLETED';
+type TodayAppointmentStatus = 'COMPLETED' | 'UPCOMING' | 'CHECKED_IN';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';

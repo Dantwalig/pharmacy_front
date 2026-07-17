@@ -3,12 +3,11 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CalendarIcon, CheckCircleIcon, ClockIcon, PlusIcon, MagnifyingGlassIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 import { useAuth } from '@/context/AuthContext';
 import { api, unwrapData } from '@/lib/api';
-import { useEffect } from 'react';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#0284C7';
@@ -18,8 +17,8 @@ export default function HospitalReceptionistAppointmentListPage() {
     const { user } = useAuth();
     const hospitalId = (user as any)?.hospitalId || '';
 
-    const [MOCK_QUEUE, setQueue] = useState<any[]>([]);
-    const [MOCK_DASHBOARD_STATS, setStats] = useState<any>({ totalBookings: 8, confirmedToday: 4, checkedIn: 3, cancelled: 1 });
+    const [queue, setQueue] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>({ totalBookings: 8, confirmedToday: 4, checkedIn: 3, cancelled: 1 });
     const [loading, setLoading] = useState(true);
     const [errorProp, setErrorProp] = useState('');
 
@@ -61,11 +60,11 @@ export default function HospitalReceptionistAppointmentListPage() {
 
     const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
-    const departments = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.department)),];
-    const doctors = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.doctor)),];
-    const statuses = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.status)),];
+    const departments = ['ALL', ...new Set(queue.map((p) => p.department)),];
+    const doctors = ['ALL', ...new Set(queue.map((p) => p.doctor)),];
+    const statuses = ['ALL', ...new Set(queue.map((p) => p.status)),];
 
-    const filteredQueue = MOCK_QUEUE.filter((patient) => {
+    const filteredQueue = queue.filter((patient) => {
         const matchesSearch =
             patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             patient.id.toLowerCase().includes(searchTerm.toLowerCase());

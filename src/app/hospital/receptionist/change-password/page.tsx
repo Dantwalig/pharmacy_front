@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#1E40AF';
@@ -89,10 +90,10 @@ export default function HospitalReceptionistChangePasswordPage() {
         currentPassword,
         newPassword
       });
-      alert(t('hospital.alertUpdated'));
+      toast.success(t('hospital.alertUpdated'));
       resetForm();
     } catch (err) {
-      alert(t('hospital.alertUpdateFailed'));
+      toast.error(t('hospital.alertUpdateFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -116,12 +117,12 @@ export default function HospitalReceptionistChangePasswordPage() {
 
           {/* Current Password */}
           <label className="block text-xs font-medium text-gray-600">{t('hospital.currentPasswordRequired')}</label>
-          <textarea
+          <input
+            type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder={t('hospital.currentPasswordPlaceholder')}
-            rows={3}
-            className={`mt-2 w-full rounded-lg border ${errors.currentPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white resize-none`}
+            className={`mt-2 w-full rounded-lg border ${errors.currentPassword ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm bg-white`}
             aria-invalid={!!errors.currentPassword}
           />
           {errors.currentPassword && <p className="text-xs text-red-600 mt-1">{errors.currentPassword}</p>}

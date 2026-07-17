@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api, unwrapData } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#1E40AF';
@@ -98,16 +99,16 @@ export default function HospitalReceptionistLeaveRequestPage() {
   const submitLeaveRequest = () => {
 
     if (!leaveType) {
-      alert(t('hospital.alertSelectLeaveType'));
+      toast.error(t('hospital.alertSelectLeaveType'));
       return;
     }
     if (!startDate || !endDate) {
-      alert(t('hospital.alertSelectDates'));
+      toast.error(t('hospital.alertSelectDates'));
       return;
     }
     const duration = calcDurationDays(startDate, endDate);
     if (duration <= 0) {
-      alert(t('hospital.alertEndDate'));
+      toast.error(t('hospital.alertEndDate'));
       return;
     }
 
@@ -142,8 +143,7 @@ export default function HospitalReceptionistLeaveRequestPage() {
   };
 
   const viewRequest = (req: LeaveRequest) => {
-
-    alert(`${req.id}\n${req.leaveType}\n${formatDate(req.startDate)} to ${formatDate(req.endDate)} (${req.durationDays} ${t('hospital.daysWord')})\n${t('hospital.statusColon')}: ${statusLabel(req.status)}`);
+    toast(`${req.id} · ${req.leaveType} · ${formatDate(req.startDate)}–${formatDate(req.endDate)} · ${statusLabel(req.status)}`, { duration: 5000 });
   };
 
   const cancelRequest = (e: React.MouseEvent, id: string) => {

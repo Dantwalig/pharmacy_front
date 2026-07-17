@@ -2,11 +2,10 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { api, unwrapData } from '@/lib/api';
-import { useEffect } from 'react';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#0284C7';
@@ -18,8 +17,8 @@ export default function HospitalCheckingQueuePage() {
     const { user } = useAuth();
     const hospitalId = (user as any)?.hospitalId || '';
 
-    const [MOCK_QUEUE, setQueue] = useState<any[]>([]);
-    const [MOCK_DASHBOARD_STATS, setStats] = useState<any>({ appointmentsByStatus: { CONFIRMED: 0, PENDING: 0 } });
+    const [queue, setQueue] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>({ appointmentsByStatus: { CONFIRMED: 0, PENDING: 0 } });
     const [loading, setLoading] = useState(true);
     const [errorProp, setErrorProp] = useState('');
 
@@ -44,7 +43,7 @@ export default function HospitalCheckingQueuePage() {
     // Overview Cards STATS
     const overviewCards = [
         {
-            title: MOCK_DASHBOARD_STATS?.appointmentsByStatus?.CONFIRMED + MOCK_DASHBOARD_STATS?.appointmentsByStatus?.PENDING || 0,
+            title: stats?.appointmentsByStatus?.CONFIRMED + stats?.appointmentsByStatus?.PENDING || 0,
             label: t('hospital.patientsWaiting', 'Patients Waiting'),
             icon: UsersIcon,
             borderColor: '#3B82F6',
@@ -63,11 +62,11 @@ export default function HospitalCheckingQueuePage() {
 
     const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
-    const departments = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.department)),];
-    const doctors = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.doctor)),];
-    const statuses = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.status)),];
+    const departments = ['ALL', ...new Set(queue.map((p) => p.department)),];
+    const doctors = ['ALL', ...new Set(queue.map((p) => p.doctor)),];
+    const statuses = ['ALL', ...new Set(queue.map((p) => p.status)),];
 
-    const filteredQueue = MOCK_QUEUE.filter((patient) => {
+    const filteredQueue = queue.filter((patient) => {
         const matchesSearch =
             patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             patient.id.toLowerCase().includes(searchTerm.toLowerCase());

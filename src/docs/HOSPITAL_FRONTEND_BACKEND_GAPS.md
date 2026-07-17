@@ -334,3 +334,17 @@ spec since this isn't blocking anything today.
 
 ### Missing Data Seeds / Authentication
 * **Missing Receptionist User Seed**: The receptionist login is not seeded in the database. This currently causes a `401 Unauthorized` during login since no valid receptionist accounts exist to test this portal fully. The frontend UI currently handles it gracefully by loading the component shell and displaying an error boundary/state when the session is missing or endpoints return a 401.
+
+### Missing Write Endpoints
+
+The following write operations are wired in the frontend but have no corresponding backend route and were not previously listed in this document:
+
+1. `POST /hospitals/:hospitalId/receptionist/leaves` — submit a new leave request; expected body: `{ leaveType: string, startDate: ISO8601, endDate: ISO8601, reason?: string, fileName?: string }`
+2. `PATCH /hospitals/:hospitalId/receptionist/leaves/:id` — update leave status; expected body: `{ status: 'CANCELLED' }`; only valid while current `status === 'PENDING'`
+3. `PATCH /hospitals/:hospitalId/receptionist/profile` — update profile fields; expected body: `{ fullName?: string, phone?: string, email?: string, username?: string, department?: string, address?: string, dateOfJoining?: ISO8601 }`
+4. `PATCH /hospitals/:hospitalId/receptionist/appointments/:id` — covers the three write actions the receptionist appointment-list UI exposes:
+    * **Check-in**: `{ status: 'ARRIVED' }` — transitions SCHEDULED → ARRIVED when the patient arrives
+    * **Cancel**: `{ status: 'CANCELLED' }` — transitions SCHEDULED → CANCELLED
+    * **Reschedule**: `{ scheduledAt: ISO8601 }` — updates the appointment time (keep existing status)
+
+    A single PATCH matches the pattern already used by `admin/appointments` status transitions. The frontend currently renders Check-In, Reschedule, and Cancel buttons with no `onClick` implementation beyond `e.stopPropagation()`; they need this endpoint before they can be wired.
