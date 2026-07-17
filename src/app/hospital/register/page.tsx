@@ -69,7 +69,7 @@ export default function HospitalRegisterPage() {
       <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-brand-navy via-[#2563a8] to-brand-navy-dark p-10 flex-col justify-between text-white">
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+            <h1 className="text-3xl font-bold mb-1">E-Vuze</h1>
             <p className="text-blue-200 text-sm">Healthcare Platform</p>
           </div>
           <div className="mb-8">

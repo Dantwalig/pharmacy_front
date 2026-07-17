@@ -2,65 +2,85 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_DASHBOARD_STATS } from '@/mock/hospital/dashboard';
-import { CalendarIcon, UsersIcon, ClockIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
+import { api, unwrapData } from '@/lib/api';
 
 const BLUE = '#1E3A8A';
 const lightBlue = '#0284C7';
 
-const MOCK_QUEUE = [
-  { id: 'Q-012', name: 'Kevine Mugisha', doctor: 'Dr. Samuel Nkurunziza', department: 'General Medicine', waitTime: '45m ago', status: 'WAITING' },
-  { id: 'Q-013', name: 'Jean Paul Nsengimana', doctor: 'Dr. Albert Munyaneza', department: 'Pediatrics', waitTime: '31m ago', status: 'CALLED' },
-  { id: 'Q-014', name: 'Angelique Umutoni', doctor: "Dr. Jeanne d'Arc", department: 'ICU', waitTime: '18m ago', status: 'IN CONSULTATION' },
-  { id: 'Q-015', name: 'Maurice Kwizera', doctor: 'Dr. Samuel Nkurunziza', department: 'General Medicine', waitTime: '8m ago', status: 'WAITING' },
-];
+import { CalendarIcon, UsersIcon, ClockIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function HospitalCheckingQueuePage() {
     const { t } = useTranslation();
-    
+    const { user } = useAuth();
+    const hospitalId = (user as any)?.hospitalId || '';
+
+    const [queue, setQueue] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>({ appointmentsByStatus: { CONFIRMED: 0, PENDING: 0 } });
+    const [loading, setLoading] = useState(true);
+    const [errorProp, setErrorProp] = useState('');
+
+    useEffect(() => {
+        if (!hospitalId) {
+            setLoading(false);
+            setErrorProp('No hospital session found. Please log in.');
+            return;
+        }
+        Promise.all([
+            api.get(`/hospitals/${hospitalId}/receptionist/queue`),
+            api.get(`/hospitals/${hospitalId}/receptionist/dashboard-stats`)
+        ])
+            .then(([qRes, sRes]) => {
+                setQueue(unwrapData(qRes.data) || []);
+                setStats(sRes.data?.data || sRes.data || { appointmentsByStatus: { CONFIRMED: 0, PENDING: 0 } });
+            })
+            .catch(() => setErrorProp('Failed to fetch check-in queue.'))
+            .finally(() => setLoading(false));
+    }, [hospitalId]);
+
     // Overview Cards STATS
     const overviewCards = [
-      {
-        title: MOCK_DASHBOARD_STATS?.appointmentsByStatus?.CONFIRMED + MOCK_DASHBOARD_STATS?.appointmentsByStatus?.PENDING || 0,
-        label: t('hospital.patientsWaiting', 'Patients Waiting'),
-        icon: UsersIcon,
-        borderColor: '#3B82F6',
-        iconColor: '#0284C7',
-        iconBg: '#EBF8FF',
-      },
-      { title: '28 min', label: t('hospital.averageWaitTime', 'Average Wait Time'), icon: ClockIcon, borderColor: '#F59E0B', iconColor: '#F59E0B', iconBg: '#FEF3C7' },
-      { title: '45 min', label: t('hospital.longestWaitTime', 'Longest Wait Time'), icon: ClockIcon, borderColor: '#EF4444', iconColor: '#EF4444', iconBg: '#FEE2E2' },
-      { title: 1, label: t('hospital.beingServed', 'Patients Being Served'), icon: CalendarIcon, borderColor: '#10B981', iconColor: '#10B981', iconBg: '#D1FAE5' },
+        {
+            title: stats?.appointmentsByStatus?.CONFIRMED + stats?.appointmentsByStatus?.PENDING || 0,
+            label: t('hospital.patientsWaiting', 'Patients Waiting'),
+            icon: UsersIcon,
+            borderColor: '#3B82F6',
+            iconColor: '#0284C7',
+            iconBg: '#EBF8FF',
+        },
+        { title: '28 min', label: t('hospital.averageWaitTime', 'Average Wait Time'), icon: ClockIcon, borderColor: '#F59E0B', iconColor: '#F59E0B', iconBg: '#FEF3C7' },
+        { title: '45 min', label: t('hospital.longestWaitTime', 'Longest Wait Time'), icon: ClockIcon, borderColor: '#EF4444', iconColor: '#EF4444', iconBg: '#FEE2E2' },
+        { title: 1, label: t('hospital.beingServed', 'Patients Being Served'), icon: CalendarIcon, borderColor: '#10B981', iconColor: '#10B981', iconBg: '#D1FAE5' },
     ];
 
     const [searchTerm, setSearchTerm] = useState('');
     const [department, setDepartment] = useState('ALL');
     const [doctor, setDoctor] = useState('ALL');
     const [status, setStatus] = useState('ALL');
-    
+
     const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
-    const departments = [ 'ALL', ...new Set(MOCK_QUEUE.map((p) => p.department)), ];
-    const doctors = [ 'ALL', ...new Set(MOCK_QUEUE.map((p) => p.doctor)),];
-    const statuses = ['ALL', ...new Set(MOCK_QUEUE.map((p) => p.status)), ];
+    const departments = ['ALL', ...new Set(queue.map((p) => p.department)),];
+    const doctors = ['ALL', ...new Set(queue.map((p) => p.doctor)),];
+    const statuses = ['ALL', ...new Set(queue.map((p) => p.status)),];
 
-    const filteredQueue = MOCK_QUEUE.filter((patient) => {
-    const matchesSearch =
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const filteredQueue = queue.filter((patient) => {
+        const matchesSearch =
+            patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            patient.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesDepartment = department === 'ALL' || patient.department === department;
-    const matchesDoctor = doctor === 'ALL' || patient.doctor === doctor;
-    const matchesStatus = status === 'ALL' || patient.status === status;
+        const matchesDepartment = department === 'ALL' || patient.department === department;
+        const matchesDoctor = doctor === 'ALL' || patient.doctor === doctor;
+        const matchesStatus = status === 'ALL' || patient.status === status;
 
-    return (
-        matchesSearch &&
-        matchesDepartment &&
-        matchesDoctor &&
-        matchesStatus
-    );
+        return (
+            matchesSearch &&
+            matchesDepartment &&
+            matchesDoctor &&
+            matchesStatus
+        );
     });
 
     // Status label translator (data-driven badge values)
@@ -92,6 +112,15 @@ export default function HospitalCheckingQueuePage() {
                 <h1 className="text-3xl font-extrabold" style={{ color: BLUE }}>{t('hospital.checkInTitle', 'Check-In & Queue Management')}</h1>
                 <p className="mt-1 text-sm" style={{ color: lightBlue }}>{t('hospital.checkInSubtitle', 'Optimize patient flow, check-in schedules, and allocate active consulting doctors in real-time.')}</p>
             </div>
+
+            {errorProp && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+                    {errorProp}
+                </div>
+            )}
+            {loading && (
+                <div className="p-8 text-center text-gray-500 animate-pulse">Loading queue...</div>
+            )}
 
             {/* Metric Cards Grid */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -126,37 +155,37 @@ export default function HospitalCheckingQueuePage() {
                     />
                 </div>
                 <select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? t('hospital.allDepartments') : dept}</option>))}
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
+                    {departments.map((dept) => (<option key={dept} value={dept}> {dept === 'ALL' ? t('hospital.allDepartments') : dept}</option>))}
                 </select>
 
                 <select
-                value={doctor}
-                onChange={(e) => setDoctor(e.target.value)}
-                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
-                {doctors.map((doc) => ( <option key={doc} value={doc}>{doc === 'ALL' ? t('hospital.allDoctors') : doc}</option>))}
+                    value={doctor}
+                    onChange={(e) => setDoctor(e.target.value)}
+                    className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm">
+                    {doctors.map((doc) => (<option key={doc} value={doc}>{doc === 'ALL' ? t('hospital.allDoctors') : doc}</option>))}
                 </select>
 
                 <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm" >
-                {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? t('hospital.allStatuses') : statusLabel(s)} </option> ))}
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm" >
+                    {statuses.map((s) => (<option key={s} value={s}>{s === 'ALL' ? t('hospital.allStatuses') : statusLabel(s)} </option>))}
                 </select>
                 <div className="flex items-center gap-2 lg:ml-auto">
                     <button
-                    onClick={() => {
-                        setSearchTerm('');
-                        setDepartment('ALL');
-                        setDoctor('ALL');
-                        setStatus('ALL');
-                        setSelectedPatient(null);
-                    }}
-                    className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                        onClick={() => {
+                            setSearchTerm('');
+                            setDepartment('ALL');
+                            setDoctor('ALL');
+                            setStatus('ALL');
+                            setSelectedPatient(null);
+                        }}
+                        className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
                     >
-                    {t('hospital.reset')}
+                        {t('hospital.reset')}
                     </button>
                     <button className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600">
                         <PlusIcon className="h-4 w-4" />
@@ -167,7 +196,7 @@ export default function HospitalCheckingQueuePage() {
 
             {/* split section*/}
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-                
+
                 {/* Left Section: Queue Table */}
                 <div className="flex-1 w-full overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm">
                     <div className="overflow-x-auto">
@@ -183,9 +212,12 @@ export default function HospitalCheckingQueuePage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
+                                {filteredQueue.length === 0 && (
+                                    <tr><td colSpan={6} className="py-8 text-center text-gray-400">No queue data found.</td></tr>
+                                )}
                                 {filteredQueue.map((patient) => (
-                                    <tr 
-                                        key={patient.id} 
+                                    <tr
+                                        key={patient.id}
                                         onClick={() => setSelectedPatient(patient)}
                                         className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${selectedPatient?.id === patient.id ? 'bg-blue-50/40' : ''}`}
                                     >
@@ -227,9 +259,9 @@ export default function HospitalCheckingQueuePage() {
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPatient.name}</h3>
                                 <p className="text-xs text-gray-400 mb-4">{t('hospital.waitingFor', { time: selectedPatient.waitTime })}</p>
-                                
+
                                 <hr className="border-gray-100 my-3" />
-                                
+
                                 <div className="space-y-3 text-xs">
                                     <div>
                                         <span className="block text-gray-400 uppercase tracking-wider font-medium mb-0.5">{t('hospital.assignedProvider')}</span>
@@ -242,7 +274,7 @@ export default function HospitalCheckingQueuePage() {
                                 </div>
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => setSelectedPatient(null)}
                                 className="mt-8 w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold text-gray-600 transition-colors"
                             >

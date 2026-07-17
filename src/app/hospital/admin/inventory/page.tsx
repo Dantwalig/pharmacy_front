@@ -97,8 +97,6 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
       <div className="rounded-2xl p-8" style={{ background: '#EBF5FF' }}>
         <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.inventoryControl')}</h1>
         <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.inventoryControlDesc')}</p>
-        <h1 className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>{t('hospital.inventoryControl')}</h1>
-        <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.inventoryControlDesc')}</p>
       </div>
 
       {/* Mode cards */}
@@ -123,7 +121,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
 
       {activeMode === 'procurement' && (
         <div className="flex items-center justify-center py-16 text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          Procurement log is not yet available — no backend endpoint exists for this feature.
+          {t('hospital.procurementNotAvailable')}
         </div>
       )}
 
@@ -139,7 +137,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                 tab === tb.key ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
-              {tb.label}
+              {tb.key === 'ALL' ? t('hospital.allItemsTab') : tb.key === 'Drug' ? t('hospital.drugsMedsTab') : tb.key === 'Supply' ? t('hospital.suppliesTab') : t('hospital.equipmentTab')}
             </button>
           ))}
         </div>
@@ -173,14 +171,14 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">No items found.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">{t('hospital.noItemsFound')}</td></tr>
               ) : filtered.map(item => {
                 const stock = STOCK_STYLE[item.stock];
                 const alert = item.alert ? ALERT_STYLE[item.alert] : null;
                 return (
                   <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{item.category}</td>
+                    <td className="px-6 py-4 text-gray-500">{item.category === 'Drug' ? t('hospital.drugCategory') : item.category === 'Supply' ? t('hospital.supplyCategory') : item.category === 'Equipment' ? t('hospital.equipmentCategory') : item.category}</td>
                     <td className="px-6 py-4 font-semibold text-gray-800">{item.quantity} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.reorder} {t('hospital.units')}</td>
                     <td className="px-6 py-4 text-gray-500">{item.expiry ?? '—'}</td>
@@ -188,11 +186,11 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: stock.bg, color: stock.color }}>
                           <span className="h-1.5 w-1.5 rounded-full" style={{ background: stock.dot }} />
-                          {stock.label}
+                          {item.stock === 'IN_STOCK' ? t('hospital.inStockLabel') : t('hospital.lowStockLabel')}
                         </span>
                         {alert && (
                           <span className="inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: alert.bg, color: alert.color }}>
-                            {item.alertLabel ?? alert.label}
+                            {item.alertLabel ?? (item.alert === 'SAFE' ? t('hospital.safeLabel') : item.alert === 'EXPIRING' ? t('hospital.expiringLabel') : t('hospital.expiredLabel'))}
                           </span>
                         )}
                       </div>
@@ -212,7 +210,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                             disabled={saving}
                             className="px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                           >
-                            {saving ? '…' : 'Save'}
+                            {saving ? '…' : t('hospital.saveLabel')}
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
@@ -226,7 +224,7 @@ const ALERT_STYLE: Record<Exclude<Alert, null>, { bg: string; color: string; lab
                           onClick={() => { setEditingId(item.id ?? null); setEditQty(item.quantity); }}
                           className="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
                         >
-                          Request Stock
+                          {t('hospital.requestStockLabel')}
                         </button>
                       )}
                     </td>

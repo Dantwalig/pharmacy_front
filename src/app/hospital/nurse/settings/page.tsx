@@ -172,7 +172,7 @@ export default function NurseSettingsPage() {
                     style={{ background: GRADIENT }}
                   >
                     <Pencil size={14} />
-                    {editingProfile ? 'Cancel' : 'Edit Profile'}
+                    {editingProfile ? t('hospital.cancel') : t('hospital.editProfile')}
                   </button>
                 </div>
 
@@ -218,7 +218,7 @@ export default function NurseSettingsPage() {
                 <h2 className="text-base font-bold" style={{ color: NAVY }}>{t('hospital.departmentDetails')}</h2>
                 <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
                   <CheckCircle size={15} />
-                  APPROVED
+                  {t('hospital.approvedStatus')}
                 </span>
               </div>
               <div className="space-y-5">

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
@@ -7,29 +9,31 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
 } from 'recharts';
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
-import { useTranslation } from 'react-i18next';
+import { useHospitalId } from '@/lib/hospital';
+import api from '@/lib/api';
+import type {
+  DepartmentWaitTime,
+  SatisfactionSlice,
+  DepartmentStaffCount,
+  AdmissionsTrendPoint,
+} from '@/types/hospital';
 
 const NAVY = '#1E4D8C';
 
-const WAIT_TIMES = [
-  { dept: 'Cardiology',   value: 42 },
-  { dept: 'Dermatology',  value: 30 },
-  { dept: 'Neurology',    value: 38 },
-  { dept: 'Orthopedics',  value: 55 },
-  { dept: 'Surgery',      value: 48 },
-  { dept: 'Gynecology',   value: 78 },
-];
+// ── TODO: no backend endpoint yet — see gap doc ─────────────────────────────
+// ?? TODO: no backend endpoint yet ? see gap doc ?????????????????????????????????????
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-2)
+// No patient-satisfaction/feedback model anywhere in schema.prisma.
+// Satisfaction slice data defined inside the component so t() is available.
 
-const STAFF_PER_DEPT = [
-  { dept: 'Cardiology',  value: 80 },
-  { dept: 'Surgery',     value: 65 },
-  { dept: 'Dermatology', value: 40 },
-  { dept: 'Gynecology',  value: 55 },
-  { dept: 'Orthopedics', value: 45 },
-  { dept: 'Neurology',   value: 60 },
-];
-
-const ADMITTED = [
+// ?? TODO: no backend endpoint yet ? see gap doc ?????????????????????????????????????
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap R-3)
+// GET /inpatient/admissions returns a raw, unpaginated, undated list and its
+// resolveAdmitter() falls back to a HospitalStaff lookup for any non-DOCTOR
+// role ? HOSPITAL_ADMIN has no HospitalStaff row, so this 403s for admins
+// today. No monthly-aggregated ?admissions over time? endpoint exists. Proposed
+// endpoint spec is in the gap doc. Kept on demo data until both issues are fixed.
+const MOCK_ADMITTED_OVER_TIME: AdmissionsTrendPoint[] = [
   { month: 'Jan', admitted: 4000, out: 2200 },
   { month: 'Feb', admitted: 1600, out: 900 },
   { month: 'Mar', admitted: 2400, out: 1600 },
@@ -42,23 +46,101 @@ const ADMITTED = [
   { month: 'Oct', admitted: 3900, out: 2000 },
 ];
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({
+  title, loading, error, empty, children,
+}: {
+  title: string;
+  loading: boolean;
+  error?: boolean;
+  empty?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <h3 className="text-sm font-bold text-center mb-4" style={{ color: NAVY }}>{title}</h3>
-      <div className="h-64">{children}</div>
+      <div className="h-64">
+        {loading ? (
+          <div className="h-full rounded-xl bg-gray-100 animate-pulse" />
+        ) : error ? (
+          <div className="flex items-center justify-center h-full text-sm text-red-500 text-center px-4">
+            Could not load this chart — try refreshing.
+          </div>
+        ) : empty ? (
+          <div className="flex items-center justify-center h-full text-sm text-gray-400">
+            No data available yet
+          </div>
+        ) : (
+          children
+        )}
+      </div>
     </div>
   );
 }
 
 export default function HospitalAdminReportsPage() {
   const { t } = useTranslation();
+  const hospitalId = useHospitalId();
 
-  const SATISFACTION = [
-  { name: (t('hospital.excellent')), value: 50, color: '#1E4D8C' },
-  { name: t('hospital.good'),      value: 35, color: '#3B82F6' },
-  { name: t('hospital.poor'),      value: 15, color: '#93C5FD' },
+  const [waitTimes, setWaitTimes]   = useState<DepartmentWaitTime[]>([]);
+  const [waitLoading, setWaitLoading] = useState(true);
+  const [waitError, setWaitError]     = useState(false);
+
+  const [staffPerDept, setStaffPerDept]     = useState<DepartmentStaffCount[]>([]);
+  const [staffLoading, setStaffLoading]     = useState(true);
+  const [staffError, setStaffError]         = useState(false);
+
+  // ?? TODO: no backend endpoint yet ? see gap doc (Gap R-2) ???????????????????????
+  // No patient-satisfaction/feedback model anywhere in schema.prisma.
+  // Defined inside component so t() is available for translated slice names.
+  const satisfaction: SatisfactionSlice[] = [
+    { name: t('hospital.excellent'), value: 50, color: '#1E4D8C' },
+    { name: t('hospital.good'),      value: 35, color: '#3B82F6' },
+    { name: t('hospital.poor'),      value: 15, color: '#93C5FD' },
   ];
+
+  const [admitted] = useState<AdmissionsTrendPoint[]>(MOCK_ADMITTED_OVER_TIME);
+  const [admittedLoading] = useState(false);
+
+  useEffect(() => {
+    if (!hospitalId) { setWaitLoading(false); setStaffLoading(false); return; }
+
+    // Average wait times by department — GET /reports/department/metrics
+    // (mv_department_daily_metrics), one row per department per metric_date,
+    // ordered metric_date DESC then department ASC. Take the most recent
+    // metric_date row per department.
+    api.get('/reports/department/metrics')
+      .then(res => {
+        const rows: any[] = Array.isArray(res.data) ? res.data : [];
+        const seen = new Set<string>();
+        const latest: DepartmentWaitTime[] = [];
+        for (const r of rows) {
+          if (seen.has(r.department)) continue;
+          seen.add(r.department);
+          latest.push({ dept: r.department, value: Math.round(r.avgWaitMinutesApprox ?? 0) });
+        }
+        setWaitTimes(latest);
+      })
+      .catch(() => setWaitError(true))
+      .finally(() => setWaitLoading(false));
+
+    // Staff per department — no dedicated endpoint. Derived from
+    // GET /hospitals/:id/doctors grouped by specialization, same approach
+    // already used on admin/departments (doctor counts as a staffing proxy;
+    // nurses/receptionists aren't attributable to a department on the backend).
+    api.get(`/hospitals/${hospitalId}/doctors`)
+      .then(res => {
+        const doctors: any[] = Array.isArray(res.data) ? res.data : [];
+        const bySpec = doctors.reduce((acc: Record<string, number>, doc) => {
+          const key = doc.specialization ?? 'General';
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
+        setStaffPerDept(Object.entries(bySpec).map(([dept, value]) => ({ dept, value })));
+      })
+      .catch(() => setStaffError(true))
+      .finally(() => setStaffLoading(false));
+  }, [hospitalId]);
+
   return (
     <div className="space-y-6">
       {/* Hero */}
@@ -83,9 +165,9 @@ export default function HospitalAdminReportsPage() {
 
       {/* Charts grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title={t('hospital.averageWaitTimes')}>
+        <ChartCard title={t('hospital.averageWaitTimes')} loading={waitLoading} error={waitError} empty={!waitError && waitTimes.length === 0}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={WAIT_TIMES} layout="vertical" margin={{ left: 20, right: 20 }}>
+            <BarChart data={waitTimes} layout="vertical" margin={{ left: 20, right: 20 }}>
               <CartesianGrid horizontal={false} stroke="#F1F5F9" />
               <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
               <YAxis type="category" dataKey="dept" axisLine={false} tickLine={false} width={80} tick={{ fontSize: 10, fill: '#64748B' }} />
@@ -95,14 +177,14 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={t('hospital.patientSatisfaction')}>
+        <ChartCard title={t('hospital.patientSatisfaction')} loading={false}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={SATISFACTION} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2}>
-                {SATISFACTION.map((s) => <Cell key={s.name} fill={s.color} />)}
+              <Pie data={satisfaction} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2}>
+                {satisfaction.map((s) => <Cell key={s.name} fill={s.color} />)}
               </Pie>
               <Legend verticalAlign="bottom" height={24} iconType="square" formatter={(value) => {
-                const item = SATISFACTION.find(s => s.name === value);
+                const item = satisfaction.find(s => s.name === value);
                 return <span className="text-xs text-gray-500">{value} {item?.value}%</span>;
               }} />
               <Tooltip />
@@ -110,9 +192,9 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={t('hospital.staffPerDepartment')}>
+        <ChartCard title={t('hospital.staffPerDepartment')} loading={staffLoading} error={staffError} empty={!staffError && staffPerDept.length === 0}>
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={STAFF_PER_DEPT} outerRadius="70%">
+            <RadarChart data={staffPerDept} outerRadius="70%">
               <PolarGrid stroke="#E2E8F0" />
               <PolarAngleAxis dataKey="dept" tick={{ fontSize: 10, fill: '#64748B' }} />
               <Radar dataKey="value" stroke="#2563EB" fill="#3B82F6" fillOpacity={0.3} />
@@ -120,9 +202,9 @@ export default function HospitalAdminReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={t('hospital.admittedPatientsOverTime')}>
+        <ChartCard title={t('hospital.admittedPatientsOverTime')} loading={admittedLoading}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={ADMITTED} margin={{ top: 8 }}>
+            <BarChart data={admitted} margin={{ top: 8 }}>
               <CartesianGrid vertical={false} stroke="#F1F5F9" />
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />

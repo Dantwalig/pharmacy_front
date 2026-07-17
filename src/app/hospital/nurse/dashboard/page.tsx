@@ -133,7 +133,7 @@ export default function NurseDashboardPage() {
 
               <div className="col-span-5 sm:col-span-2 text-center sm:text-left">
                 <span className={`text-sm font-bold ${ patient.status === 'Stable' ? 'text-green-600' : 'text-red-600' }`}>
-                  {patient.status}
+                  {patient.status === 'Stable' ? t('hospital.stable') : patient.status === 'High Risk' ? t('hospital.highRisk') : patient.status === 'Improving' ? t('hospital.improving') : patient.status}
                 </span>
               </div>
 
@@ -198,7 +198,7 @@ export default function NurseDashboardPage() {
               <span
                 className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold ${
                 item.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600' }`}>
-                {item.status}
+                {item.status === 'Completed' ? t('hospital.completed') : item.status}
                 {item.status === 'Completed' && <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />}
               </span>
             </div>

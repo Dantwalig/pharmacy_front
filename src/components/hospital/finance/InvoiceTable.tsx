@@ -19,12 +19,12 @@ function fmtRWF(n: number) {
   return `RWF ${n.toLocaleString()}`;
 }
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+function fmtDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const METHOD_LABELS: Record<string, string> = {
     'All Methods': t('hospital.allMethods'),
@@ -35,9 +35,9 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
   };
 
   const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  PAID: t('hospital.paid'),
-  UNPAID: t('hospital.unpaid'),
-  INSURANCE_PENDING: t('hospital.insurancePending'),
+  PAID: 'hospital.paid',
+  UNPAID: 'hospital.unpaid',
+  INSURANCE_PENDING: 'hospital.insurancePending',
  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | InvoiceStatus>('ALL');
@@ -143,11 +143,11 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
                   <td className="px-5 py-3.5">
                     <StatusBadge
                       status={inv.status}
-                      label={STATUS_LABELS[inv.status]}
+                      label={t(STATUS_LABELS[inv.status])}
                     />
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">
-                    {fmtDate(inv.dueDate)}
+                    {fmtDate(inv.dueDate, i18n.language)}
                   </td>
                   <td className="px-5 py-3.5">
                     <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">

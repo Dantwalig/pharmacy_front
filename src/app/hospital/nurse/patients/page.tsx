@@ -49,7 +49,7 @@ export default function NursePatientsPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
 
-  const [patients, setPatients] = useState<PatientRow[]>(MOCK_PATIENTS as unknown as PatientRow[]);
+  const [patients, setPatients] = useState<PatientRow[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
@@ -249,7 +249,15 @@ export default function NursePatientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {pageItems.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <tr key={idx}>
+                    <td colSpan={8} className="px-6 py-4">
+                      <div className="h-8 animate-pulse rounded-lg bg-gray-100" />
+                    </td>
+                  </tr>
+                ))
+              ) : pageItems.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-16 text-center">
                     <p className="text-gray-500 font-medium">{t('hospital.noPatientsFound')}</p>
@@ -261,17 +269,18 @@ export default function NursePatientsPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.age}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{p.gender}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{p.gender === 'Male' ? t('hospital.male') : p.gender === 'Female' ? t('hospital.female') : p.gender}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.lastVisit}</td>
                   <td className="px-6 py-4 text-sm text-gray-600 uppercase">{p.condition}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>{p.status}</span>
+                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>{p.status === 'ACTIVE' ? t('hospital.active') : p.status === 'CRITICAL' ? t('hospital.critical') : p.status === 'INACTIVE' ? t('hospital.inactive') : p.status}</span>
                   </td>
                   <td className="px-6 py-4">
                     <button className="text-gray-400 hover:text-gray-600 transition-colors"><MoreVertical className="w-5 h-5" /></button>
                   </td>
                 </tr>
-              ))}
+              ))
+              }
             </tbody>
           </table>
         </div>

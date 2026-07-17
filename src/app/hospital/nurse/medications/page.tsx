@@ -302,7 +302,7 @@ export default function MedicationAdministrationPage() {
                 <div className="relative min-w-[160px]">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-4 h-4" />
                     <input
-                        type="text"
+                        type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
@@ -381,7 +381,7 @@ export default function MedicationAdministrationPage() {
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusStyle(med.status)}`}>
-                                            {med.status}
+                                            {med.status === 'ADMINISTERED' ? t('hospital.administered') : med.status === 'DUE' ? t('hospital.due') : med.status === 'OVERDUE' ? t('hospital.overdue') : med.status === 'MISSED' ? t('hospital.missed') : med.status === 'UPCOMING' ? t('hospital.upcoming') : med.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">

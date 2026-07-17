@@ -118,14 +118,21 @@ export interface WeeklyRevenue {
 
 // ── Appointments ──────────────────────────────────────────────────────────────
 // Source: GET /api/appointments
-// Status flow: PENDING → CONFIRMED → READY_FOR_DOCTOR → COMPLETED | CANCELLED
+// Corrected against the real Prisma AppointmentStatus enum (back-end
+// src/prisma/schema.prisma) — the previous version of this type listed
+// PENDING and CONFIRMED, which don't exist on the backend at all, and was
+// missing NO_SHOW, ARRIVED, and IN_TRIAGE, which do. See
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
+// Status flow: SCHEDULED → ARRIVED → IN_TRIAGE → READY_FOR_DOCTOR → COMPLETED | CANCELLED | NO_SHOW
 
 export type AppointmentStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
+  | 'SCHEDULED'
+  | 'ARRIVED'
+  | 'IN_TRIAGE'
   | 'READY_FOR_DOCTOR'
   | 'COMPLETED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'NO_SHOW';
 
 export type AppointmentType = 'IN_PERSON' | 'ONLINE';
 
@@ -260,6 +267,34 @@ export interface AdmissionDataPoint {
 export interface DiagnosisBreakdown {
   name: string;
   value: number;
+}
+
+// ── Reports charts (admin/reports) ──────────────────────────────────────────
+// Source: GET /reports/department/metrics for wait times; GET /hospitals/:id/doctors
+// (grouped by specialization) for staff counts. Satisfaction and
+// admissions-over-time have no backend source yet — proposed endpoints for
+// both are specified in src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
+
+export interface DepartmentWaitTime {
+  dept: string;
+  value: number; // avgWaitMinutesApprox, most recent metric_date per department
+}
+
+export interface SatisfactionSlice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface DepartmentStaffCount {
+  dept: string;
+  value: number; // doctor count in this specialization
+}
+
+export interface AdmissionsTrendPoint {
+  month: string;
+  admitted: number;
+  out: number;
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────

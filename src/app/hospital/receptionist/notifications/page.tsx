@@ -6,11 +6,18 @@ import {
   Search, Check, ChevronLeft, ChevronRight,
   CalendarPlus, UserPlus, ClipboardCheck, Megaphone,
 } from 'lucide-react';
-import {
-  MOCK_RECEPTIONIST_NOTIFICATIONS,
-  type ReceptionistNotification,
-  type ReceptionistNotificationType,
-} from '@/mock/hospital/receptionist';
+type ReceptionistNotificationType = 'APPOINTMENT_BOOKED' | 'PATIENT_REGISTERED' | 'APPOINTMENT_REMINDER' | 'SYSTEM';
+export interface ReceptionistNotification {
+  id: string;
+  type: ReceptionistNotificationType;
+  title: string;
+  message: string;
+  time: string;
+  isRead: boolean;
+}
+import { useAuth } from '@/context/AuthContext';
+import { api, unwrapData } from '@/lib/api';
+import { useEffect } from 'react';
 
 const NAVY = '#1E3A5F';
 const TEAL = '#38BDF8';
@@ -18,23 +25,49 @@ const TEAL = '#38BDF8';
 type Tab = 'all' | 'unread' | 'read';
 
 const iconConfig: Record<ReceptionistNotificationType, { Icon: typeof CalendarPlus; bg: string; color: string }> = {
-  APPOINTMENT_BOOKED:   { Icon: CalendarPlus,    bg: '#EBF5FF', color: '#2563EB' },
-  PATIENT_REGISTERED:   { Icon: UserPlus,        bg: '#EEF2FF', color: '#4F46E5' },
-  APPOINTMENT_REMINDER: { Icon: ClipboardCheck,  bg: '#ECFEFF', color: '#0891B2' },
-  SYSTEM:               { Icon: Megaphone,       bg: '#EFF6FF', color: '#3B82F6' },
+  APPOINTMENT_BOOKED: { Icon: CalendarPlus, bg: '#EBF5FF', color: '#2563EB' },
+  PATIENT_REGISTERED: { Icon: UserPlus, bg: '#EEF2FF', color: '#4F46E5' },
+  APPOINTMENT_REMINDER: { Icon: ClipboardCheck, bg: '#ECFEFF', color: '#0891B2' },
+  SYSTEM: { Icon: Megaphone, bg: '#EFF6FF', color: '#3B82F6' },
 };
 
 export default function ReceptionistNotificationsPage() {
   const { t } = useTranslation();
-  const [items, setItems] = useState<ReceptionistNotification[]>(MOCK_RECEPTIONIST_NOTIFICATIONS);
+  const { user } = useAuth();
+  const hospitalId = (user as any)?.hospitalId || '';
+
+  const [items, setItems] = useState<ReceptionistNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorProp, setErrorProp] = useState('');
+
   const [tab, setTab] = useState<Tab>('all');
   const [query, setQuery] = useState('');
 
+  useEffect(() => {
+    if (!hospitalId) {
+      setLoading(false);
+      setErrorProp('No hospital session found. Please log in.');
+      return;
+    }
+    api.get(`/hospitals/${hospitalId}/receptionist/notifications`)
+      .then(res => setItems(unwrapData(res.data) || []))
+      .catch(err => setErrorProp('Failed to load notifications.'))
+      .finally(() => setLoading(false));
+  }, [hospitalId]);
+
   const unreadCount = items.filter((n) => !n.isRead).length;
 
-  const markAllRead = () => setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  const markRead = (id: string) =>
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+  const markAllRead = () => {
+    api.patch(`/hospitals/${hospitalId}/receptionist/notifications/read-all`)
+      .then(() => setItems((prev) => prev.map((n) => ({ ...n, isRead: true }))))
+      .catch(() => { });
+  };
+
+  const markRead = (id: string) => {
+    api.patch(`/hospitals/${hospitalId}/receptionist/notifications/${id}/read`)
+      .then(() => setItems((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))))
+      .catch(() => { });
+  };
 
   const filtered = useMemo(() => {
     return items.filter((n) => {
@@ -49,13 +82,21 @@ export default function ReceptionistNotificationsPage() {
   }, [items, tab, query]);
 
   const tabs: { key: Tab; labelKey: string; badge?: number }[] = [
-    { key: 'all',    labelKey: 'common.all' },
+    { key: 'all', labelKey: 'common.all' },
     { key: 'unread', labelKey: 'common.unread', badge: unreadCount },
-    { key: 'read',   labelKey: 'common.read' },
+    { key: 'read', labelKey: 'common.read' },
   ];
 
   return (
     <div className="space-y-6">
+      {errorProp && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+          {errorProp}
+        </div>
+      )}
+      {loading && (
+        <div className="p-8 text-center text-gray-500 animate-pulse">Loading notifications...</div>
+      )}
 
       {/* ── Hero header ── */}
       <div className="rounded-2xl px-6 sm:px-10 py-7" style={{ background: '#EBF5FF' }}>
@@ -86,9 +127,8 @@ export default function ReceptionistNotificationsPage() {
               <button
                 key={tabItem.key}
                 onClick={() => setTab(tabItem.key)}
-                className={`relative flex items-center gap-1.5 pb-2 text-sm font-semibold transition-colors ${
-                  tab === tabItem.key ? '' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`relative flex items-center gap-1.5 pb-2 text-sm font-semibold transition-colors ${tab === tabItem.key ? '' : 'text-gray-500 hover:text-gray-700'
+                  }`}
                 style={tab === tabItem.key ? { color: '#2563EB' } : {}}
               >
                 {t(tabItem.labelKey)}
@@ -123,7 +163,7 @@ export default function ReceptionistNotificationsPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {filtered.map((n) => {
-              const cfg = iconConfig[n.type];
+              const cfg = iconConfig[n.type] || iconConfig.SYSTEM;
               const Icon = cfg.Icon;
               return (
                 <div

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     startOfWeek,
@@ -22,24 +22,43 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     ChevronUpIcon,
-    PlusIcon,
     CalendarIcon,
-    MagnifyingGlassIcon,
     Cog6ToothIcon,
     VideoCameraIcon,
     UserIcon,
     UsersIcon,
 } from '@heroicons/react/24/outline';
-import { MOCK_SCHEDULE } from '@/mock/hospital/schedule';
-import { EntryColor } from '@/types/hospital';
+import api from '@/lib/api';
+import { useHospitalId } from '@/lib/hospital';
 
-const COLOR_MAP: Record<EntryColor, string> = {
-    blue: 'bg-blue-50 text-blue-700 border-blue-200',
-    green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    orange: 'bg-orange-50 text-orange-700 border-orange-200',
-    purple: 'bg-purple-50 text-purple-700 border-purple-200',
-    red: 'bg-red-50 text-red-700 border-red-200',
-};
+// GET /hospitals/:id/doctors row
+interface BackendDoctor {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    specialization: string;
+}
+
+// GET /appointments (HOSPITAL_ADMIN-scoped) row
+interface BackendAppointment {
+    id: string;
+    date: string;
+    status: string;
+    type?: string;
+    doctorId: string;
+    patient: { firstName: string; lastName: string };
+    doctor: { id: string; firstName: string | null; lastName: string | null } | null;
+}
+
+// Deterministic colour per doctor id, same idea as the old mock's
+// DOCTOR_COLORS lookup, but generated instead of hand-listed so it works for
+// any real doctor id.
+const PALETTE = ['#2D9B8A', '#1E4D8C', '#7C3AED', '#B45309', '#0891B2', '#059669', '#DB2777'];
+function colorForDoctor(doctorId: string) {
+    let hash = 0;
+    for (let i = 0; i < doctorId.length; i++) hash = (hash * 31 + doctorId.charCodeAt(i)) >>> 0;
+    return PALETTE[hash % PALETTE.length];
+}
 
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16];
 
@@ -49,8 +68,10 @@ function hourLabel(h: number) {
     return `${display} ${period}`;
 }
 
-function startHour(entry: { startTime?: string }) {
-    return entry.startTime ? parseInt(entry.startTime.split(':')[0], 10) : -1;
+function doctorName(doc: { firstName: string | null; lastName: string | null } | null | undefined) {
+    if (!doc) return 'Unassigned';
+    const name = [doc.firstName, doc.lastName].filter(Boolean).join(' ');
+    return name ? `Dr. ${name}` : 'Unassigned';
 }
 
 function MiniCalendar({ selected, onSelect }: { selected: Date; onSelect: (d: Date) => void }) {
@@ -102,18 +123,75 @@ function MiniCalendar({ selected, onSelect }: { selected: Date; onSelect: (d: Da
 
 export default function HospitalAdminSchedulePage() {
     const { t } = useTranslation();
+    const hospitalId = useHospitalId();
 
-    const [currentDate, setCurrentDate] = useState(new Date('2026-06-01'));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [viewMode, setViewMode] = useState<'WEEK' | 'MONTH'>('WEEK');
+
+    const [doctors, setDoctors] = useState<BackendDoctor[]>([]);
+    const [doctorsLoading, setDoctorsLoading] = useState(true);
+    const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
+    const [doctorSearch, setDoctorSearch] = useState('');
+
+    const [appointments, setAppointments] = useState<BackendAppointment[]>([]);
+    const [apptsLoading, setApptsLoading] = useState(true);
+
+    // GET /doctors/:doctorId/slots?date=YYYY-MM-DD for the selected doctor and
+    // the currently-selected calendar day. NOTE: this returns *available*
+    // (bookable) slots, not existing bookings — a genuinely different thing
+    // from the hourly grid below, which shows real appointments. See
+    // src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md (Gap SC-1) for why these are
+    // kept as two separate panels rather than merged into one, and why month
+    // view doesn't use this endpoint at all (it has no date-range mode, only
+    // a single date per call).
+    const [openSlots, setOpenSlots] = useState<string[]>([]);
+    const [slotsLoading, setSlotsLoading] = useState(false);
+    const [slotsError, setSlotsError] = useState(false);
+
+    useEffect(() => {
+        if (!hospitalId) { setDoctorsLoading(false); setApptsLoading(false); return; }
+        api.get<BackendDoctor[]>(`/hospitals/${hospitalId}/doctors`)
+            .then(res => setDoctors(Array.isArray(res.data) ? res.data : []))
+            .catch(() => setDoctors([]))
+            .finally(() => setDoctorsLoading(false));
+
+        api.get<BackendAppointment[]>('/appointments')
+            .then(res => setAppointments(Array.isArray(res.data) ? res.data : []))
+            .catch(() => setAppointments([]))
+            .finally(() => setApptsLoading(false));
+    }, [hospitalId]);
+
+    useEffect(() => {
+        if (!selectedDoctorId) { setOpenSlots([]); return; }
+        setSlotsLoading(true);
+        setSlotsError(false);
+        api.get(`/doctors/${selectedDoctorId}/slots`, { params: { date: format(currentDate, 'yyyy-MM-dd') } })
+            .then(res => setOpenSlots(Array.isArray(res.data?.slots) ? res.data.slots : []))
+            .catch(() => setSlotsError(true))
+            .finally(() => setSlotsLoading(false));
+    }, [selectedDoctorId, currentDate]);
+
+    const filteredDoctors = useMemo(
+        () => doctors.filter(d => doctorName(d).toLowerCase().includes(doctorSearch.toLowerCase())),
+        [doctors, doctorSearch]
+    );
+
+    const visibleAppointments = useMemo(
+        () => selectedDoctorId ? appointments.filter(a => a.doctorId === selectedDoctorId) : appointments,
+        [appointments, selectedDoctorId]
+    );
 
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
     const monthDays = eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) });
 
     const dayKey = (d: Date) => format(d, 'yyyy-MM-dd');
-    const entryAt = (d: Date, hour: number) =>
-        MOCK_SCHEDULE.find((e) => e.date === dayKey(d) && startHour(e) === hour);
-    const entriesForDay = (d: Date) => MOCK_SCHEDULE.filter((e) => e.date === dayKey(d));
+    const entriesAt = (d: Date, hour: number) =>
+        visibleAppointments.filter((a) => {
+            const ad = new Date(a.date);
+            return dayKey(ad) === dayKey(d) && ad.getHours() === hour;
+        });
+    const entriesForDay = (d: Date) => visibleAppointments.filter((a) => dayKey(new Date(a.date)) === dayKey(d));
 
     const typeMeta = (type?: string) =>
         type === 'ONLINE'
@@ -129,7 +207,7 @@ export default function HospitalAdminSchedulePage() {
             <div className="rounded-2xl px-8 py-7" style={{ background: '#EBF5FF' }}>
                 <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight" style={{ color: '#1E3A5F' }}>{t('hospital.schedule')}</h1>
                 <p className="mt-1 text-xs font-semibold" style={{ color: '#0284C7' }}>{t('hospital.scheduleSubtitle')}</p>
-                <button className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
+                <button onClick={() => setCurrentDate(new Date())} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg" style={{ background: 'linear-gradient(to right, #0284C7, #38BDF8)' }}>
                     <CalendarIcon className="w-4 h-4" />
                     {t('hospital.thisWeek')}
                 </button>
@@ -151,44 +229,85 @@ export default function HospitalAdminSchedulePage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><MagnifyingGlassIcon className="w-5 h-5" /></button>
                     <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><Cog6ToothIcon className="w-5 h-5" /></button>
                 </div>
             </div>
 
             {/* Calendar + sidebar */}
             <div className="flex flex-col lg:flex-row gap-6">
-                <aside className="w-full lg:w-60 shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-5">
+                <aside className="w-full lg:w-64 shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-5">
                     <MiniCalendar selected={currentDate} onSelect={setCurrentDate} />
+
                     <div className="relative">
                         <UsersIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search for people" className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        <input
+                            type="text"
+                            placeholder={t('hospital.searchForPeople')}
+                            value={doctorSearch}
+                            onChange={e => setDoctorSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
                     </div>
-                    <button className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900">
-                        <span>{t('hospital.bookingPages')}</span>
-                        <PlusIcon className="w-4 h-4 text-gray-400" />
-                    </button>
+
+                    {/* GET /hospitals/:id/doctors — click to filter grid + load open slots */}
                     <div>
                         <div className="flex items-center justify-between text-sm font-semibold text-gray-700 mb-2">
-                            <span>{t('hospital.myCalendar')}</span>
+                            <span>{t('hospital.doctors')}</span>
                             <ChevronUpIcon className="w-4 h-4 text-gray-400" />
                         </div>
-                        <div className="flex items-center gap-2 pl-1">
-                            <span className="w-3.5 h-3.5 rounded-sm shrink-0" style={{ background: '#22D3EE' }} />
-                            <span className="text-xs text-gray-600 flex-1 truncate">{t('hospital.hospitalAdmin')}</span>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                            <button
+                                onClick={() => setSelectedDoctorId(null)}
+                                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors ${!selectedDoctorId ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                            >
+                                All doctors
+                            </button>
+                            {doctorsLoading ? (
+                                Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />)
+                            ) : filteredDoctors.map(d => (
+                                <button
+                                    key={d.id}
+                                    onClick={() => setSelectedDoctorId(d.id)}
+                                    className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-2 ${selectedDoctorId === d.id ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: colorForDoctor(d.id) }} />
+                                    <span className="truncate">{doctorName(d)}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
-                        <span>{t('hospital.otherCalendars')}</span>
-                        <div className="flex items-center gap-1">
-                            <PlusIcon className="w-4 h-4 text-gray-400" />
-                            <ChevronUpIcon className="w-4 h-4 text-gray-400" />
+
+                    {/* Open slots panel — GET /doctors/:doctorId/slots (availability, not bookings) */}
+                    {selectedDoctorId && (
+                        <div>
+                            <div className="text-sm font-semibold text-gray-700 mb-2">
+                                Open slots — {format(currentDate, 'MMM d')}
+                            </div>
+                            {slotsLoading ? (
+                                <div className="h-6 bg-gray-100 rounded animate-pulse" />
+                            ) : slotsError ? (
+                                <p className="text-xs text-red-500">Could not load slots.</p>
+                            ) : openSlots.length === 0 ? (
+                                <p className="text-xs text-gray-400">No open slots this day.</p>
+                            ) : (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {openSlots.map(s => (
+                                        <span key={s} className="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                                            {s}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
                 </aside>
 
                 <div className="flex-1 min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-                    {viewMode === 'WEEK' ? (
+                    {apptsLoading ? (
+                        <div className="p-6 space-y-2">
+                            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />)}
+                        </div>
+                    ) : viewMode === 'WEEK' ? (
                         <div className="min-w-[640px]">
                             <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
                                 <div className="py-3" />
@@ -206,20 +325,25 @@ export default function HospitalAdminSchedulePage() {
                                 <div key={hour} className="grid border-b border-gray-50 last:border-0" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
                                     <div className="py-4 pr-2 text-right text-[11px] font-semibold text-gray-400">{hourLabel(hour)}</div>
                                     {weekDays.map((day) => {
-                                        const entry = entryAt(day, hour);
+                                        const entries = entriesAt(day, hour);
                                         return (
-                                            <div key={day.toISOString()} className="min-h-[72px] border-l border-gray-100 p-1.5">
-                                                {entry && (() => {
+                                            <div key={day.toISOString()} className="min-h-[72px] border-l border-gray-100 p-1.5 space-y-1">
+                                                {entries.map((entry) => {
                                                     const meta = typeMeta(entry.type);
-                                                    const accent = COLOR_MAP[entry.color] ?? COLOR_MAP.blue;
+                                                    const color = colorForDoctor(entry.doctorId);
+                                                    const patientName = `${entry.patient?.firstName ?? ''} ${entry.patient?.lastName ?? ''}`.trim();
                                                     return (
-                                                        <div className={`h-full rounded-lg border p-2 ${accent}`}>
-                                                            <p className="text-[10px] font-semibold opacity-80">{entry.startTime && format(new Date(`2026-01-01T${entry.startTime}`), 'h:mm a')}</p>
-                                                            <p className="text-xs font-bold leading-tight mt-0.5 truncate">{entry.doctorName ?? entry.patientName}</p>
+                                                        <div
+                                                            key={entry.id}
+                                                            className="h-full rounded-lg border p-2"
+                                                            style={{ background: `${color}14`, borderColor: `${color}55`, color }}
+                                                        >
+                                                            <p className="text-[10px] font-semibold opacity-80">{format(new Date(entry.date), 'h:mm a')}</p>
+                                                            <p className="text-xs font-bold leading-tight mt-0.5 truncate">{patientName || doctorName(entry.doctor)}</p>
                                                             <p className="flex items-center gap-1 text-[10px] font-medium opacity-80 mt-1"><meta.Icon className="w-3 h-3" />{meta.label}</p>
                                                         </div>
                                                     );
-                                                })()}
+                                                })}
                                             </div>
                                         );
                                     })}
@@ -229,8 +353,8 @@ export default function HospitalAdminSchedulePage() {
                     ) : (
                         <div>
                             <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
-                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-                                    <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{d}</div>
+                                {(['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'] as const).map(key => (
+                                    <div key={key} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{t(`hospital.${key}`)}</div>
                                 ))}
                             </div>
                             <div className="grid grid-cols-7">
