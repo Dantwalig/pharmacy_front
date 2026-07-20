@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, isHospitalNurse } from '@/lib/auth';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { User } from '@/types';
 
@@ -24,7 +24,7 @@ function getHomeRoute(user: User): string {
         case 'CASHIER':
             return '/staff/dashboard';
         case 'NURSE':
-            return user.hospitalId ? '/hospital/nurse/dashboard' : '/staff/dashboard';
+            return isHospitalNurse(user) ? '/hospital/nurse/dashboard' : '/staff/dashboard';
         case 'DOCTOR':
             return '/hospital/doctor/dashboard';
         case 'RECEPTIONIST':
@@ -75,7 +75,7 @@ export default function HospitalGuard({ children, allowedRole }: HospitalGuardPr
             }
         } else if (allowedRole === 'NURSE') {
             // Must be a hospital nurse (having hospitalId)
-            if (user.role !== 'NURSE' || !user.hospitalId) {
+            if (user.role !== 'NURSE' || !isHospitalNurse(user)) {
                 router.push(getHomeRoute(user));
                 return;
             }
@@ -106,7 +106,7 @@ export default function HospitalGuard({ children, allowedRole }: HospitalGuardPr
         }
 
         if (allowedRole === 'NURSE') {
-            return user.role === 'NURSE' && !!user.hospitalId;
+            return user.role === 'NURSE' && isHospitalNurse(user);
         }
 
         return user.role === allowedRole;
