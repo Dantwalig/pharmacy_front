@@ -16,7 +16,8 @@ import {
   cacheUserData, 
   clearUserCache,
   getAccessToken,
-  getRefreshToken 
+  getRefreshToken,
+  isHospitalNurse
 } from '@/lib/auth';
 import { User, DecodedToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
@@ -200,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // branch-staff nurse and a hospital nurse. `hospitalId` is only
           // present on the hospital login response — use it as the
           // discriminator instead of the role string alone.
-          if (userData.hospitalId) {
+          if (isHospitalNurse(userData)) {
             toast.success(t('auth2.welcomeBack'));
             router.push(
               userData.requiresPasswordChange

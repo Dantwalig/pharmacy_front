@@ -77,3 +77,13 @@ export const getUserFromToken = (): User | null => {
     return null;
   }
 };
+
+/**
+ * Returns true only for hospital nurses.
+ * Pharmacy/branch nurses also have role "NURSE" but do not have a hospitalId.
+ */
+export const isHospitalNurse = (
+  user?: Partial<User> | null
+): user is User & { role: 'NURSE'; hospitalId: string } => {
+  return user?.role === 'NURSE' && Boolean(user.hospitalId);
+};

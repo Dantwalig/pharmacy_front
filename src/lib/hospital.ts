@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { MOCK_DOCTOR, MOCK_ADMIN, MOCK_NURSE, MOCK_RECEPTIONIST } from '@/mock/hospital/user';
 import api from '@/lib/api';
 import type { DashboardStats, WeeklyRevenue } from '@/types/hospital';
+import { isHospitalNurse } from '@/lib/auth';
 
 /**
  * Resolves the hospitalId to use for hospital admin API calls.
@@ -124,7 +125,7 @@ export function useHospitalDoctorUser(): HospitalTopbarUser {
 export function useHospitalNurseUser(): HospitalTopbarUser {
   const { user } = useAuth();
 
-  if (user?.role === 'NURSE' && user.hospitalId) {
+  if (user && isHospitalNurse(user)) {
     return {
       userName: nameFromEmail(user.email),
       roleLabel: 'Nurse',
