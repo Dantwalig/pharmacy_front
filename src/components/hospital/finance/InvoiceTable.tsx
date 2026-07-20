@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { MagnifyingGlassIcon, ArrowDownTrayIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import StatusBadge from '@/components/shared/StatusBadge';
 import type { Invoice, InvoiceStatus } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,9 @@ import { useTranslation } from 'react-i18next';
 interface InvoiceTableProps {
   invoices: Invoice[];
   onExport?: () => void;
+  loading?: boolean;
+  error?: boolean;
+  isEndpointMissing?: boolean;
 }
 
 const ALL_STATUSES: InvoiceStatus[] = ['PAID', 'UNPAID', 'INSURANCE_PENDING'];
@@ -20,10 +23,11 @@ function fmtRWF(n: number) {
 }
 
 function fmtDate(iso: string, locale: string) {
+  if (!iso) return '—';
   return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) {
+export default function InvoiceTable({ invoices, onExport, loading, error, isEndpointMissing }: InvoiceTableProps) {
   const { t, i18n } = useTranslation();
 
   const METHOD_LABELS: Record<string, string> = {
@@ -35,10 +39,10 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
   };
 
   const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  PAID: 'hospital.paid',
-  UNPAID: 'hospital.unpaid',
-  INSURANCE_PENDING: 'hospital.insurancePending',
- };
+    PAID: 'hospital.paid',
+    UNPAID: 'hospital.unpaid',
+    INSURANCE_PENDING: 'hospital.insurancePending',
+  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | InvoiceStatus>('ALL');
   const [methodFilter, setMethodFilter] = useState('All Methods');
@@ -94,14 +98,14 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
               </option>
             ))}
           </select>
-          
+
           {/* Export */}
           <button
             onClick={onExport}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
-           {t('hospital.export')}
+            {t('hospital.export')}
           </button>
         </div>
       </div>
@@ -119,7 +123,49 @@ export default function InvoiceTable({ invoices, onExport }: InvoiceTableProps) 
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.length === 0 ? (
+            {error ? (
+              <tr>
+                <td colSpan={7} className="px-5 py-10 text-center">
+                  <div className="text-red-500 font-medium flex flex-col items-center justify-center gap-2">
+                    <ExclamationTriangleIcon className="w-8 h-8 text-red-500" />
+                    <span>{t('errors.failedToLoadOrders') || 'Failed to load invoices. Please check connection.'}</span>
+                  </div>
+                </td>
+              </tr>
+            ) : loading ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={idx} className="animate-pulse">
+                  <td className="px-5 py-4 font-mono text-xs whitespace-nowrap">
+                    <div className="h-4 bg-gray-200 rounded w-16" />
+                  </td>
+                  <td className="px-5 py-4 font-medium text-slate-800 whitespace-nowrap">
+                    <div className="h-4 bg-gray-200 rounded w-28" />
+                  </td>
+                  <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap mb-1">
+                    <div className="h-4 bg-gray-200 rounded w-20" />
+                  </td>
+                  <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                    <div className="h-4 bg-gray-200 rounded w-24" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="h-6 bg-gray-200 rounded-full w-16" />
+                  </td>
+                  <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
+                    <div className="h-4 bg-gray-200 rounded w-20" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="h-4 bg-gray-200 rounded w-4" />
+                  </td>
+                </tr>
+              ))
+            ) : isEndpointMissing ? (
+              <tr>
+                <td colSpan={7} className="px-5 py-10 text-center text-slate-400 text-sm">
+                  {/* TODO: Verify GET /hospitals/:id/invoices endpoint exists in Swagger; if missing, show empty state */}
+                  {t('hospital.noInvoicesMatch')}
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-5 py-10 text-center text-slate-400 text-sm">
                   {t('hospital.noInvoicesMatch')}
