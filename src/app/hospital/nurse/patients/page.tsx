@@ -1,16 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Search, Filter, MoreVertical, ChevronLeft, ChevronRight,
   Users, BedDouble, Activity, UserCheck,
 } from 'lucide-react';
-import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import type { PatientStatus } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
-import api from '@/lib/api';
-import { useHospitalId } from '@/lib/hospital';
-import axios from 'axios';
+import { useHospitalId, useHospitalAdmissions } from '@/lib/hospital';
 
 const PAGE_SIZE = 3;
 
@@ -20,121 +17,17 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
   INACTIVE: 'bg-gray-100 text-gray-600',
 };
 
-interface PatientRow {
-  id: string;
-  patientId: string;
-  name: string;
-  age: string;
-  gender: string;
-  lastVisit: string;
-  condition: string;
-  status: PatientStatus;
-}
-
-function formatLastVisit(value?: string) {
-  if (!value) return '—';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '—';
-  return parsed.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-function deriveStatus(status?: string): PatientStatus {
-  const normalized = (status ?? '').toUpperCase();
-  if (normalized === 'CRITICAL') return 'CRITICAL';
-  if (normalized === 'ACTIVE') return 'ACTIVE';
-  return 'INACTIVE';
-}
-
 export default function NursePatientsPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
+  const { patients, loading, error, useMockFallback } = useHospitalAdmissions(hospitalId);
 
-  const [patients, setPatients] = useState<PatientRow[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
   const [lastVisitFilter, setLastVisit] = useState('ALL');
   const [page, setPage] = useState(1);
   const [now] = useState(() => Date.now());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [useMockFallback, setUseMockFallback] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!hospitalId) {
-      setUseMockFallback(true);
-      setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
-      setLoading(false);
-      setError(null);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const loadPatients = async () => {
-      setLoading(true);
-      setError(null);
-      setUseMockFallback(false);
-
-      try {
-        const response = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
-        const payload = response.data;
-        const admissions = Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload?.data)
-            ? payload.data
-            : [];
-
-        const mappedPatients = admissions.map((item: any) => {
-          const patient = item.patient ?? {};
-          const patientName = [patient.firstName, patient.lastName].filter(Boolean).join(' ').trim() || 'Unknown patient';
-          const patientId = patient.mrn || patient.id || item.id || '—';
-          const condition = String(item.reason || 'Stable').trim() || 'Stable';
-
-          return {
-            id: item.id,
-            patientId,
-            name: patientName,
-            age: patient.age ? String(patient.age) : '—',
-            gender: patient.gender || '—',
-            lastVisit: formatLastVisit(item.updatedAt || item.createdAt),
-            condition,
-            status: deriveStatus(item.status),
-          } as PatientRow;
-        });
-
-        if (!cancelled) {
-          setPatients(mappedPatients);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          if (process.env.NODE_ENV !== 'production') {
-            setUseMockFallback(true);
-            setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
-            setError(null);
-          } else {
-            const message = axios.isAxiosError(err)
-              ? err.response?.data?.message || 'Unable to load patient data right now.'
-              : 'Unable to load patient data right now.';
-            setError(message);
-            setPatients([]);
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadPatients();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hospitalId]);
 
   const conditions = useMemo(() => ['ALL', ...Array.from(new Set(patients.map((p) => p.condition)))], [patients]);
 
