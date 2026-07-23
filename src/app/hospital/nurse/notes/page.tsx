@@ -12,57 +12,33 @@ import {
     RotateCcw,
     ChevronDown,
 } from 'lucide-react';
-import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
-import { MOCK_NURSE } from '@/mock/hospital/user';
 import type { NursingNote } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
+import { useHospitalId, useHospitalNurseUser, useHospitalAdmissions } from '@/lib/hospital';
 
-const NURSE_NAME = `${MOCK_NURSE.firstName} ${MOCK_NURSE.lastName}`;
-const MOCK_TODAY = '2026-06-09';
-
-const INITIAL_NOTES: NursingNote[] = [
-    {
-        id: 'note-001',
-        patientName: MOCK_PATIENTS[3].name,
-        nurseName: NURSE_NAME,
-        date: MOCK_TODAY,
-        time: '05:15 PM',
-        observationNotes: 'Patient is alert and stable post-load, Vitals stable: BP 115/70, HR 82, Temp 36.7C.',
-        careActivities: '',
-        additionalComments: '',
-    },
-    {
-        id: 'note-002',
-        patientName: MOCK_PATIENTS[4].name,
-        nurseName: NURSE_NAME,
-        date: MOCK_TODAY,
-        time: '04:30 PM',
-        observationNotes: 'Patient complains of mild shoulder pain post-surgery but is stable. Client education reviewed for breath sounds.',
-        careActivities: '',
-        additionalComments: '',
-    },
-    {
-        id: 'note-003',
-        patientName: MOCK_PATIENTS[5].name,
-        nurseName: NURSE_NAME,
-        date: '2026-06-08',
-        time: '10:15 AM',
-        observationNotes: 'Post-operative Day 1 following laparoscopic cholecystectomy. Patient complains of pain around incision site.',
-        careActivities: '',
-        additionalComments: '',
-    },
-];
+function formatDateTimeInput(date: Date): string {
+    const datePart = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+    const timePart = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${datePart} ${timePart}`;
+}
 
 export default function NursingNotesPage() {
     const { t } = useTranslation();
+    const hospitalId = useHospitalId();
+    const nurseUser = useHospitalNurseUser();
+    const { patients } = useHospitalAdmissions(hospitalId);
 
-    const [notes, setNotes] = useState<NursingNote[]>(INITIAL_NOTES);
+    const today = useMemo(() => new Date(), []);
+    const todayIso = useMemo(() => today.toISOString().slice(0, 10), [today]);
+
+    // No backend endpoint exists for nursing notes yet — starts empty, stays local-only.
+    const [notes, setNotes] = useState<NursingNote[]>([]);
     const [search, setSearch] = useState('');
     const [patientFilter, setPatientFilter] = useState('');
-    const [dateFilter, setDateFilter] = useState(MOCK_TODAY);
+    const [dateFilter, setDateFilter] = useState(todayIso);
 
     const [selectedPatient, setSelectedPatient] = useState('');
-    const [dateTime, setDateTime] = useState('06/09/2026 05:20 PM');
+    const [dateTime, setDateTime] = useState(() => formatDateTimeInput(today));
     const [observationNotes, setObservationNotes] = useState('');
     const [careActivities, setCareActivities] = useState('');
     const [additionalComments, setAdditionalComments] = useState('');
@@ -78,15 +54,16 @@ export default function NursingNotesPage() {
     }, [notes, search, patientFilter, dateFilter]);
 
     const stats = [
-        { label: t('hospital.notesToday'), value: notes.filter((n) => n.date === MOCK_TODAY).length, icon: <FileText className="w-5 h-5 text-[#38BDF8]" />, bgColor: 'bg-[#F0F9FF]', borderColor: 'border-[#E0F2FE]' },
+        { label: t('hospital.notesToday'), value: notes.filter((n) => n.date === todayIso).length, icon: <FileText className="w-5 h-5 text-[#38BDF8]" />, bgColor: 'bg-[#F0F9FF]', borderColor: 'border-[#E0F2FE]' },
         { label: t('hospital.recentNotes'), value: notes.length, icon: <Clock className="w-5 h-5 text-purple-500" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100' },
         { label: t('hospital.patientsMonitored'), value: new Set(notes.map((n) => n.patientName)).size, icon: <Users className="w-5 h-5 text-green-500" />, bgColor: 'bg-green-50', borderColor: 'border-green-100' },
-        { label: t('hospital.pendingDocumentation'), value: 2, icon: <AlertCircle className="w-5 h-5 text-red-500" />, bgColor: 'bg-red-50', borderColor: 'border-red-100' },
+        // No backend endpoint tracks pending documentation yet — placeholder until one exists.
+        { label: t('hospital.pendingDocumentation'), value: 0, icon: <AlertCircle className="w-5 h-5 text-red-500" />, bgColor: 'bg-red-50', borderColor: 'border-red-100' },
     ];
 
     const resetForm = () => {
         setSelectedPatient('');
-        setDateTime('06/09/2026 05:20 PM');
+        setDateTime(formatDateTimeInput(new Date()));
         setObservationNotes('');
         setCareActivities('');
         setAdditionalComments('');
@@ -94,12 +71,14 @@ export default function NursingNotesPage() {
 
     const submitDocumentation = () => {
         if (!selectedPatient || !observationNotes) return;
+        // No backend endpoint exists for nursing notes yet — saved to local state only.
+        console.warn('Nursing note submission has no backend endpoint yet — saved to local state only.');
         const [datePart, ...timeParts] = dateTime.split(' ');
         const newNote: NursingNote = {
             id: `note-${Date.now()}`,
             patientName: selectedPatient,
-            nurseName: NURSE_NAME,
-            date: datePart === '06/09/2026' ? MOCK_TODAY : datePart,
+            nurseName: nurseUser.userName,
+            date: datePart,
             time: timeParts.join(' ') || dateTime,
             observationNotes,
             careActivities,
@@ -157,7 +136,7 @@ export default function NursingNotesPage() {
                                 className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E3A5F] appearance-none cursor-pointer"
                             >
                                 <option value="">{t('hospital.allPatients')}</option>
-                                {MOCK_PATIENTS.map((p) => (
+                                {patients.map((p) => (
                                     <option key={p.id} value={p.name}>{p.name}</option>
                                 ))}
                             </select>
@@ -210,7 +189,7 @@ export default function NursingNotesPage() {
                                         className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer"
                                     >
                                         <option value="">{t('hospital.selectPatient')}</option>
-                                        {MOCK_PATIENTS.map((p) => (
+                                        {patients.map((p) => (
                                             <option key={p.id} value={p.name}>{p.name}</option>
                                         ))}
                                     </select>
