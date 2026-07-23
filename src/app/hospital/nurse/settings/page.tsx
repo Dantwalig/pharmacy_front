@@ -2,25 +2,19 @@
 
 import { useState, useRef } from 'react';
 import { Settings, CheckCircle, Pencil, Camera } from 'lucide-react';
-import { MOCK_HOSPITAL_SETTINGS } from '@/mock/hospital/settings';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/context/AuthContext';
+import { useHospitalNurseUser } from '@/lib/hospital';
 
 const NAVY     = '#1E3A5F';
 const TEAL     = '#38BDF8';
 const GRADIENT = 'linear-gradient(90deg, #0284C7 0%, #38BDF8 100%)';
 
-const mockNurse = {
-  name:          'Claudine Umutoni',
-  initials:      'CU',
-  role:          'Registered Nurse',
-  email:         'claudine.umutoni@evuze.rw',
-  phone:         '+250789384713',
-  hospital:      MOCK_HOSPITAL_SETTINGS.hospitalName,
-  specialization:'Medical Surgery',
-  licenseNumber: 'xxxx-xxxx-xxxx',
-  workingHours:  '10 AM - 5PM',
-  status:        'APPROVED' as const,
-};
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
+}
 
 type Tab = 'profile' | 'department' | 'changePassword';
 
@@ -33,14 +27,31 @@ const labelCls = 'block text-xs font-bold text-gray-600 uppercase tracking-wides
 
 export default function NurseSettingsPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const nurseUser = useHospitalNurseUser();
+
+  // No hospital-nurse profile endpoint exists yet (GET /staff/profile/me is
+  // pharmacy-nurse only) — specialization/phone/licenseNumber/workingHours
+  // have no backend source and start empty until one exists.
+  const nurse = {
+    name: nurseUser.userName,
+    initials: getInitials(nurseUser.userName),
+    role: nurseUser.roleLabel,
+    email: user?.email ?? '',
+    phone: '',
+    hospital: nurseUser.hospitalName,
+    specialization: '',
+    licenseNumber: '',
+    workingHours: '',
+  };
 
   const [activeTab,      setActiveTab]      = useState<Tab>('profile');
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm,    setProfileForm]    = useState({
-    fullName:       mockNurse.name,
-    email:          mockNurse.email,
-    phone:          mockNurse.phone,
-    specialization: mockNurse.specialization,
+    fullName:       nurse.name,
+    email:          nurse.email,
+    phone:          nurse.phone,
+    specialization: nurse.specialization,
   });
   const [passwordForm, setPasswordForm] = useState({
     current: '',
@@ -113,9 +124,9 @@ export default function NurseSettingsPage() {
             >
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt={mockNurse.name} className="w-full h-full object-cover" />
+                <img src={avatarUrl} alt={nurse.name} className="w-full h-full object-cover" />
               ) : (
-                mockNurse.initials
+                nurse.initials
               )}
             </div>
             <button
@@ -134,16 +145,16 @@ export default function NurseSettingsPage() {
               className="hidden"
             />
           </div>
-          <p className="font-bold text-base sm:text-lg" style={{ color: NAVY }}>{mockNurse.name}</p>
-          <p className="text-sm text-gray-500 mt-0.5">{mockNurse.role}</p>
+          <p className="font-bold text-base sm:text-lg" style={{ color: NAVY }}>{nurse.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{nurse.role}</p>
 
           <div className="w-full border-t border-gray-100 my-5" />
 
           <div className="w-full text-left space-y-4">
             {[
-              { label: t('common.email'),        value: mockNurse.email,    extra: 'break-all' },
-              { label: t('common.phone'), value: mockNurse.phone,    extra: '' },
-              { label: t('hospital.hospital'),     value: mockNurse.hospital, teal: true },
+              { label: t('common.email'),        value: nurse.email,    extra: 'break-all' },
+              { label: t('common.phone'), value: nurse.phone,    extra: '' },
+              { label: t('hospital.hospital'),     value: nurse.hospital, teal: true },
             ].map(({ label, value, extra, teal }) => (
               <div key={label}>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
@@ -223,10 +234,10 @@ export default function NurseSettingsPage() {
               </div>
               <div className="space-y-5">
                 {[
-                  { label: t('hospital.specialization'), value: mockNurse.specialization },
-                  { label: t('hospital.licenseNumber'), value: mockNurse.licenseNumber },
-                  { label: t('hospital.hospital'),       value: mockNurse.hospital },
-                  { label: t('hospital.workingHours'),  value: mockNurse.workingHours },
+                  { label: t('hospital.specialization'), value: nurse.specialization },
+                  { label: t('hospital.licenseNumber'), value: nurse.licenseNumber },
+                  { label: t('hospital.hospital'),       value: nurse.hospital },
+                  { label: t('hospital.workingHours'),  value: nurse.workingHours },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6 text-sm">
                     <span className="sm:w-40 text-gray-500 font-medium shrink-0">{label}</span>
