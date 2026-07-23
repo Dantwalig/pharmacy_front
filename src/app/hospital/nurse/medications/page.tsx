@@ -13,6 +13,14 @@ import {
     RotateCcw,
     Pill,
 } from 'lucide-react';
+// NOTE: the nurse-portal integration ticket originally asked to wire this page
+// to GET /hospitals/:hospitalId/drug-stock (inventory: brandName/quantity/
+// reorderLevel/expiryDate/lowStockAlert). That's a different concept from the
+// MAR (Medication Administration Record) shown here — which patient needs
+// which dose administered when — and this page was already live via
+// /inpatient/admissions + /mar before that ticket was written. Kept as-is;
+// drug-stock instead feeds the dashboard's medication-count stat card
+// (see src/app/hospital/nurse/dashboard/page.tsx).
 import { MOCK_MEDICATIONS, MOCK_MEDICATION_STATS } from '@/mock/hospital/medications';
 import { MedicationAdministration, MedicationStatus } from '@/types/hospital';
 import api from '@/lib/api';
