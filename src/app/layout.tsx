@@ -1,6 +1,6 @@
 // frontend/src/app/layout.tsx - Root Layout
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
@@ -11,9 +11,17 @@ import SentryInit from '@/components/SentryInit';
 
 const inter = Inter({ subsets: ['latin'] });
 
+export const viewport: Viewport = {
+  themeColor: '#1E4D8C',
+};
+
 export const metadata: Metadata = {
   title: 'E-Vuze Healthcare Hub',
   description: 'Rwanda\'s unified healthcare management system',
+  icons: {
+    icon: '/E-Vuze Logo.svg',
+    apple: '/E-Vuze Logo.svg',
+  },
 };
 
 export default function RootLayout({
