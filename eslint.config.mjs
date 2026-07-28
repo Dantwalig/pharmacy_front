@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // One-off utility scripts at repo root — not part of the app source
+    "create_pr.js",
+    "fix.js",
+    "replace_all.js",
   ]),
   {
     rules: {
