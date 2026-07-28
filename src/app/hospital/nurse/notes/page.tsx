@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Search,
     FileText,
@@ -26,9 +26,9 @@ export default function NursingNotesPage() {
     const { t } = useTranslation();
     const hospitalId = useHospitalId();
     const nurseUser = useHospitalNurseUser();
-    const { patients } = useHospitalAdmissions(hospitalId);
+    const { patients, loading: patientsLoading } = useHospitalAdmissions(hospitalId);
 
-    const today = useMemo(() => new Date(), []);
+    const [today] = useState(() => new Date());
     const todayIso = useMemo(() => today.toISOString().slice(0, 10), [today]);
 
     // No backend endpoint exists for nursing notes yet — starts empty, stays local-only.
@@ -37,7 +37,7 @@ export default function NursingNotesPage() {
     const [patientFilter, setPatientFilter] = useState('');
     const [dateFilter, setDateFilter] = useState(todayIso);
 
-    const [selectedPatient, setSelectedPatient] = useState('');
+    const [selectedPatientId, setSelectedPatientId] = useState('');
     const [dateTime, setDateTime] = useState(() => formatDateTimeInput(today));
     const [observationNotes, setObservationNotes] = useState('');
     const [careActivities, setCareActivities] = useState('');
@@ -62,7 +62,7 @@ export default function NursingNotesPage() {
     ];
 
     const resetForm = () => {
-        setSelectedPatient('');
+        setSelectedPatientId('');
         setDateTime(formatDateTimeInput(new Date()));
         setObservationNotes('');
         setCareActivities('');
@@ -70,15 +70,18 @@ export default function NursingNotesPage() {
     };
 
     const submitDocumentation = () => {
-        if (!selectedPatient || !observationNotes) return;
+        const patient = patients.find((p) => p.patientId === selectedPatientId);
+        if (!patient || !observationNotes) return;
         // No backend endpoint exists for nursing notes yet — saved to local state only.
         console.warn('Nursing note submission has no backend endpoint yet — saved to local state only.');
         const [datePart, ...timeParts] = dateTime.split(' ');
+        const [mm, dd, yyyy] = datePart.split('/');
+        const isoDate = yyyy && mm && dd ? `${yyyy}-${mm}-${dd}` : todayIso;
         const newNote: NursingNote = {
             id: `note-${Date.now()}`,
-            patientName: selectedPatient,
+            patientName: patient.name,
             nurseName: nurseUser.userName,
-            date: datePart,
+            date: isoDate,
             time: timeParts.join(' ') || dateTime,
             observationNotes,
             careActivities,
@@ -133,7 +136,8 @@ export default function NursingNotesPage() {
                             <select
                                 value={patientFilter}
                                 onChange={(e) => setPatientFilter(e.target.value)}
-                                className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E3A5F] appearance-none cursor-pointer"
+                                disabled={patientsLoading}
+                                className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E3A5F] appearance-none cursor-pointer disabled:opacity-60"
                             >
                                 <option value="">{t('hospital.allPatients')}</option>
                                 {patients.map((p) => (
@@ -184,13 +188,14 @@ export default function NursingNotesPage() {
                                 <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.patientName')}</label>
                                 <div className="relative">
                                     <select
-                                        value={selectedPatient}
-                                        onChange={(e) => setSelectedPatient(e.target.value)}
-                                        className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer"
+                                        value={selectedPatientId}
+                                        onChange={(e) => setSelectedPatientId(e.target.value)}
+                                        disabled={patientsLoading}
+                                        className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer disabled:opacity-60"
                                     >
-                                        <option value="">{t('hospital.selectPatient')}</option>
+                                        <option value="">{patientsLoading ? t('common.loading', 'Loading...') : t('hospital.selectPatient')}</option>
                                         {patients.map((p) => (
-                                            <option key={p.id} value={p.name}>{p.name}</option>
+                                            <option key={p.id} value={p.patientId}>{p.name}</option>
                                         ))}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-5 h-5 pointer-events-none" />
@@ -253,7 +258,7 @@ export default function NursingNotesPage() {
                             </button>
                             <button
                                 onClick={submitDocumentation}
-                                disabled={!selectedPatient || !observationNotes}
+                                disabled={!selectedPatientId || !observationNotes || patientsLoading}
                                 className="px-8 py-3 bg-[#38BDF8] text-white text-sm font-bold rounded-xl hover:bg-[#0EA5E9] transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Save className="w-4 h-4" />

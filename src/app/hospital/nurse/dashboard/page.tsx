@@ -28,7 +28,7 @@ export default function NurseDashboardPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
   const nurseUser = useHospitalNurseUser();
-  const { patients, loading: patientsLoading } = useHospitalAdmissions(hospitalId);
+  const { patients, loading: patientsLoading, error: patientsError } = useHospitalAdmissions(hospitalId);
 
   // GET /hospitals/:hospitalId/drug-stock — the ticket states this is "NURSE
   // role allowed", but src/docs/HOSPITAL_ADMIN_BACKEND_CONTRACT.md only
@@ -238,6 +238,8 @@ export default function NurseDashboardPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-4 divide-y divide-gray-100">
           {patientsLoading ? (
             <div className="py-8 text-center text-sm text-gray-400">{t('common.loading', 'Loading...')}</div>
+          ) : patientsError ? (
+            <div className="py-8 text-center text-sm text-red-500">{patientsError}</div>
           ) : overviewPatients.length === 0 ? (
             <div className="py-8 text-center text-sm text-gray-400">{t('hospital.noPatientsFound')}</div>
           ) : overviewPatients.map((patient) => (

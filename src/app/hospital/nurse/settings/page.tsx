@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Settings, CheckCircle, Pencil, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
@@ -53,6 +53,18 @@ export default function NurseSettingsPage() {
     phone:          nurse.phone,
     specialization: nurse.specialization,
   });
+
+  // Hydrate the form once auth loads — the initial useState value above is ''
+  // when user is null on first render; this effect syncs it when data arrives.
+  useEffect(() => {
+    if (!nurse.name || editingProfile) return;
+    setProfileForm({
+      fullName:       nurse.name,
+      email:          nurse.email,
+      phone:          nurse.phone,
+      specialization: nurse.specialization,
+    });
+  }, [nurse.name, nurse.email, editingProfile]);
   const [passwordForm, setPasswordForm] = useState({
     current: '',
     newPass: '',
