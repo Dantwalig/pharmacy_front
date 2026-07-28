@@ -62,12 +62,12 @@ describe('AdminStaffPage', () => {
   test('shows empty state when no staff returned', async () => {
     mockGet.mockResolvedValue({ data: [] });
     render(<AdminStaffPage />);
-    await waitFor(() => expect(document.body.textContent!.length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getByText('hospital.noStaffFound')).toBeInTheDocument());
   });
 
   test('shows error state when API fails', async () => {
     mockGet.mockRejectedValue(new Error('Network error'));
     render(<AdminStaffPage />);
-    await waitFor(() => expect(document.body).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/could not load staff/i)).toBeInTheDocument());
   });
 });

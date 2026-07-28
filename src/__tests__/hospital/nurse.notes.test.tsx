@@ -31,13 +31,12 @@ describe('NurseNotesPage', () => {
 
   test('renders hero banner', () => {
     render(<NurseNotesPage />);
-    expect(document.body.textContent!.length).toBeGreaterThan(0);
+    expect(screen.getByText('hospital.nursesNotesTitle')).toBeInTheDocument();
   });
 
   test('stat cards are visible', () => {
     render(<NurseNotesPage />);
-    const cards = document.querySelectorAll('[class*="stat"], [class*="card"], [class*="grid"]');
-    expect(document.body).toBeTruthy();
+    expect(screen.getByText('hospital.notesToday')).toBeInTheDocument();
   });
 
   test('note history list is rendered on left panel', () => {
@@ -52,14 +51,11 @@ describe('NurseNotesPage', () => {
 
   test('submitting the note form adds entry to history', () => {
     render(<NurseNotesPage />);
-    const patientSelect = document.querySelector('select') as HTMLSelectElement | null;
-    const observationTextarea = document.querySelectorAll('textarea')[0] as HTMLTextAreaElement | null;
-    if (patientSelect && observationTextarea) {
-      fireEvent.change(patientSelect, { target: { value: 'p1' } });
-      fireEvent.change(observationTextarea, { target: { value: 'Patient is stable' } });
-      const submitBtn = screen.queryByText('hospital.submitDocumentation');
-      if (submitBtn) fireEvent.click(submitBtn);
-    }
-    expect(document.body).toBeTruthy();
+    const formSelect = document.querySelectorAll('select')[1] as HTMLSelectElement;
+    const observationTextarea = document.querySelectorAll('textarea')[0] as HTMLTextAreaElement;
+    fireEvent.change(formSelect, { target: { value: 'Alice B' } });
+    fireEvent.change(observationTextarea, { target: { value: 'Patient is stable' } });
+    fireEvent.click(screen.getByText('hospital.submitDocumentation'));
+    expect(screen.getByText('Patient is stable')).toBeInTheDocument();
   });
 });

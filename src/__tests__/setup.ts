@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 const originalError = console.error.bind(console.error);
 beforeAll(() => {
   console.error = (msg: string, ...args: unknown[]) => {
-    if (typeof msg === 'string' && msg.includes('act(')) return;
+    if (typeof msg === 'string' && msg.startsWith('Warning: An update to') && msg.includes('not wrapped in act(')) return;
     originalError(msg, ...args);
   };
 });

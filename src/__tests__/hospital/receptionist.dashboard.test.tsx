@@ -20,12 +20,15 @@ jest.mock('@/context/AuthContext', () => ({
   }),
 }));
 
-jest.mock('@/lib/api', () => ({
-  __esModule: true,
-  default: { get: jest.fn().mockRejectedValue(new Error('Not found')) },
-  api: { get: jest.fn().mockRejectedValue(new Error('Not found')) },
-  unwrapData: jest.fn((d: any) => (Array.isArray(d) ? d : d?.data ?? [])),
-}));
+jest.mock('@/lib/api', () => {
+  const apiObj = { get: jest.fn().mockRejectedValue(new Error('Not found')) };
+  return {
+    __esModule: true,
+    default: apiObj,
+    api: apiObj,
+    unwrapData: jest.fn((d: any) => (Array.isArray(d) ? d : d?.data ?? [])),
+  };
+});
 
 jest.mock('recharts', () => ({
   LineChart: ({ children }: any) => <div>{children}</div>,

@@ -28,7 +28,7 @@ describe('NurseMessagesPage', () => {
 
   test('renders hero banner', () => {
     render(<NurseMessagesPage />);
-    expect(document.body.textContent!.length).toBeGreaterThan(0);
+    expect(screen.getByText('hospital.messages')).toBeInTheDocument();
   });
 
   test('renders conversation in thread list', () => {
@@ -45,16 +45,13 @@ describe('NurseMessagesPage', () => {
   test('search input filters conversation list', () => {
     render(<NurseMessagesPage />);
     const searchInput = document.querySelector('input[placeholder]') as HTMLInputElement;
-    if (searchInput) {
-      fireEvent.change(searchInput, { target: { value: 'xyz-not-found' } });
-    }
-    expect(document.body).toBeTruthy();
+    fireEvent.change(searchInput, { target: { value: 'xyz-not-found' } });
+    expect(screen.queryByText('Dr. Mugabo')).not.toBeInTheDocument();
   });
 
   test('send button and input field are visible when conversation is active', () => {
     render(<NurseMessagesPage />);
     fireEvent.click(screen.getByText('Dr. Mugabo'));
-    const sendBtn = document.querySelector('button[type="submit"], button svg');
-    expect(document.body).toBeTruthy();
+    expect(screen.getByPlaceholderText('hospital.typeMessage')).toBeInTheDocument();
   });
 });
