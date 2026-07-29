@@ -64,14 +64,14 @@ describe('DoctorAppointmentsPage', () => {
     render(<DoctorAppointmentsPage />);
     await waitFor(() => screen.getByText('Scheduled'));
     fireEvent.click(screen.getByText('Scheduled'));
-    expect(document.body).toBeTruthy();
+    expect(screen.queryByText('COMPLETED')).not.toBeInTheDocument();
   });
 
   test('shows error state and Retry button when API fails', async () => {
     mockGet.mockRejectedValue(new Error('Network error'));
     render(<DoctorAppointmentsPage />);
     await waitFor(() => {
-      expect(document.body.textContent!.length).toBeGreaterThan(0);
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });
 });

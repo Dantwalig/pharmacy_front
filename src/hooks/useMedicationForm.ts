@@ -122,7 +122,6 @@ export function useMedicationForm(role: MedicationFormRole): UseMedicationFormRe
         .catch(() => toast.error(t('errors.failedLoadBranchInfo')))
         .finally(() => setCtxLoad(false));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
 
   // ── Submit handler ─────────────────────────────────────────────────────

@@ -52,7 +52,6 @@ describe('HospitalRegisterPage', () => {
   });
 
   test('shows toast error when passwords do not match', async () => {
-    const { toast } = require('react-hot-toast');
     render(<HospitalRegisterPage />);
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     if (passwordInputs.length >= 2) {
