@@ -70,26 +70,47 @@ export default function HospitalDoctorConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchConsultations = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // TODO: switch to GET /consultations?doctorId=:id once confirmed available in Swagger.
-      // Checked DOCTOR_REMAINING_PAGES_API_GAPS.md — endpoint not listed; falling back to
-      // GET /appointments which is doctor-scoped via JWT.
-      const res = await api.get('/appointments');
-      const raw = unwrapData<AppointmentRaw>(res.data);
-      setConsultations(raw.map(mapToConsultation));
-    } catch (err) {
-      console.error('Failed to fetch consultations:', err);
-      setError(t('hospital.failedLoadConsultations'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchConsultations();
+    async function loadConsultations() {
+      try {
+        setLoading(true);
+        // GET /appointments is auto-scoped to the authenticated doctor via JWT.
+        // We adapt the response to the Consultation shape; gender/age/bp are
+        // not included in the appointments include — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
+        const res = await api.get('/appointments');
+        const raw = unwrapData<{
+          id: string; date: string; scheduledAt?: string; status: string; type?: string;
+          reason?: string; diagnosisSummary?: string;
+          patient: { firstName: string; lastName: string };
+        }>(res.data);
+
+        const mapped: Consultation[] = raw.map(a => {
+          const dateStr = a.scheduledAt || a.date;
+          const parsedDate = dateStr ? new Date(dateStr) : null;
+          const formattedDate = parsedDate && !isNaN(parsedDate.getTime())
+            ? parsedDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+            : '—';
+
+          return {
+            id:        a.id,
+            patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+            date:      formattedDate,
+            type:      a.type ?? 'CONSULTATION',
+            diagnosis: a.diagnosisSummary,
+            status:    a.status === 'COMPLETED' ? 'COMPLETED' : a.status === 'PENDING' || a.status === 'CONFIRMED' ? 'PENDING' : 'ACTIVE',
+          };
+        });
+
+        setConsultations(mapped);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch consultations:', err);
+        setError(t('hospital.failedLoadConsultations'));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadConsultations();
   }, []);
 
   const filtered = consultations.filter(c =>
@@ -114,12 +135,6 @@ export default function HospitalDoctorConsultationsPage() {
       {error && !loading && (
         <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
           <p className="text-sm text-red-700">{error}</p>
-          <button
-            onClick={fetchConsultations}
-            className="text-xs font-semibold text-red-600 hover:text-red-800"
-          >
-            {t('common.retry', 'Retry')}
-          </button>
         </div>
       )}
 
@@ -161,31 +176,35 @@ export default function HospitalDoctorConsultationsPage() {
                 {search ? t('hospital.noPatientsFound') : t('hospital.noConsultations')}
               </p>
             ) : (
-              filtered.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setSelected(c.id)}
-                  className={`w-full text-left px-5 py-4 transition-colors ${
-                    selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 truncate">{c.patientName}</p>
-                      {/* gender/age/bp not provided by GET /appointments */}
-                      {/* TODO: populate once GET /consultations?doctorId=:id is confirmed */}
-                      <p className="text-xs text-gray-500 mt-1">
-                        {c.gender ?? '—'} · {c.age != null ? `${c.age} yrs` : '—'} · BP {c.bp ?? '—'}
-                      </p>
+              filtered.map(c => {
+                const subtitle = [
+                  c.gender,
+                  c.age ? `${c.age} yrs` : null,
+                  c.bp ? `BP ${c.bp}` : null,
+                  c.date !== '—' ? c.date : null,
+                ].filter(Boolean).join(' · ') || c.date;
+
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelected(c.id)}
+                    className={`w-full text-left px-5 py-4 transition-colors ${selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">{c.patientName}</p>
+                        <p className="text-xs text-gray-500 mt-1 truncate">
+                          {subtitle}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[c.status]}`}>
+                        {t(STATUS_KEY[c.status] ?? c.status)}
+                      </span>
                     </div>
-                    <span
-                      className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[c.status]}`}
-                    >
-                      {t(STATUS_KEY[c.status] ?? c.status)}
-                    </span>
-                  </div>
-                </button>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
@@ -202,7 +221,12 @@ export default function HospitalDoctorConsultationsPage() {
                 {/* gender/age/bp not provided by GET /appointments */}
                 {/* TODO: populate once GET /consultations?doctorId=:id is confirmed */}
                 <p className="text-sm text-gray-500 mt-1">
-                  {selected.gender ?? '—'} · {selected.age != null ? `${selected.age} yrs` : '—'} · BP {selected.bp ?? '—'} · {selected.date}
+                  {[
+                    selected.gender,
+                    selected.age ? `${selected.age} years` : null,
+                    selected.bp ? `BP ${selected.bp}` : null,
+                    selected.date !== '—' ? selected.date : null,
+                  ].filter(Boolean).join(' · ') || selected.date}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">

@@ -70,12 +70,14 @@ export default function AppointmentDetailPage() {
     ? `${appointment.patient?.firstName ?? ''} ${appointment.patient?.lastName ?? ''}`.trim()
     : '—';
 
-  const formatted = appointment
-    ? new Date(appointment.date).toLocaleString([], {
+  const aptDate = appointment ? ((appointment as any).scheduledAt || appointment.date) : null;
+  const parsedAptDate = aptDate ? new Date(aptDate) : null;
+  const formatted = parsedAptDate && !isNaN(parsedAptDate.getTime())
+    ? parsedAptDate.toLocaleString([], {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit',
       })
-    : '';
+    : '—';
 
   const statusStyle = appointment ? (STATUS_COLOR[appointment.status] ?? { bg: '#F3F4F6', color: '#6B7280' }) : null;
 

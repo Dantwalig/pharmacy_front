@@ -22,6 +22,7 @@ import {
 interface BackendAppointment {
   id: string;
   date: string;
+  scheduledAt?: string;
   status: string;
   type?: string;
   reason?: string;
@@ -50,8 +51,14 @@ function patientName(a: BackendAppointment) {
   return `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—';
 }
 
+function getAptDate(a: BackendAppointment): string {
+  return a.scheduledAt || a.date;
+}
+
 function isToday(dateStr: string) {
+  if (!dateStr) return false;
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
   const now = new Date();
   return d.getFullYear() === now.getFullYear() &&
     d.getMonth() === now.getMonth() &&
@@ -73,7 +80,7 @@ export default function HospitalDoctorAppointmentsPage() {
     try {
       const res = await api.get('/appointments');
       const raw = unwrapData<BackendAppointment>(res.data);
-      setAppointments(raw.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setAppointments(raw.sort((a, b) => new Date(getAptDate(b)).getTime() - new Date(getAptDate(a)).getTime()));
     } catch (err: any) {
       setError(err?.response?.data?.message ?? err?.message ?? 'Failed to load appointments.');
     } finally {
@@ -83,7 +90,7 @@ export default function HospitalDoctorAppointmentsPage() {
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
-  const todayCount = appointments.filter(a => isToday(a.date)).length;
+  const todayCount = appointments.filter(a => isToday(getAptDate(a))).length;
   // CONFIRMED doesn't exist on the real enum. SCHEDULED is the closest ? see Gap A-1.
   const upcomingCount   = appointments.filter(a => a.status === 'SCHEDULED').length;
   const completedCount = appointments.filter(a => a.status === 'COMPLETED').length;
@@ -238,7 +245,7 @@ export default function HospitalDoctorAppointmentsPage() {
                   return (
                     <tr key={apt.id} className="hover:bg-gray-50/70 transition-colors">
                       <td className="px-6 py-4 font-semibold text-gray-900">{patientName(apt)}</td>
-                      <td className="px-6 py-4 text-gray-600">{formatTime(apt.date)}</td>
+                      <td className="px-6 py-4 text-gray-600">{formatTime(getAptDate(apt))}</td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
                           {apt.type || t('hospital.general', 'General')}
