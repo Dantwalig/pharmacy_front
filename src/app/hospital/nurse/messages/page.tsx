@@ -9,7 +9,6 @@ import {
     ChatBubbleOvalLeftEllipsisIcon,
     ClockIcon
 } from '@heroicons/react/24/outline';
-import { MOCK_CONVERSATIONS } from '@/mock/hospital/messages';
 import { Conversation, Message } from '@/types/hospital';
 
 const NAVY = '#1E3A5F';
@@ -24,7 +23,8 @@ const formatTime = (ts: string) => {
 
 export default function NurseMessagesPage() {
     const { t } = useTranslation();
-    const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
+    // No messages API exists yet — starts empty. See src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md
+    const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [inputText, setInputText] = useState('');
     const [search, setSearch] = useState('');

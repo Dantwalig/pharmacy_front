@@ -2,64 +2,184 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { nurseDashboardStats, nurseDashboardCardsData, nursePatients, nurseSchedule } from '@/mock/hospital/nurse';
-import { MOCK_NURSE } from '@/mock/hospital/user';
+import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentListIcon, CalendarDaysIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import api, { unwrapData } from '@/lib/api';
+import { useHospitalId, useHospitalNurseUser, useHospitalAdmissions } from '@/lib/hospital';
+import type { PatientStatus } from '@/types/hospital';
+
+const OVERVIEW_LIMIT = 4;
+
+const STATUS_LABEL: Record<PatientStatus, string> = {
+  ACTIVE: 'active',
+  CRITICAL: 'critical',
+  INACTIVE: 'inactive',
+};
+
+const STATUS_COLOR: Record<PatientStatus, string> = {
+  ACTIVE: 'text-green-600',
+  CRITICAL: 'text-red-600',
+  INACTIVE: 'text-gray-500',
+};
 
 export default function NurseDashboardPage() {
   const { t } = useTranslation();
+  const hospitalId = useHospitalId();
+  const nurseUser = useHospitalNurseUser();
+  const { patients, loading: patientsLoading, error: patientsError } = useHospitalAdmissions(hospitalId);
+
+  // GET /hospitals/:hospitalId/drug-stock — the ticket states this is "NURSE
+  // role allowed", but src/docs/HOSPITAL_ADMIN_BACKEND_CONTRACT.md only
+  // confirms it for HOSPITAL_ADMIN and hedges on other roles (a documented
+  // gap for DOCTOR already exists). Treat NURSE access as unverified and
+  // fail gracefully rather than trusting the ticket's claim.
+  const [medicationCount, setMedicationCount] = useState<number | null>(null);
+  const [medicationLoading, setMedicationLoading] = useState(true);
+  const [medicationGap, setMedicationGap] = useState(false);
+
+  useEffect(() => {
+    if (!hospitalId) {
+      setMedicationLoading(false);
+      setMedicationGap(true);
+      return;
+    }
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await api.get(`/hospitals/${hospitalId}/drug-stock`);
+        const items = unwrapData<unknown>(res.data);
+        if (!cancelled) {
+          setMedicationCount(items.length);
+          setMedicationGap(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          // TODO: backend gap — confirm GET /hospitals/:hospitalId/drug-stock
+          // actually allows Role.NURSE; falling back to an empty state on any
+          // failure (403 included) instead of crashing the dashboard.
+          console.warn('GET /hospitals/:id/drug-stock failed for NURSE role — treating as a backend gap.', err);
+          setMedicationGap(true);
+        }
+      } finally {
+        if (!cancelled) setMedicationLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [hospitalId]);
+
+  // Appointments: per the ticket, this endpoint currently only allows
+  // PATIENT, DOCTOR, HOSPITAL_ADMIN, SUPER_ADMIN — NURSE is expected to 403.
+  // Same defensive treatment as drug-stock above.
+  const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
+  const [appointmentLoading, setAppointmentLoading] = useState(true);
+  const [appointmentGap, setAppointmentGap] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await api.get('/appointments');
+        const items = unwrapData<unknown>(res.data);
+        if (!cancelled) {
+          setAppointmentCount(items.length);
+          setAppointmentGap(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          // TODO: coordinate with backend team — GET /appointments does not
+          // yet list Role.NURSE among its allowed roles. Flagging as a gap
+          // instead of working around auth.
+          console.warn('GET /appointments failed for NURSE role — backend gap, coordinate with backend team.', err);
+          setAppointmentGap(true);
+        }
+      } finally {
+        if (!cancelled) setAppointmentLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
 
   const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return t('hospital.goodMorning');
-  if (h < 17) return t('hospital.goodAfternoon');
-  return t('hospital.goodEvening');
+    const h = new Date().getHours();
+    if (h < 12) return t('hospital.goodMorning');
+    if (h < 17) return t('hospital.goodAfternoon');
+    return t('hospital.goodEvening');
   };
 
-// Stats Card Styling
-  const cardStylesConfig: Record<string, { icon: any; color: string; value: number }> = {
-    patients: {
+  const statCards = [
+    {
+      key: 'patients',
       icon: UserGroupIcon,
       color: '#2563EB',
-      value: nurseDashboardStats.totalPatients,
+      title: t('hospital.myPatients'),
+      subtitle: t('hospital.totalPatients'),
+      action: t('hospital.viewPatients'),
+      href: '/hospital/nurse/patients',
+      loading: patientsLoading,
+      gap: false,
+      value: patients.length,
     },
-    tasks: {
+    {
+      key: 'medications',
       icon: ClipboardDocumentListIcon,
       color: '#F97316',
-      value: nurseDashboardStats.pendingTasks,
+      title: t('hospital.medications', 'Medications'),
+      subtitle: medicationGap ? t('hospital.backendGapPending', 'Backend endpoint pending') : t('hospital.medicationsInStock', 'Drugs in stock'),
+      action: t('hospital.viewMedications', 'View medications'),
+      href: '/hospital/nurse/medications',
+      loading: medicationLoading,
+      gap: medicationGap,
+      value: medicationCount ?? 0,
     },
-    messages: {
-      icon: ChatBubbleLeftRightIcon,
+    {
+      key: 'appointments',
+      icon: CalendarDaysIcon,
       color: '#C026D3',
-      value: nurseDashboardStats.unreadMessages,
+      title: t('hospital.appointments', 'Appointments'),
+      subtitle: appointmentGap ? t('hospital.backendGapPending', 'Backend endpoint pending') : t('hospital.appointmentsToday', "Today's appointments"),
+      action: t('hospital.viewSchedule'),
+      href: '/hospital/nurse/schedule',
+      loading: appointmentLoading,
+      gap: appointmentGap,
+      value: appointmentCount ?? 0,
     },
-  };
+    {
+      key: 'messages',
+      icon: ChatBubbleLeftRightIcon,
+      color: '#0EA5E9',
+      title: t('hospital.messages'),
+      subtitle: t('hospital.backendGapPending', 'Backend endpoint pending'),
+      action: t('hospital.viewMessages'),
+      href: '/hospital/nurse/messages',
+      loading: false,
+      // No messages API exists at all yet (see nurse/messages/page.tsx) — always a gap, not a transient failure.
+      gap: true,
+      value: 0,
+    },
+  ];
 
-  // Merge the text with style config for easier rendering
-  const statCards = nurseDashboardCardsData.map((card) => ({
-    ...card,
-    ...cardStylesConfig[card.key],
-    title: t(card.titleKey),
-    subtitle: t(card.subtitleKey),
-    action: t(card.actionKey),
-  }));
+  const overviewPatients = patients.slice(0, OVERVIEW_LIMIT);
 
   return (
     <div className="space-y-6">
       {/* Hero*/}
       <div className="rounded-2xl relative overflow-hidden w-full" style={{ background: '#EBF5FF', padding: '28px 48px' }}>
         {/*Heartbeat SVG*/}
-        <svg 
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]" 
+        <svg
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden sm:block sm:w-48 md:w-64 lg:w-96 xl:w-[500px]"
           viewBox="0 0 320 140"  fill="none" preserveAspectRatio="xMidYMid meet" >
           <polyline points="0,70 55,70 80,15 108,125 135,30 162,105 188,70 320,70" stroke="#1E4D8C" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
 
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: '#1a3470' }}>
-            {getGreeting()}, {MOCK_NURSE.firstName}.
+            {getGreeting()}, {nurseUser.userName}.
           </h1>
           <p className="text-lg" style={{ color: '#0284C7' }}>{t('hospital.welcomeNurse')}</p>
           <Link
@@ -75,13 +195,13 @@ export default function NurseDashboardPage() {
           </Link>
         </div>
       </div>
-    
+
      {/* Stat Cards */}
-    <div className="grid gap-5 md:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
       {statCards.map((card) => {const Icon = card.icon;
 
         return (
-          <div key={card.title} className="rounded-2xl bg-white px-6 py-5 min-h-[180px] flex flex-col"
+          <div key={card.key} className="rounded-2xl bg-white px-6 py-5 min-h-[180px] flex flex-col"
             style={{ border: `1px solid ${card.color}40`, }} >
 
             <div className="flex items-center gap-3 mb-8">
@@ -89,7 +209,7 @@ export default function NurseDashboardPage() {
               <h3 className="text-sm font-semibold text-gray-800"> {card.title}</h3>
             </div>
 
-            <h2 className="text-5xl font-light" style={{ color: card.color }} > {card.value} </h2>
+            <h2 className="text-5xl font-light" style={{ color: card.color }} > {card.loading ? '—' : card.gap ? '—' : card.value} </h2>
             <p className="mt-3 text-xs text-gray-500"> {card.subtitle} </p>
 
             <div className="flex-1" />
@@ -106,22 +226,28 @@ export default function NurseDashboardPage() {
     </div>
       {/* Patient Overview*/}
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6">
-       
+
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <UserGroupIcon className="h-6 w-6 text-[#2563EB]" />
             <h2 className="text-lg font-bold text-gray-800">{t('hospital.patientOverview')}</h2>
           </div>
-          <button className="text-sm font-bold text-[#2563EB] hover:underline">{t('common.viewAll')}</button>
+          <Link href="/hospital/nurse/patients" className="text-sm font-bold text-[#2563EB] hover:underline">{t('common.viewAll')}</Link>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-4 divide-y divide-gray-100">
-          {nursePatients.map((patient) => (
-            <div 
-              key={patient.id} 
+          {patientsLoading ? (
+            <div className="py-8 text-center text-sm text-gray-400">{t('common.loading', 'Loading...')}</div>
+          ) : patientsError ? (
+            <div className="py-8 text-center text-sm text-red-500">{patientsError}</div>
+          ) : overviewPatients.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-400">{t('hospital.noPatientsFound')}</div>
+          ) : overviewPatients.map((patient) => (
+            <div
+              key={patient.id}
               className="grid grid-cols-12 gap-4 py-4 items-center px-2 hover:bg-slate-50 rounded-lg transition-colors group cursor-pointer" >
               <div className="col-span-2 sm:col-span-1 flex items-center gap-2 border-r border-gray-200 pr-2">
-                <span className="text-sm font-bold text-gray-400">{patient.id}</span>
+                <span className="text-sm font-bold text-gray-400">{patient.patientId}</span>
               </div>
 
               <div className="col-span-5 sm:col-span-3 pl-1">
@@ -132,26 +258,19 @@ export default function NurseDashboardPage() {
               </div>
 
               <div className="col-span-5 sm:col-span-2 text-center sm:text-left">
-                <span className={`text-sm font-bold ${ patient.status === 'Stable' ? 'text-green-600' : 'text-red-600' }`}>
-                  {patient.status === 'Stable' ? t('hospital.stable') : patient.status === 'High Risk' ? t('hospital.highRisk') : patient.status === 'Improving' ? t('hospital.improving') : patient.status}
+                <span className={`text-sm font-bold ${STATUS_COLOR[patient.status]}`}>
+                  {t(`hospital.${STATUS_LABEL[patient.status]}`, STATUS_LABEL[patient.status])}
                 </span>
               </div>
 
-              <div className="col-span-12 sm:col-span-5 grid grid-cols-3 gap-2 text-center sm:text-left pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                {/* BP */}
+              <div className="col-span-12 sm:col-span-5 grid grid-cols-2 gap-2 text-center sm:text-left pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.bloodPressure')}</div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.bp}</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.condition')}</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5 uppercase">{patient.condition}</div>
                 </div>
-                {/* HR */}
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.heartRate')}</div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.hr}</div>
-                </div>
-                {/* Temp */}
-                <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.temperature')}</div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.temperature}</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{t('hospital.lastVisit')}</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5">{patient.lastVisit}</div>
                 </div>
               </div>
 
@@ -163,9 +282,9 @@ export default function NurseDashboardPage() {
         </div>
 
         <div className="text-center mt-6">
-          <button className="text-sm font-bold text-[#2563EB] hover:underline">
+          <Link href="/hospital/nurse/patients" className="text-sm font-bold text-[#2563EB] hover:underline">
             {t('hospital.viewAllPatients')}
-          </button>
+          </Link>
         </div>
 
       </div>
@@ -178,31 +297,12 @@ export default function NurseDashboardPage() {
             <h2 className="font-semibold text-gray-800"> {t('hospital.todaySchedule')} </h2>
           </div>
 
-          <button className="text-sm text-[#2563EB]">{t('hospital.viewFullSchedule')}</button>
+          <Link href="/hospital/nurse/schedule" className="text-sm text-[#2563EB]">{t('hospital.viewFullSchedule')}</Link>
         </div>
 
-        <div>
-          {nurseSchedule.map((item) => (
-            <div key={item.id}
-              className="flex items-center justify-between border-b border-gray-100 px-5 py-4 last:border-b-0">
-
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500 w-16 shrink-0">{item.time}</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">{item.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{item.location}</p>
-                </div>
-              </div>
-
-              <span
-                className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold ${
-                item.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600' }`}>
-                {item.status === 'Completed' ? t('hospital.completed') : item.status}
-                {item.status === 'Completed' && <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />}
-              </span>
-            </div>
-          ))}
+        {/* TODO: no dashboard-scoped schedule endpoint exists yet (see src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md, Gap N-3) */}
+        <div className="px-5 py-8 text-center text-sm text-gray-400">
+          {t('hospital.scheduleNotAvailable', "Today's schedule isn't available yet.")}
         </div>
       </div>
     </div>

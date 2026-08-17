@@ -81,7 +81,10 @@ export default function HospitalGuard({ children, allowedRole }: HospitalGuardPr
             }
         } else {
             // Other roles: DOCTOR, RECEPTIONIST
-            if (user.role !== allowedRole) {
+            // hospitalId must be present — pre-PR JWTs without it must not be
+            // granted access (useHospitalId() would return undefined, making
+            // every hospital API call fail silently in production).
+            if (user.role !== allowedRole || !user.hospitalId) {
                 router.push(getHomeRoute(user));
                 return;
             }
@@ -109,7 +112,7 @@ export default function HospitalGuard({ children, allowedRole }: HospitalGuardPr
             return user.role === 'NURSE' && isHospitalNurse(user);
         }
 
-        return user.role === allowedRole;
+        return user.role === allowedRole && !!user.hospitalId;
     })();
 
     if (isAuthorized) {

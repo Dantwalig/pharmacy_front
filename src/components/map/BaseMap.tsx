@@ -166,7 +166,6 @@ export default function BaseMap({
         mapRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Re-render markers + triangulation lines when data or ready state changes

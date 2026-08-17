@@ -46,12 +46,12 @@ export const clearUserCache = (): void => {
 
 export const getUserFromToken = (): User | null => {
   const token = getAccessToken();
-  if (!token) {
-    if (typeof window !== 'undefined') {
-      clearUserCache();
-    }
-    return null;
-  }
+  // Do not clear the cache here — the access token can be transiently absent
+  // during the async refreshTokens() window (initAuth / silent refresh). Wiping
+  // the cache at that moment loses hospitalName, which is only in the cache
+  // (not in the JWT). Cache clearing is the responsibility of logout() and the
+  // explicit removeAuthTokens() + clearUserCache() error paths.
+  if (!token) return null;
 
   const cachedUser = getCachedUser();
   if (cachedUser) return cachedUser;
