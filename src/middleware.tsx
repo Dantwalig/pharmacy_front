@@ -91,6 +91,11 @@ export function middleware(request: NextRequest) {
     if (!staffRoles.includes(payload.role || '')) {
       return NextResponse.redirect(new URL('/', request.url));
     }
+    // A hospital nurse shares role 'NURSE' but has a hospitalId — block them
+    // from /staff/* the same way the /hospital/* block does it (see below).
+    if (payload.role === 'NURSE' && payload.hospitalId) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
     return NextResponse.next();
   }
 
