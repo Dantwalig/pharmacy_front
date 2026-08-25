@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -30,7 +30,7 @@ export default function BranchInventoryPage() {
 
   const fetchMedications = useCallback(async (signal: AbortSignal) => {
     const res = await api.get('/medications/pharmacy/my-medications', { signal });
-    return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+    return unwrapData<Medication>(res.data);
   }, []);
 
   const { data, loading, error } = useFetch<Medication[]>(fetchMedications, []);

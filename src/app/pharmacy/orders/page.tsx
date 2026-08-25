@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon, FunnelIcon, EyeIcon } from '@heroicons/react/24/outline';
 import StatusBadge from '@/components/shared/StatusBadge';
-import { api } from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 type TabKey = 'All Orders' | 'PENDING' | 'ACCEPTED' | 'READY_FOR_CHECKOUT' | 'COMPLETED' | 'REJECTED';
@@ -37,8 +37,8 @@ export default function PharmacyOrdersPage() {
     ]);
 
     return {
-      orders: ordRes.data?.data ?? ordRes.data ?? [],
-      branches: brRes.data?.data ?? brRes.data ?? [],
+      orders: unwrapData(ordRes.data),
+      branches: unwrapData(brRes.data),
     };
   },
   []

@@ -12,12 +12,12 @@ import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import LocationPicker from '@/components/shared/LocationPicker';
 import {
   EnvelopeIcon, LockClosedIcon, UserIcon, PhoneIcon,
-  BuildingStorefrontIcon, EyeIcon, EyeSlashIcon,
+  BuildingStorefrontIcon, BuildingOffice2Icon, EyeIcon, EyeSlashIcon,
   MapPinIcon, ClockIcon, UserGroupIcon, ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { isPatientEnabled, checkAndSetDevMode } from '@/lib/features';
 
-type Role = 'PATIENT' | 'PHARMACY';
+type Role = 'PATIENT' | 'PHARMACY' | 'HOSPITAL';
 
 export default function SignupPage() {
   const { t } = useTranslation();
@@ -48,6 +48,18 @@ export default function SignupPage() {
     address: '', dateOfIncorporation: '',
     rdbCertificate: '',
     pharmacyLicense: '',
+    businessRegistration: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
+  });
+
+  // ── Hospital form state ──────────────────────────────────────────────────
+  const [hospitalForm, setHospitalForm] = useState({
+    email: '', password: '', confirmPassword: '',
+    hospitalName: '', representativeName: '', phone: '',
+    address: '', dateOfIncorporation: '',
+    rdbCertificate: '',
+    hospitalLicense: '',
     businessRegistration: '',
     latitude: undefined as number | undefined,
     longitude: undefined as number | undefined,
@@ -106,6 +118,26 @@ export default function SignupPage() {
     } finally { setLoading(false); }
   };
 
+  // ── Hospital submit ──────────────────────────────────────────────────────
+  const handleHospitalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (hospitalForm.password !== hospitalForm.confirmPassword) {
+      toast.error(t('signup.passwordsDoNotMatch')); return;
+    }
+    if (hospitalForm.latitude === undefined || hospitalForm.longitude === undefined) {
+      toast.error('Please pin your hospital location on the map before submitting.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/register/hospital', hospitalForm);
+      toast.success(res.data.message || 'Hospital application submitted for review.');
+      router.push(`/verify-email?email=${encodeURIComponent(hospitalForm.email)}`);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally { setLoading(false); }
+  };
+
   const inputCls = "w-full pl-11 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all text-gray-900 text-sm";
   const labelCls = "block text-xs font-semibold text-gray-700 mb-1";
 
@@ -125,7 +157,7 @@ export default function SignupPage() {
       <div className="hidden lg:flex lg:w-5/12 bg-linear-to-br from-brand-navy via-[#2563a8] to-brand-navy-dark p-10 flex-col justify-between text-white">
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Evuze</h1>
+            <h1 className="text-3xl font-bold mb-1">E-Vuze</h1>
             <p className="text-blue-200 text-sm">{t('auth.healthcarePlatform')}</p>
           </div>
           <div className="mb-8">
@@ -156,23 +188,29 @@ export default function SignupPage() {
           <h2 className="text-2xl font-bold text-gray-900">{t('signup.createAccount')}</h2>
           <p className="text-gray-500 text-sm mt-1">{t('signup.createAccountSubtitle')}</p>
 
-          {/* Role Switcher */}
-          {patientEnabled && (
-            <div className="flex mt-4 bg-gray-200 rounded-lg p-1 w-fit">
+          {/* Role Switcher — Pharmacy/Hospital always shown; Patient only when the feature flag is on */}
+          <div className="flex mt-4 bg-gray-200 rounded-lg p-1 w-fit">
+            {patientEnabled && (
               <button
                 onClick={() => setRole('PATIENT')}
                 className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PATIENT' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
               >
                 <UserIcon className="w-4 h-4" /> {t('signup.patientTab')}
               </button>
-              <button
-                onClick={() => setRole('PHARMACY')}
-                className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PHARMACY' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <BuildingStorefrontIcon className="w-4 h-4" /> {t('signup.pharmacyOwnerTab')}
-              </button>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => setRole('PHARMACY')}
+              className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'PHARMACY' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <BuildingStorefrontIcon className="w-4 h-4" /> {t('signup.pharmacyOwnerTab')}
+            </button>
+            <button
+              onClick={() => setRole('HOSPITAL')}
+              className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold transition-all ${role === 'HOSPITAL' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <BuildingOffice2Icon className="w-4 h-4" /> Hospital
+            </button>
+          </div>
         </div>
 
         {/* Scrollable form */}
@@ -308,7 +346,7 @@ export default function SignupPage() {
               </p>
             </form>
 
-          ) : (
+          ) : role === 'PHARMACY' ? (
           /* ═══════════════════════════════════════════════════════════════
               PHARMACY FORM
           ═══════════════════════════════════════════════════════════════ */
@@ -458,6 +496,159 @@ export default function SignupPage() {
                 {loading
                   ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> {t('auth.submitting')}</span>
                   : t('auth.submitApplication')}
+              </button>
+
+              <p className="text-center text-sm text-gray-600">
+                {t('auth.alreadyRegistered')}{' '}
+                <Link href="/login" className="text-teal-600 font-semibold hover:underline">{t('auth.signIn')}</Link>
+              </p>
+            </form>
+
+          ) : (
+          /* ═══════════════════════════════════════════════════════════════
+              HOSPITAL FORM
+          ═══════════════════════════════════════════════════════════════ */
+            <form onSubmit={handleHospitalSubmit} className="space-y-4 max-w-lg">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+                ℹ Your application will be reviewed by our team within 24–48 hours.
+              </div>
+
+              <div>
+                <label className={labelCls}>Hospital Name</label>
+                <div className="relative">
+                  <BuildingOffice2Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="text" required value={hospitalForm.hospitalName}
+                    onChange={e => setHospitalForm({...hospitalForm, hospitalName: e.target.value})}
+                    className={inputCls} placeholder="e.g. King Faisal Hospital" />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>Representative Name</label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="text" required value={hospitalForm.representativeName}
+                    onChange={e => setHospitalForm({...hospitalForm, representativeName: e.target.value})}
+                    className={inputCls} placeholder="Full name of the hospital admin" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Email</label>
+                  <div className="relative">
+                    <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="email" required value={hospitalForm.email}
+                      onChange={e => setHospitalForm({...hospitalForm, email: e.target.value})}
+                      className={inputCls} placeholder="admin@hospital.com" />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Phone Number</label>
+                  <div className="relative">
+                    <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="tel" required value={hospitalForm.phone}
+                      onChange={e => setHospitalForm({...hospitalForm, phone: e.target.value})}
+                      className={inputCls} placeholder="+250 7XX XXX XXX" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Date of Incorporation</label>
+                  <input type="date" value={hospitalForm.dateOfIncorporation}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={e => setHospitalForm({...hospitalForm, dateOfIncorporation: e.target.value})}
+                    className={inputCls.replace('pl-11','pl-3')} />
+                </div>
+                <div>
+                  <label className={labelCls}>Address</label>
+                  <div className="relative">
+                    <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" required value={hospitalForm.address}
+                      onChange={e => setHospitalForm({...hospitalForm, address: e.target.value})}
+                      className={inputCls} placeholder="Hospital street address" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Map picker — REQUIRED for hospitals */}
+              <LocationPicker
+                latitude={hospitalForm.latitude}
+                longitude={hospitalForm.longitude}
+                onChange={(lat, lng) => setHospitalForm(f => ({ ...f, latitude: lat, longitude: lng }))}
+                required={true}
+                label="Pin Hospital Location on Map"
+                height="300px"
+              />
+
+              {/* Documents */}
+              <div className="space-y-4">
+                <div>
+                  <label className={labelCls}>RDB Certificate Number <span className="text-gray-400">(optional)</span></label>
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" value={hospitalForm.rdbCertificate}
+                      onChange={e => setHospitalForm({...hospitalForm, rdbCertificate: e.target.value})}
+                      className={inputCls} placeholder="RDB-XXXXXXXX" />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Hospital License Number <span className="text-gray-400">(optional)</span></label>
+                  <div className="relative">
+                    <ShieldCheckIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" value={hospitalForm.hospitalLicense}
+                      onChange={e => setHospitalForm({...hospitalForm, hospitalLicense: e.target.value})}
+                      className={inputCls} placeholder="License number" />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Business Registration Number <span className="text-gray-400">(optional)</span></label>
+                  <div className="relative">
+                    <BuildingOffice2Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" value={hospitalForm.businessRegistration}
+                      onChange={e => setHospitalForm({...hospitalForm, businessRegistration: e.target.value})}
+                      className={inputCls} placeholder="Business registration number" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>Password</label>
+                <div className="relative">
+                  <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type={showPassword ? 'text' : 'password'} required minLength={8}
+                    value={hospitalForm.password}
+                    onChange={e => setHospitalForm({...hospitalForm, password: e.target.value})}
+                    className={`${inputCls} pr-10`} placeholder={t('signup.minChars')} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    {showPassword ? <EyeSlashIcon className="w-4 h-4"/> : <EyeIcon className="w-4 h-4"/>}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>{t('signup.confirmPassword')}</label>
+                <div className="relative">
+                  <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type={showConfirm ? 'text' : 'password'} required
+                    value={hospitalForm.confirmPassword}
+                    onChange={e => setHospitalForm({...hospitalForm, confirmPassword: e.target.value})}
+                    className={`${inputCls} pr-10`} placeholder={t('signup.repeatPassword')} />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    {showConfirm ? <EyeSlashIcon className="w-4 h-4"/> : <EyeIcon className="w-4 h-4"/>}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold text-sm transition-all shadow-md disabled:opacity-50">
+                {loading
+                  ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> Submitting…</span>
+                  : 'Submit Application'}
               </button>
 
               <p className="text-center text-sm text-gray-600">

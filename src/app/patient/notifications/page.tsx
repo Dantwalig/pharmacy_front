@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { POLLING_INTERVAL_MS } from '@/lib/constants';
@@ -60,7 +60,7 @@ export default function PatientNotificationsPage() {
     else         setRefreshing(true);
     try {
       const res = await api.get('/notifications?userType=patient');
-      setNotifications(Array.isArray(res.data) ? res.data : res.data?.data ?? []);
+      setNotifications(unwrapData(res.data));
       setLastUpdated(new Date());
     } catch {
       // Notifications stay stale on polling failure

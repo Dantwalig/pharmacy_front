@@ -7,12 +7,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "dev:doppler": "winpty doppler run -- npm run dev",
+    "build:doppler": "winpty doppler run -- npm run build",
     "lint": "eslint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@sentry/nextjs": "^10.62.0",
     "@types/leaflet": "^1.9.21",
     "axios": "^1.13.2",
+    "date-fns": "^4.4.0",
     "heroicons": "^2.2.0",
     "i18n": "^0.15.3",
     "i18next": "^25.7.3",
@@ -33,15 +37,26 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-react": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/js-cookie": "^3.0.6",
     "@types/leaflet.heat": "^0.2.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-jest": "^30.4.1",
     "babel-plugin-react-compiler": "1.0.0",
+    "docx": "^9.7.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

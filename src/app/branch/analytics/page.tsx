@@ -4,7 +4,7 @@ import { formatCurrency } from '@/lib/currency';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import api from '@/lib/api';
+import api, { unwrapData } from '@/lib/api';
 import { useFetch } from '@/hooks/useFetch';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import {
@@ -110,7 +110,7 @@ export default function BranchAnalyticsPage() {
         api.get('/attendance/summary',     { signal }),
       ]);
       return {
-        orders: Array.isArray(ordersRes.data) ? ordersRes.data : ordersRes.data?.data ?? [],
+        orders: unwrapData(ordersRes.data),
         attendanceSummary: attRes.data,
       };
     },

@@ -70,7 +70,10 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
       {/* Footer */}
       <div className="px-4 pb-5 shrink-0">
         <button
-          onClick={logout}
+          onClick={() => {
+            localStorage.clear();
+            logout();
+          }}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium"
         >
           <ArrowRightOnRectangleIcon className="w-[18px] h-[18px]" />

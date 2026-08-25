@@ -5,7 +5,7 @@
 
 import { useTranslation } from 'react-i18next';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api, { authApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -16,7 +16,8 @@ import {
   cacheUserData, 
   clearUserCache,
   getAccessToken,
-  getRefreshToken 
+  getRefreshToken,
+  isHospitalNurse
 } from '@/lib/auth';
 import { User, DecodedToken } from '@/types';
 import { jwtDecode } from 'jwt-decode';
@@ -39,6 +40,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  // Persists across user-state re-renders so the 30 s throttle isn't reset
+  // every time updateUser/refreshUser triggers a new [user] effect run.
+  const lastCheckTimeRef = useRef(0);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -84,13 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!user) return;
 
-    let lastCheckTime = 0;
     const checkInterval = 30000; // Throttle checks to once every 30 seconds
 
     const checkAndRefreshSession = async () => {
       const now = Date.now();
-      if (now - lastCheckTime < checkInterval) return;
-      lastCheckTime = now;
+      if (now - lastCheckTimeRef.current < checkInterval) return;
+      lastCheckTimeRef.current = now;
 
       try {
         const token = getAccessToken();
@@ -120,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
     window.addEventListener('scroll', handleActivity);
-    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('touchstart', handleActivity, { passive: true });
     window.addEventListener('click', handleActivity);
 
     // Run once on load/state change
@@ -186,7 +189,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         case 'PHARMACIST':
         case 'CASHIER':
-        case 'NURSE':
           toast.success(t('auth2.welcomeBack'));
           // If first login (temp password), redirect to change password
           if (response.data.requiresPasswordChange) {
@@ -194,6 +196,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             router.push('/staff/dashboard');
           }
+          break;
+
+        case 'NURSE':
+          // The backend reuses the 'NURSE' role string for both a pharmacy
+          // branch-staff nurse and a hospital nurse. `hospitalId` is only
+          // present on the hospital login response — use it as the
+          // discriminator instead of the role string alone.
+          if (isHospitalNurse(userData)) {
+            toast.success(t('auth2.welcomeBack'));
+            router.push(
+              response.data.requiresPasswordChange
+                ? '/hospital/nurse/settings'
+                : '/hospital/nurse/dashboard'
+            );
+          } else {
+            toast.success(t('auth2.welcomeBack'));
+            if (response.data.requiresPasswordChange) {
+              router.push('/staff/change-password');
+            } else {
+              router.push('/staff/dashboard');
+            }
+          }
+          break;
+
+        case 'DOCTOR':
+          toast.success(t('auth2.welcomeBack'));
+          router.push(
+            response.data.requiresPasswordChange
+              ? '/hospital/doctor/settings'
+              : '/hospital/doctor/dashboard'
+          );
+          break;
+
+        case 'HOSPITAL_ADMIN':
+          if (userData.hospitalStatus === 'PENDING') {
+            toast.success('Your hospital account is under review. Please wait for approval.');
+            router.push('/pending-approval');
+          } else if (userData.hospitalStatus === 'REJECTED') {
+            toast.error('Your hospital account was rejected. Please update your documents and resubmit.');
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          } else if (userData.hospitalStatus === 'APPROVED') {
+            toast.success(t('auth2.welcomeAdmin'));
+            router.push(
+              response.data.requiresPasswordChange
+                ? '/hospital/admin/settings'
+                : '/hospital/admin/dashboard'
+            );
+          } else {
+            toast.error(t('auth2.invalidRole'));
+            removeAuthTokens();
+            clearUserCache();
+            setUser(null);
+            router.push('/login');
+          }
+          break;
+
+        case 'RECEPTIONIST':
+          toast.success('Welcome back!');
+          router.push(
+            response.data.requiresPasswordChange
+              ? '/hospital/receptionist/settings'
+              : '/hospital/receptionist/dashboard'
+          );
           break;
 
         default:
@@ -256,11 +324,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'BRANCH_MANAGER':
         case 'PHARMACIST':
         case 'CASHIER':
+          endpoint = '/staff/profile/me';
+          break;
         case 'NURSE':
+          // Hospital nurses must not hit the pharmacy-staff endpoint — their JWT
+          // is rejected there, which triggers the catch block and involuntarily
+          // logs them out. No hospital-nurse profile endpoint exists yet.
+          if (isHospitalNurse(currentUser)) return;
           endpoint = '/staff/profile/me';
           break;
         default:
-          // SUPER_ADMIN — no profile endpoint, just use cached token data
+          // SUPER_ADMIN, DOCTOR, HOSPITAL_ADMIN, RECEPTIONIST — no profile
+          // endpoint yet; preserve the cached user rather than hitting a wrong
+          // endpoint and triggering an accidental logout.
           return;
       }
 

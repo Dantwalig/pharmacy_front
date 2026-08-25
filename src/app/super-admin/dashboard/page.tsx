@@ -1,9 +1,3 @@
-// frontend/src/app/super-admin/dashboard/page.tsx — FIXED
-// Fix #3: Added pending branch verification section connected to backend
-// Backend endpoints: GET /super-admin/branches/pending
-//                   PATCH /super-admin/branches/:id/approve
-//                   PATCH /super-admin/branches/:id/reject
-
 'use client';
 
 import { formatCurrency } from '@/lib/currency';
@@ -69,32 +63,64 @@ export default function SuperAdminDashboard() {
   const [unverifiedLocations, setUnverifiedLocations] = useState<any[]>([]);
   const [locationModal, setLocationModal] = useState<any | null>(null);
   const [locationActionLoading, setLocationActionLoading] = useState(false);
+  const [verificationUnavailable, setVerificationUnavailable] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
-    try {
-      const [analyticsRes, pendingRes, branchesRes, unverifiedRes] = await Promise.all([
-        api.get('/super-admin/analytics'),
-        api.get('/super-admin/pharmacies/pending'),
-        api.get('/super-admin/branches/pending'),
-        api.get('/super-admin/pharmacies/unverified-locations'),
+    setVerificationUnavailable(false);
+
+    const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(Object.assign(new Error('timeout'), { isTimeout: true })), ms)
+        ),
       ]);
-      setAnalytics(analyticsRes.data);
-      setPendingPharmacies(pendingRes.data);
-      setPendingBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
-      const unverifiedData = Array.isArray(unverifiedRes.data) ? unverifiedRes.data : [];
-      setUnverifiedLocations(
-        unverifiedData.filter(
-          (p: any) => p.latitude !== null && p.latitude !== undefined && p.longitude !== null && p.longitude !== undefined
-        )
-      );
-    } catch (error: unknown) {
+
+    const isVerificationMissing = (r: PromiseSettledResult<any>) => {
+      if (r.status === 'rejected') {
+        const status = (r.reason as any)?.response?.status;
+        return (r.reason as any)?.isTimeout || !status || status === 404 || status === 501;
+      }
+      return false;
+    };
+
+    const [analyticsRes, pendingRes] = await Promise.allSettled([
+      api.get('/super-admin/analytics'),
+      api.get('/super-admin/pharmacies/pending'),
+    ]);
+
+    if (analyticsRes.status === 'fulfilled') {
+      setAnalytics(analyticsRes.value.data);
+    } else {
       toast.error(t('errors.failedToLoadDashboard'));
-    } finally {
-      setLoading(false);
     }
+    if (pendingRes.status === 'fulfilled') {
+      const d = pendingRes.value.data;
+      setPendingPharmacies(Array.isArray(d) ? d : []);
+    }
+
+    const [branchesRes, unverifiedRes] = await Promise.allSettled([
+      withTimeout(api.get('/super-admin/branches/pending'), 8_000),
+      withTimeout(api.get('/super-admin/pharmacies/unverified-locations'), 8_000),
+    ]);
+
+    if (isVerificationMissing(branchesRes) || isVerificationMissing(unverifiedRes)) {
+      setVerificationUnavailable(true);
+    } else {
+      if (branchesRes.status === 'fulfilled') {
+        const d = branchesRes.value.data;
+        setPendingBranches(Array.isArray(d) ? d : []);
+      }
+      if (unverifiedRes.status === 'fulfilled') {
+        const d = unverifiedRes.value.data;
+        setUnverifiedLocations(Array.isArray(d) ? d : []);
+      }
+    }
+
+    setLoading(false);
   };
 
   const handleApproveBranch = async (branchId: string) => {
@@ -241,7 +267,15 @@ export default function SuperAdminDashboard() {
           )}
         </div>
 
-        {pendingBranches.length === 0 ? (
+        {verificationUnavailable ? (
+          <div className="flex items-start gap-3 mx-6 my-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Branch and pharmacy verification endpoints are pending backend implementation.</p>
+              <p className="text-xs text-amber-600 mt-0.5">Actions are disabled until these endpoints are available.</p>
+            </div>
+          </div>
+        ) : pendingBranches.length === 0 ? (
           <div className="py-12 text-center">
             <CheckCircleIcon className="w-10 h-10 text-green-400 mx-auto mb-3" />
             <p className="text-gray-500 font-medium text-sm">All branches verified</p>
@@ -296,17 +330,22 @@ export default function SuperAdminDashboard() {
                           window.open(url, '_blank');
                         }
                       }}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all hover:bg-gray-50 text-brand-navy"
+                      disabled={verificationUnavailable}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all hover:bg-gray-50 text-brand-navy disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ borderColor: '#BDD9FF' }}
+                      title={verificationUnavailable ? 'Unavailable — endpoint pending' : undefined}
                     >
                       View License
                     </button>
                   )}
                   <button
                     onClick={() => handleApproveBranch(branch.id)}
-                    disabled={branchAction === branch.id || branch.branchStatus !== 'PENDING'}
-                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 bg-brand-teal"
-                    title={branch.branchStatus !== 'PENDING' ? 'Cannot approve: license not uploaded yet' : 'Approve branch'}
+                    disabled={verificationUnavailable || branchAction === branch.id || !branch.pharmacyLicense}
+                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-brand-teal"
+                    title={
+                      verificationUnavailable ? 'Unavailable — endpoint pending' :
+                      !branch.pharmacyLicense ? 'Cannot approve: license not uploaded' : 'Approve branch'
+                    }
                   >
                     {branchAction === branch.id ? (
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -314,8 +353,9 @@ export default function SuperAdminDashboard() {
                   </button>
                   <button
                     onClick={() => setRejectModal(branch)}
-                    disabled={branchAction === branch.id}
-                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 bg-red-500 hover:bg-red-600"
+                    disabled={verificationUnavailable || branchAction === branch.id}
+                    className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-red-500 hover:bg-red-600"
+                    title={verificationUnavailable ? 'Unavailable — endpoint pending' : undefined}
                   >
                     {t('superAdmin.reject')}
                   </button>
@@ -345,7 +385,15 @@ export default function SuperAdminDashboard() {
           )}
         </div>
 
-        {unverifiedLocations.length === 0 ? (
+        {verificationUnavailable ? (
+          <div className="flex items-start gap-3 mx-6 my-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Branch and pharmacy verification endpoints are pending backend implementation.</p>
+              <p className="text-xs text-amber-600 mt-0.5">Actions are disabled until these endpoints are available.</p>
+            </div>
+          </div>
+        ) : unverifiedLocations.length === 0 ? (
           <div className="py-12 text-center">
             <ShieldCheckIcon className="w-10 h-10 text-teal-400 mx-auto mb-3" />
             <p className="text-gray-500 font-medium text-sm">All locations verified</p>
@@ -374,7 +422,9 @@ export default function SuperAdminDashboard() {
                   <StatusBadge status={pharmacy.status} />
                   <button
                     onClick={() => setLocationModal(pharmacy)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all bg-brand-teal"
+                    disabled={verificationUnavailable}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-brand-teal"
+                    title={verificationUnavailable ? 'Unavailable — endpoint pending' : undefined}
                   >
                     <EyeIcon className="w-3.5 h-3.5" /> Review
                   </button>

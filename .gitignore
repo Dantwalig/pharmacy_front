@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+.env.local
 
 # vercel
 .vercel
@@ -50,4 +51,13 @@ strategy.md
 # personal reference screenshots (kept locally, not tracked)
 /public/processes-assigned to cashier.png
 /public/weird background picture.png
-md/
+
+# one-off scratch scripts / output dumps — never belong in the repo
+/token.txt
+/*.pat
+/create_pr.js
+/fix.js
+/replace_all.js
+/pr_output.log
+/diff.txt
+/tolocale_matches.txt

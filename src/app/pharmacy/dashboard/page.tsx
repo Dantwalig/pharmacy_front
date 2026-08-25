@@ -7,7 +7,7 @@ import {
   ArrowTrendingUpIcon, ArrowTrendingDownIcon, UsersIcon,
   BoltIcon, BuildingOffice2Icon, CurrencyDollarIcon, ExclamationTriangleIcon, CalendarIcon, Bars3BottomLeftIcon,
 } from '@heroicons/react/24/outline';
-import { api } from '@/lib/api';
+import api, { unwrapItem } from '@/lib/api';
 import type { PharmacyStats, PharmacyAnalytics, DailyRevenue, WeeklyRevenue, PharmacyProfile } from '@/types';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -106,26 +106,26 @@ export default function PharmacyDashboard() {
       api.get('/pharmacies/profile/me',               { signal: s }),
     ])
       .then(async ([sRes, aRes, dRes, wRes, pRes]) => {
-        const st = sRes.data?.data  ?? sRes.data;
-        const an = aRes.data?.data  ?? aRes.data;
-        const dr = dRes.data?.data  ?? dRes.data;
-        const wr = wRes.data?.data  ?? wRes.data;
-        let pr = pRes.data?.data  ?? pRes.data;
+        const st = unwrapItem<PharmacyStats>(sRes.data);
+        const an = unwrapItem<PharmacyAnalytics>(aRes.data);
+        const dr = unwrapItem<DailyRevenue>(dRes.data);
+        const wr = unwrapItem<WeeklyRevenue>(wRes.data);
+        let pr  = unwrapItem<PharmacyProfile>(pRes.data);
 
-        // Workaround: If representativeName is missing, fetch user profile to get name
+        // Workaround: backend sometimes omits representativeName — fall back to /users/me
         if (!pr?.representativeName) {
           try {
-            const userRes = await api.get('/users/me', { signal: s });
-            const userData = userRes.data?.data ?? userRes.data;
+            const userRes  = await api.get('/users/me', { signal: s });
+            const userData = unwrapItem(userRes.data) as any;
             if (userData?.profile?.firstName || userData?.firstName) {
               pr = {
                 ...pr,
                 ownerName: `${userData.profile?.firstName || userData.firstName || ''} ${userData.profile?.lastName || userData.lastName || ''}`.trim(),
-              };
+              } as PharmacyProfile;
             }
-          } catch {
-          }
+          } catch { /**/ }
         }
+
 
         setStats(st);
         setAnalytics(an);

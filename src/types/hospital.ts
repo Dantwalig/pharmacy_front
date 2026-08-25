@@ -1,5 +1,44 @@
 // src/types/hospital.ts
-// Types derived from hospital_portal_api_mapping.md — match actual API shapes.
+
+export type EntryColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | (string & {});
+
+export interface ScheduleEntry {
+  id: string;
+  patientName: string;
+  time: string;
+  date: string; // ISO string or yyyy-MM-dd
+  color: EntryColor;
+  type?: string;
+  // Fields from dev
+  doctorId?: string;
+  doctorName?: string;
+  startTime?: string;
+  endTime?: string;
+  appointmentType?: 'IN_PERSON' | 'ONLINE';
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+
+export type MessageDirection = 'SENT' | 'RECEIVED';
+
+export interface Message {
+  id: string;
+  text: string;
+  direction: MessageDirection;
+  timestamp: string;
+}
+
+export interface Conversation {
+  id: string;
+  senderName: string;
+  role: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: number;
+  unreadCount?: number; // Keep for compatibility with my UI
+  initials?: string;    // Keep for UI display
+  messages: Message[];
+}
 
 // ── Auth / User ───────────────────────────────────────────────────────────────
 
@@ -22,6 +61,29 @@ export interface MockAdmin {
   firstName: string;
   lastName: string;
   role: 'HOSPITAL_ADMIN';
+  hospitalId: string;
+  hospitalName: string;
+  email: string;
+}
+
+export interface MockNurse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'NURSE';
+  department: string;
+  hospitalId: string;
+  hospitalName: string;
+  email: string;
+}
+
+//Recptionist
+export interface MockReceptionist {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'RECEPTIONIST';
+  department: string;
   hospitalId: string;
   hospitalName: string;
   email: string;
@@ -56,14 +118,21 @@ export interface WeeklyRevenue {
 
 // ── Appointments ──────────────────────────────────────────────────────────────
 // Source: GET /api/appointments
-// Status flow: PENDING → CONFIRMED → READY_FOR_DOCTOR → COMPLETED | CANCELLED
+// Corrected against the real Prisma AppointmentStatus enum (back-end
+// src/prisma/schema.prisma) — the previous version of this type listed
+// PENDING and CONFIRMED, which don't exist on the backend at all, and was
+// missing NO_SHOW, ARRIVED, and IN_TRIAGE, which do. See
+// src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
+// Status flow: SCHEDULED → ARRIVED → IN_TRIAGE → READY_FOR_DOCTOR → COMPLETED | CANCELLED | NO_SHOW
 
 export type AppointmentStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
+  | 'SCHEDULED'
+  | 'ARRIVED'
+  | 'IN_TRIAGE'
   | 'READY_FOR_DOCTOR'
   | 'COMPLETED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'NO_SHOW';
 
 export type AppointmentType = 'IN_PERSON' | 'ONLINE';
 
@@ -83,6 +152,9 @@ export interface Appointment {
   patientName: string;
   doctorName: string;
   specialization: string;
+  //added for doctor dashboard recent appointments table
+  condition?: string;
+  healthStatus?: string;
 }
 
 // ── Inventory / Drug Stock ────────────────────────────────────────────────────
@@ -174,6 +246,7 @@ export interface Department {
   doctorCount: number;
   nurseCount: number;
   status: 'ACTIVE' | 'INACTIVE';
+  head?: string;
 }
 
 // ── Reports ───────────────────────────────────────────────────────────────────
@@ -196,6 +269,34 @@ export interface DiagnosisBreakdown {
   value: number;
 }
 
+// ── Reports charts (admin/reports) ──────────────────────────────────────────
+// Source: GET /reports/department/metrics for wait times; GET /hospitals/:id/doctors
+// (grouped by specialization) for staff counts. Satisfaction and
+// admissions-over-time have no backend source yet — proposed endpoints for
+// both are specified in src/docs/HOSPITAL_FRONTEND_BACKEND_GAPS.md.
+
+export interface DepartmentWaitTime {
+  dept: string;
+  value: number; // avgWaitMinutesApprox, most recent metric_date per department
+}
+
+export interface SatisfactionSlice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface DepartmentStaffCount {
+  dept: string;
+  value: number; // doctor count in this specialization
+}
+
+export interface AdmissionsTrendPoint {
+  month: string;
+  admitted: number;
+  out: number;
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export interface HospitalSettings {
@@ -210,27 +311,6 @@ export interface AdminProfile {
   lastName: string;
   email: string;
   phone: string;
-}
-
-// ── Messages ──────────────────────────────────────────────────────────────────
-
-export type MessageDirection = 'SENT' | 'RECEIVED';
-
-export interface Message {
-  id: string;
-  text: string;
-  direction: MessageDirection;
-  timestamp: string;
-}
-
-export interface Conversation {
-  id: string;
-  senderName: string;
-  role: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  messages: Message[];
 }
 
 // ── Claims ────────────────────────────────────────────────────────────────────
@@ -260,6 +340,9 @@ export interface Consultation {
   diagnosis?: string;
   duration?: string;
   status: ConsultationStatus;
+  gender?: 'Male' | 'Female';
+  age?: number;
+  bp?: string;
 }
 
 export type RefusalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -271,4 +354,126 @@ export interface Refusal {
   reason: string;
   insurance?: string;
   status: RefusalStatus;
+}
+
+// ── Medication Administration ───────────────────────────────────────────────
+
+export type MedicationStatus = 'ADMINISTERED' | 'DUE' | 'UPCOMING' | 'MISSED' | 'OVERDUE';
+export type MedicationRoute = 'Oral (PO)' | 'Subcutaneous (SubQ)' | 'Intravenous (IV)' | 'IV Push' | 'Intramuscular (IM)';
+
+export interface MedicationAdministration {
+  id: string;
+  patientName: string;
+  medicationName: string;
+  dosage: string;
+  route: MedicationRoute;
+  scheduledTime: string; // HH:mm AM/PM
+  status: MedicationStatus;
+  assignedNurse: string;
+}
+
+export interface MedicationStats {
+  missedDoses: number;
+  dueToday: number;
+  upcomingMedications: number;
+  administeredToday: number;
+}
+
+// ── Patients ──────────────────────────────────────────────────────────────────
+
+export type PatientStatus = 'ACTIVE' | 'CRITICAL' | 'INACTIVE';
+
+export interface Patient {
+  id: string;
+  patientId: string;
+  name: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+  isNew?: boolean;
+  followUpDue?: boolean;
+}
+
+// Tab identifiers for the doctor prescription page
+export type PrescriptionTab = 'info' | 'visits' | 'labs' | 'prescriptions';
+
+// Extended patient details — used by Patient Info tab on the prescription page
+// Fields beyond base Patient: dob, bloodType, phone, email, address,
+//   insurance (provider + ID), allergies[], emergencyContact (name/relation/phone)
+export interface PatientDetail {
+  dob: string;
+  bloodType: string;
+  phone: string;
+  email: string;
+  address: string;
+  insurance: string;
+  insuranceId: string;
+  allergies: string[];
+  emergencyContact: { name: string; relation: string; phone: string };
+}
+
+// Individual prescription entry for a patient
+export interface PatientRx {
+  id: string;
+  name: string;
+  description: string;
+}
+
+// Nurse Dashboard 
+
+export interface NurseDashboardStats {
+  totalPatients: number;
+  pendingTasks: number;
+  unreadMessages: number;
+}
+
+export interface NursePatientOverview {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  status: 'Stable' | 'High Risk';
+  bp: string;
+  hr: number;
+  temperature: string;
+}
+
+export interface NurseScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  location: string;
+  status: 'Completed' | 'Upcoming';
+}
+
+// Nurse Schedule & Shifts page
+
+export interface NurseShiftStat {
+  key: string;
+  title: string;
+  subtitle: string;
+  color: string;
+}
+
+export interface NurseShift {
+  id: string;
+  time: string;
+  title: string;
+  description: string;
+  status: 'COMPLETED' | 'ACTIVE' | 'UPCOMING';
+}
+
+// Nurse Notes & Documentation page
+
+export interface NursingNote {
+  id: string;
+  patientName: string;
+  nurseName: string;
+  date: string;
+  time: string;
+  observationNotes: string;
+  careActivities: string;
+  additionalComments: string;
 }
