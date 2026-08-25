@@ -80,7 +80,15 @@ export function middleware(request: NextRequest) {
 
 
   if (isBranchRoute) {
-    if (payload.role !== 'BRANCH_MANAGER') {
+    // Mirror BRANCH_PORTAL_ROLES in src/app/branch/layout.tsx — the whole
+    // branch team (manager + counter staff) uses the counter workspace.
+    const branchRoles = ['BRANCH_MANAGER', 'PHARMACIST', 'CASHIER', 'NURSE'];
+    if (!branchRoles.includes(payload.role || '')) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    // A hospital nurse shares role 'NURSE' but has a hospitalId — block them
+    // from /branch/* the same way /staff/* does.
+    if (payload.role === 'NURSE' && payload.hospitalId) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     return NextResponse.next();

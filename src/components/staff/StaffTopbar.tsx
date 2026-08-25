@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import { UserCircleIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import WorkspaceSwitcher from '@/components/branch/WorkspaceSwitcher';
 
 const ROLE_COLORS: Record<string, string> = {
   PHARMACIST: 'bg-violet-100 text-violet-800',
@@ -42,6 +43,7 @@ export default function StaffTopbar({
         </div>
 
         <div className="flex items-center gap-3">
+          <WorkspaceSwitcher />
           <span className={`px-3 py-1 text-xs font-semibold rounded-full hidden sm:inline-flex ${roleColor}`}>
             {roleLabel}
           </span>
