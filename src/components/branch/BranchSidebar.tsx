@@ -26,7 +26,7 @@ export default function BranchSidebar({ open = false, onClose }: BranchSidebarPr
     { href: '/branch/analytics',       icon: ChartBarIcon,        label: t('branch.analytics') },
     { href: '/branch/inventory',       icon: CubeIcon,            label: t('branch.inventory') },
     { href: '/branch/transfers',       icon: ArrowsRightLeftIcon, label: t('branch.transfers') },
-    { href: '/branch/map',             icon: MapIcon,             label: t('extras.branch.networkMapTitle') },
+    { href: '/branch/map',             icon: MapIcon,             label: t('branch.networkMap') },
     { href: '/branch/change-password', icon: LockClosedIcon,      label: t('branch.changePassword') },
   ];
 

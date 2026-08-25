@@ -1339,6 +1339,9 @@ export const fr = {
     permissionCount: '{{count}} permissions',
     resendConfirm: 'Renvoyer les identifiants de connexion à {{email}} ?',
     deleteConfirm: 'Supprimer {{name}} ? Cette action est irréversible.',
+    editPermissions: 'Modifier les permissions',
+    membersInBranch: 'membres dans votre succursale',
+    resetPassword: 'Réinitialiser le mot de passe',
   },
   transfers: {
     stockTransfers: 'Transferts de stock',

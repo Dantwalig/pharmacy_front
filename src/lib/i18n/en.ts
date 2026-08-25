@@ -1346,6 +1346,9 @@ export const en = {
     permissionCount: '{{count}} permissions',
     resendConfirm: 'Resend login credentials to {{email}}?',
     deleteConfirm: 'Delete {{name}}? This cannot be undone.',
+    editPermissions: 'Edit Permissions',
+    membersInBranch: 'members in your branch',
+    resetPassword: 'Reset Password',
   },
   transfers: {
     stockTransfers: 'Stock Transfers',

@@ -1340,6 +1340,9 @@ export const rw = {
     permissionCount: 'Inshingano {{count}}',
     resendConfirm: 'Ongera Ohereza amakuru yo kwinjira kuri {{email}}?',
     deleteConfirm: 'Siba {{name}}? Ibi ntibivuguruzwa.',
+    editPermissions: 'Hindura Uruhushya',
+    membersInBranch: 'abakozi mu ishami',
+    resetPassword: 'Subika Ijambobanga',
   },
   transfers: {
     stockTransfers: 'Guhereza Imiti',
