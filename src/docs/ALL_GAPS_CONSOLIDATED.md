@@ -2,7 +2,7 @@
 
 > **Audience:** Backend lead, backend engineers, and product team  
 > **Purpose:** Single source of truth for every frontend → backend gap across the entire hospital platform plus other portals. Replaces reading 10+ individual integration notes.  
-> **Last updated:** 2026-07-17  
+> **Last updated:** 2026-08-28  
 > **Status icons:** ✅ Working · ⚠️ Partial/indirect · ❌ Missing · 🔧 Fixed in a previous PR
 
 ---
@@ -56,11 +56,11 @@ All seeded doctors were created via `prisma.doctor.create(...)` only. `auth.serv
 
 **Action needed (frontend):** "Add Staff" flow on `/hospital/admin/staff` calling `onboard/hospital-staff`; an `/hospital/activate` page for the emailed activation link.
 
-### 1-E — RECEPTIONIST login shows a not-yet-available toast ❌
+### 1-E — RECEPTIONIST login shows a not-yet-available toast 🔧 Fixed
 
 **Source:** `HOSPITAL_AUTH_INTEGRATION.md`
 
-The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login()`'s RECEPTIONIST case shows "The receptionist portal is not available yet" and logs the user out. (The receptionist portal has now been built as of 2026-07-09, but the auth routing may not yet redirect to `/hospital/receptionist/dashboard` — verify.)
+The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login()`'s RECEPTIONIST case showed "The receptionist portal is not available yet" and logged the user out. Fixed: auth routing now redirects RECEPTIONIST to `/hospital/receptionist/dashboard`.
 
 ---
 
@@ -90,7 +90,7 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 
 | # | Status | Gap |
 | - | ------ | --- |
-| S-1 | ❌ | `PATCH /hospitals/:id` — no update route for hospital profile. `GET /hospitals/:id` works. Proposed DTO: `{ name?, address?, phone? }` — exclude email (lives on `User`, needs separate handling). Use existing `validateHospitalAccess()` ownership check. |
+| S-1 | 🔧 Fixed | `PATCH /hospitals/:id` — hospital profile update route now implemented in backend. DTO: `{ name?, address?, phone? }`. Uses `validateHospitalAccess()` ownership check. |
 | S-2 | ❌ | Fees — no `HospitalFee` model or route. Proposed: `GET/POST /hospitals/:id/fees` and `PATCH/DELETE /hospitals/:id/fees/:feeId`. |
 | S-3 | ❌ | Announcements — no `HospitalAnnouncement` model or route. Proposed: `GET/POST /hospitals/:id/announcements` and `DELETE /hospitals/:id/announcements/:id`. |
 | S-4 | ❌ | Departments write — no `HospitalDepartment` model. Derived read-only from doctor specializations. Proposed: `GET/POST /hospitals/:id/departments` and `PATCH /hospitals/:id/departments/:deptId`. |
@@ -112,7 +112,7 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 
 | # | Status | Gap |
 | - | ------ | --- |
-| AW-1 | ⚠️ | Check-in, Cancel, Reschedule buttons on appointments page have no `onClick` implementation beyond `e.stopPropagation()`. Need `PATCH /appointments/:id/status` for status transitions and a reschedule endpoint. |
+| AW-1 | 🔧 Fixed | Status dropdown on appointments page wired to `PATCH /appointments/:id/status` via `handleStatusChange`. Check-in, Cancel, and status transitions all work. Reschedule (date change) still has no dedicated endpoint. |
 
 ---
 
@@ -133,7 +133,7 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 | Dr-4 | ✅ | `GET /api/appointments/:id` — single appointment with `diagnosisSummary` and `doctorRecommendations`. |
 | Dr-5 | ✅ | `PATCH /api/appointments/:id/status` — status transition. |
 | Dr-6 | ❌ | Patient demographics in appointments (`gender`, `dateOfBirth`, triage vitals) — missing from `appointmentInclude` in `appointments.service.ts`. Vitals column shows `—`. Proposed: add `patient.gender`, `patient.dateOfBirth`, `triageVitals` to the include shape. |
-| Dr-7 | ❌ | `GET /hospitals/:id/patients?doctorId=` doesn't exist (a `POST :id/patients/search` variant exists but not the GET form). Patient list derived from appointments — missing `age`, `gender`, `dateOfBirth`. |
+| Dr-7 | ❌ | `GET /hospitals/:id/patients` — route exists and `@Roles(Role.DOCTOR)` is declared, but `getHospitalPatients` calls `validateHospitalAccess()` which checks `hospital.userId === userId` (owner-only). DOCTOR userId never matches the hospital owner, so doctors always get 403. **Backend bug:** role decorator and service guard are inconsistent. Patient list must still be derived from appointments; missing `age`, `gender`, `dateOfBirth`. |
 
 ### 3-C — Prescription
 
@@ -141,7 +141,7 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 | - | ------ | --- |
 | Dr-8 | ✅ | `POST /api/prescriptions/hospital-issue` — issues a prescription (patientId, hospitalId, diagnosis, medications[]). |
 | Dr-9 | ❌ | `GET /api/prescriptions/for-patient/:patientId` (by UUID) — doesn't exist. Existing route is `GET /prescriptions/patient/:mrn` (by MRN). Appointments include `patientId` (UUID) but NOT `mrn`, so prescription history cannot be loaded. Every prescription session shows a gap notice. Proposed: add UUID-based route scoped to `Role.DOCTOR` and `Role.HOSPITAL_ADMIN`, or include `mrn` in appointments include. |
-| Dr-10 | ❌ | Drug stock autocomplete — `GET /hospitals/:hospitalId/drug-stock` exists but is not accessible to `Role.DOCTOR` (returns 403/404 for doctors). Prescription form falls back to plain text input. Proposed: expose `GET /hospitals/:hospitalId/drug-stock` to `Role.DOCTOR`, or add `GET /inventory/hospital/:hospitalId/drugs` returning `{ brandName, genericName, dosageStrength, dosageForm, quantity }`. |
+| Dr-10 | 🔧 Fixed | `GET /hospitals/:hospitalId/drug-stock` now allows `Role.DOCTOR` (backend fix). Prescription form (`doctor/prescription/page.tsx`) fetches drug stock after appointments load, populates a native `<datalist>` for medication name autocomplete (`brandName + dosageStrength`). Silently no-ops if fetch fails — form still usable as free text. |
 
 ### 3-D — Settings / Profile
 
@@ -181,7 +181,7 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 | - | ------ | --- |
 | N-V-1 | ⚠️ | Two-step pattern: fetch admissions → fetch `GET /inpatient/admissions/:id/vitals` for the most-recent ACTIVE admission only. Only one patient's vitals are shown at a time. |
 | N-V-2 | ❌ | No hospital-wide vitals feed. Proposed: `GET /hospitals/:id/nurse/vitals?date=ISO8601` returning all vitals records across current admissions. |
-| N-V-3 | ❌ | Save/Update Assessment buttons have no `onClick` — need a vitals write endpoint. Proposed: `POST /inpatient/admissions/:id/vitals` with `{ readings: VitalReading[], condition, mobility, observation, painLevel }`. |
+| N-V-3 | 🔧 Fixed | Save/Update Assessment buttons wired to `POST /inpatient/admissions/:id/vitals` with `{ readings: VitalReadingDto[], checklist: VitalsChecklistDto, nurseNotes? }`. Active admission ID tracked from the admissions list. Buttons disabled while saving or when no active admission found. Success/failure via `react-hot-toast`. |
 
 ### 4-C — Medications (MAR) Page
 
@@ -189,13 +189,13 @@ The backend fully supports the RECEPTIONIST role in auth, but `AuthContext.login
 | - | ------ | --- |
 | N-M-1 | ⚠️ | N+1 pattern: one `GET /inpatient/admissions/:id/mar` call per admitted patient via `Promise.allSettled`. Tolerates partial failures but doesn't scale. |
 | N-M-2 | ❌ | No hospital-wide MAR feed. Proposed: `GET /hospitals/:id/nurse/mar?date=ISO8601` returning all MAR records for current admissions in one call. |
-| N-M-3 | ❌ | "Record" and "Mark Missed" buttons are UI-only (no `onClick`). Write endpoints needed: `POST /inpatient/admissions/:id/mar` (record administration) and `PATCH /inpatient/admissions/:id/mar/:marId` (update status to MISSED or ADMINISTERED). |
+| N-M-3 | 🔧 Fixed | Record button POSTs to `POST /inpatient/admissions/:id/mar` with `{ administeredAt: now, ... }`. Mark Missed also POSTs (MAR entries are immutable — no PATCH endpoint exists) with `notes: 'DOSE NOT ADMINISTERED — marked as missed by nurse'` as clinical documentation. Both optimistically update row status in local state. |
 
 ### 4-D — Dashboard
 
 | # | Status | Gap |
 | - | ------ | --- |
-| N-D-1 | ❌ | No `GET /hospitals/:id/nurse/dashboard` endpoint. Existing dashboard endpoints are HOSPITAL_ADMIN only. Nurse dashboard page is not wired to the backend. Proposed response: `{ vitalsRecordedToday, activeAdmissions, criticalAlerts, newAssessmentsToday }`. |
+| N-D-1 | 🔧 Fixed | `GET /nurses/dashboard` endpoint exists and nurse dashboard page (`nurse/dashboard/page.tsx`) already calls it. Stats cards (vitals recorded today, active admissions, critical alerts, new assessments) all wired to real data. |
 
 ---
 
@@ -236,11 +236,11 @@ No receptionist user is seeded in the database (`prisma/seed.ts` has no `RECEPTI
 
 | # | Status | Endpoint | Description |
 | - | ------ | -------- | ----------- |
-| SA-1 | ❌ | `GET /super-admin/branches/pending` | Branch approval queue — amber banner shown, actions disabled |
-| SA-2 | ❌ | `PATCH /super-admin/branches/:id/approve` | Approve a branch |
-| SA-3 | ❌ | `PATCH /super-admin/branches/:id/reject` | Reject a branch (requires `{ reason }`) |
-| SA-4 | ❌ | `GET /super-admin/pharmacies/unverified-locations` | Pharmacy location review map |
-| SA-5 | ❌ | `PATCH /super-admin/pharmacies/:id/verify-location` | Verify/flag a pharmacy location |
+| SA-1 | 🔧 Fixed | `GET /super-admin/branches/pending` | Branch approval queue — implemented in `fix/nelly_super_admin_api_hardening` |
+| SA-2 | 🔧 Fixed | `PATCH /super-admin/branches/:id/approve` | Approve a branch — implemented |
+| SA-3 | 🔧 Fixed | `PATCH /super-admin/branches/:id/reject` | Reject a branch (requires `{ reason }`) — implemented |
+| SA-4 | 🔧 Fixed | `GET /super-admin/pharmacies/unverified-locations` | Pharmacy location review map — implemented |
+| SA-5 | 🔧 Fixed | `PATCH /super-admin/pharmacies/:id/verify-location` | Verify/flag a pharmacy location — implemented |
 
 **Working:** `GET /super-admin/analytics`, `GET /super-admin/revenue`, `GET /super-admin/pharmacies`, `GET /super-admin/pharmacies/pending`, `PATCH /super-admin/pharmacies/:id/approve`, `PATCH /super-admin/pharmacies/:id/reject`, `GET /super-admin/patients`
 
@@ -250,10 +250,10 @@ No receptionist user is seeded in the database (`prisma/seed.ts` has no `RECEPTI
 
 | # | Status | Endpoint | Description |
 | - | ------ | -------- | ----------- |
-| B-1 | ❌ | `GET /stock-transfers/branch` | Transfer list — `backendReady` flag set to false on 403/404 |
-| B-2 | ❌ | `POST /stock-transfers` | Create transfer — form submits but silently fails on 404 |
-| B-3 | ❌ | `PATCH /stock-transfers/:id/status` | Accept/reject incoming transfers |
-| B-4 | ❌ | `GET /branches/my-branch-details` | Branch coordinates for map — silently empty if missing |
+| B-1 | 🔧 Fixed | `GET /stock-transfers/branch` | Transfer list — endpoint now implemented in backend |
+| B-2 | 🔧 Fixed | `POST /stock-transfers` | Create transfer — endpoint now implemented |
+| B-3 | 🔧 Fixed | `PATCH /stock-transfers/:id/status` | Accept/reject incoming transfers — implemented |
+| B-4 | 🔧 Fixed | `GET /branches/my-branch-details` | Branch coordinates for map — endpoint now implemented |
 
 **Working:** `GET /medications/pharmacy/my-medications`, `GET /branches/my-branches`, `GET /attendance/*`, `GET /orders/pharmacy-orders`
 
@@ -296,13 +296,15 @@ No receptionist user is seeded in the database (`prisma/seed.ts` has no `RECEPTI
 
 ## Priority Order for Backend Sprint
 
-1. **Rec-1 through Rec-9** — All 9 receptionist GET endpoints are missing; the portal has no real data at all.
-2. **SA-1 through SA-5** — Super Admin branch/location approval workflow is the most visible governance gap.
-3. **B-1 through B-4** — Branch stock transfers are fully built on the frontend but non-functional.
-4. **Dr-9** — Prescription history by patient UUID (blocks every prescription session from showing history).
-5. **D-3** — Run pending Prisma migration (`isDepartmentHead`, `department` fields) before next backend deploy.
-6. **Dr-13 + Dr-14** — Doctor self-service profile edit and missing license/hours fields.
-7. **N-D-1, N-V-2, N-M-2** — Nurse portal hospital-wide aggregation endpoints (prevents N+1 call pattern scaling).
-8. **N-V-3, N-M-3** — Nurse write endpoints (vitals save, MAR record/missed).
-9. **S-1 through S-4** — Hospital settings write endpoints.
-10. **R-2, R-4** — Patient satisfaction and admissions-trend charts (need new models).
+> Items marked 🔧 Fixed have been resolved and removed from this list.
+
+1. **Rec-1 through Rec-9 + Rec-W1 through Rec-W4** — All receptionist endpoints missing; the portal has zero real data. Highest impact.
+2. **Dr-9** — Prescription history by patient UUID — blocks every prescription session from showing history. MRN must be included in appointments, or a UUID-based route added.
+3. **Dr-7** — Backend bug: `validateHospitalAccess()` is owner-only but `@Roles(Role.DOCTOR)` is declared. Fix the service guard to use `validateHospitalReadAccess()` so doctors can fetch hospital patients.
+4. **D-3** — Run pending Prisma migration (`isDepartmentHead`, `department` fields) before next backend deploy — any doctor or HospitalStaff query will throw "column does not exist" until migrated.
+5. **Dr-13 + Dr-14** — Doctor self-service profile edit (`PATCH /doctors/me`) and missing `licenseNumber`, `workingHours`, `phone` fields on dashboard response.
+6. **N-V-2, N-M-2** — Nurse portal hospital-wide aggregation endpoints to replace N+1 pattern (`GET /hospitals/:id/nurse/vitals`, `GET /hospitals/:id/nurse/mar`).
+7. **S-2 through S-4** — Hospital settings write endpoints (fees, announcements, departments write).
+8. **R-2, R-4** — Patient satisfaction chart and admissions-trend chart (need new models: `AppointmentFeedback`, `mv_monthly_admissions`).
+9. **Dr-6** — Add `patient.gender`, `patient.dateOfBirth`, `triageVitals` to `appointmentInclude` in `appointments.service.ts`.
+10. **Dr-15** — Real-time messaging (`MessagesModule`) — no model exists yet.
