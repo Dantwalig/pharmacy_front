@@ -10,9 +10,6 @@ import toast from 'react-hot-toast';
 const NAVY = '#1E3A5F';
 const TEAL = '#2D9B8A';
 
-// Unique patient derived from the doctor's appointments.
-// GET /hospitals/:id/patients?doctorId= doesn't exist — only POST search/register.
-// We derive unique patients from GET /appointments (doctor-scoped via JWT).
 interface PatientSummary {
   patientId: string;
   hospitalId: string;
@@ -31,6 +28,17 @@ interface BackendAppointment {
   hospitalId: string;
   patient: { firstName: string; lastName: string; phone?: string };
   hospital: { id: string; name: string };
+}
+
+interface DrugStockItem {
+  id: string;
+  quantity: number;
+  drug: {
+    brandName: string;
+    genericName: string;
+    dosageStrength: string;
+    dosageForm: string;
+  };
 }
 
 interface MedicationItem {
@@ -77,6 +85,9 @@ export default function HospitalDoctorPrescriptionPage() {
   const [medications, setMedications] = useState<MedicationItem[]>([newMed()]);
   const [submitting,  setSubmitting]  = useState(false);
 
+  const [drugStock,   setDrugStock]   = useState<DrugStockItem[]>([]);
+  const [hospitalIdForDrugs, setHospitalIdForDrugs] = useState<string | null>(null);
+
   const fetchPatients = useCallback(async () => {
     setLoadingPts(true);
     setErrorPts(null);
@@ -84,6 +95,8 @@ export default function HospitalDoctorPrescriptionPage() {
       const res = await api.get('/appointments');
       const raw = unwrapData<BackendAppointment>(res.data);
       setPatients(uniquePatients(raw));
+      const firstHospitalId = raw[0]?.hospitalId;
+      if (firstHospitalId) setHospitalIdForDrugs(firstHospitalId);
     } catch (err: any) {
       setErrorPts(err?.response?.data?.message ?? err?.message ?? 'Failed to load patients.');
     } finally {
@@ -92,6 +105,16 @@ export default function HospitalDoctorPrescriptionPage() {
   }, []);
 
   useEffect(() => { fetchPatients(); }, [fetchPatients]);
+
+  useEffect(() => {
+    if (!hospitalIdForDrugs) return;
+    api.get(`/hospitals/${hospitalIdForDrugs}/drug-stock`)
+      .then(res => {
+        const items = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
+        setDrugStock(items);
+      })
+      .catch(() => {});
+  }, [hospitalIdForDrugs]);
   useEffect(() => {
     if (patients.length > 0 && !selectedId) setSelectedId(patients[0].patientId);
   }, [patients, selectedId]);
@@ -261,7 +284,17 @@ export default function HospitalDoctorPrescriptionPage() {
                       <Plus size={12} /> Add
                     </button>
                   </div>
-                  <div className="space-y-3">
+                  {drugStock.length > 0 && (
+                  <datalist id="drug-names">
+                    {drugStock.map(d => (
+                      <option
+                        key={d.id}
+                        value={`${d.drug.brandName} ${d.drug.dosageStrength}`.trim()}
+                      />
+                    ))}
+                  </datalist>
+                )}
+                <div className="space-y-3">
                     {medications.map(med => (
                       <div key={med.key} className="bg-gray-50 rounded-xl border border-gray-100 p-4 space-y-3">
                         <div className="flex items-center justify-between">
@@ -280,6 +313,7 @@ export default function HospitalDoctorPrescriptionPage() {
                             <label className="text-xs text-gray-400 mb-0.5 block">Name *</label>
                             <input
                               type="text"
+                              list={drugStock.length > 0 ? 'drug-names' : undefined}
                               value={med.name}
                               onChange={e => updateMed(med.key, 'name', e.target.value)}
                               placeholder="e.g. Amoxicillin 500mg"
