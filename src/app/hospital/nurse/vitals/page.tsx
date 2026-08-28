@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { ClipboardCheck, BedDouble, AlertCircle, FilePlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { useHospitalId } from '@/lib/hospital';
 
@@ -108,16 +109,19 @@ export default function NurseVitalsPage() {
   const [mobility, setMobility] = useState('independent');
   const [observation, setObservation] = useState('Patient is alert and oriented');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useMockFallback, setUseMockFallback] = useState(false);
   const [admissions, setAdmissions] = useState<AdmissionSummary[]>([]);
   const [recentRecords, setRecentRecords] = useState<RecentRecordRow[]>(RECENT_RECORDS);
+  const [activeAdmissionId, setActiveAdmissionId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!hospitalId) {
       setUseMockFallback(true);
+      setActiveAdmissionId(null);
       setLoading(false);
       setError(null);
       setRecentRecords(RECENT_RECORDS);
@@ -158,11 +162,14 @@ export default function NurseVitalsPage() {
 
         if (!primaryAdmission) {
           if (!cancelled) {
+            setActiveAdmissionId(null);
             setRecentRecords([]);
             setError(null);
           }
           return;
         }
+
+        if (!cancelled) setActiveAdmissionId(primaryAdmission.id);
 
         const vitalsResponse = await api.get(`/inpatient/admissions/${primaryAdmission.id}/vitals`);
         const vitalsPayload = vitalsResponse.data;
@@ -224,6 +231,45 @@ export default function NurseVitalsPage() {
       cancelled = true;
     };
   }, [hospitalId]);
+
+  const handleSave = useCallback(async () => {
+    if (!activeAdmissionId) {
+      toast.error('No active admission — cannot save vitals.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const VITAL_MAP: { key: string; name: string; unit: string }[] = [
+        { key: 'temperature',     name: 'Temperature',        unit: '°C' },
+        { key: 'bloodPressure',   name: 'Blood Pressure',     unit: 'mmHg' },
+        { key: 'heartRate',       name: 'Heart Rate',         unit: 'bpm' },
+        { key: 'respiratoryRate', name: 'Respiratory Rate',   unit: 'breaths/min' },
+        { key: 'oxygen',          name: 'Oxygen Saturation',  unit: '%' },
+        { key: 'weight',          name: 'Weight',             unit: 'kg' },
+      ];
+      const readings = VITAL_MAP
+        .filter(v => vitals[v.key]?.trim())
+        .map(v => ({ name: v.name, value: vitals[v.key].trim(), unit: v.unit }));
+
+      await api.post(`/inpatient/admissions/${activeAdmissionId}/vitals`, {
+        readings,
+        checklist: {
+          temperatureChecked:      !!vitals.temperature?.trim(),
+          bloodPressureChecked:    !!vitals.bloodPressure?.trim(),
+          heartRateChecked:        !!vitals.heartRate?.trim(),
+          oxygenSaturationChecked: !!vitals.oxygen?.trim(),
+          respiratoryRateChecked:  !!vitals.respiratoryRate?.trim(),
+          weightChecked:           !!vitals.weight?.trim(),
+        },
+        nurseNotes: observation.trim() || undefined,
+      });
+      toast.success('Vitals saved successfully.');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to save vitals — please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }, [activeAdmissionId, vitals, observation]);
 
   const summaryLabel = useMemo(() => {
     if (loading) return t('hospital.loading');
@@ -366,11 +412,20 @@ export default function NurseVitalsPage() {
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center justify-center gap-4">
-        <button className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: '#1E3A5F' }}>
-          {t('hospital.saveAssessment')}
+        <button
+          onClick={handleSave}
+          disabled={saving || !activeAdmissionId || useMockFallback}
+          className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-opacity"
+          style={{ background: '#1E3A5F' }}
+        >
+          {saving ? 'Saving…' : t('hospital.saveAssessment')}
         </button>
-        <button className="px-8 py-2.5 rounded-xl text-sm font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 transition-colors">
-          {t('hospital.updateAssessment')}
+        <button
+          onClick={handleSave}
+          disabled={saving || !activeAdmissionId || useMockFallback}
+          className="px-8 py-2.5 rounded-xl text-sm font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 transition-colors disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : t('hospital.updateAssessment')}
         </button>
         <button className="px-8 py-2.5 rounded-xl text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
           {t('hospital.viewHistory')}
