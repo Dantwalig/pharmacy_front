@@ -244,7 +244,7 @@ export default function NurseDashboardPage() {
           ) : overviewPatients.map((patient) => (
             <div
               key={patient.id}
-              className="grid grid-cols-12 gap-4 py-4 items-center px-2 hover:bg-slate-50 rounded-lg transition-colors group cursor-pointer"
+              className="relative grid grid-cols-12 gap-4 py-4 items-center px-2 hover:bg-slate-50 rounded-lg transition-colors group cursor-pointer"
             >
               <div className="col-span-2 sm:col-span-1 flex items-center gap-2 border-r border-gray-200 pr-2">
                 <span className="text-sm font-bold text-gray-400">{patient.patientId}</span>
@@ -255,7 +255,7 @@ export default function NurseDashboardPage() {
                   {patient.name}
                 </div>
                 <div className="text-xs font-semibold text-gray-400 mt-0.5">
-                  {patient.gender}, {patient.age}
+                  {[patient.gender !== '—' ? patient.gender : null, patient.age !== '—' ? patient.age : null].filter(Boolean).join(', ') || '—'}
                 </div>
               </div>
 
