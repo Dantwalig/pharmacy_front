@@ -129,7 +129,6 @@ export default function LocationPicker({
       }
     };
     // Run only once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Sync external lat/lng changes into the map ───────────────────────────
@@ -153,7 +152,6 @@ export default function LocationPicker({
       }
       map.setView([latitude, longitude], 16);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude]);
 
   // ── GPS handler ──────────────────────────────────────────────────────────

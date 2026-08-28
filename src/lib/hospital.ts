@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { MOCK_DOCTOR, MOCK_ADMIN, MOCK_NURSE, MOCK_RECEPTIONIST } from '@/mock/hospital/user';
+import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import api from '@/lib/api';
-import type { DashboardStats, WeeklyRevenue } from '@/types/hospital';
+import type { DashboardStats, WeeklyRevenue, PatientStatus } from '@/types/hospital';
+import { isHospitalNurse } from '@/lib/auth';
 
 /**
  * Resolves the hospitalId to use for hospital admin API calls.
@@ -124,7 +127,7 @@ export function useHospitalDoctorUser(): HospitalTopbarUser {
 export function useHospitalNurseUser(): HospitalTopbarUser {
   const { user } = useAuth();
 
-  if (user?.role === 'NURSE' && user.hospitalId) {
+  if (user && isHospitalNurse(user)) {
     return {
       userName: nameFromEmail(user.email),
       roleLabel: 'Nurse',
@@ -143,6 +146,35 @@ export function useHospitalNurseUser(): HospitalTopbarUser {
   }
 
   return { userName: '', roleLabel: 'Nurse', hospitalName: '', isMock: false };
+}
+
+/**
+ * Resolves the current hospital receptionist's topbar display info.
+ *
+ * Falls back to MOCK_RECEPTIONIST only when not authenticated and not in production.
+ */
+export function useHospitalReceptionistUser(): HospitalTopbarUser {
+  const { user } = useAuth();
+
+  if (user?.role === 'RECEPTIONIST' && user.hospitalId) {
+    return {
+      userName: nameFromEmail(user.email),
+      roleLabel: 'Receptionist',
+      hospitalName: user.hospitalName || '',
+      isMock: false,
+    };
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return {
+      userName: `${MOCK_RECEPTIONIST.firstName} ${MOCK_RECEPTIONIST.lastName}`,
+      roleLabel: 'Receptionist',
+      hospitalName: MOCK_RECEPTIONIST.hospitalName,
+      isMock: true,
+    };
+  }
+
+  return { userName: '', roleLabel: 'Receptionist', hospitalName: '', isMock: false };
 }
 
 // ── Shared hospital dashboard stats + weekly revenue ────────────────────────
@@ -192,6 +224,7 @@ export function useHospitalDashboardStats(hospitalId: string | undefined): Hospi
   return { stats, weeklyRevenue, loading, error };
 }
 
+<<<<<<< HEAD
 /**
  * Resolves the current hospital receptionist's topbar display info.
  *
@@ -219,4 +252,128 @@ export function useHospitalReceptionistUser(): HospitalTopbarUser {
   }
 
   return { userName: '', roleLabel: 'Receptionist', hospitalName: '', isMock: false };
+=======
+// ── Shared hospital admissions (patient list) ───────────────────────────────
+//
+// GET /inpatient/admissions?hospitalId= is the nurse portal's real "patient
+// list" source — GET /hospitals/:id/patients doesn't exist on the backend yet
+// (see src/docs/BACKEND_GAPS_SUMMARY.md, Gap E-6). nurse/patients, nurse/notes
+// (patient picker), and nurse/dashboard (Patient Overview) all need the same
+// hospital-scoped patient list, so it's fetched here once instead of being
+// copy-pasted per page. Falls back to MOCK_PATIENTS only when there's no
+// hospitalId, or (in non-production) when the request errors.
+export interface HospitalPatientRow {
+  id: string;
+  patientId: string;
+  name: string;
+  age: string;
+  gender: string;
+  lastVisit: string;
+  condition: string;
+  status: PatientStatus;
+}
+
+export interface HospitalAdmissionsData {
+  patients: HospitalPatientRow[];
+  loading: boolean;
+  error: string | null;
+  useMockFallback: boolean;
+}
+
+function formatAdmissionLastVisit(value?: string) {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function deriveAdmissionStatus(status?: string): PatientStatus {
+  const normalized = (status ?? '').toUpperCase();
+  if (normalized === 'CRITICAL') return 'CRITICAL';
+  if (normalized === 'ACTIVE') return 'ACTIVE';
+  return 'INACTIVE';
+}
+
+export function useHospitalAdmissions(hospitalId: string | undefined): HospitalAdmissionsData {
+  const [patients, setPatients] = useState<HospitalPatientRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [useMockFallback, setUseMockFallback] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!hospitalId) {
+      setUseMockFallback(true);
+      setPatients(MOCK_PATIENTS as unknown as HospitalPatientRow[]);
+      setLoading(false);
+      setError(null);
+      return () => { cancelled = true; };
+    }
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      setUseMockFallback(false);
+
+      try {
+        const response = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
+        const payload = response.data;
+        const admissions = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+
+        const mapped = admissions.map((item: any) => {
+          const patient = item.patient ?? {};
+          const patientName = [patient.firstName, patient.lastName].filter(Boolean).join(' ').trim() || 'Unknown patient';
+          const patientId = patient.mrn || patient.id || item.id || '—';
+          const condition = String(item.reason || 'Stable').trim() || 'Stable';
+
+          return {
+            id: item.id,
+            patientId,
+            name: patientName,
+            age: patient.age ? String(patient.age) : '—',
+            gender: patient.gender || '—',
+            lastVisit: formatAdmissionLastVisit(item.updatedAt || item.createdAt),
+            condition,
+            status: deriveAdmissionStatus(item.status),
+          } as HospitalPatientRow;
+        });
+
+        if (!cancelled) {
+          setPatients(mapped);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (process.env.NODE_ENV !== 'production') {
+            setUseMockFallback(true);
+            setPatients(MOCK_PATIENTS as unknown as HospitalPatientRow[]);
+            setError(null);
+          } else {
+            const message = axios.isAxiosError(err)
+              ? err.response?.data?.message || 'Unable to load patient data right now.'
+              : 'Unable to load patient data right now.';
+            setError(message);
+            setPatients([]);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hospitalId]);
+
+  return { patients, loading, error, useMockFallback };
+>>>>>>> 04e5dedecbb1ed23eed948e788bac97f66593748
 }

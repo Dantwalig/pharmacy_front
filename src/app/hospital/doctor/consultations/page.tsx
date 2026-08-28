@@ -17,6 +17,50 @@ const STATUS_KEY: Record<ConsultationStatus, string> = {
   PENDING: 'hospital.pending',
 };
 
+// Raw shape returned by GET /appointments (confirmed in DOCTOR_REMAINING_PAGES_API_GAPS.md).
+// `scheduledAt` is the date field — the API does NOT return a field named `date`.
+// `diagnosisSummary` is only confirmed for GET /appointments/:id (single record), not the list.
+interface AppointmentRaw {
+  id: string;
+  scheduledAt?: string;
+  status: string;
+  type?: string;
+  reason?: string;
+  diagnosisSummary?: string;
+  patient: { firstName: string; lastName: string };
+}
+
+// TODO: verify field mapping against Swagger — see DOCTOR_PORTAL_BACKEND_CONTRACT.md
+function mapToConsultation(a: AppointmentRaw): Consultation {
+  return {
+    id: a.id,
+    patientName:
+      `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
+    // scheduledAt is the confirmed date field from GET /appointments.
+    date: a.scheduledAt
+      ? new Date(a.scheduledAt).toLocaleDateString([], {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : '—',
+    type: a.type ?? '—',
+    // diagnosisSummary confirmed only for GET /appointments/:id — may be absent in the list.
+    diagnosis: a.diagnosisSummary ?? '—',
+    // TODO: duration not provided by GET /appointments — show '—' until endpoint confirmed
+    duration: '—',
+    // gender, age, bp are not included in the appointments response.
+    // TODO: populate once GET /consultations?doctorId=:id is confirmed available in Swagger
+    //       and its response shape is verified — see DOCTOR_PORTAL_BACKEND_CONTRACT.md
+    status:
+      a.status === 'COMPLETED'
+        ? 'COMPLETED'
+        : a.status === 'PENDING' || a.status === 'CONFIRMED'
+        ? 'PENDING'
+        : 'ACTIVE',
+  };
+}
+
 export default function HospitalDoctorConsultationsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -26,39 +70,26 @@ export default function HospitalDoctorConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadConsultations() {
-      try {
-        setLoading(true);
-        // GET /appointments is auto-scoped to the authenticated doctor via JWT.
-        // We adapt the response to the Consultation shape; gender/age/bp are
-        // not included in the appointments include — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
-        const res = await api.get('/appointments');
-        const raw = unwrapData<{
-          id: string; date: string; status: string; type?: string;
-          reason?: string; diagnosisSummary?: string;
-          patient: { firstName: string; lastName: string };
-        }>(res.data);
-
-        const mapped: Consultation[] = raw.map(a => ({
-          id:        a.id,
-          patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
-          date:      new Date(a.date).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }),
-          type:      a.type ?? 'CONSULTATION',
-          diagnosis: a.diagnosisSummary,
-          status:    a.status === 'COMPLETED' ? 'COMPLETED' : a.status === 'PENDING' || a.status === 'CONFIRMED' ? 'PENDING' : 'ACTIVE',
-        }));
-
-        setConsultations(mapped);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch consultations:', err);
-        setError(t('hospital.failedLoadConsultations'));
-      } finally {
-        setLoading(false);
-      }
+  const fetchConsultations = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // TODO: switch to GET /consultations?doctorId=:id once confirmed available in Swagger.
+      // Checked DOCTOR_REMAINING_PAGES_API_GAPS.md — endpoint not listed; falling back to
+      // GET /appointments which is doctor-scoped via JWT.
+      const res = await api.get('/appointments');
+      const raw = unwrapData<AppointmentRaw>(res.data);
+      setConsultations(raw.map(mapToConsultation));
+    } catch (err) {
+      console.error('Failed to fetch consultations:', err);
+      setError(t('hospital.failedLoadConsultations'));
+    } finally {
+      setLoading(false);
     }
-    loadConsultations();
+  };
+
+  useEffect(() => {
+    fetchConsultations();
   }, []);
 
   const filtered = consultations.filter(c =>
@@ -79,10 +110,26 @@ export default function HospitalDoctorConsultationsPage() {
         </p>
       </div>
 
+      {/* Error banner */}
+      {error && !loading && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+          <p className="text-sm text-red-700">{error}</p>
+          <button
+            onClick={fetchConsultations}
+            className="text-xs font-semibold text-red-600 hover:text-red-800"
+          >
+            {t('common.retry', 'Retry')}
+          </button>
+        </div>
+      )}
+
       {/* Split panel */}
       <div className="flex gap-4">
         {/* Left — queue (fixed height, scrollable list) */}
-        <div className="w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden" style={{ height: 520 }}>
+        <div
+          className="w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden"
+          style={{ height: 520 }}
+        >
           {/* Title row */}
           <div className="px-5 py-4 border-b border-gray-200 shrink-0">
             <h2 className="text-base font-bold text-gray-900">{t('hospital.queueForToday')}</h2>
@@ -118,17 +165,22 @@ export default function HospitalDoctorConsultationsPage() {
                 <button
                   key={c.id}
                   onClick={() => setSelected(c.id)}
-                  className={`w-full text-left px-5 py-4 transition-colors ${selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                    }`}
+                  className={`w-full text-left px-5 py-4 transition-colors ${
+                    selectedId === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-gray-900 truncate">{c.patientName}</p>
+                      {/* gender/age/bp not provided by GET /appointments */}
+                      {/* TODO: populate once GET /consultations?doctorId=:id is confirmed */}
                       <p className="text-xs text-gray-500 mt-1">
-                        {c.gender}, {c.age} years · BP {c.bp}
+                        {c.gender ?? '—'} · {c.age != null ? `${c.age} yrs` : '—'} · BP {c.bp ?? '—'}
                       </p>
                     </div>
-                    <span className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[c.status]}`}>
+                    <span
+                      className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[c.status]}`}
+                    >
                       {t(STATUS_KEY[c.status] ?? c.status)}
                     </span>
                   </div>
@@ -147,8 +199,10 @@ export default function HospitalDoctorConsultationsPage() {
             <div className="w-full h-full p-8 overflow-y-auto">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900">{selected.patientName}</h2>
+                {/* gender/age/bp not provided by GET /appointments */}
+                {/* TODO: populate once GET /consultations?doctorId=:id is confirmed */}
                 <p className="text-sm text-gray-500 mt-1">
-                  {selected.gender}, {selected.age} years · BP {selected.bp} · {selected.date}
+                  {selected.gender ?? '—'} · {selected.age != null ? `${selected.age} yrs` : '—'} · BP {selected.bp ?? '—'} · {selected.date}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -159,7 +213,9 @@ export default function HospitalDoctorConsultationsPage() {
                 <InfoCard
                   label={t('hospital.status')}
                   value={
-                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-white ${STATUS_BADGE[selected.status]}`}>
+                    <span
+                      className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-white ${STATUS_BADGE[selected.status]}`}
+                    >
                       {t(STATUS_KEY[selected.status] ?? selected.status)}
                     </span>
                   }
@@ -168,12 +224,20 @@ export default function HospitalDoctorConsultationsPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center text-center px-8">
-              {/* Icon — large circle with pulse line, matches Figma */}
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center mb-5"
                 style={{ background: '#EBF5FF' }}
               >
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00A2E8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#00A2E8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
               </div>

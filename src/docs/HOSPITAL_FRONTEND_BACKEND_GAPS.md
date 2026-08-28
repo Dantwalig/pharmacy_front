@@ -1,10 +1,10 @@
 # Hospital Frontend ↔ Backend Gaps
 
 > **Scope of this entry:** `admin/appointments`, `admin/schedule`, `admin/staff`,
-> `admin/settings`, `admin/reports`.
+> `admin/settings`, `admin/reports`, `receptionist/*`, `nurse/*`.
 > **Source-verified against:** `back-end/src/hospitals/*`, `back-end/src/appointments/*`,
 > `back-end/src/reports/*`, `back-end/src/doctors/availability/*`, `back-end/src/prisma/schema.prisma`.
-> **Last updated:** 2026-07-08
+> **Last updated:** 2026-07-17
 
 This file is the running list of frontend↔backend mismatches across the
 hospital portal. Each entry below is either confirmed working (✅), confirmed
@@ -34,7 +34,7 @@ for aggregations) — not invented from scratch.
 ## Legend
 
 | Icon | Meaning |
-|------|---------|
+| ---- | ------- |
 | ✅ | Confirmed implemented and reachable |
 | ⚠️ | Endpoint exists but only usable indirectly / with caveats |
 | ❌ | Confirmed missing — proposed spec given below |
@@ -44,7 +44,7 @@ for aggregations) — not invented from scratch.
 ## admin/reports
 
 | Chart | Status | Source |
-|---|---|---|
+| ----- | ------ | ------ |
 | Average wait times by Department | ✅ | `GET /reports/department/metrics` |
 | Staff Per Department | ⚠️ | derived from `GET /hospitals/:id/doctors` |
 | Patient Satisfaction | ❌ | proposed below (Gap R-2) |
@@ -122,7 +122,7 @@ by `DATE_TRUNC('month', admittedAt)` for `admitted`, and by
 ## admin/settings
 
 | Section | GET | PATCH/PUT |
-|---|---|---|
+| ------- | --- | --------- |
 | General (hospital profile) | ✅ | ❌ (Gap S-1) |
 | Fees | ❌ (Gap S-2) | ❌ (Gap S-2) |
 | Announcements | ❌ (Gap S-3) | ❌ (Gap S-3) |
@@ -316,3 +316,98 @@ today), but worth a note: if appointment volume grows, a
 `GET /appointments?status=SCHEDULED` param (matching the `?from=&to=` style
 already used elsewhere) would be a natural addition. Not proposing a full
 spec since this isn't blocking anything today.
+
+---
+
+## receptionist/* (Hospital Receptionist Portal Gaps)
+
+### Missing Endpoints
+
+1. `GET /hospitals/:hospitalId/receptionist/dashboard` (Missing in Swagger)
+2. `GET /hospitals/:hospitalId/receptionist/notifications` (Missing in Swagger)
+3. `PATCH /hospitals/:hospitalId/receptionist/notifications/read-all` (Missing in Swagger)
+4. `PATCH /hospitals/:hospitalId/receptionist/notifications/:id/read` (Missing in Swagger)
+5. `GET /hospitals/:hospitalId/receptionist/queue` (Missing in Swagger)
+6. `GET /hospitals/:hospitalId/receptionist/dashboard-stats` (Missing in Swagger)
+7. `GET /hospitals/:hospitalId/receptionist/appointments` (Missing in Swagger)
+8. `GET /hospitals/:hospitalId/receptionist/profile` (Missing in Swagger)
+9. `GET /hospitals/:hospitalId/receptionist/leaves` (Missing in Swagger)
+
+### Missing Data Seeds / Authentication
+
+* **Missing Receptionist User Seed**: The receptionist login is not seeded in the database. This currently causes a `401 Unauthorized` during login since no valid receptionist accounts exist to test this portal fully. The frontend UI currently handles it gracefully by loading the component shell and displaying an error boundary/state when the session is missing or endpoints return a 401.
+
+### Missing Write Endpoints
+
+The following write operations are wired in the frontend but have no corresponding backend route and were not previously listed in this document:
+
+1. `POST /hospitals/:hospitalId/receptionist/leaves` — submit a new leave request; expected body: `{ leaveType: string, startDate: ISO8601, endDate: ISO8601, reason?: string, fileName?: string }`
+2. `PATCH /hospitals/:hospitalId/receptionist/leaves/:id` — update leave status; expected body: `{ status: 'CANCELLED' }`; only valid while current `status === 'PENDING'`
+3. `PATCH /hospitals/:hospitalId/receptionist/profile` — update profile fields; expected body: `{ fullName?: string, phone?: string, email?: string, username?: string, department?: string, address?: string, dateOfJoining?: ISO8601 }`
+4. `PATCH /hospitals/:hospitalId/receptionist/appointments/:id` — covers the three write actions the receptionist appointment-list UI exposes:
+    * **Check-in**: `{ status: 'ARRIVED' }` — transitions SCHEDULED → ARRIVED when the patient arrives
+    * **Cancel**: `{ status: 'CANCELLED' }` — transitions SCHEDULED → CANCELLED
+    * **Reschedule**: `{ scheduledAt: ISO8601 }` — updates the appointment time (keep existing status)
+
+    A single PATCH matches the pattern already used by `admin/appointments` status transitions. The frontend currently renders Check-In, Reschedule, and Cancel buttons with no `onClick` implementation beyond `e.stopPropagation()`; they need this endpoint before they can be wired.
+
+---
+
+## nurse/* (Hospital Nurse Portal Gaps)
+
+The nurse portal (`vitals`, `medications`, `patients`) is wired to existing inpatient endpoints using a two-step fan-out pattern: first `GET /inpatient/admissions?hospitalId=` to discover admission IDs, then per-admission calls for vitals and MAR records. This works today but does not scale — see Gaps N-1 and N-2.
+
+| Page | Endpoints used | Status |
+| ---- | -------------- | ------ |
+| patients | `GET /inpatient/admissions?hospitalId=` | ✅ wired, mock fallback in dev |
+| vitals | `GET /inpatient/admissions?hospitalId=` → `GET /inpatient/admissions/:id/vitals` | ⚠️ single-patient only |
+| medications | `GET /inpatient/admissions?hospitalId=` → `GET /inpatient/admissions/:id/mar` (per-admission) | ⚠️ N+1 calls |
+| dashboard | not yet wired | ❌ Gap N-3 |
+
+### Gap N-1 — No hospital-wide vitals feed
+
+`GET /inpatient/admissions/:id/vitals` requires a specific admission ID. The vitals page picks the most-recent ACTIVE admission and displays only that patient's vitals history. A hospital-wide view is not possible with the current endpoints.
+
+**Proposed endpoint:**
+```
+GET /hospitals/:id/nurse/vitals?date=ISO8601
+@Roles(Role.NURSE, Role.HOSPITAL_ADMIN)
+```
+Returns vitals records across all current admissions for the given date, removing the need for the two-step fan-out.
+
+### Gap N-2 — No hospital-wide MAR feed (N+1 pattern)
+
+`GET /inpatient/admissions/:id/mar` requires an admission ID. The medications page calls it once per admitted patient via `Promise.allSettled` — N HTTP calls where N = number of current admissions.
+
+**Proposed endpoint:**
+```
+GET /hospitals/:id/nurse/mar?date=ISO8601
+@Roles(Role.NURSE, Role.HOSPITAL_ADMIN)
+```
+Returns all MAR records for the hospital's current admissions in one call, matching the existing `MedicationAdministration[]` shape the frontend already uses.
+
+### Gap N-3 — No nurse dashboard endpoint
+
+No `GET /hospitals/:id/nurse/dashboard` exists. Existing dashboard endpoints are `Role.HOSPITAL_ADMIN` only. The nurse dashboard page is not yet wired to the backend.
+
+**Proposed endpoint:**
+```
+GET /hospitals/:id/nurse/dashboard
+@Roles(Role.NURSE)
+```
+Suggested response shape (matches the stat cards already on the page):
+```ts
+{
+  vitalsRecordedToday: number;
+  activeAdmissions: number;
+  criticalAlerts: number;
+  newAssessmentsToday: number;
+}
+```
+
+### Gap N-4 — Medication administration write endpoints not wired
+
+The medications page renders "Record" and "Mark Missed" action buttons with no `onClick` implementation. The following write endpoints are needed before these buttons can be wired:
+
+* `POST /inpatient/admissions/:id/mar` — record a medication administration; body: `{ medicationName, dose, route, administeredAt: ISO8601, notes? }`
+* `PATCH /inpatient/admissions/:id/mar/:marId` — update MAR record status; body: `{ status: 'MISSED' | 'ADMINISTERED', notes? }`

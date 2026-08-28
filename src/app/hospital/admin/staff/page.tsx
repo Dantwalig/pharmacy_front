@@ -172,7 +172,7 @@ export default function HospitalAdminStaffManagementPage() {
       if (statusFilter && STATUS_BADGE[s.status].label !== statusFilter) return false;
       return true;
     });
-  }, [staff, search, deptFilter, roleFilter, statusFilter]);
+  }, [staff, search, deptFilter, roleFilter, statusFilter, ROLE_LABEL, STATUS_BADGE]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage   = Math.min(page, totalPages);
