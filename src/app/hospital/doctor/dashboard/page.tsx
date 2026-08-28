@@ -117,7 +117,11 @@ export default function HospitalDoctorDashboardPage() {
     try {
       const res = await api.get<BackendAppointment[] | { data: BackendAppointment[] }>('/appointments');
       const raw = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
-      const sorted = [...raw].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sorted = [...raw].sort((a, b) => {
+        const da = (b as any).scheduledAt || b.date;
+        const db = (a as any).scheduledAt || a.date;
+        return new Date(da).getTime() - new Date(db).getTime();
+      });
       setAppointments(sorted.slice(0, 5));
     } catch {
       setAppointments([]);
