@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   MagnifyingGlassIcon,
@@ -8,7 +9,6 @@ import {
   UserPlusIcon,
   CalendarDaysIcon,
   FunnelIcon,
-  EllipsisVerticalIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
@@ -40,6 +40,7 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
 
 export default function HospitalDoctorPatientsPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
@@ -236,7 +237,11 @@ export default function HospitalDoctorPatientsPage() {
                 </tr>
               ) : (
                 pageItems.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={p.id}
+                    className="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/hospital/doctor/patient/${p.id}`)}
+                  >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.age > 0 ? p.age : '—'}</td>
@@ -249,9 +254,9 @@ export default function HospitalDoctorPatientsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <EllipsisVerticalIcon className="w-5 h-5" />
-                      </button>
+                      <span className="text-xs font-medium text-blue-600 hover:text-blue-800">
+                        View →
+                      </span>
                     </td>
                   </tr>
                 ))
