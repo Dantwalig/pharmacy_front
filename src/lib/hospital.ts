@@ -224,35 +224,6 @@ export function useHospitalDashboardStats(hospitalId: string | undefined): Hospi
   return { stats, weeklyRevenue, loading, error };
 }
 
-<<<<<<< HEAD
-/**
- * Resolves the current hospital receptionist's topbar display info.
- *
- * Falls back to MOCK_RECEPTIONIST only when not authenticated and not in production.
- */
-export function useHospitalReceptionistUser(): HospitalTopbarUser {
-  const { user } = useAuth();
-
-  if (user?.role === 'RECEPTIONIST' && user.hospitalId) {
-    return {
-      userName: nameFromEmail(user.email),
-      roleLabel: 'Receptionist',
-      hospitalName: user.hospitalName || '',
-      isMock: false,
-    };
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    return {
-      userName: `${MOCK_RECEPTIONIST.firstName} ${MOCK_RECEPTIONIST.lastName}`,
-      roleLabel: 'Receptionist',
-      hospitalName: MOCK_RECEPTIONIST.hospitalName,
-      isMock: true,
-    };
-  }
-
-  return { userName: '', roleLabel: 'Receptionist', hospitalName: '', isMock: false };
-=======
 // ── Shared hospital admissions (patient list) ───────────────────────────────
 //
 // GET /inpatient/admissions?hospitalId= is the nurse portal's real "patient
@@ -375,5 +346,4 @@ export function useHospitalAdmissions(hospitalId: string | undefined): HospitalA
   }, [hospitalId]);
 
   return { patients, loading, error, useMockFallback };
->>>>>>> 04e5dedecbb1ed23eed948e788bac97f66593748
 }
