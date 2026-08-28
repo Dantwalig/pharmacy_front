@@ -17,50 +17,6 @@ const STATUS_KEY: Record<ConsultationStatus, string> = {
   PENDING: 'hospital.pending',
 };
 
-// Raw shape returned by GET /appointments (confirmed in DOCTOR_REMAINING_PAGES_API_GAPS.md).
-// `scheduledAt` is the date field — the API does NOT return a field named `date`.
-// `diagnosisSummary` is only confirmed for GET /appointments/:id (single record), not the list.
-interface AppointmentRaw {
-  id: string;
-  scheduledAt?: string;
-  status: string;
-  type?: string;
-  reason?: string;
-  diagnosisSummary?: string;
-  patient: { firstName: string; lastName: string };
-}
-
-// TODO: verify field mapping against Swagger — see DOCTOR_PORTAL_BACKEND_CONTRACT.md
-function mapToConsultation(a: AppointmentRaw): Consultation {
-  return {
-    id: a.id,
-    patientName:
-      `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
-    // scheduledAt is the confirmed date field from GET /appointments.
-    date: a.scheduledAt
-      ? new Date(a.scheduledAt).toLocaleDateString([], {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })
-      : '—',
-    type: a.type ?? '—',
-    // diagnosisSummary confirmed only for GET /appointments/:id — may be absent in the list.
-    diagnosis: a.diagnosisSummary ?? '—',
-    // TODO: duration not provided by GET /appointments — show '—' until endpoint confirmed
-    duration: '—',
-    // gender, age, bp are not included in the appointments response.
-    // TODO: populate once GET /consultations?doctorId=:id is confirmed available in Swagger
-    //       and its response shape is verified — see DOCTOR_PORTAL_BACKEND_CONTRACT.md
-    status:
-      a.status === 'COMPLETED'
-        ? 'COMPLETED'
-        : a.status === 'PENDING' || a.status === 'CONFIRMED'
-        ? 'PENDING'
-        : 'ACTIVE',
-  };
-}
-
 export default function HospitalDoctorConsultationsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -96,7 +52,7 @@ export default function HospitalDoctorConsultationsPage() {
             patientName: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
             date:      formattedDate,
             type:      a.type ?? 'CONSULTATION',
-            diagnosis: a.diagnosisSummary,
+            diagnosis: a.diagnosisSummary ?? '—',
             status:    a.status === 'COMPLETED' ? 'COMPLETED' : a.status === 'PENDING' || a.status === 'CONFIRMED' ? 'PENDING' : 'ACTIVE',
           };
         });

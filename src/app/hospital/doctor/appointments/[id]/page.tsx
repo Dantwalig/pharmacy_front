@@ -10,6 +10,7 @@ import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 interface BackendAppointment {
   id: string;
   date: string;
+  scheduledAt?: string;
   status: string;
   type?: string;
   reason?: string;
@@ -70,7 +71,7 @@ export default function AppointmentDetailPage() {
     ? `${appointment.patient?.firstName ?? ''} ${appointment.patient?.lastName ?? ''}`.trim()
     : '—';
 
-  const aptDate = appointment ? ((appointment as any).scheduledAt || appointment.date) : null;
+  const aptDate = appointment ? (appointment.scheduledAt || appointment.date) : null;
   const parsedAptDate = aptDate ? new Date(aptDate) : null;
   const formatted = parsedAptDate && !isNaN(parsedAptDate.getTime())
     ? parsedAptDate.toLocaleString([], {

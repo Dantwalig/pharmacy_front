@@ -126,7 +126,11 @@ export default function HospitalDoctorAppointmentsPage() {
   const safePage   = Math.min(page, totalPages);
   const pageItems  = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  const formatTime = (d: string) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (d: string) => {
+    if (!d) return '—';
+    const parsed = new Date(d);
+    return isNaN(parsed.getTime()) ? '—' : parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <div className="space-y-6">

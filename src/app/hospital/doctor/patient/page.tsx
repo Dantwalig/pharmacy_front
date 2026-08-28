@@ -24,6 +24,7 @@ interface DerivedPatient {
   age: number;
   gender: string;
   lastVisit: string;
+  lastVisitMs: number; // raw epoch for reliable comparisons — never parse the formatted string
   condition: string;
   status: PatientStatus;
   isNew: boolean;
@@ -72,11 +73,12 @@ export default function HospitalDoctorPatientsPage() {
           const dateStr = a.scheduledAt || a.date;
           const aDate = dateStr ? new Date(dateStr) : null;
           const isValidDate = aDate && !isNaN(aDate.getTime());
+          const aDateMs = isValidDate ? aDate.getTime() : 0;
           const formattedLastVisit = isValidDate
             ? aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
             : '—';
 
-          if (!existing || (isValidDate && aDate > new Date(existing.lastVisit))) {
+          if (!existing || (isValidDate && aDateMs > existing.lastVisitMs)) {
             map.set(a.patientId, {
               id:          a.patientId,
               patientId:   a.patientId.slice(-8).toUpperCase(),
@@ -84,6 +86,7 @@ export default function HospitalDoctorPatientsPage() {
               age:         0,
               gender:      '—',
               lastVisit:   formattedLastVisit,
+              lastVisitMs: aDateMs,
               condition:   a.reason ?? '—',
               status:      'ACTIVE',
               isNew:       false,
@@ -115,9 +118,8 @@ export default function HospitalDoctorPatientsPage() {
     .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
     .filter(p => {
       if (lastVisitFilter === 'ALL') return true;
-      const visit = new Date(p.lastVisit).getTime();
-      if (Number.isNaN(visit)) return true;
-      const days = (now - visit) / 86_400_000;
+      if (!p.lastVisitMs) return true;
+      const days = (now - p.lastVisitMs) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
     .filter(p =>
