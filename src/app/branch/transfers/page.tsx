@@ -17,6 +17,7 @@ const STATUS_STYLES: Record<string, string> = {
   REJECTED:  'bg-red-100    text-red-700',
   SHIPPED:   'bg-orange-100 text-orange-700',
   COMPLETED: 'bg-green-100  text-green-700',
+  CANCELLED: 'bg-gray-100   text-gray-600',
 };
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
@@ -298,8 +299,8 @@ export default function BranchTransfersPage() {
                           </>
                         )}
 
-                        {/* If current branch is B (toBranchId, sender of the stock) and status is APPROVED */}
-                        {item.toBranchId === myBranchId && item.status === 'APPROVED' && (
+                        {/* If current branch is A (fromBranchId — the SENDER) and status is APPROVED: ship it */}
+                        {item.fromBranchId === myBranchId && item.status === 'APPROVED' && (
                           <button
                             type="button"
                             onClick={() => handleUpdateStatus(item.id, 'SHIPPED')}
@@ -310,8 +311,8 @@ export default function BranchTransfersPage() {
                           </button>
                         )}
 
-                        {/* If current branch is A (fromBranchId, initiator, receiver of the stock) and status is SHIPPED */}
-                        {item.fromBranchId === myBranchId && item.status === 'SHIPPED' && (
+                        {/* If current branch is B (toBranchId — the RECEIVER) and status is SHIPPED: receive it */}
+                        {item.toBranchId === myBranchId && item.status === 'SHIPPED' && (
                           <button
                             type="button"
                             onClick={() => handleUpdateStatus(item.id, 'COMPLETED')}
@@ -322,11 +323,11 @@ export default function BranchTransfersPage() {
                           </button>
                         )}
 
-                        {/* If current branch is A (fromBranchId, initiator) and status is PENDING */}
+                        {/* If current branch is A (fromBranchId — the SENDER) and status is PENDING: cancel it */}
                         {item.fromBranchId === myBranchId && item.status === 'PENDING' && (
                           <button
                             type="button"
-                            onClick={() => handleUpdateStatus(item.id, 'REJECTED')}
+                            onClick={() => handleUpdateStatus(item.id, 'CANCELLED')}
                             disabled={updatingId === item.id}
                             className="px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg disabled:opacity-50 transition"
                           >

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import StaffSidebar from '@/components/staff/StaffSidebar';
-import StaffTopbar from '@/components/staff/Stafftopbar';
+import StaffTopbar from '@/components/staff/StaffTopbar';
 import SupportBot from '@/components/shared/SupportBot';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
