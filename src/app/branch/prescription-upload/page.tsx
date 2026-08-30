@@ -9,7 +9,6 @@
 
 import { useState, useRef, useCallback } from 'react';
 import api from '@/lib/api';
-import CounterModeExit from '@/components/branch/CounterModeExit';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
 import {
@@ -375,7 +374,6 @@ export default function DirectPrescriptionUploadPage() {
           )}
         </button>
       </div>
-      <CounterModeExit />
     </div>
   );
 }

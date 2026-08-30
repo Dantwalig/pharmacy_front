@@ -10,7 +10,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
-import CounterModeExit from '@/components/branch/CounterModeExit';
 import { useFetch } from '@/hooks/useFetch';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -353,7 +352,7 @@ export default function POSPage() {
           {receipt.discount > 0 && (
             <div className="flex justify-between text-green-700"><span>Discount</span><span>-{receipt.discount.toLocaleString()}</span></div>
           )}
-          <div className="flex justify-between font-bold text-base mt-1"><span>TOTAL</span><span>{receipt.total.toLocaleString()} UGX</span></div>
+          <div className="flex justify-between font-bold text-base mt-1"><span>TOTAL</span><span>{receipt.total.toLocaleString()} RWF</span></div>
           {(receipt.taxAmount ?? 0) > 0 && (
             <div className="flex justify-between text-xs text-gray-500">
               <span>incl. Tax ({(receipt.taxRate ?? 0) * 100}%)</span><span>{receipt.taxAmount!.toLocaleString()}</span>
@@ -395,7 +394,7 @@ export default function POSPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Point of Sale</h1>
             {summary && (
               <p className="text-sm text-gray-500 mt-1">
-                Today: <b>{summary.totalTransactions}</b> sales · <b>{summary.totalRevenue.toLocaleString()} UGX</b>
+                Today: <b>{summary.totalTransactions}</b> sales · <b>{summary.totalRevenue.toLocaleString()} RWF</b>
               </p>
             )}
           </div>
@@ -448,7 +447,7 @@ export default function POSPage() {
                 <p className="font-medium text-sm text-gray-800 dark:text-white truncate group-hover:text-brand-teal">{med.name}</p>
                 <p className="text-xs text-gray-400 mt-0.5 truncate">{med.category}</p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm font-bold text-brand-teal">{med.price.toLocaleString()} UGX</span>
+                  <span className="text-sm font-bold text-brand-teal">{med.price.toLocaleString()} RWF</span>
                   <span className={`text-xs ${med.quantity <= 5 ? 'text-red-500' : 'text-gray-400'}`}>
                     {med.quantity} left
                   </span>
@@ -496,7 +495,7 @@ export default function POSPage() {
                 <div key={med.id} className="px-4 py-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 dark:text-white truncate">{med.name}</p>
-                    <p className="text-xs text-gray-400">{med.price.toLocaleString()} UGX each</p>
+                    <p className="text-xs text-gray-400">{med.price.toLocaleString()} RWF each</p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => updateQty(med.id, -1)}
@@ -548,21 +547,21 @@ export default function POSPage() {
               onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
               className="flex-1 text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-teal"
             />
-            <span className="text-xs text-gray-400">UGX</span>
+            <span className="text-xs text-gray-400">RWF</span>
           </div>
 
           {/* Totals */}
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 space-y-1">
             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
-              <span>Subtotal</span><span>{subtotal.toLocaleString()} UGX</span>
+              <span>Subtotal</span><span>{subtotal.toLocaleString()} RWF</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
-                <span>Discount</span><span>-{discount.toLocaleString()} UGX</span>
+                <span>Discount</span><span>-{discount.toLocaleString()} RWF</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white pt-1 border-t border-gray-200 dark:border-gray-600">
-              <span>Total</span><span>{discountedTotal.toLocaleString()} UGX</span>
+              <span>Total</span><span>{discountedTotal.toLocaleString()} RWF</span>
             </div>
           </div>
 
@@ -599,7 +598,7 @@ export default function POSPage() {
           {change > 0 && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl px-4 py-2.5 flex justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">Change</span>
-              <span className="text-sm font-bold text-blue-700 dark:text-blue-300">{change.toLocaleString()} UGX</span>
+              <span className="text-sm font-bold text-blue-700 dark:text-blue-300">{change.toLocaleString()} RWF</span>
             </div>
           )}
 
@@ -682,7 +681,6 @@ export default function POSPage() {
           </div>
         </div>
       )}
-      <CounterModeExit />
     </div>
   );
 }

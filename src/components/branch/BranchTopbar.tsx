@@ -1,19 +1,19 @@
 'use client';
 import { useTranslation } from 'react-i18next';
-import { BellIcon, UserIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { BellIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
 import { useAuth } from '@/context/AuthContext';
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import WorkspaceSwitcher from '@/components/branch/WorkspaceSwitcher';
+import UserAccountBlock from '@/components/shared/UserAccountBlock';
 import Link from 'next/link';
 
 interface Props {
-  branchName?: string;
   pharmacyName?: string;
   onMenuClick?: () => void;
 }
 
-export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-Vuze Pharmacy', onMenuClick }: Props) {
+export default function BranchTopbar({ pharmacyName = 'E-Vuze Pharmacy', onMenuClick }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { unreadCount } = useUnreadNotifications('branch');
@@ -49,15 +49,7 @@ export default function BranchTopbar({ branchName = 'Branch', pharmacyName = 'E-
           </button>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm bg-brand-navy">
-            <UserIcon className="w-4 h-4" />
-          </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-semibold text-gray-800">{branchName}</p>
-            <p className="text-xs text-gray-500">{isStaff ? t('roles.staff') : t('topbar.branchManager')}</p>
-          </div>
-        </div>
+        <UserAccountBlock />
       </div>
     </header>
   );
