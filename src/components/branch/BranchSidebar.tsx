@@ -6,7 +6,7 @@ import {
   Squares2X2Icon, UsersIcon, ClockIcon, ChartBarIcon, CubeIcon, 
   ArrowsRightLeftIcon, MapIcon, LockClosedIcon, XMarkIcon, ArrowRightOnRectangleIcon,
   ShoppingCartIcon, DocumentArrowUpIcon, ClipboardDocumentCheckIcon,
-  ChevronDoubleLeftIcon, ChevronDoubleRightIcon,
+  ChevronDoubleLeftIcon, ChevronDoubleRightIcon, CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
@@ -38,6 +38,7 @@ export default function BranchSidebar({ open = false, onClose, collapsed = false
     // Branch-manager-only administration
     { href: '/branch/staff',               icon: UsersIcon,              label: t('branch.staff'),     show: isManager },
     { href: '/branch/attendance',          icon: ClockIcon,              label: t('branch.attendance'), show: isManager },
+    { href: '/branch/staff-leave',         icon: CalendarDaysIcon,       label: t('staffLeave.branchTitle'), show: isManager },
     { href: '/branch/analytics',           icon: ChartBarIcon,           label: t('branch.analytics'), show: isManager },
     { href: '/branch/inventory',           icon: CubeIcon,               label: t('branch.inventory'), show: isManager },
     { href: '/branch/transfers',           icon: ArrowsRightLeftIcon,    label: t('branch.transfers'), show: isManager },
