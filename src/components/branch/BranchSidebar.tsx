@@ -2,11 +2,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { 
-  Squares2X2Icon, UsersIcon, ClockIcon, ChartBarIcon, CubeIcon, 
+import { useEffect, useState } from 'react';
+import {
+  Squares2X2Icon, UsersIcon, ClockIcon, ChartBarIcon, CubeIcon,
   ArrowsRightLeftIcon, MapIcon, LockClosedIcon, XMarkIcon, ArrowRightOnRectangleIcon,
   ShoppingCartIcon, DocumentArrowUpIcon, ClipboardDocumentCheckIcon,
   ChevronDoubleLeftIcon, ChevronDoubleRightIcon, CalendarDaysIcon,
+  ChevronDownIcon, WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
@@ -28,6 +30,7 @@ export default function BranchSidebar({ open = false, onClose, collapsed = false
   const isManager = role === 'BRANCH_MANAGER';
   const isStaff = role === 'PHARMACIST' || role === 'CASHIER' || role === 'NURSE';
 
+  // Counter tools first, then admin tools grouped under "Management".
   const nav = [
     // Dashboard first
     { href: '/branch/dashboard',           icon: Squares2X2Icon,         label: t('branch.dashboard'), show: isManager },
@@ -35,17 +38,25 @@ export default function BranchSidebar({ open = false, onClose, collapsed = false
     { href: '/branch/pos',                 icon: ShoppingCartIcon,       label: 'POS Sale',            show: true },
     { href: '/branch/prescription-upload', icon: DocumentArrowUpIcon,    label: 'Upload Rx',           show: true },
     { href: '/branch/prescriptions',       icon: ClipboardDocumentCheckIcon, label: 'Rx Queue',       show: true },
-    // Branch-manager-only administration
-    { href: '/branch/staff',               icon: UsersIcon,              label: t('branch.staff'),     show: isManager },
-    { href: '/branch/attendance',          icon: ClockIcon,              label: t('branch.attendance'), show: isManager },
-    { href: '/branch/staff-leave',         icon: CalendarDaysIcon,       label: t('staffLeave.branchTitle'), show: isManager },
-    { href: '/branch/analytics',           icon: ChartBarIcon,           label: t('branch.analytics'), show: isManager },
-    { href: '/branch/inventory',           icon: CubeIcon,               label: t('branch.inventory'), show: isManager },
-    { href: '/branch/transfers',           icon: ArrowsRightLeftIcon,    label: t('branch.transfers'), show: isManager },
-    { href: '/branch/map',                 icon: MapIcon,                label: t('branch.networkMap'), show: isManager },
     // Account
     { href: '/branch/change-password',     icon: LockClosedIcon,         label: t('branch.changePassword'), show: true },
   ].filter(item => item.show);
+
+  const adminTools = [
+    { href: '/branch/staff',               icon: UsersIcon,              label: t('branch.staff') },
+    { href: '/branch/attendance',          icon: ClockIcon,              label: t('branch.attendance') },
+    { href: '/branch/staff-leave',         icon: CalendarDaysIcon,       label: t('staffLeave.branchTitle') },
+    { href: '/branch/analytics',           icon: ChartBarIcon,           label: t('branch.analytics') },
+    { href: '/branch/inventory',           icon: CubeIcon,               label: t('branch.inventory') },
+    { href: '/branch/transfers',           icon: ArrowsRightLeftIcon,    label: t('branch.transfers') },
+    { href: '/branch/map',                 icon: MapIcon,                label: t('branch.networkMap') },
+  ];
+
+  const adminActive = adminTools.some(({ href }) => pathname === href || pathname.startsWith(href + '/'));
+  const [adminOpen, setAdminOpen] = useState(adminActive);
+  useEffect(() => {
+    if (adminActive) setAdminOpen(true);
+  }, [adminActive]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -97,6 +108,58 @@ export default function BranchSidebar({ open = false, onClose, collapsed = false
             </Link>
           );
         })}
+
+        {/* Management group — branch-manager-only, one-click dropdown */}
+        {isManager && (
+          <div className="relative">
+            <button
+              onClick={() => setAdminOpen(!adminOpen)}
+              title={collapsed ? 'Management' : undefined}
+              className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all ${collapsed ? 'lg:justify-center lg:px-0' : ''} ${adminActive || adminOpen ? 'text-white bg-white/10' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+            >
+              <WrenchScrewdriverIcon className="w-[18px] h-[18px] shrink-0" />
+              <span className={`flex-1 text-left ${collapsed ? 'lg:hidden' : ''}`}>Management</span>
+              <ChevronDownIcon className={`w-4 h-4 shrink-0 transition-transform ${adminOpen ? 'rotate-180' : ''} ${collapsed ? 'lg:hidden' : ''}`} />
+            </button>
+
+            {/* Expanded: inline submenu (also mobile when collapsed state set) */}
+            {adminOpen && (
+              <div className={`ml-4 mt-1 space-y-1 border-l border-white/10 pl-2 ${collapsed ? 'lg:hidden' : ''}`}>
+                {adminTools.map(({ href, icon: Icon, label }) => {
+                  const active = isActive(href);
+                  return (
+                    <Link key={href} href={href} onClick={onClose}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${active ? 'text-white bg-brand-teal' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Collapsed rail: flyout panel to the right */}
+            {collapsed && adminOpen && (
+              <div className="hidden lg:block absolute left-full top-0 ml-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Management
+                </p>
+                {adminTools.map(({ href, icon: Icon, label }) => {
+                  const active = isActive(href);
+                  return (
+                    <Link key={href} href={href} onClick={onClose}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${active ? 'text-brand-teal font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Footer — staff: exit counter mode back to the staff portal; logout for everyone */}

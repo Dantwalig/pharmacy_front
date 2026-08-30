@@ -269,6 +269,7 @@ export const en = {
   },
   patient: {
     dashboard: 'Dashboard',
+    portal: 'Patient Portal',
     browsePharmacies: 'Browse Pharmacies',
     searchMedications: 'Search Medications',
     myOrders: 'My Orders',

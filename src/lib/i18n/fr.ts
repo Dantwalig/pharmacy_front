@@ -266,6 +266,7 @@ export const fr = {
     browsePharmacies: 'Parcourir les pharmacies',
     searchMedications: 'Rechercher des médicaments',
     myOrders: 'Mes commandes',
+    portal: 'Portail patient',
     myProfile: 'Mon profil',
     topbar: {
       title: 'Plateforme de santé E-Vuze',

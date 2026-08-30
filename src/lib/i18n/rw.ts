@@ -266,6 +266,7 @@ export const rw = {
     browsePharmacies: 'Shakisha Amafarimasi',
     searchMedications: 'Shakisha Imiti',
     myOrders: 'Ibyo Natumije',
+    portal: 'Urubuga rw\u2019Umurwayi',
     myProfile: 'Umwirondoro Wanjye',
     topbar: {
       title: 'Urubuga rwa E-Vuze',
