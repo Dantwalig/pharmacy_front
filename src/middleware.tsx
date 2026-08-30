@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isSuperAdminRoute = pathname.startsWith('/super-admin') && pathname !== '/super-admin/login';
+  const isSystemAdminRoute = pathname.startsWith('/system-admin');
   const isPharmacyRoute   = pathname.startsWith('/pharmacy');
   const isPatientRoute    = pathname.startsWith('/patient');
   const isBranchRoute     = pathname.startsWith('/branch');
@@ -24,7 +25,7 @@ export function middleware(request: NextRequest) {
   // Hospital signup/registration must stay public — only the portals below are guarded
   const isHospitalRoute   = pathname.startsWith('/hospital') && pathname !== '/hospital/register';
 
-  if (!isSuperAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute && !isHospitalRoute) {
+  if (!isSuperAdminRoute && !isSystemAdminRoute && !isPharmacyRoute && !isPatientRoute && !isBranchRoute && !isStaffRoute && !isHospitalRoute) {
     return NextResponse.next();
   }
 
@@ -78,6 +79,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+
+  if (isSystemAdminRoute) {
+    if (payload.role !== 'SYSTEM_ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    return NextResponse.next();
+  }
 
   if (isBranchRoute) {
     // Mirror BRANCH_PORTAL_ROLES in src/app/branch/layout.tsx — the whole
