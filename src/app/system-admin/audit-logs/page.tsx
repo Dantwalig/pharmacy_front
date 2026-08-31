@@ -40,7 +40,7 @@ export default function AuditLogsPage() {
       setLogs(res.data.items || []);
       setTotal(res.data.total || 0);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Failed to load audit logs. Check that you are SYSTEM_ADMIN.');
+      setError(e?.response?.data?.message || 'Failed to load audit logs. Check that you are SUPER_ADMIN.');
       console.error('Failed to fetch audit logs', e);
     } finally {
       setLoading(false);
