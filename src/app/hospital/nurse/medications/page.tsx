@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import {
     Search,
     Filter,
@@ -36,6 +37,21 @@ interface MarRecordPayload {
     notes?: string;
     nurse?: { firstName?: string; lastName?: string };
     admission?: { patient?: { firstName?: string; lastName?: string } };
+}
+
+// Local type — admissionId is needed to POST new MAR entries. Route is kept as
+// a plain string here because the backend can return free-form values that don't
+// match the MedicationRoute union ('—' fallback included).
+interface MarRow {
+    id: string;
+    admissionId: string;
+    patientName: string;
+    medicationName: string;
+    dosage: string;
+    route: string;
+    scheduledTime: string;
+    status: MedicationStatus;
+    assignedNurse: string;
 }
 
 interface MedicationStatsSummary {
@@ -74,7 +90,7 @@ function deriveMedicationStatus(item: MarRecordPayload): MedicationStatus {
     return 'UPCOMING';
 }
 
-function buildStats(rows: MedicationAdministration[]): MedicationStatsSummary {
+function buildStats(rows: { status: MedicationStatus }[]): MedicationStatsSummary {
     const counts = rows.reduce((acc, row) => {
         if (row.status === 'ADMINISTERED') acc.administeredToday += 1;
         if (row.status === 'DUE') acc.dueToday += 1;
@@ -97,15 +113,16 @@ export default function MedicationAdministrationPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [useMockFallback, setUseMockFallback] = useState(false);
-    const [medications, setMedications] = useState<MedicationAdministration[]>([]);
+    const [medications, setMedications] = useState<MarRow[]>([]);
     const [stats, setStats] = useState<MedicationStatsSummary>(EMPTY_STATS);
+    const [recordingId, setRecordingId] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
 
         if (!hospitalId) {
             setUseMockFallback(true);
-            setMedications(MOCK_MEDICATIONS);
+            setMedications(MOCK_MEDICATIONS.map(m => ({ ...m, admissionId: '', route: (m.route as string) || '—' })));
             setStats(MOCK_MEDICATION_STATS);
             setError(null);
             setLoading(false);
@@ -129,35 +146,39 @@ export default function MedicationAdministrationPage() {
                         : [];
 
                 const results = await Promise.allSettled(
-                    admissionList.map((admission: any) => api.get(`/inpatient/admissions/${admission.id}/mar`))
+                    admissionList.map((admission: any) =>
+                        api.get(`/inpatient/admissions/${admission.id}/mar`).then(res => ({ admissionId: admission.id as string, res }))
+                    )
                 );
 
                 const rows = results.flatMap((result) => {
                     if (result.status !== 'fulfilled') return [];
-                    const payload = result.value.data;
+                    const { admissionId, res } = result.value;
+                    const payload = res.data;
                     const marList = Array.isArray(payload)
                         ? payload
                         : Array.isArray(payload?.data)
                             ? payload.data
                             : [];
 
-                    return marList.map((item: MarRecordPayload) => {
+                    return marList.map((item: MarRecordPayload): MarRow => {
                         const patientName = [item.admission?.patient?.firstName ?? '', item.admission?.patient?.lastName ?? '']
                             .filter(Boolean)
                             .join(' ') || 'Unknown patient';
 
                         return {
                             id: item.id,
+                            admissionId,
                             patientName,
                             medicationName: item.medicationName || 'Medication',
                             dosage: item.dose || '—',
-                            route: item.route || '—',
+                            route: (item.route || '—') as MarRow['route'],
                             scheduledTime: formatTime(item.scheduledAt || item.administeredAt),
                             status: deriveMedicationStatus(item),
                             assignedNurse: [item.nurse?.firstName ?? '', item.nurse?.lastName ?? '']
                                 .filter(Boolean)
                                 .join(' ') || 'Nurse',
-                        } as MedicationAdministration;
+                        };
                     });
                 });
 
@@ -169,7 +190,7 @@ export default function MedicationAdministrationPage() {
                 if (!cancelled) {
                     if (process.env.NODE_ENV !== 'production') {
                         setUseMockFallback(true);
-                        setMedications(MOCK_MEDICATIONS);
+                        setMedications(MOCK_MEDICATIONS.map(m => ({ ...m, admissionId: '', route: (m.route as string) || '—' })));
                         setStats(MOCK_MEDICATION_STATS);
                     } else {
                         setError('Unable to load medication records right now.');
@@ -188,6 +209,45 @@ export default function MedicationAdministrationPage() {
             cancelled = true;
         };
     }, [hospitalId]);
+
+    const handleRecord = useCallback(async (med: MarRow) => {
+        setRecordingId(med.id);
+        try {
+            await api.post(`/inpatient/admissions/${med.admissionId}/mar`, {
+                medicationName: med.medicationName,
+                dose: med.dosage,
+                route: med.route !== '—' ? med.route : undefined,
+                administeredAt: new Date().toISOString(),
+            });
+            setMedications(prev => prev.map(m => m.id === med.id ? { ...m, status: 'ADMINISTERED' as const } : m));
+            setStats(prev => ({ ...prev, administeredToday: prev.administeredToday + 1, dueToday: Math.max(0, prev.dueToday - 1) }));
+            toast.success(`${med.medicationName} recorded as administered.`);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? 'Failed to record administration — please try again.');
+        } finally {
+            setRecordingId(null);
+        }
+    }, []);
+
+    const handleMarkMissed = useCallback(async (med: MarRow) => {
+        setRecordingId(med.id);
+        try {
+            await api.post(`/inpatient/admissions/${med.admissionId}/mar`, {
+                medicationName: med.medicationName,
+                dose: med.dosage,
+                route: med.route !== '—' ? med.route : undefined,
+                administeredAt: new Date().toISOString(),
+                notes: 'DOSE NOT ADMINISTERED — marked as missed by nurse',
+            });
+            setMedications(prev => prev.map(m => m.id === med.id ? { ...m, status: 'MISSED' as const } : m));
+            setStats(prev => ({ ...prev, missedDoses: prev.missedDoses + 1, dueToday: Math.max(0, prev.dueToday - 1) }));
+            toast.success(`${med.medicationName} marked as missed.`);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? 'Failed to mark dose as missed — please try again.');
+        } finally {
+            setRecordingId(null);
+        }
+    }, []);
 
     const filteredMedications = useMemo(() => medications.filter((med) => {
         const matchesPatient = med.patientName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -399,10 +459,18 @@ export default function MedicationAdministrationPage() {
                                         <div className="flex items-center gap-2">
                                             {med.status === 'DUE' || med.status === 'OVERDUE' ? (
                                                 <>
-                                                    <button className="px-4 py-2 bg-[#38BDF8] text-white rounded-lg text-xs font-bold hover:bg-[#0EA5E9] transition-all shadow-sm">
-                                                       {t('hospital.record')}
+                                                    <button
+                                                        onClick={() => handleRecord(med)}
+                                                        disabled={recordingId === med.id || useMockFallback}
+                                                        className="px-4 py-2 bg-[#38BDF8] text-white rounded-lg text-xs font-bold hover:bg-[#0EA5E9] transition-all shadow-sm disabled:opacity-50"
+                                                    >
+                                                        {recordingId === med.id ? '…' : t('hospital.record')}
                                                     </button>
-                                                    <button className="px-3 py-2 text-[#64748B] hover:text-[#DC2626] rounded-lg text-xs font-bold transition-all">
+                                                    <button
+                                                        onClick={() => handleMarkMissed(med)}
+                                                        disabled={recordingId === med.id || useMockFallback}
+                                                        className="px-3 py-2 text-[#64748B] hover:text-[#DC2626] rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                                                    >
                                                         {t('hospital.missed')}
                                                     </button>
                                                 </>
