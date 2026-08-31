@@ -1,6 +1,6 @@
 // src/types/index.ts
 
-export type UserRole = 'SUPER_ADMIN' | 'SYSTEM_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE' | 'HOSPITAL_ADMIN' | 'DOCTOR' | 'RECEPTIONIST';
+export type UserRole = 'SUPER_ADMIN' | 'PHARMACY' | 'PATIENT' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CASHIER' | 'NURSE' | 'HOSPITAL_ADMIN' | 'DOCTOR' | 'RECEPTIONIST';
 
 export type PharmacyStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 

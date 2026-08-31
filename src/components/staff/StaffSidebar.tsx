@@ -22,11 +22,11 @@ export default function StaffSidebar({ open = false, onClose }: StaffSidebarProp
 
   const nav = [
     { href: '/staff/dashboard',       icon: Squares2X2Icon,            label: t('staff.dashboard'),      show: true },
-    { href: '/staff/orders',          icon: CreditCardIcon,            label: t('cashier.paymentsNav'),  show: isCashier && (can('VIEW_PAYMENTS') || can('PROCESS_PAYMENTS')) },
+    { href: '/staff/orders',          icon: CreditCardIcon,            label: t('cashier.paymentsNav'),  show: isCashier && (can('VIEW_PAYMENTS') || can('PROCESS_PAYMENTS') || can('ACCESS_POS')) },
     { href: '/staff/prescriptions',   icon: ClipboardDocumentListIcon, label: t('staff.prescriptions'),  show: !isCashier && can('VIEW_PRESCRIPTIONS') },
     { href: '/staff/inventory',       icon: CubeIcon,                  label: t('staff.inventory'),      show: can('VIEW_INVENTORY') },
     { href: '/staff/attendance',      icon: ClockIcon,                 label: t('staff.attendance'),     show: true },
-    { href: '/staff/leave',           icon: CalendarDaysIcon,          label: t('staffLeave.title'),     show: true },
+    { href: '/staff/leave',           icon: CalendarDaysIcon,          label: t('staff.leave'),          show: true },
     { href: '/staff/profile',         icon: UserIcon,                  label: t('staff.profile'),        show: true },
     { href: '/staff/change-password', icon: LockClosedIcon,            label: t('staff.changePassword'), show: true },
   ].filter(item => item.show);
