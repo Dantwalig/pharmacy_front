@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Search, Filter, MoreVertical, ChevronLeft, ChevronRight,
+  Search, Filter, ChevronLeft, ChevronRight,
   Users, BedDouble, Activity, UserCheck,
 } from 'lucide-react';
-import { MOCK_PATIENTS } from '@/mock/hospital/consultations';
 import type { PatientStatus } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useHospitalId } from '@/lib/hospital';
 import axios from 'axios';
@@ -48,6 +48,7 @@ function deriveStatus(status?: string): PatientStatus {
 export default function NursePatientsPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
+  const router = useRouter();
 
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [search, setSearch] = useState('');
@@ -58,25 +59,20 @@ export default function NursePatientsPage() {
   const [now] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [useMockFallback, setUseMockFallback] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!hospitalId) {
-      setUseMockFallback(true);
-      setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
+      setPatients([]);
       setLoading(false);
       setError(null);
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled = true; };
     }
 
     const loadPatients = async () => {
       setLoading(true);
       setError(null);
-      setUseMockFallback(false);
 
       try {
         const response = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
@@ -110,17 +106,11 @@ export default function NursePatientsPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          if (process.env.NODE_ENV !== 'production') {
-            setUseMockFallback(true);
-            setPatients(MOCK_PATIENTS as unknown as PatientRow[]);
-            setError(null);
-          } else {
-            const message = axios.isAxiosError(err)
-              ? err.response?.data?.message || 'Unable to load patient data right now.'
-              : 'Unable to load patient data right now.';
-            setError(message);
-            setPatients([]);
-          }
+          const message = axios.isAxiosError(err)
+            ? err.response?.data?.message || 'Unable to load patient data right now.'
+            : 'Unable to load patient data right now.';
+          setError(message);
+          setPatients([]);
         }
       } finally {
         if (!cancelled) {
@@ -175,13 +165,7 @@ export default function NursePatientsPage() {
         <p className="mt-1 text-sm font-medium" style={{ color: '#0284C7' }}>{t('hospital.patientsSubtitle')}</p>
       </div>
 
-      {useMockFallback && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          {t('hospital.devFallbackMessage', 'Showing mock patient data because the backend is unavailable or no hospital context is available in development.')}
-        </div>
-      )}
-
-      {error && !useMockFallback && (
+      {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
@@ -265,7 +249,11 @@ export default function NursePatientsPage() {
                   </td>
                 </tr>
               ) : pageItems.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={p.id}
+                  onClick={() => router.push(`/hospital/nurse/outpatient-triage?patientId=${p.id}`)}
+                  className="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{p.age}</td>
@@ -276,7 +264,7 @@ export default function NursePatientsPage() {
                     <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_BADGE[p.status]}`}>{p.status === 'ACTIVE' ? t('hospital.active') : p.status === 'CRITICAL' ? t('hospital.critical') : p.status === 'INACTIVE' ? t('hospital.inactive') : p.status}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="text-gray-400 hover:text-gray-600 transition-colors"><MoreVertical className="w-5 h-5" /></button>
+                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Start Triage</span>
                   </td>
                 </tr>
               ))

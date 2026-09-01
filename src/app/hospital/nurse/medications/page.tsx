@@ -13,7 +13,6 @@ import {
     RotateCcw,
     Pill,
 } from 'lucide-react';
-import { MOCK_MEDICATIONS, MOCK_MEDICATION_STATS } from '@/mock/hospital/medications';
 import { MedicationAdministration, MedicationStatus } from '@/types/hospital';
 import api from '@/lib/api';
 import { useHospitalId } from '@/lib/hospital';
@@ -88,7 +87,6 @@ export default function MedicationAdministrationPage() {
     const [selectedDate, setSelectedDate] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [useMockFallback, setUseMockFallback] = useState(false);
     const [medications, setMedications] = useState<MedicationAdministration[]>([]);
     const [stats, setStats] = useState<MedicationStatsSummary>(EMPTY_STATS);
 
@@ -96,9 +94,8 @@ export default function MedicationAdministrationPage() {
         let cancelled = false;
 
         if (!hospitalId) {
-            setUseMockFallback(true);
-            setMedications(MOCK_MEDICATIONS);
-            setStats(MOCK_MEDICATION_STATS);
+            setMedications([]);
+            setStats(EMPTY_STATS);
             setError(null);
             setLoading(false);
             return () => {
@@ -109,7 +106,6 @@ export default function MedicationAdministrationPage() {
         const loadMar = async () => {
             setLoading(true);
             setError(null);
-            setUseMockFallback(false);
 
             try {
                 const admissionsResponse = await api.get(`/inpatient/admissions?hospitalId=${hospitalId}`);
@@ -157,17 +153,11 @@ export default function MedicationAdministrationPage() {
                     setMedications(rows);
                     setStats(buildStats(rows));
                 }
-            } catch (err) {
+            } catch {
                 if (!cancelled) {
-                    if (process.env.NODE_ENV !== 'production') {
-                        setUseMockFallback(true);
-                        setMedications(MOCK_MEDICATIONS);
-                        setStats(MOCK_MEDICATION_STATS);
-                    } else {
-                        setError('Unable to load medication records right now.');
-                        setMedications([]);
-                        setStats(EMPTY_STATS);
-                    }
+                    setError('Unable to load medication records right now.');
+                    setMedications([]);
+                    setStats(EMPTY_STATS);
                 }
             } finally {
                 if (!cancelled) setLoading(false);
@@ -217,12 +207,6 @@ export default function MedicationAdministrationPage() {
                 </div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#38BDF8] opacity-5 rounded-full -mr-20 -mt-20 blur-3xl" />
             </div>
-
-            {useMockFallback && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                    {t('hospital.devFallbackMessage', 'Showing mock medication data because the backend is unavailable or no hospital context is available in development.')}
-                </div>
-            )}
 
             {error && (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
