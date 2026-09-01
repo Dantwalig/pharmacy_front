@@ -15,7 +15,8 @@ import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdow
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
 import {useTranslation} from 'react-i18next';
-import { MOCK_INVOICES } from '@/mock/hospital/finance';
+import api from '@/lib/api';
+import { useHospitalId } from '@/lib/hospital';
 import type { PaymentBreakdownItem } from '@/components/hospital/finance/PaymentBreakdownChart';
 import type { RefundItem } from '@/components/hospital/finance/RefundTable';
 
@@ -40,7 +41,16 @@ const REFUNDS: RefundItem[] = [
 
 export default function HospitalAdminFinancePage() {
   const { t } = useTranslation();
-  
+  const hospitalId = useHospitalId();
+  const [invoices, setInvoices] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!hospitalId) return;
+    api.get<any[]>(`/hospitals/${hospitalId}/invoices`)
+      .then((res) => setInvoices(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setInvoices([]));
+  }, [hospitalId]);
+
   const PAYMENT_BREAKDOWN: PaymentBreakdownItem[] = [
   { name: t('hospital.mobileMoney'), value: 1_530_769, color: '#1E4D8C' },
   { name: t('hospital.cash'),         value: 2_037_670, color: '#93c5fd' },
@@ -113,7 +123,7 @@ export default function HospitalAdminFinancePage() {
       {/* Invoice table + Refund panel */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <InvoiceTable
-          invoices={MOCK_INVOICES}
+          invoices={invoices}
           onExport={() => console.log('export')}
         />
         <RefundTable
