@@ -24,7 +24,6 @@ interface DerivedPatient {
   age: number;
   gender: string;
   lastVisit: string;
-  lastVisitMs: number; // raw epoch for reliable comparisons — never parse the formatted string
   condition: string;
   status: PatientStatus;
   isNew: boolean;
@@ -63,30 +62,22 @@ export default function HospitalDoctorPatientsPage() {
         // Age, gender, MRN are not included — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
         const res = await api.get('/appointments');
         const raw = unwrapData<{
-          patientId: string; date: string; scheduledAt?: string; reason?: string;
+          patientId: string; date: string; reason?: string;
           patient: { firstName: string; lastName: string };
         }>(res.data);
 
         const map = new Map<string, DerivedPatient>();
         for (const a of raw) {
           const existing = map.get(a.patientId);
-          const dateStr = a.scheduledAt || a.date;
-          const aDate = dateStr ? new Date(dateStr) : null;
-          const isValidDate = aDate && !isNaN(aDate.getTime());
-          const aDateMs = isValidDate ? aDate.getTime() : 0;
-          const formattedLastVisit = isValidDate
-            ? aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
-            : '—';
-
-          if (!existing || (isValidDate && aDateMs > existing.lastVisitMs)) {
+          const aDate = new Date(a.date);
+          if (!existing || aDate > new Date(existing.lastVisit)) {
             map.set(a.patientId, {
               id:          a.patientId,
               patientId:   a.patientId.slice(-8).toUpperCase(),
               name:        `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
               age:         0,
               gender:      '—',
-              lastVisit:   formattedLastVisit,
-              lastVisitMs: aDateMs,
+              lastVisit:   aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }),
               condition:   a.reason ?? '—',
               status:      'ACTIVE',
               isNew:       false,
@@ -118,8 +109,9 @@ export default function HospitalDoctorPatientsPage() {
     .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
     .filter(p => {
       if (lastVisitFilter === 'ALL') return true;
-      if (!p.lastVisitMs) return true;
-      const days = (now - p.lastVisitMs) / 86_400_000;
+      const visit = new Date(p.lastVisit).getTime();
+      if (Number.isNaN(visit)) return true;
+      const days = (now - visit) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
     .filter(p =>

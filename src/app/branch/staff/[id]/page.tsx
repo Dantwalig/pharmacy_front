@@ -55,7 +55,7 @@ const PERMISSION_GROUPS = [
   },
   {
     label: 'Payments',
-    perms: ['VIEW_PAYMENTS', 'PROCESS_PAYMENTS', 'ISSUE_REFUNDS'],
+    perms: ['VIEW_PAYMENTS', 'PROCESS_PAYMENTS', 'ISSUE_REFUNDS', 'ACCESS_POS'],
   },
   {
     label: 'Prescriptions',

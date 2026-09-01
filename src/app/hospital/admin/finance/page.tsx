@@ -7,161 +7,49 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
-import RevenueChart from '@/components/hospital/finance/RevenueChart';
+import RevenueChart, {
+  type RevenueChartPeriod,
+  type RevenueDataPoint,
+} from '@/components/hospital/finance/RevenueChart';
 import PaymentBreakdownChart from '@/components/hospital/finance/PaymentBreakdownChart';
 import InvoiceTable from '@/components/hospital/finance/InvoiceTable';
 import RefundTable from '@/components/hospital/finance/RefundTable';
-import { useTranslation } from 'react-i18next';
-import { useHospitalId, useHospitalDashboardStats } from '@/lib/hospital';
-import api from '@/lib/api';
-import type { InvoiceStatus } from '@/types/hospital';
+import {useTranslation} from 'react-i18next';
+import { MOCK_INVOICES } from '@/mock/hospital/finance';
 import type { PaymentBreakdownItem } from '@/components/hospital/finance/PaymentBreakdownChart';
 import type { RefundItem } from '@/components/hospital/finance/RefundTable';
 
+const REVENUE_CHART_DATA = [
+  { label: 'JAN', revenue: 3_800_000, expenses: 2_200_000 },
+  { label: 'FEB', revenue: 4_500_000, expenses: 2_900_000 },
+  { label: 'MAR', revenue: 3_200_000, expenses: 2_400_000 },
+  { label: 'APR', revenue: 2_900_000, expenses: 2_100_000 },
+  { label: 'MAY', revenue: 4_100_000, expenses: 2_700_000 },
+  { label: 'JUN', revenue: 3_600_000, expenses: 2_500_000 },
+  { label: 'JUL', revenue: 4_800_000, expenses: 3_100_000 },
+];
+
+
+
 const REFUNDS: RefundItem[] = [
-  { id: 'RF-008', amount: 1_000, status: 'APPROVED', date: '2023-05-21' },
+  { id: 'RF-008', amount: 1_000,  status: 'APPROVED', date: '2023-05-21' },
   { id: 'RF-007', amount: 17_000, status: 'REJECTED', date: '2023-05-19' },
-  { id: 'RF-006', amount: 67_090, status: 'PENDING', date: '2023-05-10' },
+  { id: 'RF-006', amount: 67_090, status: 'PENDING',  date: '2023-05-10' },
   { id: 'RF-005', amount: 34_100, status: 'REJECTED', date: '2023-05-18' },
 ];
 
 export default function HospitalAdminFinancePage() {
-  const { t, i18n } = useTranslation();
-  const hospitalId = useHospitalId();
-
-  // 1 & 2. Stats and Weekly Revenue via hook
-  const { stats, weeklyRevenue, loading: statsLoading, error: statsError } = useHospitalDashboardStats(hospitalId);
-  const dashError = statsError;
-
-  // 3. Invoices via independent useEffect
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [invoicesLoading, setInvoicesLoading] = useState(true);
-  const [invoicesError, setInvoicesError] = useState(false);
-  const [isEndpointMissing, setIsEndpointMissing] = useState(false);
-
-  useEffect(() => {
-    if (!hospitalId) {
-      setInvoicesLoading(false);
-      return;
-    }
-
-    let active = true;
-    setInvoicesLoading(true);
-    setInvoicesError(false);
-    setIsEndpointMissing(false);
-
-    api.get(`/hospitals/${hospitalId}/invoices?limit=100`)
-      .then((res) => {
-        if (!active) return;
-        const rawList = res.data?.data || res.data;
-        if (Array.isArray(rawList)) {
-          setInvoices(rawList);
-        } else {
-          setInvoices([]);
-        }
-        setInvoicesLoading(false);
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.error('Failed to fetch invoices:', err);
-        // Verify invoices endpoint exists: if returns 404, endpoint is missing in Swagger/backend
-        if (err.response?.status === 404) {
-          // TODO: Swagger/backend endpoint for GET /hospitals/:id/invoices is missing from routes.
-          // Fall back to empty state.
-          setIsEndpointMissing(true);
-          setInvoices([]);
-        } else {
-          setInvoicesError(true);
-        }
-        setInvoicesLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [hospitalId]);
-
-  // Map API invoices to local Invoice shape expected by InvoiceTable
-  const mappedInvoices = useMemo(() => {
-    return invoices.map((inv: any) => ({
-      id: inv.id,
-      patientName: inv.patient ? `${inv.patient.firstName} ${inv.patient.lastName}` : 'Unknown Patient',
-      totalAmount: inv.totalAmount ?? 0,
-      status: inv.paymentStatus as InvoiceStatus,
-      dueDate: inv.issuedAt,
-      createdAt: inv.issuedAt,
-      appointmentId: inv.appointmentId,
-    }));
-  }, [invoices]);
-
-  // Calculate dynamic pending payments metrics (from UNPAID and INSURANCE_PENDING)
-  const pendingPaymentsValue = useMemo(() => {
-    return invoices
-      .filter((inv) => inv.paymentStatus === 'UNPAID' || inv.paymentStatus === 'INSURANCE_PENDING')
-      .reduce((sum, inv) => sum + (inv.totalAmount ?? 0), 0);
-  }, [invoices]);
-
-  const pendingInvoicesCount = useMemo(() => {
-    return invoices.filter((inv) => inv.paymentStatus === 'UNPAID' || inv.paymentStatus === 'INSURANCE_PENDING').length;
-  }, [invoices]);
-
-  // Calculate dynamic overdue payments metrics
-  const overduePaymentsValue = useMemo(() => {
-    return invoices
-      .filter((inv) => inv.paymentStatus === 'UNPAID' && new Date(inv.issuedAt) < new Date())
-      .reduce((sum, inv) => sum + (inv.totalAmount ?? 0), 0);
-  }, [invoices]);
-
-  const overdueInvoicesCount = useMemo(() => {
-    return invoices.filter((inv) => inv.paymentStatus === 'UNPAID' && new Date(inv.issuedAt) < new Date()).length;
-  }, [invoices]);
-
+  const { t } = useTranslation();
+  
   const PAYMENT_BREAKDOWN: PaymentBreakdownItem[] = [
-    { name: t('hospital.mobileMoney'), value: 1_530_769, color: '#1E4D8C' },
-    { name: t('hospital.cash'), value: 2_037_670, color: '#93c5fd' },
+  { name: t('hospital.mobileMoney'), value: 1_530_769, color: '#1E4D8C' },
+  { name: t('hospital.cash'),         value: 2_037_670, color: '#93c5fd' },
   ];
-
   const FINANCE_KPIS = [
-    {
-      label: t('hospital.totalRevenue'),
-      value: `RWF ${(stats?.totalRevenue ?? 0).toLocaleString(i18n.language || 'en')}`,
-      sub: stats ? `${stats.totalAppointments?.allTime ?? 0} total appointments` : '—',
-      trend: true,
-      icon: <BanknotesIcon className="w-5 h-5" />,
-      accentColor: 'bg-blue-100',
-      iconColor: 'text-blue-600',
-      loading: statsLoading,
-    },
-    {
-      label: t('hospital.pendingPayments'),
-      value: `RWF ${pendingPaymentsValue.toLocaleString(i18n.language || 'en')}`,
-      sub: `${pendingInvoicesCount} ` + t('hospital.invoices'),
-      trend: false,
-      icon: <ExclamationTriangleIcon className="w-5 h-5" />,
-      accentColor: 'bg-red-100',
-      iconColor: 'text-red-500',
-      loading: invoicesLoading,
-    },
-    {
-      label: t('hospital.overduePayments'),
-      value: `RWF ${overduePaymentsValue.toLocaleString(i18n.language || 'en')}`,
-      sub: `${overdueInvoicesCount} ` + t('hospital.invoices'),
-      trend: false,
-      icon: <BanknotesIcon className="w-5 h-5" />,
-      accentColor: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
-      loading: invoicesLoading,
-    },
-    {
-      label: t('hospital.monthlyRevenue') || 'Monthly Revenue',
-      value: `RWF ${(stats?.monthlyRevenue ?? 0).toLocaleString(i18n.language || 'en')}`,
-      sub: stats ? `${stats.totalAppointments?.thisMonth ?? 0} appointments this month` : '—',
-      trend: true,
-      icon: <ClockIcon className="w-5 h-5" />,
-      accentColor: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-      loading: statsLoading,
-    },
+  { label: t('hospital.totalRevenue'),   value: 'RWF 123,456', sub: '+12.5% ' + t('hospital.fromLastWeek'), trend: true,  icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-blue-100',    iconColor: 'text-blue-600'    },
+  { label: t('hospital.pendingPayments'), value: 'RWF 54,321',  sub: '18 ' + t('hospital.invoices'),           trend: false, icon: <ExclamationTriangleIcon className="w-5 h-5" />, accentColor: 'bg-red-100',     iconColor: 'text-red-500'     },
+  { label: t('hospital.overduePayments'), value: 'RWF 3,456',   sub: '9 ' + t('hospital.invoices'),            trend: false, icon: <BanknotesIcon className="w-5 h-5" />,           accentColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: t('hospital.refund'),          value: 'RWF 350,000', sub: '+24% ' + t('hospital.fromLastWeek'),   trend: true,  icon: <ClockIcon className="w-5 h-5" />,               accentColor: 'bg-purple-100',  iconColor: 'text-purple-600'  },
   ];
 
   return (
@@ -177,7 +65,7 @@ export default function HospitalAdminFinancePage() {
           className="absolute right-6 bottom-0 opacity-20 hidden sm:block"
           width="120" height="72" viewBox="0 0 120 72" fill="none"
         >
-          <rect x="0" y="36" width="16" height="36" rx="4" fill="#1E4D8C" />
+          <rect x="0"  y="36" width="16" height="36" rx="4" fill="#1E4D8C" />
           <rect x="26" y="18" width="16" height="54" rx="4" fill="#1E4D8C" />
           <rect x="52" y="28" width="16" height="44" rx="4" fill="#1E4D8C" />
           <rect x="78" y="10" width="16" height="62" rx="4" fill="#1E4D8C" />
@@ -185,16 +73,6 @@ export default function HospitalAdminFinancePage() {
           <polyline points="8,30 34,14 60,22 86,6 112,18" stroke="#2D9B8A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         </svg>
       </div>
-
-      {/* Error banner above KPI card section if statsError is true */}
-      {dashError && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl shadow-sm">
-          <ExclamationTriangleIcon className="w-5 h-5 text-red-500 shrink-0" />
-          <span className="text-sm font-medium">
-            Failed to load dashboard statistics. Some values may not be fully up to date.
-          </span>
-        </div>
-      )}
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -207,14 +85,8 @@ export default function HospitalAdminFinancePage() {
               <span className="text-gray-300 text-lg leading-none">⋯</span>
             </div>
             <p className="mt-3 text-sm font-semibold text-slate-600">{kpi.label}</p>
-            {kpi.loading ? (
-              <div className="mt-2 h-8 w-36 bg-slate-100 rounded animate-pulse" />
-            ) : (
-              <p className="mt-1 text-2xl font-bold text-slate-900">{kpi.value}</p>
-            )}
-            {kpi.loading ? (
-              <div className="mt-2 h-4 w-20 bg-slate-100 rounded animate-pulse" />
-            ) : kpi.trend ? (
+            <p className="mt-1 text-2xl font-bold text-slate-900">{kpi.value}</p>
+            {kpi.trend ? (
               <span className="mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">{kpi.sub}</span>
             ) : (
               <span className="mt-2 inline-block text-xs text-slate-400">{kpi.sub}</span>
@@ -226,7 +98,7 @@ export default function HospitalAdminFinancePage() {
       {/* Charts row */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <RevenueChart
-          data={weeklyRevenue}
+          data={REVENUE_CHART_DATA}
           title={t('hospital.revenueOverview')}
           showExpenses={false}
           defaultPeriod="Weekly"
@@ -241,14 +113,11 @@ export default function HospitalAdminFinancePage() {
       {/* Invoice table + Refund panel */}
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5">
         <InvoiceTable
-          invoices={mappedInvoices}
-          loading={invoicesLoading}
-          error={invoicesError}
-          isEndpointMissing={isEndpointMissing}
+          invoices={MOCK_INVOICES}
           onExport={() => console.log('export')}
         />
         <RefundTable
-          refunds={REFUNDS}
+          refunds={[]}
           onViewAll={() => console.log('view all refunds')}
         />
       </div>

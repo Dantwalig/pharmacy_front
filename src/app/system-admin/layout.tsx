@@ -15,7 +15,7 @@ export default function SystemAdminLayout({ children }: { children: React.ReactN
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'SYSTEM_ADMIN')) {
+    if (!loading && (!user || user.role !== 'SUPER_ADMIN')) {
       router.push('/login');
     }
   }, [user, loading, router]);
@@ -26,7 +26,7 @@ export default function SystemAdminLayout({ children }: { children: React.ReactN
     </div>
   );
 
-  if (!user || user.role !== 'SYSTEM_ADMIN') return null;
+  if (!user || user.role !== 'SUPER_ADMIN') return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">

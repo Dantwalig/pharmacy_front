@@ -1,12 +1,13 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { BellIcon, ShoppingCartIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
+import { ShoppingCartIcon, BellIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
-import UserAccountBlock from '@/components/shared/UserAccountBlock';
-import { useCart } from '@/context/CartContext';
-import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 
 interface PatientTopbarProps {
   onMenuClick?: () => void;
@@ -14,57 +15,92 @@ interface PatientTopbarProps {
 
 export default function PatientTopbar({ onMenuClick }: PatientTopbarProps) {
   const { t } = useTranslation();
+  const { user, logout } = useAuth();
   const { getItemCount } = useCart();
-  const { unreadCount } = useUnreadNotifications('patient');
+  const router = useRouter();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const cartCount = getItemCount();
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
-      <div className="flex items-center gap-3">
-        <button
+    <header className="bg-white dark:bg-gray-800 shadow-sm px-4 lg:px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+    <div className="flex items-center gap-3">
+      <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Open sidebar"
         >
-          <Bars3Icon className="w-[18px] h-[18px] text-gray-600" />
+        <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+      </button>
+      <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">
+        {t('topbar.eVuzeHealthcare')}
+        </h1>
+    </div>
+
+    <div className="flex items-center gap-2 lg:gap-4">
+      <LanguageSwitcher />
+
+      <Link href="/patient/notifications">
+        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors" aria-label="Notifications">
+          <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         </button>
-        <p className="text-base font-semibold text-brand-teal">
-          {t('topbar.eVuzeHealthcare')}
-        </p>
-      </div>
+      </Link>
 
-      <div className="flex items-center gap-2 lg:gap-3">
-        <LanguageSwitcher />
-
-        <Link href="/patient/cart">
-          <button
-            className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="View shopping cart"
-          >
-            <ShoppingCartIcon className="w-[18px] h-[18px] text-gray-600" />
-            {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold bg-brand-teal">
-                {cartCount}
+      <Link href="/patient/cart">
+        <button className="relative focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors" aria-label="View shopping cart">
+          <ShoppingCartIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+          {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{ background: 'linear-gradient(to right, #0688CA, #32B6F2)' }}>
+              {cartCount}
               </span>
-            )}
+          )}
           </button>
-        </Link>
+      </Link>
 
-        <Link href="/patient/notifications">
-          <button
-            className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="Notifications"
+      <div className="relative" ref={dropdownRef}>
+        <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 lg:px-3 py-2 rounded-lg transition-colors"
           >
-            <BellIcon className="w-[18px] h-[18px] text-gray-600" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
-            )}
-          </button>
-        </Link>
+          <span className="font-medium text-gray-800 dark:text-gray-200 text-sm hidden sm:block">
+            {user?.email?.split('@')[0] || t('roles.patient')}
+            </span>
+          <ChevronDownIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+        </button>
 
-        <UserAccountBlock />
-      </div>
-    </header>
-  );
+        {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+            <div className="py-1">
+              <Link
+                  href="/patient/profile"
+                  onClick={() => setShowDropdown(false)}
+                  className="block w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                {t('patient.myProfile')}
+                </Link>
+              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              <button
+                  onClick={() => { logout(); setShowDropdown(false); router.push('/login'); }}
+                  className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                {t('common.logout')}
+                </button>
+            </div>
+          </div>
+        )}
+        </div>
+    </div>
+  </header>
+);
 }

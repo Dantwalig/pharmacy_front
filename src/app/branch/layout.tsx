@@ -7,11 +7,8 @@ import BranchSidebar from '@/components/branch/BranchSidebar';
 import BranchTopbar from '@/components/branch/BranchTopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import SupportBot from '@/components/shared/SupportBot';
-import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
 
 const STANDALONE_PAGES = ['/branch/pending-approval', '/branch/change-password'];
-// Mirrored in src/middleware.tsx — keep both in sync
-const BRANCH_PORTAL_ROLES = ['BRANCH_MANAGER', 'PHARMACIST', 'CASHIER', 'NURSE'];
 
 export default function BranchLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -19,11 +16,10 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
 
   useEffect(() => {
     if (loading) return;
-    if (!user || !BRANCH_PORTAL_ROLES.includes(user.role)) { router.push('/login'); return; }
+    if (!user || user.role !== 'BRANCH_MANAGER') { router.push('/login'); return; }
     const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
     if (user.requiresPasswordChange && !isStandalone) {
       router.push('/branch/change-password');
@@ -43,7 +39,7 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  if (!user || !BRANCH_PORTAL_ROLES.includes(user.role)) return null;
+  if (!user || user.role !== 'BRANCH_MANAGER') return null;
 
   const isStandalone = STANDALONE_PAGES.some(p => pathname.startsWith(p));
   if (isStandalone) return <>{children}</>;
@@ -53,8 +49,8 @@ export default function BranchLayout({ children }: { children: React.ReactNode }
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-      <BranchSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onOpenSupport={() => setSupportOpen(true)} collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+      <BranchSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onOpenSupport={() => setSupportOpen(true)} />
+      <div className="flex-1 lg:ml-64 min-w-0">
         <BranchTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="p-4 lg:p-6">{children}</main>
       </div>

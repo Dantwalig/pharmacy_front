@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Squares2X2Icon, ClipboardDocumentListIcon, BuildingOffice2Icon, UsersIcon, UserIcon,
   ArrowRightOnRectangleIcon, ChartBarIcon, CubeIcon, BellIcon, XMarkIcon, LockClosedIcon, MapIcon,
-  ChevronDoubleLeftIcon, ChevronDoubleRightIcon,
+  ChevronDoubleLeftIcon, ChevronDoubleRightIcon, CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { isPatientEnabled } from '@/lib/features';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +28,7 @@ export default function PharmacySidebar({ open = false, onClose, collapsed = fal
     { href: '/pharmacy/dashboard',     icon: Squares2X2Icon,            label: t('pharmacyOwner.dashboard') },
     { href: '/pharmacy/orders',        icon: ClipboardDocumentListIcon, label: t('pharmacyOwner.orderOverview') },
     { href: '/pharmacy/branches',      icon: BuildingOffice2Icon,       label: t('pharmacyOwner.branchManagement') },
+    { href: '/pharmacy/leave',         icon: CalendarDaysIcon,          label: t('pharmacyOwner.leave') },
     { href: '/pharmacy/map',           icon: MapIcon,                   label: 'Branch Map' },
     { href: '/pharmacy/inventory',     icon: CubeIcon,                  label: t('pharmacyOwner.inventory') },
     { href: '/pharmacy/patients',      icon: UsersIcon,                 label: t('pharmacyOwner.patients') + (isPatientEnabled() ? '' : ' (Soon)') },

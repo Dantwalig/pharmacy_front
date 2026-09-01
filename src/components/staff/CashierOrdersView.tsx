@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { CreditCardIcon, CubeIcon, CheckCircleIcon, QueueListIcon, UserIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import CashierPOSModal from './CashierPOSModal';
 import { useAuth } from '@/context/AuthContext';
+import { useStaffPermissions } from '@/hooks/useStaffPermissions';
+import PermissionGate from '@/components/shared/PermissionGate';
 import { Order } from '@/types';
 
 type CashierTab = 'pending_payment' | 'ready_pickup' | 'completed' | 'all';
@@ -22,6 +24,7 @@ interface CashierOrdersViewProps {
 export default function CashierOrdersView({ orders, loading }: CashierOrdersViewProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { can, loading: permsLoading } = useStaffPermissions();
   const [tab, setTab] = useState<CashierTab>('pending_payment');
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [advancedIds, setAdvancedIds] = useState<Set<string>>(new Set());
@@ -57,10 +60,20 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
     ? `${user.profile?.firstName ?? ''} ${user.profile?.lastName ?? ''}`.trim() || user.email || 'Cashier'
     : 'Cashier';
 
-  if (loading) {
+  if (loading || permsLoading) {
     return (
       <div className="flex justify-center py-20">
         <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin border-brand-teal" />
+      </div>
+    );
+  }
+
+  if (!can('ACCESS_POS')) {
+    return (
+      <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+        <CreditCardIcon className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+        <p className="text-gray-700 font-semibold">{t('cashier.posLockedTitle')}</p>
+        <p className="text-gray-500 text-sm mt-1">{t('cashier.posLockedMessage')}</p>
       </div>
     );
   }
@@ -165,13 +178,15 @@ export default function CashierOrdersView({ orders, loading }: CashierOrdersView
                   </div>
 
                   {isPaymentTab && !isPaid && (
-                    <button
-                      onClick={() => setActiveOrder(o)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 shrink-0 bg-brand-teal"
-                    >
-                      <CreditCardIcon className="w-[15px] h-[15px]" />
-                      {t('cashier.processPayment')}
-                    </button>
+                    <PermissionGate permission="ACCESS_POS">
+                      <button
+                        onClick={() => setActiveOrder(o)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 shrink-0 bg-brand-teal"
+                      >
+                        <CreditCardIcon className="w-[15px] h-[15px]" />
+                        {t('cashier.processPayment')}
+                      </button>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
