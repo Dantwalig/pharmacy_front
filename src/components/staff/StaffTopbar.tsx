@@ -2,15 +2,10 @@
 
 import { useTranslation } from 'react-i18next';
 
-import { useAuth } from '@/context/AuthContext';
-import { UserCircleIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
-
-const ROLE_COLORS: Record<string, string> = {
-  PHARMACIST: 'bg-violet-100 text-violet-800',
-  CASHIER:    'bg-blue-100 text-blue-800',
-  NURSE:      'bg-pink-100 text-pink-800',
-};
+import WorkspaceSwitcher from '@/components/branch/WorkspaceSwitcher';
+import UserAccountBlock from '@/components/shared/UserAccountBlock';
 
 interface StaffTopbarProps {
   onMenuClick?: () => void;
@@ -19,10 +14,6 @@ interface StaffTopbarProps {
 export default function StaffTopbar({
   onMenuClick }: StaffTopbarProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const role = user?.role || '';
-  const roleLabel = role ? t(`roles.${role.toLowerCase()}`, { defaultValue: t('roles.staff') }) : t('roles.staff');
-  const roleColor = ROLE_COLORS[role] || 'bg-gray-100 text-gray-800';
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4 sticky top-0 z-30">
@@ -42,17 +33,9 @@ export default function StaffTopbar({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className={`px-3 py-1 text-xs font-semibold rounded-full hidden sm:inline-flex ${roleColor}`}>
-            {roleLabel}
-          </span>
+          <WorkspaceSwitcher />
           <LanguageSwitcher />
-          <div className="flex items-center gap-2">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-semibold text-gray-900">{user?.email || 'Staff'}</p>
-              <p className="text-xs text-gray-500">{roleLabel}</p>
-            </div>
-            <UserCircleIcon className="w-9 h-9 text-gray-500" />
-          </div>
+          <UserAccountBlock />
         </div>
       </div>
     </div>

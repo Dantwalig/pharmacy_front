@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   MagnifyingGlassIcon,
@@ -8,7 +9,6 @@ import {
   UserPlusIcon,
   CalendarDaysIcon,
   FunnelIcon,
-  EllipsisVerticalIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
@@ -24,6 +24,7 @@ interface DerivedPatient {
   age: number;
   gender: string;
   lastVisit: string;
+  lastVisitMs: number; // raw epoch for reliable comparisons — never parse the formatted string
   condition: string;
   status: PatientStatus;
   isNew: boolean;
@@ -40,6 +41,7 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
 
 export default function HospitalDoctorPatientsPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatus] = useState<PatientStatus | 'ALL'>('ALL');
   const [conditionFilter, setCondition] = useState('ALL');
@@ -62,22 +64,30 @@ export default function HospitalDoctorPatientsPage() {
         // Age, gender, MRN are not included — see DOCTOR_REMAINING_PAGES_API_GAPS.md.
         const res = await api.get('/appointments');
         const raw = unwrapData<{
-          patientId: string; date: string; reason?: string;
+          patientId: string; date: string; scheduledAt?: string; reason?: string;
           patient: { firstName: string; lastName: string };
         }>(res.data);
 
         const map = new Map<string, DerivedPatient>();
         for (const a of raw) {
           const existing = map.get(a.patientId);
-          const aDate = new Date(a.date);
-          if (!existing || aDate > new Date(existing.lastVisit)) {
+          const dateStr = a.scheduledAt || a.date;
+          const aDate = dateStr ? new Date(dateStr) : null;
+          const isValidDate = aDate && !isNaN(aDate.getTime());
+          const aDateMs = isValidDate ? aDate.getTime() : 0;
+          const formattedLastVisit = isValidDate
+            ? aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+            : '—';
+
+          if (!existing || (isValidDate && aDateMs > existing.lastVisitMs)) {
             map.set(a.patientId, {
               id:          a.patientId,
               patientId:   a.patientId.slice(-8).toUpperCase(),
               name:        `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || '—',
               age:         0,
               gender:      '—',
-              lastVisit:   aDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }),
+              lastVisit:   formattedLastVisit,
+              lastVisitMs: aDateMs,
               condition:   a.reason ?? '—',
               status:      'ACTIVE',
               isNew:       false,
@@ -109,9 +119,8 @@ export default function HospitalDoctorPatientsPage() {
     .filter(p => conditionFilter === 'ALL' || p.condition === conditionFilter)
     .filter(p => {
       if (lastVisitFilter === 'ALL') return true;
-      const visit = new Date(p.lastVisit).getTime();
-      if (Number.isNaN(visit)) return true;
-      const days = (now - visit) / 86_400_000;
+      if (!p.lastVisitMs) return true;
+      const days = (now - p.lastVisitMs) / 86_400_000;
       return days <= Number(lastVisitFilter);
     })
     .filter(p =>
@@ -236,7 +245,11 @@ export default function HospitalDoctorPatientsPage() {
                 </tr>
               ) : (
                 pageItems.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={p.id}
+                    className="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/hospital/doctor/patient/${p.id}`)}
+                  >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.patientId}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{p.age > 0 ? p.age : '—'}</td>
@@ -249,9 +262,9 @@ export default function HospitalDoctorPatientsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <EllipsisVerticalIcon className="w-5 h-5" />
-                      </button>
+                      <span className="text-xs font-medium text-blue-600 hover:text-blue-800">
+                        View →
+                      </span>
                     </td>
                   </tr>
                 ))

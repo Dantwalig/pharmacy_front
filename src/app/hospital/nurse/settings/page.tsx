@@ -156,7 +156,7 @@ export default function NurseSettingsPage() {
             {[
               { label: t('common.email'), value: profile.email, extra: 'break-all', teal: false },
               { label: t('common.phone'), value: profile.phone, extra: '', teal: false },
-              { label: t('hospital.hospital'), value: profile.hospitalName, teal: true },
+              { label: t('hospital.hospital'), value: profile.hospitalName, extra: '', teal: true },
             ].map(({ label, value, extra, teal }) => (
               <div key={label}>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>

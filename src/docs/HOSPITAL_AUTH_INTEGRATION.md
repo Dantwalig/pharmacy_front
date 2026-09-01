@@ -207,3 +207,14 @@ against the confirmed JWT payload shape from `generateTokens()` in
   `src/lib/hospital.ts`, not the pages themselves).
 - `grep -n "localStorage.clear()" src/components/hospital/HospitalSidebar.tsx`
    no results.
+
+<!-- Hospital Nurse Auth Helper -->
+**Resolution shipped:** the frontend now uses a shared helper,
+`isHospitalNurse(user)`, from `src/lib/auth.ts` (and reused by the
+hospital nurse topbar hook and the hospital guard). The `NURSE` case in
+`AuthContext.login()` routes through that helper instead of keeping an inline
+`userData.hospitalId` check. If the helper returns true → routes to
+`/hospital/nurse/dashboard` (or `/hospital/nurse/settings` if
+`requiresPasswordChange`). If false → unchanged existing behavior, routes to
+`/staff/dashboard` / `/staff/change-password`. The pre-existing pharmacy-nurse
+flow is untouched.

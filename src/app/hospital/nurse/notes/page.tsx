@@ -6,28 +6,25 @@ import {
   Calendar, Save, RotateCcw, ChevronDown,
 } from 'lucide-react';
 import api from '@/lib/api';
-import { useHospitalId, useHospitalNurseUser } from '@/lib/hospital';
+import { useHospitalId, useHospitalNurseUser, useHospitalAdmissions } from '@/lib/hospital';
 import type { NursingNote } from '@/types/hospital';
 import { useTranslation } from 'react-i18next';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
-interface PatientOption { id: string; name: string; }
-
 export default function NursingNotesPage() {
   const { t } = useTranslation();
   const hospitalId = useHospitalId();
   const nurseUser = useHospitalNurseUser();
+  const { patients, loading: patientsLoading } = useHospitalAdmissions(hospitalId);
 
   const [notes, setNotes] = useState<NursingNote[]>([]);
-  const [patients, setPatients] = useState<PatientOption[]>([]);
   const [search, setSearch] = useState('');
   const [patientFilter, setPatientFilter] = useState('');
   const [dateFilter, setDateFilter] = useState(TODAY);
   const [loadingNotes, setLoadingNotes] = useState(false);
 
   // Form state
-  const [selectedPatient, setSelectedPatient] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
   const [dateTime, setDateTime] = useState(() => {
     const now = new Date();
@@ -38,19 +35,7 @@ export default function NursingNotesPage() {
   const [additionalComments, setAdditionalComments] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Load patients for the dropdown
-  useEffect(() => {
-    if (!hospitalId) return;
-    api.get<any[]>(`/hospitals/${hospitalId}/patients`).then((res) => {
-      const raw = Array.isArray(res.data) ? res.data : [];
-      setPatients(raw.map((p) => ({
-        id: p.id ?? p.patientId ?? '',
-        name: p.name ?? `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(),
-      })));
-    }).catch(() => {});
-  }, [hospitalId]);
-
-  // Load notes
+  // Load notes from API
   const loadNotes = () => {
     if (!hospitalId) return;
     setLoadingNotes(true);
@@ -93,7 +78,6 @@ export default function NursingNotesPage() {
   ];
 
   const resetForm = () => {
-    setSelectedPatient('');
     setSelectedPatientId('');
     setDateTime(`${TODAY} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
     setObservationNotes('');
@@ -102,7 +86,7 @@ export default function NursingNotesPage() {
   };
 
   const submitDocumentation = async () => {
-    if (!selectedPatient || !observationNotes || !hospitalId) return;
+    if (!selectedPatientId || !observationNotes || !hospitalId) return;
     setSubmitting(true);
     try {
       await api.post(`/hospitals/${hospitalId}/nurse/notes`, {
@@ -192,16 +176,13 @@ export default function NursingNotesPage() {
                 <label className="text-xs font-bold text-[#1E3A5F] uppercase tracking-wide ml-1">{t('hospital.patientName')}</label>
                 <div className="relative">
                   <select
-                    value={selectedPatient}
-                    onChange={(e) => {
-                      const opt = patients.find((p) => p.name === e.target.value);
-                      setSelectedPatient(e.target.value);
-                      setSelectedPatientId(opt?.id ?? '');
-                    }}
-                    className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer"
+                    value={selectedPatientId}
+                    onChange={(e) => setSelectedPatientId(e.target.value)}
+                    disabled={patientsLoading}
+                    className="w-full pl-4 pr-10 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] appearance-none cursor-pointer disabled:opacity-60"
                   >
-                    <option value="">{t('hospital.selectPatient')}</option>
-                    {patients.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                    <option value="">{patientsLoading ? t('common.loading', 'Loading...') : t('hospital.selectPatient')}</option>
+                    {patients.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] w-5 h-5 pointer-events-none" />
                 </div>
@@ -232,7 +213,7 @@ export default function NursingNotesPage() {
               </button>
               <button
                 onClick={submitDocumentation}
-                disabled={!selectedPatient || !observationNotes || submitting}
+                disabled={!selectedPatientId || !observationNotes || submitting}
                 className="px-8 py-3 bg-[#38BDF8] text-white text-sm font-bold rounded-xl hover:bg-[#0EA5E9] transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" /> {submitting ? t('common.saving') : t('hospital.submitDocumentation')}

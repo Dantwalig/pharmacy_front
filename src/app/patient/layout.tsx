@@ -7,12 +7,14 @@ import PatientSidebar from '@/components/patient/PatientSidebar';
 import PatientTopbar from '@/components/patient/PatientTopbar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import SupportBot from '@/components/shared/SupportBot';
+import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed();
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'PATIENT')) {
@@ -39,8 +41,10 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onOpenSupport={() => setSupportOpen(true)}
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
       />
-      <div className="flex-1 lg:ml-64 min-w-0">
+      <div className={`flex-1 min-w-0 transition-all duration-300 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <PatientTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="p-4 lg:p-6">{children}</main>
       </div>
